@@ -78,6 +78,13 @@ describe('岁俸：引擎里第一次有了进项', () => {
     expect(result.current.gameState.currentYear).toBe(1629)
     expect(result.current.character.attributes.财帛).toBe(50 + stipend)
 
+    // 进项必须留痕：史馆《生平》里查得到是哪一年领了多少
+    const records = result.current.lifeRecords.filter(r => r.title === '支领岁俸')
+    expect(records).toHaveLength(1)
+    expect(records[0].year).toBe(1629)
+    expect(records[0].month).toBe(1)
+    expect(records[0].attributesChange?.财帛).toBe(stipend)
+
     randomSpy.mockRestore()
   })
 
@@ -98,6 +105,8 @@ describe('岁俸：引擎里第一次有了进项', () => {
     const crossed = result.current.gameState.currentYear - yearBefore
     expect(crossed).toBeLessThanOrEqual(1)
     expect(result.current.character.attributes.财帛).toBe(moneyBefore + level * crossed)
+    // 留痕与入账必须同源：没跨年就不能多出一条"支领岁俸"
+    expect(result.current.lifeRecords.filter(r => r.title === '支领岁俸')).toHaveLength(crossed)
 
     randomSpy.mockRestore()
   })

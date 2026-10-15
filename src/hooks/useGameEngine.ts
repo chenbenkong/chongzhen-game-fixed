@@ -1466,6 +1466,18 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     // ── 副作用部分：每次调用只执行一次 ────────────────────────────────
     const stipend = newYearTicks > 0 ? annualStipend(characterRef.current.rank) : 0
+    if (stipend > 0) {
+      // 俸银要留痕。第十一轮的教训就是"归零无声"——数值变了而屏幕上什么都没有，
+      // 玩家只能事后猜。进项同样不该是暗账：史馆《生平》里要能查到哪一年领了多少。
+      addLifeRecord({
+        year: newState.currentYear,
+        month: 1,
+        type: 'choice',
+        title: '支领岁俸',
+        description: `新岁任职${characterRef.current.rank}，照例支领俸银${stipend}两。`,
+        attributesChange: { 财帛: stipend }
+      })
+    }
     setCharacter(prevChar => {
       const aged = { ...prevChar, age: prevChar.age + skippedMonths / 12 }
       if (stipend <= 0) return aged
