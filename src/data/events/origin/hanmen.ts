@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 // 寒门专属事件：体现出身寒微的困境与逆袭

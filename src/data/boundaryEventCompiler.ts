@@ -20,7 +20,7 @@ function compileConditions(conditions: EventConditions | undefined) {
 
     // 1) 年份 — 必须拿到 currentYear 才能继续判定
     if (conditions.year) {
-      const cur = (params as any).currentYear
+      const cur = params.currentYear
       if (typeof cur !== 'number') {
         return false
       }
@@ -30,7 +30,7 @@ function compileConditions(conditions: EventConditions | undefined) {
 
     // 2) 月份
     if (conditions.month) {
-      const cur = (params as any).currentMonth
+      const cur = params.currentMonth
       if (typeof cur !== 'number') {
         return false
       }
@@ -38,17 +38,27 @@ function compileConditions(conditions: EventConditions | undefined) {
       if (conditions.month.max !== undefined && cur > conditions.month.max) return false
     }
 
+    // 2.5) 游戏月数 —— 与 eventConditions 用同一个键，两个求值器的语义终于一致
+    if (conditions.turn) {
+      const cur = params.gameState?.turn
+      if (typeof cur !== 'number') {
+        return false
+      }
+      if (conditions.turn.min !== undefined && cur < conditions.turn.min) return false
+      if (conditions.turn.max !== undefined && cur > conditions.turn.max) return false
+    }
+
     // 3) 出身
     if (conditions.origin) {
       const origins = Array.isArray(conditions.origin) ? conditions.origin : [conditions.origin]
-      const charOrigin = (params as any).characterOrigin
+      const charOrigin = params.characterOrigin
       if (charOrigin && !origins.includes(charOrigin)) return false
     }
 
     // 4) 官阶
     if (conditions.rank) {
       const ranks = Array.isArray(conditions.rank) ? conditions.rank : [conditions.rank]
-      const charRank = (params as any).characterRank
+      const charRank = params.characterRank
       if (charRank && !ranks.includes(charRank)) return false
     }
 
@@ -194,10 +204,12 @@ export function wrapBatchAsBoundaryEvents(
       }
     }
 
-    // 合并 user gameState 与 turn 兜底（user 自带 turn 条件则取较大值）
+    // turn 兜底：叙事结局至少要玩满 NARRATIVE_MIN_TURN 个月；
+    // 作者自己写了更高的 cond.turn 就取更大的那个。
+    // 注意这里**不再**把 turn 塞进 gameState —— 以前那样写只有本文件认，
+    // utils/eventConditions.ts 见到 gameState.turn 是直接 continue 跳过的。
     const userGameState = (conds.gameState || {}) as Record<string, { min?: number; max?: number } | undefined>
-    const userTurnMin = userGameState.turn?.min
-    const turnMin = Math.max(NARRATIVE_MIN_TURN, userTurnMin ?? 0)
+    const turnMin = Math.max(NARRATIVE_MIN_TURN, conds.turn?.min ?? 0)
 
     const safeConditions: EventConditions = {
       ...conds,
@@ -205,10 +217,8 @@ export function wrapBatchAsBoundaryEvents(
         min: minYear,
         ...(maxYear !== undefined ? { max: maxYear } : {})
       },
-      gameState: {
-        ...userGameState,
-        turn: { min: turnMin }
-      }
+      turn: { min: turnMin },
+      gameState: { ...userGameState }
     }
 
     const wrappedEvent: GameEvent = { ...e, conditions: safeConditions }

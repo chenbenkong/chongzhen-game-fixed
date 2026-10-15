@@ -1,5 +1,4 @@
-﻿// @ts-nocheck
-import { GameEvent } from '../../../../types/event'
+import { GameEvent } from '../../../types/event'
 
 // ==========================================
 // 灰色选择事件：玄学线
@@ -28,7 +27,8 @@ export const fortuneGrayEvents: GameEvent[] = [
       year: { min: 1634, max: 1634 },
       month: { min: 2, max: 4 },
       attributes: {
-        理政: { min: 20, 财帛: 5}
+        理政: { min: 20 },
+        财帛: { min: 5 }
       },
       hidden: {
         道德值: { max: 75 }

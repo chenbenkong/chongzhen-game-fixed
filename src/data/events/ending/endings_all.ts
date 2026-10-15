@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 自动从 dist/assets/index-IZ3WyHE2.js 恢复的 ending 事件
 // 合并 endings.ts + endings_extra.ts 全部 26 个事件
 // 恢复时间：2026-06-18T18:55:55.643Z

@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 // 缙绅专属事件：体现世家大族的人脉与党争漩涡

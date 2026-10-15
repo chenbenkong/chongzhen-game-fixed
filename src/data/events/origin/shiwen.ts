@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 // 诗文清望专属事件：体现清流言官的声望与党争漩涡

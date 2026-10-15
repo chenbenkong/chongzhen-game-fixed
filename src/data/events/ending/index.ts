@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 结局事件索引（仅用于 EndingCodex / CheatMode 的展示/筛选）
 // 真实触发由 BoundaryEventManager 统一负责（见 data/boundaryEvents.ts）
 

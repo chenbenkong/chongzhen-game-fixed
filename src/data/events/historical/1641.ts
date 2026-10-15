@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1641: GameEvent[] = [

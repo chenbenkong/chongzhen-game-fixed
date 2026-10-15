@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { GameEvent } from '../../types/event'
 import { events1628 as historical1628 } from './historical/1628'
 import { events1629 as historical1629 } from './historical/1629'

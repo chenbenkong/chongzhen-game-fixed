@@ -1,5 +1,4 @@
-// @ts-nocheck
-﻿import { GameEvent } from '../../../../types/event'
+import { GameEvent } from '../../../../types/event'
 
 // ==========================================
 // 灰色选择事件：荒淫线 - 乡绅商人妻女

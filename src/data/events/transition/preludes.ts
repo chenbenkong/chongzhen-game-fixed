@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 // 结局前过渡事件（prelude）
 // 玩家在触发核心结局前 1-2 个月，会先看到一个"山雨欲来"的预感事件
 // 通过 EndingConfig.preludeEventId 字段关联
@@ -35,7 +34,7 @@ export const preludeEvents: GameEvent[] = [
     conditions: {
       year: { min: 1643, max: 1643 },
       month: { min: 12, max: 12 },
-      gameState: { 国势: { min: 60, 民望: 10} },
+      gameState: { 国势: { min: 60 }, 民望: { min: 10 } },
       attributes: { 文韬: { min: 50 } }
     },
     choices: [

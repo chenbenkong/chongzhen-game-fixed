@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 // 关键历史人物互动
@@ -8,6 +7,7 @@ import { GameEvent } from '../../../types/event'
 export const figuresEvents: GameEvent[] = [
   {
     id: 'figure_chongzhen_audience',
+    type: 'historical',
     storyline: 'ordinary',
     title: '崇祯帝临朝',
     description: '崇祯帝临朝，召见奏事官。',
@@ -175,6 +175,7 @@ export const figuresEvents: GameEvent[] = [
   },
   {
     id: 'figure_hong_chengchou',
+    type: 'historical',
     storyline: 'border_war',
     title: '洪承畴拜将',
     description: '洪承畴拜将，誓师出关。',
@@ -348,6 +349,7 @@ export const figuresEvents: GameEvent[] = [
   },
   {
     id: 'figure_sun_chuanting',
+    type: 'historical',
     storyline: 'border_war',
     title: '孙传庭出关',
     description: '孙传庭出关，誓师剿贼。',
@@ -537,6 +539,7 @@ export const figuresEvents: GameEvent[] = [
   },
   {
     id: 'figure_wu_sangui',
+    type: 'historical',
     storyline: 'ordinary',
     title: '吴三桂请饷',
     description: '吴三桂驻扎宁远，请饷催粮。',

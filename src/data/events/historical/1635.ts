@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1635: GameEvent[] = [
   {
     id: 'historical_027',
+    type: 'historical',
     storyline: 'ordinary',
     title: '闯王被擒',
     description: '高迎祥被擒，但闯军余部四散。',
@@ -147,6 +147,7 @@ export const events1635: GameEvent[] = [
   },
   {
     id: 'historical_028',
+    type: 'historical',
     storyline: 'nationfall',
     title: '张献忠入蜀',
     description: '张献忠入蜀，朝议纷纷。',
@@ -248,8 +249,7 @@ export const events1635: GameEvent[] = [
 
 虽然你的策略最终被朝廷部分采纳，但宦官的暗中掣肘，让你在川的督抚们束手束脚。
 
-保蜀之策，最终没能彻底实行。`,
-          echo_2: ''
+保蜀之策，最终没能彻底实行。`
         }
       },
       {

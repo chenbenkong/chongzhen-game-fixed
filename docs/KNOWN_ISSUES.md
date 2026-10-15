@@ -209,7 +209,70 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **102 例**，分 15 个文件，全部在 `tests/unit/`。
+回归测试共 **158 例**，分 18 个文件，全部在 `tests/unit/`。
+
+### 第八轮：拆掉盲区本身，以及 BOM 让"清零"变成假阴性
+
+第七轮的收尾是"要么哪天真的给数据补上类型，要么就一直养着这个体检脚本"。
+这一轮选了前者：`src/` 里的 `@ts-nocheck` **一个不剩**，400 个事件、上万条数值第一次整体回到类型系统。
+
+**但先要说的是自己踩的坑。** 第七轮末尾我用 `grep -rl '^// @ts-nocheck' src` 得到 0 个文件，
+就以为清空了。真实情况是 `src/` 里有 **50 个文件以 UTF-8 BOM 开头**（`tests/` 里还有 1 个）：
+BOM 占了第一行的前三个字节，`^` 因此匹配不上，这条命令对**仍然静音的 39 个文件**报了"一个都没有"。
+而 `@ts-nocheck` 必须在第一行才生效，带 BOM 的那一行在编辑器里和别的文件长得一模一样。
+教训是：**用符号锚定做的体检，锚定本身也要体检**。现在这两条断言都进了测试
+（`eventShape.silentFailures.test.ts` 的「类型检查盲区不得重新出现」：`src/` 里既不许有
+`@ts-nocheck`，也不许有 BOM 开头的文件）。
+
+摘干净之后 `tsc` 立刻掉出 **32 条**错误，其中三类是真缺陷：
+
+| 缺陷 | 表现 | 位置 |
+| --- | --- | --- |
+| **15 个历史事件根本没有 `type`** | 事件选择严格按 `e.type` 分层：`pickEvent` 是 emotion/gray → historical → transition → random/emotion/gray → normal 五层 filter，`useGameEngine` 是 historical\|chain → transition → random → emotion + gray/character/national/faction。没有 `type` 的事件**哪一层都进不去**；它们又不是结局池、也没有任何 `nextEvents` 入口 → 「煤山殉国」「闯军围京」「闯王破宁武」这些主线正文，连全部 4 个 `figure_*` 人物事件，写了整篇文本却在任何存档里都播不出来 | `historical/{1633,1635,1637,1640,1644}.ts`、`historical/figures.ts`（补 `type: 'historical'`）；`audit-event-shape.ts` 新增 DEAD 规则「事件没有 type / type 不在选择器认领的集合里」，结局池 `ending` / `triggerable` 豁免（它们由 BoundaryEventManager 触发，不参与分层） |
+| 隐藏属性被写进 `showConditions.attributes` | `道德值: { min: 70 }` 这类。`EventDisplay.checkChoiceRequirement` 读的是 `character.attributes[key] ?? 50` —— 取不到真值就按 **50** 兜底，于是这道门对"≥50"碰巧成立、对任何 >50 的要求**永久隐藏该选项**，而玩家完全看不出为什么少了个选项。注意这是第三种语义：池判定里未知属性是 `\|\| 0`，池判定的未知状态键是"跳过"，选项门这里是 `?? 50` | `historical/1637.ts`、`historical/1644.ts`（3 处）、`transition/1629.ts` → 改判 `showConditions.hidden`（UI 那条路径本来就支持 `cond.hidden`，且 `normalizeHidden` 保证真值一定存在） |
+| 数值被偷塞进区间对象 | `理政: { min: 20, 财帛: 5 }` / `文韬: { min: 70, 财帛: -15 }` / `国势: { min: 60, 民望: 10 }`。Range 只读 min/max，后面那个数**整段静默丢失**：门槛还在，作者想表达的花费或第二道门凭空蒸发 | `gray/fortune.ts`、`transition/preludes.ts` 拆成两道真条件；`historical/1637.ts` 的 `-15` 按"作诗相赠要花钱"读，搬进 `effects.attributes.财帛`。体检脚本新增 `rangeKeys()`：区间对象里出现 min/max 之外的键一律报 DROP |
+
+另两类不是死内容，但同属接线错误：
+
+- **4 个灰色事件文件 `import ... from '../../../../types/event'` 多写一层**（`gray/{bribery,fortune,informer,smuggling}.ts`，TS2307）。
+  它们能一路上线，只因为 esbuild 把**纯类型** import 整个抹掉了 —— 运行时根本没有这条依赖。
+  一旦谁打开 `verbatimModuleSyntax` 或把 `GameEvent` 当值用，构建当场炸。
+- **11 处 `result.echo_2: ''`**（TS2561）。这是第七轮被我写进"刻意不清理的噪音"的那批，
+  这次连着删干净：`audit:shape` 的结构告警从 11 降到 **0**，测试里的断言也同步收紧成 `toEqual([])`。
+
+**类型层**（`src/types/event.ts`）：`AttributeKey` / `StateKey` / `HiddenKey` 现在与引擎真值
+（`ATTR_MAP` / `STATE_MAP` / `HIDDEN_DEFAULTS`）一一对账，原来那四个"历史别名联合"
+——它们允许写的键恰恰是引擎解析不了的键——换成 `Partial<Record<…>>`，`conditions.turn` 提为一等键。
+两道守卫在 `tests/unit/types.keysMatchEngine.test.ts`：运行时对账 + 类型闭合（`satisfies` 与
+`AssertNever<Exclude<…>>` 双向），外加 4 个 `@ts-expect-error` 钉住第七轮**真实存在过**的错误形态；
+`@ts-expect-error` 一旦失效 tsc 会报 "Unused directive"，所以谁把类型放宽回去，`npm run typecheck:test` 直接红。
+
+**turn 语义统一**（承接第六轮最后一条）：两个求值器过去对 `gameState.turn` 的态度是**相反**的
+（`utils/eventConditions.ts` 直接 `continue` 跳过，`data/boundaryEventCompiler.ts` 却老老实实读它），
+同一个条件一套当它不存在、另一套当硬门槛，而数据里两种写法都有 ——
+只会表现为"这个结局莫名其妙不出现"。现在两边都读 `conditions.turn`，编译器补的叙事兜底
+也改写在新键上；`tests/unit/conditions.turnParity.test.ts` 8 例把
+"同一个事件、同一个 turn，两个求值器必须给出同一个答案"钉住。
+`eventConditions` 里那句 `continue` 保留，只服务旧存档里残留的 `gameState.turn` 写法。
+
+**顺带删掉的垃圾**：`scripts/legacy/`（5 个一次性 codemod，仓库里没有任何引用）、
+被误提交的 `scripts/__pycache__/*.pyc`（并补 `.gitignore` 规则）、
+`EndingConfig.unlocksAchievement`（注释写着"结局达成时自动解锁"，实际全仓库没有任何代码读它、
+也没有任何数据写过它，真机制是 `utils/endingSystem.ts` 按 `${event.id}_done` + 品级映射发放）、
+`tsconfig.node.json`（`include` 指向不存在的 `vite.config.ts`，本仓库是 `.js`）以及它的 `references`。
+
+现在的体检结论：**400 个事件，DEAD 0 / NOOP 0 / DROP 0 / LINK 0 / 结构 0**，
+`src/` 无 `@ts-nocheck`、无 BOM，`tsc` 与 `tsc -p tsconfig.test.json` 双 0 错。
+
+补一句关于"复活"的：这 15 个事件我只加了一行 `type`，没有动任何文本或数值 ——
+但"有 type"不等于"播得出来"，条件窗口仍然可能把它锁死。
+`tests/unit/events.resurrectedRound8.test.ts` 因此有两组断言：
+每个 id 都能被 `pickEvent` 按其 `type` 认领，**且**默认角色在它自己声明的起始月份上
+`checkEventConditions` 为真。34 例全绿，才敢说这 15 段内容真的回到了游戏里。
+
+方法论记录（承接第七轮那条"接线必须被机器盯着"）：**体检命令自己也要被体检**。
+如果判断依据是一个符号锚定（`^`），那这个锚定就是一个会被编码格式骗过的单点 ——
+"我查过了"和"我查对了吗"是两件事，后者也得有测试兜着。
 
 ### 第七轮：`@ts-nocheck` 盲区里的静默失效
 
@@ -239,6 +302,14 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
 方法论记录（承接第六轮那条）：**数据和判定逻辑之间的"接线"必须被机器盯着**。
 `@ts-nocheck` 是这个仓库最大的单一体检盲区 —— 它让 400 个事件、上万条数值
 完全脱离类型系统。要么哪天真的给数据补上类型，要么就一直养着这个体检脚本。
+
+> **本节有两处已被第八轮推翻，读的时候请一并知道**：
+> ①「70 个文件带 `@ts-nocheck`」是**低估**，且我用来确认清零的那条 `grep '^// @ts-nocheck'`
+> 因为 50 个文件的 BOM 而假阴性 —— 当时实际仍有 39 个文件静音；
+> ②「DEAD 0 / NOOP 0 / DROP 0 / LINK 0」只覆盖了脚本查得动的维度，
+> **`event.type` 和选项级 `showConditions` 当时根本不在检查范围内**，
+> 于是 15 个没有 `type` 的死事件、4 处写错层的隐藏属性门全都"体检通过"。
+> 体检脚本的覆盖面本身就是一种需要被声明的假设 —— 不写出来，读者会把"0 处"当成"没有问题"。
 
 ### 第六轮：逻辑与数据缺陷专项
 
@@ -493,18 +564,25 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
 取代了原先的"一年一片"。不要改回逐片 —— 那 46 个分片不会因为拆得更细而变少，
 `events/index.ts` 是静态 import，首屏照样全量预取，多出来的只是 23 次请求往返。
 
-### 7. 体检脚本剩下的三类噪音，是刻意不清理的
+### 7. 体检脚本剩下的噪音，是刻意不清理的
 
-`npm run audit:shape` 目前仍报 11 处「结构」告警，全是同一形态：
-`result.echo_2: ''`（散落在 historical_028 / 030 与 9 个 route_* 的 c3 选项）。
-`echo` 里装的是完整回声文本，`echo_2` 是当初想写两段式回声留下的空键 ——
-不丢任何内容，删它只是让 diff 变长，故保留；但测试把它钉成
-"结构告警只允许是 echo_2、且不超过 11 处"，所以**新写一个错键名照样红**。
+原先列在这里的第一条 —— 11 处 `result.echo_2: ''`（`echo` 装的是完整回声文本，
+`echo_2` 是当初想写两段式回声留下的空键）—— 第八轮摘 `@ts-nocheck` 时它是 TS2561，
+顺手删干净了。现在 `npm run audit:shape` 报 **0 处**结构告警，
+`eventShape.silentFailures.test.ts` 里那条断言也从"只允许是 echo_2、且不超过 11 处"
+收紧成 `toEqual([])`：**再没有"已知噪音"可以往里藏东西**。
 
-另两类同源噪音也不打算"顺手修掉"：216 个只写不读的 flag（见第一节 1.1），
+另两类同源噪音不打算"顺手修掉"：216 个只写不读的 flag（见第一节 1.1），
 以及引擎对未知键的宽容姿态 —— `conditions.gameState` 撞上不认识的键时，
 比较的是 `undefined`，两侧都为 false，于是**静默跳过这条条件**而不是否决整个事件。
 把它改成"未知键即否决"确实更符合"宁可少触发也别错触发"，但代价是
 旧存档配新数据、或新数据配旧引擎时，一批事件会集体消失，而消失比提前触发更难被发现。
 所以这里的取舍是：**引擎保持宽容，用 CI 里的体检脚本把错键名挡在数据层**
 （与本仓库"兜底发生在数据层"的信条一致，见第五节第 5 条）。
+
+第三处"看着像 bug、其实是有意的不一致"值得单独记一笔：未知键在三个位置的兜底值各不相同
+—— 池判定的属性走 `attributes[key] \|\| 0`，池判定的状态撞上不认识的键是"跳过"，
+而选项门 `EventDisplay.checkChoiceRequirement` 对属性和状态一律 `?? 50`。
+`?? 50` 这一档最危险：打错的键名会**碰巧通过所有 ≤50 的要求**，
+既不报错也不消失，只是把门槛悄悄放宽了。类型收紧之后这类键名已经写不出来，
+所以引擎不改；但要动它，先读这段。

@@ -1,9 +1,9 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1633: GameEvent[] = [
   {
     id: 'historical_025',
+    type: 'historical',
     storyline: 'ordinary',
     title: '徐文定公薨',
     description: '徐光启已经下葬，但他的《农政全书》尚未刊刻。',
@@ -134,6 +134,7 @@ export const events1633: GameEvent[] = [
   },
   {
     id: 'historical_026',
+    type: 'historical',
     storyline: 'ordinary',
     title: '徐霞客启程',
     description: '徐霞客启程，邀你同行。',

@@ -1,9 +1,11 @@
 /**
- * 事件数据结构体检：找出「类型检查因为 @ts-nocheck 而看不见」的静默失效。
+ * 事件数据结构体检：盯住「判定逻辑和数据之间的接线」。
  *
- * 为什么要单独写这个：src 里 70 个文件带 `@ts-nocheck`（全部事件数据 + 结局数据），
- * 它们对 tsc 完全透明。写错一个键名不会报错，只会在运行时变成一件**什么都没做**的事。
- * 而引擎对未知键的处理方式并不统一，后果分三类，所以脚本也按三类报：
+ * 为什么要单独写这个：这个仓库的数据文件曾经整片带 `@ts-nocheck`（第八轮已清零），
+ * 那时它们对 tsc 完全透明 —— 写错一个键名不会报错，只会在运行时变成一件**什么都没做**的事。
+ * 类型收紧之后 tsc 能抓住键名了，但抓不住"键名合法、语义错"的那一半
+ * （没有 type 的事件、指向不存在 id 的引用、把花费塞进区间对象…），
+ * 所以这个脚本继续存在。引擎对未知键的处理方式并不统一，后果分几类，脚本也按类报：
  *
  *   DEAD  —— conditions.attributes 用了不存在的属性名：取值 `attributes[key] || 0` → 恒为 0，
  *            任何 min > 0 的区间都永不满足 → 这个事件在任何存档里都选不中（死内容）。
@@ -17,11 +19,17 @@
  *            垃圾字段。玩家看不到任何效果，但它会跟着存档一路复制下去。
  *   LINK  —— nextEvents / preludeEventId 指向一个不存在的事件 id：引擎会把队列排到那里，
  *            然后什么也找不到。
+ *   DEAD  —— 还有一类死内容：事件选择**严格按 `e.type` 分层**（pickEvent 与 useGameEngine 两条
+ *            路径都是 filter(e => e.type === 'xxx')）。`type` 写错或干脆不写，事件就进不了任何
+ *            一层，文本写得再长也永远不会出现在玩家面前。
+ *            结局池（ending / triggerable）例外：它们不走选择器，由 BoundaryEventManager 触发。
  *
  * 扫描逻辑导出为 `scanEventShape()`，`eventShape` 是六个事件池合并去重后的现成结论。
- * tests/unit/eventShape.silentFailures.test.ts 两样都用：拿真实数据断言这四类恒为 0，
+ * tests/unit/eventShape.silentFailures.test.ts 两样都用：拿真实数据断言这几类恒为 0，
  * 再喂一份人造的坏事件断言检查器本身确实抓得住 —— 上一轮发现的三个体检脚本悄悄崩了半年
- * 没人察觉，根因就是"检查器没人检查"。数据文件全是 `@ts-nocheck`，tsc 拦不住，只能靠测试。
+ * 没人察觉，根因就是"检查器没人检查"。同一个文件里还钉着两条对本脚本覆盖面的声明：
+ * `src/` 不许有 `@ts-nocheck`，也不许有 BOM 开头的文件（第八轮就是因为后者，
+ * 一条 `grep '^// @ts-nocheck'` 假阴性，让我以为盲区已经清零）。
  */
 import {
   historicalEvents,
@@ -37,15 +45,28 @@ const ATTR_KEYS = ['财帛', '文韬', '理政', '武略', '体质']
 const ATTR_ALIASES = ['文辩', '朝政', '权势', '机敏', '道德']
 const HIDDEN_KEYS = ['道德值', '欲望值', '野心值', '机敏值', '忠诚值']
 const STATE_KEYS = ['圣眷', '中官', '清议', '士绅', '民望', '国势']
+// 时间键塞进 gameState 是**无效写法**：eventConditions 对它 continue 跳过，
+// 年份/月份/月数要写 cond.year / cond.month / cond.turn。
 const STATE_TIME = ['currentYear', 'currentMonth', 'turn']
 const STATE_ALIASES = ['帝心', '派系立场', '百姓口碑', '商贾', '安全', '军事', '文化', '军心', '国势']
+
+// 事件选择器两条路径实际会认领的 type。写在这个集合之外的（含缺省）事件
+// 在两条路径里都进不了任何一层 → 死内容。
+//   pickEvent：emotion/gray → historical → transition → random/emotion/gray → normal
+//   useGameEngine：historical|chain → transition → random → emotion + gray/character/national/faction
+const SELECTABLE_TYPES = [
+  'historical', 'chain', 'transition', 'random', 'normal',
+  'emotion', 'gray', 'character', 'national', 'faction'
+]
+// 这两个池子由 BoundaryEventManager 触发，不参与 type 分层，缺 type 是正常的
+const NON_POOL_POOLS = ['ending', 'triggerable']
 
 const EVENT_KEYS = ['id', 'title', 'description', 'narrative', 'conditions', 'choices', 'type',
   'endingConfig', 'isPreEnding', 'linksToEndingId', 'storyline', 'nextEvents']
 const CHOICE_KEYS = ['id', 'text', 'quote', 'description', 'storyline', 'showConditions', 'effects',
   'resultDescription', 'result', 'failEffects', 'failResultDescription', 'failResult', 'check',
   'staminaCost', 'staminaRequired', 'staminaBonus', 'condition']
-const COND_KEYS = ['year', 'month', 'rank', 'origin', 'attributes', 'hidden', 'gameState', 'flags',
+const COND_KEYS = ['year', 'month', 'turn', 'rank', 'origin', 'attributes', 'hidden', 'gameState', 'flags',
   'charactersAlive', 'charactersDead', 'historicalFlags', 'random', 'relationships', 'custom']
 const EFFECT_KEYS = ['attributes', 'hidden', 'gameState', 'flags', 'relationships', 'family',
   'nextEvents', 'special', 'meritScore']
@@ -76,44 +97,75 @@ export function scanEventShape(
     if (!seen.has(e.id)) seen.set(e.id, e)
   }
 
-  for (const [, event] of seen) {
-    const where = `${labelOf ? labelOf(event.id) : 'pool'} · ${event.id}「${String(event.title || '').slice(0, 16)}」`
+  /**
+   * 条件块检查。同一个函数同时用于事件级 `conditions` 和选项级 `showConditions` / `condition`：
+   * 后者原先是这个体检脚本自己的盲区（只查了未知键名，没查里面的属性名），
+   * 于是 `showConditions.attributes.道德值` 这种"把隐藏属性写成属性"的死条件，
+   * 是 tsc 而不是体检脚本先抓到的。
+   */
+  const scanConditions = (cond: any, prefix: string, where: string) => {
+    for (const k of extraKeys(cond, COND_KEYS)) add('结构', where, `${prefix} 上有未知键 ${k}`)
 
-    for (const k of extraKeys(event, EVENT_KEYS)) add('结构', where, `事件上有未知键 ${k}`)
-
-    const cond = event.conditions || {}
-    for (const k of extraKeys(cond, COND_KEYS)) add('结构', where, `conditions 上有未知键 ${k}`)
+    // Range 只认 min / max。往里面塞数值是另一种写法错误：
+    // `{ 文韬: { min: 70, 财帛: -15 } }` 想表达"要 70 文韬、花 15 两银子"，
+    // 但 财帛 那个数被整个忽略 —— 门槛在、花费凭空蒸发。
+    const rangeKeys = (path: string, key: string, range: any) => {
+      if (!range || typeof range !== 'object') return
+      for (const rk of Object.keys(range)) {
+        if (rk !== 'min' && rk !== 'max') {
+          add('DROP', where, `${path}.${key} 是区间对象，只有 min/max 会被读取 —— ${rk}: ${JSON.stringify(range[rk])} 静默丢失`)
+        }
+      }
+      if (typeof range.min === 'number' && typeof range.max === 'number' && range.min > range.max) {
+        add('DEAD', where, `${path}.${key} 区间倒置 min=${range.min} > max=${range.max}`)
+      }
+    }
 
     for (const [key, range] of Object.entries(cond.attributes || {})) {
       if (!ATTR_KEYS.includes(key) && !ATTR_ALIASES.includes(key)) {
         const r = range as any
         const neverByMin = typeof r?.min === 'number' && r.min > 0
-        add(neverByMin ? 'DEAD' : 'NOOP', where, `conditions.attributes.${key} 不是真实属性（未知键取值恒为 0）`)
+        const hint = HIDDEN_KEYS.includes(key) ? '（它是隐藏属性，应该写在 conditions.hidden 里）' : ''
+        add(neverByMin ? 'DEAD' : 'NOOP', where, `${prefix}.attributes.${key} 不是真实属性（未知键取值恒为 0，选项门则按 50 算）${hint}`)
       }
-      const r = range as any
-      if (r && typeof r.min === 'number' && typeof r.max === 'number' && r.min > r.max) {
-        add('DEAD', where, `conditions.attributes.${key} 区间倒置 min=${r.min} > max=${r.max}`)
-      }
+      rangeKeys(`${prefix}.attributes`, key, range)
     }
-    for (const key of Object.keys(cond.hidden || {})) {
-      if (!HIDDEN_KEYS.includes(key)) add('DEAD', where, `conditions.hidden.${key} 不是真实隐藏属性 → 引擎 return false，事件永不触发`)
+    for (const [key, range] of Object.entries(cond.hidden || {})) {
+      if (!HIDDEN_KEYS.includes(key)) add('DEAD', where, `${prefix}.hidden.${key} 不是真实隐藏属性 → 引擎 return false，事件永不触发`)
+      rangeKeys(`${prefix}.hidden`, key, range)
     }
     for (const [key, range] of Object.entries(cond.gameState || {})) {
-      if (!STATE_KEYS.includes(key) && !STATE_TIME.includes(key) && !STATE_ALIASES.includes(key)) {
-        add('NOOP', where, `conditions.gameState.${key} 不在 STATE_MAP 里 → 条件被静默跳过，事件会比设计更早触发`)
+      if (STATE_TIME.includes(key)) {
+        const proper = key === 'turn' ? 'turn' : key === 'currentYear' ? 'year' : 'month'
+        add('NOOP', where, `${prefix}.gameState.${key} 被 eventConditions 直接 continue 跳过 —— 这道时间门等于没写，应该放到 conditions.${proper}`)
+        continue
       }
-      const r = range as any
-      if (r && typeof r.min === 'number' && typeof r.max === 'number' && r.min > r.max) {
-        add('DEAD', where, `conditions.gameState.${key} 区间倒置 min=${r.min} > max=${r.max}`)
+      if (!STATE_KEYS.includes(key) && !STATE_ALIASES.includes(key)) {
+        add('NOOP', where, `${prefix}.gameState.${key} 不在 STATE_MAP 里 → 条件被静默跳过，事件会比设计更早触发`)
       }
+      rangeKeys(`${prefix}.gameState`, key, range)
     }
     for (const k of Object.keys(cond.flags || {})) {
-      if (!['has', 'notHas', 'any', 'none', 'all', 'some'].includes(k)) add('NOOP', where, `conditions.flags.${k} 引擎不识别`)
+      if (!['has', 'notHas', 'any', 'none', 'all', 'some'].includes(k)) add('NOOP', where, `${prefix}.flags.${k} 引擎不识别`)
     }
     if (cond.random !== undefined) {
       const r = Number(cond.random)
-      if (!Number.isFinite(r) || r <= 0 || r > 100) add('NOOP', where, `conditions.random=${cond.random} 越界（应为 0-100 的百分数或 0-1 的小数）`)
+      if (!Number.isFinite(r) || r <= 0 || r > 100) add('NOOP', where, `${prefix}.random=${cond.random} 越界（应为 0-100 的百分数或 0-1 的小数）`)
     }
+  }
+
+  for (const [, event] of seen) {
+    const label = labelOf ? labelOf(event.id) : 'pool'
+    const where = `${label} · ${event.id}「${String(event.title || '').slice(0, 16)}」`
+
+    for (const k of extraKeys(event, EVENT_KEYS)) add('结构', where, `事件上有未知键 ${k}`)
+
+    if (!NON_POOL_POOLS.includes(label)) {
+      if (!event.type) add('DEAD', where, '事件没有 type —— 两条选择器路径都按 type 分层，这个事件进不了任何一层，永不触发')
+      else if (!SELECTABLE_TYPES.includes(event.type)) add('DEAD', where, `事件 type='${event.type}' 不在选择器认领的类型集合里，永不触发`)
+    }
+
+    scanConditions(event.conditions || {}, 'conditions', where)
 
     for (const ch of event.choices || []) {
       if (!ch || typeof ch !== 'object') { add('结构', where, 'choices 里有非对象项'); continue }
@@ -137,9 +189,9 @@ export function scanEventShape(
       if (ch.result && typeof ch.result === 'object') {
         for (const k of extraKeys(ch.result, RESULT_KEYS)) add('结构', cw, `result 上有未知键 ${k}`)
       }
-      for (const sub of [ch.showConditions, ch.condition]) {
-        if (sub && typeof sub === 'object' && !('min' in sub)) {
-          for (const k of extraKeys(sub, COND_KEYS)) add('结构', cw, `条件的未知键 ${k}`)
+      for (const [sub, name] of [[ch.showConditions, 'showConditions'], [ch.condition, 'condition']] as const) {
+        if (sub && typeof sub === 'object' && typeof (sub as any).min !== 'number') {
+          scanConditions(sub, name, cw)
         }
       }
     }
@@ -165,8 +217,12 @@ const pools: Array<[string, any[]]> = [
   ['emotion', emotionEvents as any[]],
   ['triggerable', triggerableEndingEvents as any[]]
 ]
-// historical / transition 已经并进 initialEvents，单独记一下来源便于定位
+// 六个事件池合并去重后，来源标签要能区分「参与 type 分层」和「由 BoundaryEventManager 触发」，
+// 所以先按池子建全量标签，再把 initialEvents 里的 historical / transition 覆盖成更精确的来源。
 const poolOf = new Map<string, string>()
+for (const [name, list] of pools) {
+  for (const e of list) if (e?.id && !poolOf.has(e.id)) poolOf.set(e.id, name)
+}
 for (const e of historicalEvents as any[]) poolOf.set(e.id, 'historical')
 for (const e of transitionEvents as any[]) poolOf.set(e.id, 'transition')
 

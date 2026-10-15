@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1644: GameEvent[] = [
@@ -965,6 +964,7 @@ export const events1644: GameEvent[] = [
   },
   {
     id: 'historical_036',
+    type: 'historical',
     storyline: 'ordinary',
     title: '闯王破宁武',
     description: '宁武关破，京师已无险可守。',
@@ -1139,6 +1139,7 @@ export const events1644: GameEvent[] = [
   },
   {
     id: 'historical_037',
+    type: 'historical',
     storyline: 'ordinary',
     title: '闯军围京',
     description: '闯军已围京师，崇祯皇帝整夜未眠。',
@@ -1282,7 +1283,7 @@ export const events1644: GameEvent[] = [
         description: '暗中联络闯军，准备开城迎降',
         showConditions: {
           origin: ['缙绅', '没落世家'],
-          attributes: { 野心值: { min: 60 } }
+          hidden: { 野心值: { min: 60 } }
         },
         effects: {
           attributes: {
@@ -1323,6 +1324,7 @@ export const events1644: GameEvent[] = [
   },
   {
     id: 'historical_038',
+    type: 'historical',
     storyline: 'ordinary',
     title: '煤山殉国',
     description: '闯军破城，崇祯帝煤山自缢。',
@@ -1365,7 +1367,7 @@ export const events1644: GameEvent[] = [
         text: '【殉国】"愿随先帝于地下"',
         description: '自缢殉国，效忠大明',
         showConditions: {
-          attributes: { 道德值: { min: 80 } },
+          hidden: { 道德值: { min: 80 } },
           origin: ['寒门', '诗文清望']
         },
         effects: {
@@ -1407,7 +1409,7 @@ export const events1644: GameEvent[] = [
         text: '【自缢守节】"不仕二朝，是为遗民"',
         description: '自缢殉国，誓不仕新朝',
         showConditions: {
-          attributes: { 道德值: { min: 50 } },
+          hidden: { 道德值: { min: 50 } },
           origin: ['缙绅']
         },
         effects: {

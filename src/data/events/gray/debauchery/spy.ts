@@ -1,4 +1,4 @@
-// @ts-nocheck
+// 类型检查已启用（原本这里是 @ts-nocheck，见 docs/KNOWN_ISSUES.md 第七轮的迁移）
 ﻿import { GameEvent } from '../../../../types/event'
 
 // ==========================================

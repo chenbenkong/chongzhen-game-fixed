@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1640: GameEvent[] = [
   {
     id: 'historical_031',
+    type: 'historical',
     storyline: 'ordinary',
     title: '松锦之战 · 洪承畴降',
     description: '松锦大败、洪承畴降敌。',
@@ -169,6 +169,7 @@ export const events1640: GameEvent[] = [
   },
   {
     id: 'historical_032',
+    type: 'historical',
     storyline: 'ordinary',
     title: '闯王入河南',
     description: '李自成入河南，"均田免赋"号令天下。',

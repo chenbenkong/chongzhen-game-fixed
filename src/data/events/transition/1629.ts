@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1629: GameEvent[] = [
@@ -1519,7 +1518,8 @@ export const events1629: GameEvent[] = [
         text: '【力保崇焕】"当为袁崇焕辩护，相信其忠诚"',
         description: '为袁崇焕辩护，相信其忠诚',
         showConditions: {
-          attributes: { 文韬: { min: 50 }, 道德值: { min: 50 } }
+          attributes: { 文韬: { min: 50 } },
+          hidden: { 道德值: { min: 50 } }
         },
         effects: {
           attributes: { 文韬: 4, 体质: -3 },

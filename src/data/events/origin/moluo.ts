@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 // 没落世家专属事件：体现旧族余晖与武将路线

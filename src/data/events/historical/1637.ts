@@ -1,9 +1,9 @@
-﻿// @ts-nocheck
 import { GameEvent } from '../../../types/event'
 
 export const events1637: GameEvent[] = [
   {
     id: 'historical_029',
+    type: 'historical',
     storyline: 'ordinary',
     title: '陈圆圆入京',
     description: '陈圆圆被外戚买入府中，命运悬而未决。',
@@ -48,11 +48,11 @@ export const events1637: GameEvent[] = [
         text: '【题诗】于周府堂会上一见，作诗相赠',
         description: '在周府堂会上一见陈圆圆，赋诗相赠',
         showConditions: {
-          attributes: { 文韬: { min: 70, 财帛: -15} },
+          attributes: { 文韬: { min: 70 } },
           origin: ['诗文清望', '寒门']
         },
         effects: {
-          attributes: { 文韬: 5 },
+          attributes: { 文韬: 5, 财帛: -15 },
           gameState: { 清议: 10 },
           hidden: { 欲望值: 8, 道德值: -5 },
           flags: { add: ['识陈圆圆'] }
@@ -92,7 +92,7 @@ export const events1637: GameEvent[] = [
         description: '以"避嫌"为由，不与之深交',
         showConditions: {
           origin: ['缙绅', '没落世家'],
-          attributes: { 道德值: { min: 70 } }
+          hidden: { 道德值: { min: 70 } }
         },
         effects: {
           attributes: {},
@@ -162,6 +162,7 @@ export const events1637: GameEvent[] = [
   },
   {
     id: 'historical_030',
+    type: 'historical',
     storyline: 'ordinary',
     title: '黄宗羲父案',
     description: '黄尊素被诬入狱，黄宗羲在京中奔走呼号。',
@@ -303,8 +304,7 @@ export const events1637: GameEvent[] = [
 
 但你很快把信烧了。
 
-—— 三十年后，你告老还乡。一日读《明夷待访录》读到"为天下之大害者，君而已矣"，掩卷长叹。`,
-          echo_2: ''
+—— 三十年后，你告老还乡。一日读《明夷待访录》读到"为天下之大害者，君而已矣"，掩卷长叹。`
         }
       }
     ]

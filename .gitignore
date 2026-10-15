@@ -71,6 +71,8 @@ Thumbs.db
 .eslintcache
 # 覆盖 .npm-cache/ 以及各子工程自建的缓存目录（如 .npm-cache-desktop/）
 .npm-cache*/
+# python 工具脚本（assets:icons / verify_bgm）跑出来的字节码，曾经被误提交过
+__pycache__/
 
 # --- Logs ---
 logs

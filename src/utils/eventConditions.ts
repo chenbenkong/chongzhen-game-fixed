@@ -40,6 +40,12 @@ export function checkEventConditions(
     if (cond.month.max !== undefined && state.currentMonth > cond.month.max) return false
   }
 
+  // 游戏月数（开局多久）
+  if (cond.turn) {
+    if (cond.turn.min !== undefined && state.turn < cond.turn.min) return false
+    if (cond.turn.max !== undefined && state.turn > cond.turn.max) return false
+  }
+
   // 公开属性
   if (cond.attributes) {
     for (const [key, range] of Object.entries(cond.attributes)) {
@@ -64,7 +70,10 @@ export function checkEventConditions(
     }
   }
 
-  // 全局状态（不包含 year/month/turn — 这些在前面单独检查）
+  // 五方态度。时间键不在这里判：类型上 StateKey 已经不含 currentYear/currentMonth/turn，
+  // 年份/月份/月数走 cond.year / cond.month / cond.turn。
+  // 下面这行 continue 只为一件事：旧存档里可能还留着把 turn 塞进 gameState 的写法，
+  // 那时**跳过**比"按 0 判定、把事件永久否决"要安全（boundaryEventCompiler 那边才真的读它）。
   if (cond.gameState) {
     for (const [key, range] of Object.entries(cond.gameState)) {
       const mappedKey = STATE_MAP[key] || key
