@@ -10,8 +10,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西巡抚',
-        title: '三边总督府',
-        avatar: '/avatars/messenger.png'
+        title: '三边总督府'
       },
       quote: '高迎祥被擒了！这一年来闹得最凶的闯王，栽在了子午谷！',
       background: `崇祯八年七月，闯王高迎祥在子午谷被孙传庭、洪承畴联手伏击，被俘后押送京城处死。
@@ -154,8 +153,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '四川布政使',
-        title: '成都',
-        avatar: '/avatars/messenger.png'
+        title: '成都'
       },
       quote: '流贼从湖广入川，势如破竹。成都虽远，怕也守不住了...',
       background: `崇祯八年，张献忠率部自湖广突入四川。

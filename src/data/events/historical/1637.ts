@@ -10,8 +10,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '周府家仆',
-        title: '周奎府',
-        avatar: '/avatars/messenger.png'
+        title: '周奎府'
       },
       quote: '老爷新得一位江南女子，那模样...啧啧，说是倾国倾城也不为过。',
       background: `崇祯十年，江苏昆山一位名叫陈圆圆的歌妓，被外戚周奎买下，带入北京城。
@@ -169,8 +168,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '京中同乡',
-        title: '余姚在京会馆',
-        avatar: '/avatars/scholar.png'
+        title: '余姚在京会馆'
       },
       quote: '黄梨洲的父亲黄尊素，被魏阉余党诬陷入狱了。阉党虽除，余孽犹在！',
       background: `崇祯十年三月，黄宗羲的父亲黄尊素，被魏忠贤余党诬陷，下诏狱。

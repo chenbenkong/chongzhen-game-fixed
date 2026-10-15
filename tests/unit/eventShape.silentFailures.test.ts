@@ -11,11 +11,12 @@ import { eventShape, scanEventShape } from '../../scripts/audit-event-shape'
  * `scripts/audit-event-shape.ts` 才抓到 5 个永不触发的事件和 9 处被丢弃的 flag 授予
  * （见 docs/KNOWN_ISSUES.md）。手工跑过一次就等于没跑过 —— 所以把结论钉成测试，CI 里跑。
  *
- * 四类必须恒为 0：
+ * 五类必须恒为 0：
  *   DEAD  条件里的属性名不存在 → 恒为 0 / 恒 false，或事件没有 type 进不了选择器任何一层（死内容）
  *   NOOP  条件里的状态名不存在 → 静默跳过，事件比设计更早、更频繁地触发
  *   DROP  效果里的名字映射不上，或数值被偷塞进区间对象 → 玩家看不到任何变化
- *   LINK  nextEvents / preludeEventId 指向不存在的事件 id
+ *   LINK  preludeEventId 指向不存在的事件 id
+ *   结构  类型里已经没有这个字段 → 写了没有任何代码会读（第九轮删掉的 nextEvents 一类）
  */
 
 const severityKinds = ['DEAD', 'NOOP', 'DROP', 'LINK'] as const
@@ -101,7 +102,7 @@ describe('类型检查盲区不得重新出现', () => {
  * `for (const e of undefined)` 抛异常，但没有任何东西盯着它们。
  * 所以用人造的坏事件把每一类失效都过一遍。
  */
-describe('scanEventShape 自身能抓住四类失效', () => {
+describe('scanEventShape 自身能抓住五类失效', () => {
   const broken = [
     {
       id: 'broken_dead',
@@ -112,6 +113,9 @@ describe('scanEventShape 自身能抓住四类失效', () => {
         hidden: { 健康: { min: 1 } },
         gameState: { 风评: { min: 10 } },
         flags: { require: ['不该存在的键'] },
+        // 事件池的条件走 checkEventConditions，它不调用 custom —— 只有结局池的
+        // boundaryEventCompiler 会。所以这道门在坏事件（非结局池）里恒不存在。
+        custom: () => true,
         random: 250
       },
       choices: [
@@ -122,16 +126,25 @@ describe('scanEventShape 自身能抓住四类失效', () => {
             // 选项级条件同样是盲区：道德值是隐藏属性，写在 attributes 里取不到真值
             attributes: { 道德值: { min: 70 } },
             // 区间对象只读 min/max，塞进去的 财帛: -15 会静默丢失
-            gameState: { 圣眷: { min: 20, 民望: 10 } }
+            gameState: { 圣眷: { min: 20, 民望: 10 } },
+            // checkChoiceRequirement 同样不调用 custom（ endings_all 里原本有 37 处这样的恒真 lambda）
+            custom: () => true
           },
           effects: {
             attributes: { 名德: 5, 文韬: '五' },
             hidden: { 城府: 3 },
             gameState: { 声望: 5 },
             meritBonus: 5,
-            nextEvents: ['这个 id 不存在']
+            // 第九轮把这些字段从类型里删了（没有实现、也没有一处数据）。
+            // 留在白名单里 = 体检脚本继续替"写了有人读"背书，所以它们现在算未知键。
+            nextEvents: ['这个 id 不存在'],
+            relationships: { 某人: 10 },
+            family: { 族人: 5 },
+            special: { type: 'ending', value: '没人读的字段' }
           },
-          result: { title: 'x', echo: 'y', echo_2: '' }
+          result: { title: 'x', echo: 'y', echo_2: '' },
+          // condition 已经不是 EventChoice 类型里的字段了（没有任何求值器读它）
+          condition: { attributes: { 文韬: { min: 90 } } }
         }
       ],
       nextEvents: ['那个 id 也不存在'],
@@ -172,8 +185,49 @@ describe('scanEventShape 自身能抓住四类失效', () => {
     expect(kinds().NOOP).toBeGreaterThanOrEqual(4)
   })
 
-  it('LINK：三处指向不存在事件 id 的引用', () => {
-    expect(kinds().LINK).toBe(3)
+  it('NOOP：两处没有任何求值器会调用的 custom（事件池条件 + 选项级条件）', () => {
+    const found = scanEventShape(broken)
+    const customs = found.filter(f => f.detail.includes('.custom 不会被任何求值器调用'))
+    expect(customs.map(f => f.detail.slice(0, 24))).toHaveLength(2)
+    expect(customs.every(f => f.kind === 'NOOP')).toBe(true)
+  })
+
+  it('LINK：一处指向不存在事件 id 的 preludeEventId', () => {
+    // 原先这里断言 3 处：nextEvents 的两个引用 + preludeEventId。
+    // nextEvents 整个字段（连同"100% 命中下一个"的注释）都是没人实现的，第九轮删掉了类型，
+    // 于是那两处从 LINK 挪进了「未知键」—— 报错的理由也从"排队排不到"变成"没人会读"。
+    expect(kinds().LINK).toBe(1)
+  })
+
+  it('结构 / DROP：把已经删掉的字段写回来，会被当成未知键', () => {
+    const found = scanEventShape(broken)
+    const structural = found.filter(f => f.kind === '结构').map(f => f.detail)
+    for (const key of ['nextEvents', 'condition']) {
+      expect(structural.some(d => d.includes(key)), `未知键报告里看不见 ${key}：\n${structural.join('\n')}`).toBe(true)
+    }
+    const dropped = found.filter(f => f.kind === 'DROP').map(f => f.detail)
+    for (const key of ['relationships', 'family', 'nextEvents', 'meritBonus']) {
+      expect(dropped.some(d => d.includes(`effects 上有未知键 ${key}`)), `effects.${key} 没被当成未知键：\n${dropped.join('\n')}`).toBe(true)
+    }
+  })
+
+  it('DROP / DEAD：special 里写没人读的 value，或写引擎没实现的 type', () => {
+    expect(scanEventShape(broken).some(f => f.kind === 'DROP' && f.detail.includes('effects.special.value'))).toBe(true)
+
+    // `special: { type: 'death' }` 看着像"选完就死"，实际一个分支都没有
+    const fakeDeath: any[] = [{
+      id: 'fake_death', title: '假死', type: 'normal', conditions: {},
+      choices: [{ id: 'c1', text: '选', effects: { special: { type: 'death' } } }]
+    }]
+    expect(scanEventShape(fakeDeath).some(f => f.kind === 'DEAD' && f.detail.includes("special.type='death'"))).toBe(true)
+  })
+
+  it('结局池的事件级 custom 确实有人调用，不该算静默失效', () => {
+    const ending: any[] = [{
+      id: 'ending_ok', title: '某种结局', choices: [],
+      conditions: { custom: () => true }
+    }]
+    expect(scanEventShape(ending, undefined, () => 'ending')).toEqual([])
   })
 
   it('一份干净的最小事件，什么都不会报', () => {

@@ -53,11 +53,13 @@ export interface EventConditions {
   hidden?: Partial<Record<HiddenKey, Range>>
   gameState?: LegacyGameStateConditions
   flags?: { has?: string[]; notHas?: string[]; any?: string[]; none?: string[]; all?: string[]; some?: string[] }
-  charactersAlive?: string[]
-  charactersDead?: string[]
-  historicalFlags?: Record<string, string>
   random?: number
-  relationships?: Record<string, { min?: number; max?: number }>
+  /**
+   * 只有 `boundaryEventCompiler`（ending / triggerable 两个池，由 BoundaryEventManager 触发）
+   * 会在**事件级**调用它。事件池走的 `checkEventConditions` 和选项级走的
+   * `checkChoiceRequirement` 都不读这个键 —— 在旁边写一道 custom 并不构成一道门，
+   * 体检脚本按 NOOP 报出来。
+   */
   custom?: (ctx: any) => boolean
 }
 
@@ -66,17 +68,28 @@ export interface EventEffects {
   hidden?: Partial<Record<HiddenKey, number>>
   gameState?: LegacyGameState
   flags?: { add?: string[]; remove?: string[] }
-  relationships?: Record<string, number>
-  family?: Record<string, number>
-  nextEvents?: string[]
-  special?: { type: 'death' | 'promotion' | 'imprisonment' | 'exile' | 'ending'; value?: string }
+  /**
+   * 引擎只认 `'ending'`（useGameEngine 里两处 `special?.type === 'ending'`）。
+   * 这里原来还列着 death / promotion / imprisonment / exile 和一个 value 字段，
+   * 四者既无实现也无数据（43 处全是 `{ type: 'ending' }`）——
+   * 留着等于向作者承诺"写这些会被特殊处理"，而实际什么都不会发生。
+   * 死亡 / 贬谪 / 革职走的是引擎自己的升迁贬谪判定，不经过这个键。
+   */
+  special?: { type: 'ending' }
   meritScore?: number
 }
 
+/**
+ * 话者卡片的两行文字（姓名 + 头衔）。
+ * 这里原来还挂着 `avatar?: string`，数据里写了 301 处，全部指向 `/avatars/*.png`，
+ * 而 `public/avatars/` 这个目录从来不存在（dist 里也没有），也没有任何组件读它 ——
+ * 话者头像一直是 EventDisplay 按姓名首字现画的 SVG 印记。
+ * 「没人读、又指向不存在资源」的字段比没有字段更糟：下一个人把它接进 UI 就得到 301 张碎图。
+ * 所以字段和那 301 处一起删了，值域体检脚本从此替所有人盯着这类站内路径。
+ */
 export interface NarrativeSpeaker {
   name: string
   title: string
-  avatar?: string
 }
 
 export interface EventNarrative {
@@ -90,13 +103,6 @@ export interface ChoiceResult {
   title?: string
   tags?: string[]
   echo: string
-}
-
-export interface DiceCheck {
-  attribute: string
-  difficulty: number
-  reason: string
-  penaltyEffect?: EventEffects
 }
 
 export interface EventChoice {
@@ -114,11 +120,9 @@ export interface EventChoice {
   failEffects?: EventEffects
   failResultDescription?: string
   failResult?: ChoiceResult
-  check?: DiceCheck
   staminaCost?: number
   staminaRequired?: number
   staminaBonus?: number
-  condition?: ((ctx: any) => boolean) | EventConditions
 }
 
 export type EventType = 'normal' | 'historical' | 'random' | 'chain' | 'ending' | 'transition' | 'gray' | 'emotion' | 'character' | 'national' | 'faction'
@@ -128,7 +132,13 @@ export interface EndingConfig {
   category: 'personal_fate' | 'ming_fate' | 'official' | 'martyr' | 'villain' | 'hermit' | 'gray' | 'special'
   /** 结局品级：legendary=传奇 / saintly=圣贤 / bittersweet=苦乐参半 / tragic=悲剧 / dark=黑暗 / controversial=争议 / mysterious=神秘 / redemptive=救赎 */
   tier: 'legendary' | 'saintly' | 'bittersweet' | 'tragic' | 'dark' | 'controversial' | 'mysterious' | 'redemptive'
-  /** 结局前奏事件 ID（提前一个月播放的过渡事件） */
+  /**
+   * 结局前奏事件 ID（提前一个月播放的过渡事件）。
+   *
+   * 运行时**不读**这个键 —— 让 prelude 强制优先播放的是事件上的 `isPreEnding` 标记
+   * （useGameEngine 的 transition 分层）。这两个字段是同一份知识写两遍，
+   * 所以它靠 `scripts/audit-value-domains.ts` 双向对账：谁悬空、谁单向，一律报 LINK。
+   */
   preludeEventId?: string
 }
 
@@ -141,12 +151,14 @@ export interface GameEvent {
   choices: EventChoice[]
   type: EventType
   endingConfig?: EndingConfig
-  /** 结局前奏事件标记：true=这是某结局的 preludes（强制优先播放） */
+  /** 结局前奏事件标记：true=这是某结局的 preludes（引擎按此强制优先播放） */
   isPreEnding?: boolean
-  /** 关联的结局 ID（prelude 用，标识此 prelude 指向哪个结局） */
+  /**
+   * 关联的结局 ID（prelude 用，标识此 prelude 指向哪个结局）。
+   * 与 `EndingConfig.preludeEventId` 一样只服务于体检脚本的双向对账，
+   * 运行时读的是上面的 `isPreEnding`。
+   */
   linksToEndingId?: string
   /** 所属剧情线 ID（用于事件管理器加权推荐，见 src/data/storylines.ts） */
   storyline?: string
-  /** 本事件完成后，下一次/几次事件管理器应优先触发的事件 ID 列表 */
-  nextEvents?: string[]
 }

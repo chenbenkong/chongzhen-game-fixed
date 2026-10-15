@@ -9,8 +9,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东塘报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！皇太极在盛京称帝，改国号为"大清"，改元崇德！这...这是要与我大明分庭抗礼啊！',
       background: `崇祯九年，皇太极在盛京正式称帝，改国号为"大清"，改元崇德。
@@ -275,8 +274,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部职方司郎中',
-        title: '军情通报',
-        avatar: '/avatars/messenger.png'
+        title: '军情通报'
       },
       quote: '大人！清国建立已逾半年，局势渐明。北伐大军在辽东受挫，议和密谈的消息似乎走漏了风声，蒙古各部也多有反复。大人当初的主张，如今看来...',
       background: `皇太极称帝改号"清"，至今已过半年。

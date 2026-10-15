@@ -9,8 +9,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '边关驿卒',
-        title: '喜峰口守军',
-        avatar: '/avatars/soldier.png'
+        title: '喜峰口守军'
       },
       quote: '大人！鞑子！鞑子来了！十万大军，绕道蒙古，突破喜峰口！蓟镇失守了！袁督师正在勤王，但皇上...皇上好像不太信任他...',
       background: `崇祯二年十月，皇太极率领十万大军，绕道蒙古，突破喜峰口，长驱直入，直逼北京！
@@ -149,8 +148,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '锦衣卫千户',
-        title: '密报',
-        avatar: '/avatars/messenger.png'
+        title: '密报'
       },
       quote: '大人！袁崇焕已下诏狱！朝中正在清算"袁党"！大人之前在己巳之变中的表现，如今都成了呈堂证供...有人正在翻旧账。',
       background: `己巳之变后，皇太极率军撤回关外。但这场危机的余波远未平息。

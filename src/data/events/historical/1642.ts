@@ -9,8 +9,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东军报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！松山告急！洪承畴总督十三万大军被困，粮草断绝，援军不至！锦州、松山、杏山，三座坚城危在旦夕！',
       background: `崇祯十三年，清军围困锦州已逾两年。
@@ -177,8 +176,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南急报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！李自成率数十万大军三打开封！周王悬赏守城，百姓拆屋为柴，煮皮革为食！开封危在旦夕！',
       background: `崇祯十四年至十五年，李自成三打开封。
@@ -363,8 +361,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '辽东急报',
-        avatar: '/avatars/messenger.png'
+        title: '辽东急报'
       },
       quote: '大人！松锦大败后，锦州、松山、塔山、杏山相继陷落！祖大寿降清！关外仅存宁远一座孤城！朝廷正在讨论是否放弃辽东！',
       background: `崇祯十五年，松锦大战以明军的惨败告终。
@@ -547,8 +544,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南布政使',
-        title: '血泪奏章',
-        avatar: '/avatars/messenger.png'
+        title: '血泪奏章'
       },
       quote: '大人...开封...没了。李自成掘开黄河大堤，水淹全城。周王溺死，百姓葬身鱼腹者数十万...这座千年古都，彻底毁了。',
       background: `崇祯十五年九月，中国历史上最惨烈的城市灾难之一发生了。

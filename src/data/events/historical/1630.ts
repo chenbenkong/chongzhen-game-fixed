@@ -9,8 +9,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '刑部书吏',
-        title: '西市监斩官',
-        avatar: '/avatars/clerk.png'
+        title: '西市监斩官'
       },
       quote: '凌迟三日，三千五百四十三刀...百姓争食其肉，以为他是卖国贼。可叹袁督师，一生忠勇，竟落得如此下场。',
       background: `崇祯三年八月十六日，袁崇焕被凌迟处死，时年四十六岁。
@@ -156,8 +155,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '老农',
-        title: '延安府灾民',
-        avatar: '/avatars/farmer.png'
+        title: '延安府灾民'
       },
       quote: '大人...三年没下雨了...地里连草都不长...娃儿饿得啃树皮...大人，给口吃的吧...',
       background: `崇祯三年六月，陕西大旱进入第三个年头，赤地千里，颗粒无收。

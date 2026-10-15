@@ -9,8 +9,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十三年了。过去一年，杨嗣昌督师剿寇，张献忠谷城受抚后又叛，流寇之势愈演愈烈。河南大旱，赤地千里，饥民遍野，人相食。朝中加征练饷，百姓苦不堪言。新年朝会，皇上面色凝重，言及"内忧外患，国事艰难"。大人可有思量？',
       background: `崇祯十三年正月，新年朝会，百官齐聚。
@@ -173,8 +172,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，张献忠再次接受招安了！他在谷城受抚，表示愿意归降朝廷。杨嗣昌力主招抚，认为当"以抚代剿"，先稳住张献忠，再集中力量围剿李自成。但朝中有人质疑张献忠的诚意，认为他不过是缓兵之计，待休养生息后必将再叛。大人以为如何？',
       background: `崇祯十三年二月，张献忠在谷城再次接受招安。
@@ -330,8 +328,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南巡抚急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！河南大饥荒！连年旱灾蝗灾，赤地千里，颗粒无收！百姓以树皮草根为食，已至人相食之地步！春耕在即，百姓缺种少粮，无力耕种。若不紧急赈济，河南将成人间地狱！恳请朝廷速发帑银赈灾！',
       background: `崇祯十三年三月，河南大饥荒。
@@ -508,8 +505,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！李自成率残部从商洛山突围，进入河南！河南大饥，饥民从者如云，李自成部众由数千人骤增至数万人！他打出"迎闯王，不纳粮"的旗号，饥民纷纷投奔，势如燎原！杨嗣昌急调兵围剿，但河南遍地饥民，剿不胜剿！',
       background: `崇祯十三年四月，李自成从商洛山突围，进入河南。
@@ -676,8 +672,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，粮价飞涨！河南大饥，粮食奇缺，米价已涨至每石五两银子，较往年翻了十倍不止！京师粮价也跟着飞涨，百姓叫苦不迭。更有奸商囤积居奇，待价而沽，致使粮价一日三涨。若不加以管控，只怕京师也将出现饥荒！',
       background: `崇祯十三年五月，粮价飞涨。
@@ -854,8 +849,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '顺天府尹',
-        title: '顺天府',
-        avatar: '/avatars/official.png'
+        title: '顺天府'
       },
       quote: '大人，京畿一带大旱蝗灾！入夏以来，滴雨未降，禾苗枯死。更可怕的是，铺天盖地的蝗虫从河南飞来，所过之处，寸草不生！京畿秋收已无望，百姓叫苦不迭。若再不祈雨治蝗，今年怕是要颗粒无收！',
       background: `崇祯十三年六月，京畿一带大旱蝗灾。
@@ -1027,8 +1021,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，杨嗣昌督师围剿李自成！他调集左良玉、丁启睿等部，对李自成形成合围之势。然而，各路将领阳奉阴违，不肯全力配合。左良玉拥兵自重，不听调遣；丁启睿畏敌如虎，按兵不动。杨嗣昌虽有权柄，却指挥不动这些骄兵悍将。大人以为当如何？',
       background: `崇祯十三年七月，杨嗣昌督师围剿李自成。
@@ -1193,8 +1186,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！辽东军情紧急！后金在松锦一线大举增兵，似有大举进攻锦州之意！洪承畴督师辽东，请求朝廷增兵增饷。然朝廷两线作战，兵力财力捉襟见肘，杨嗣昌主张先剿寇后御虏，洪承畴则认为辽东一旦失守，京师门户洞开！大人以为当如何？',
       background: `崇祯十三年八月，辽东军情紧张。
@@ -1359,8 +1351,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部尚书',
-        title: '户部',
-        avatar: '/avatars/official.png'
+        title: '户部'
       },
       quote: '大人，今年秋收几乎绝收！河南、山东、北直隶大面积绝收，南方各省收成也大减。加之流寇肆虐，许多地方连庄稼都种不上。国库收入锐减，而军饷开支却与日俱增。户部已经入不敷出，若不想法子，连京官的俸禄都发不出了！',
       background: `崇祯十三年九月，秋收几乎绝收。
@@ -1531,8 +1522,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院左都御史',
-        title: '都察院',
-        avatar: '/avatars/official.png'
+        title: '都察院'
       },
       quote: '大人，各地民变四起！河南、山东、陕西、湖广，处处有饥民聚而为盗。李自成、张献忠、罗汝才等流寇势力大增，各拥众数万至十数万不等。地方官或弃城而逃，或闭门自守，或献城投降。朝廷控制的地盘越来越小，税源越来越少。大人以为当如何应对？',
       background: `崇祯十三年十月，各地民变四起。
@@ -1699,8 +1689,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝堂上又吵翻了！一派主张严惩杨嗣昌，认为他督师不力，致使流寇坐大；另一派则为杨嗣昌辩护，认为他将帅不和，非一人之过。更有人提出当罢三饷、赈灾民，否则流寇永无平定之日。双方唇枪舌剑，互不相让，皇上龙颜震怒，却举棋不定。大人当如何自处？',
       background: `崇祯十三年十一月，朝堂争论白热化。
@@ -1861,8 +1850,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十三年将尽。这一年，河南大饥，人相食；李自成入豫，部众十万；张献忠受抚又叛；杨嗣昌围剿不力；辽东军情紧张；秋收绝收，国库空虚。天下大势，已如累卵之危。年终考绩在即，大人可有准备？来年之路，又当如何走？',
       background: `崇祯十三年十二月，岁末总结。

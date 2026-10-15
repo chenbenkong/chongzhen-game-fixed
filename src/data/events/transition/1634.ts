@@ -9,8 +9,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯七年了。过去一年，流寇纵横数省，朝廷疲于奔命。新年朝贺，皇上面色憔悴，言及"流寇未平，朕寝食难安"。百官肃然，朝堂上一片沉重。大人可有思量？',
       background: `崇祯七年正月，新年伊始，百官朝贺。
@@ -169,8 +168,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '湖广巡按御史',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！大事不好！高迎祥、张献忠率流寇数十万南下湖广，连破数城！所过之处，官军溃败，百姓流离。湖广巡抚告急，请求朝廷速发援兵！',
       background: `崇祯七年二月，流寇大举南下湖广。
@@ -337,8 +335,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但北方数省连年旱灾，百姓缺种少粮，无力耕种。若不及时赈济，今年秋收又将无望，流寇只会越来越多。朝廷赈灾银两杯水车薪，大人以为当如何应对？',
       background: `崇祯七年三月，春耕时节，北方数省灾情依旧。
@@ -514,8 +511,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '延绥巡抚陈奇瑜',
-        title: '五省总督',
-        avatar: '/avatars/official.png'
+        title: '五省总督'
       },
       quote: '大人，本官已将流寇围困于车厢峡，贼众饥困交加，请求招安。若允其归降，可免一场血战。但若其诈降，后患无穷。此事关乎大局，不知大人以为如何？',
       background: `崇祯七年四月，五省总督陈奇瑜将流寇围困于车厢峡。
@@ -681,8 +677,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部尚书',
-        title: '礼部尚书',
-        avatar: '/avatars/official.png'
+        title: '礼部尚书'
       },
       quote: '大人，今科会试在即，天下举子云集京师。皇上极为重视，欲选拔真才实学之士充实朝堂。然而，朝中已有人托关系，希望大人能"关照"其子弟。大人将如何处之？',
       background: `崇祯七年五月，会试在即，天下举子云集京师。
@@ -848,8 +843,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '南京工部主事',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！南方连日暴雨，江河决堤，洪水泛滥！南京、安庆、苏州等地一片汪洋，良田被淹，百姓溺亡无数！灾民百万，急需救援！',
       background: `崇祯七年六月，南方洪涝灾害。
@@ -1026,8 +1020,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！先前被陈奇瑜招安的流寇，又反了！高迎祥、李自成、张献忠等人杀死了安抚官，重新聚众为乱！车厢峡之抚，竟成了一场笑话！朝野震动，皇上震怒！',
       background: `崇祯七年七月，被招安的流寇再次反叛。
@@ -1186,8 +1179,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东塘报！后金皇太极近日频繁调兵，似有大举入塞之意。辽东将领请求增兵增饷，但朝廷兵力财力皆困于流寇，难以兼顾。大人以为当如何应对？',
       background: `崇祯七年八月，辽东军情再起。
@@ -1348,8 +1340,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年北方旱灾、南方洪涝，收成大不如前。百姓困苦，催征困难。加之辽饷、剿饷加派，百姓怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯七年九月，秋收已毕，赋税征收在即。
@@ -1522,8 +1513,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝中变局已定。温体仁暗中排挤异己，已有多位大臣被其陷害去职。如今温体仁权势日盛，朝堂上人人自危。大人身在其中，当如何自处？',
       background: `崇祯七年十月，温体仁进一步掌权。
@@ -1687,8 +1677,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东总兵',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！后金小股骑兵入塞劫掠，边关告急！虽非大举入侵，但后金兵锋锐利，边民死伤惨重。朝廷若不增兵，只怕后金会得寸进尺！',
       background: `崇祯七年十一月，后金小规模入塞。
@@ -1861,8 +1850,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，年关将至，朝廷要进行年终考绩。这一年，流寇再起，南方洪涝，辽东告急，朝中变局。大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯七年十二月，年关将至，朝廷进行年终考绩。

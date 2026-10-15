@@ -9,8 +9,7 @@ export const factionEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '东林书院山长',
-        title: '顾锡畴',
-        avatar: '/avatars/scholar.png'
+        title: '顾锡畴'
       },
       quote: '吾观阁下气度不凡，正气凛然，实乃东林同调。今国家危难，正需阁下这般人才入伙，共赴时艰。',
       background: `东林书院，江南士林的精神圣地。
@@ -132,8 +131,7 @@ export const factionEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '神秘访客',
-        title: '王德化的心腹',
-        avatar: '/avatars/eunuch.png'
+        title: '王德化的心腹'
       },
       quote: '咱家公公让我给大人带句话：大人在朝中的处境，咱家都看在眼里。若大人愿意，咱家公公愿意照应一二。',
       background: `魏忠贤虽然倒台，但阉党的势力并未完全消除。
@@ -262,8 +260,7 @@ export const factionEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院御史',
-        title: '东林干将',
-        avatar: '/avatars/censor.png'
+        title: '东林干将'
       },
       quote: '某大人！阉党余孽又在暗中作祟，弹劾阁臣！吾等东林同志当联名上疏，声讨此辈！',
       background: `东林党与阉党余孽的斗争，从来就没有停止过。
@@ -391,8 +388,7 @@ export const factionEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '天文官',
-        title: '钦天监正',
-        avatar: '/avatars/astrologer.png'
+        title: '钦天监正'
       },
       quote: '大人！天象异常，彗星袭月！此乃大凶之兆，预示国运衰颓、天下大乱！',
       background: `钦天监报告：彗星袭月，天象异常。

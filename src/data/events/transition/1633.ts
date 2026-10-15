@@ -9,8 +9,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '翰林院编修',
-        title: '翰林院',
-        avatar: '/avatars/official.png'
+        title: '翰林院'
       },
       quote: '大人，崇祯六年了。过去五年，流寇四起，辽东未宁，天灾频仍，国事日非。新年朝会之上，皇上言及"中兴"二字，百官面面相觑。大人可有思量？',
       background: `崇祯六年正月，新年朝会。
@@ -169,8 +168,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！流寇从陕西窜入山西，连破数县！各路流寇合流，声势浩大，地方守军难以抵挡。朝廷急调大军围剿，但流寇行踪飘忽，难以捕捉。大人以为当如何应对？',
       background: `崇祯六年二月，流寇从陕西大规模窜入山西。
@@ -339,8 +337,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但连年灾荒战乱，田地荒芜，耕牛稀缺，种子不足。百姓虽有耕种之心，却无耕种之力。若今年春耕再误，来年饥荒更甚。大人以为当如何应对？',
       background: `崇祯六年三月，春耕在即，但灾后恢复困难重重。
@@ -512,8 +509,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部侍郎',
-        title: '户部',
-        avatar: '/avatars/official.png'
+        title: '户部'
       },
       quote: '大人，国库空虚，入不敷出。有人提议改革盐政，整顿盐课，以充国用。但盐政牵涉甚广，两淮盐商势力庞大，朝中也有人为其说话。改革盐政，无异于虎口夺食。大人以为如何？',
       background: `崇祯六年四月，朝廷讨论盐政改革。
@@ -672,8 +668,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '市舶司提举',
-        title: '市舶司',
-        avatar: '/avatars/official.png'
+        title: '市舶司'
       },
       quote: '大人，东南沿海走私猖獗，海商与倭寇勾结，私运货物，逃避关税。朝廷禁海令虽在，但形同虚设。有人主张开海禁以收关税，有人主张严查走私以正法纪。大人以为如何？',
       background: `崇祯六年五月，东南沿海走私与贸易之争。
@@ -832,8 +827,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '顺天府丞',
-        title: '顺天府',
-        avatar: '/avatars/official.png'
+        title: '顺天府'
       },
       quote: '大人，蝗灾来了！遮天蔽日的蝗虫从北方飞来，所过之处，庄稼尽毁！京畿一带受灾尤重，百姓哀嚎遍野。朝廷虽已下令灭蝗，但蝗虫数量太多，收效甚微。大人以为当如何应对？',
       background: `崇祯六年六月，蝗灾来袭。
@@ -1003,8 +997,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，流寇之势愈演愈烈，朝中剿抚之争再起。主剿派以陈奇瑜为首，主张调集大军一举剿灭；主抚派则以为流寇多为饥民，当招安抚定。皇上举棋不定，大人以为如何？',
       background: `崇祯六年七月，对流寇剿抚之争再起。
@@ -1173,8 +1166,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部尚书',
-        title: '吏部',
-        avatar: '/avatars/official.png'
+        title: '吏部'
       },
       quote: '大人，六年一度的京察大计将至！此乃朝廷考核京官之大典，政绩卓著者升迁，碌碌无为者降调，贪赃枉法者革职。温体仁欲借京察之机，排挤异己，安插亲信。大人当如何应对？',
       background: `崇祯六年八月，六年一度的京察大计。
@@ -1331,8 +1323,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，各地丰歉不一。南方尚可，北方因蝗灾旱灾，收成大减。加之流寇劫掠，许多地方颗粒无收。赋税征收困难，而辽饷剿饷不可少，国库捉襟见肘。大人以为当如何应对？',
       background: `崇祯六年九月，秋收已毕，各地丰歉不一。
@@ -1499,8 +1490,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略',
-        title: '辽东经略府',
-        avatar: '/avatars/official.png'
+        title: '辽东经略府'
       },
       quote: '大人，辽东塘报到了！后金在辽东集结兵力，似有大举入犯之意。我军防线漫长，兵力不足，若后金全力来攻，恐怕难以抵挡。朝廷当速调援兵，充实辽东防线。大人以为如何？',
       background: `崇祯六年十月，辽东军情紧急。
@@ -1669,8 +1659,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝中人事大变！温体仁排挤异己，数位大臣被革职查办。周延儒虽为首辅，但已无力制衡温体仁。朝堂之上，温体仁一党独大，人人自危。大人当如何自处？',
       background: `崇祯六年十一月，朝中人事大变。
@@ -1835,8 +1824,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯六年将尽。这一年，流寇入晋、蝗灾肆虐、盐政争论、辽东告急，国事日非。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯六年十二月，岁末总结。

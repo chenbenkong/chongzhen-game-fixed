@@ -9,8 +9,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！孙传庭总督出潼关战李自成，中伏战死！秦军主力全军覆没！李自成...李自成要入陕了！',
       background: `崇祯十六年九月，孙传庭出任陕西总督，率秦军出潼关，与李自成决战。
@@ -194,8 +193,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西督师幕僚',
-        title: '遗书',
-        avatar: '/avatars/messenger.png'
+        title: '遗书'
       },
       quote: '大人...孙督师...战死了。郏县一战，秦军全军覆没。李自成已占领西安，建国号"大顺"。潼关暴露，陕西...怕是保不住了。',
       background: `崇祯十六年十月，孙传庭在郏县之战中阵亡。

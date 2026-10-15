@@ -9,8 +9,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯九年了。八年来，流寇纵横、辽东未宁、天灾频仍，国事日非。新年朝贺之上，皇上言及"中兴"二字，面色憔悴，语带悲怆。百官肃然，无人敢应。大人可有思量？',
       background: `崇祯九年正月，新年朝贺，百官齐聚。
@@ -170,8 +169,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略',
-        title: '辽东塘报',
-        avatar: '/avatars/messenger.png'
+        title: '辽东塘报'
       },
       quote: '大人，辽东塘报！后金皇太极近日大举整军，编练八旗蒙古、八旗汉军，又在盛京修筑宫殿，行登基之礼。种种迹象表明，后金似有改元称帝之意！若其称帝，便是与我大明分庭抗礼！',
       background: `崇祯九年二月，辽东传来惊人消息：后金皇太极正在大举整军。
@@ -335,8 +333,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但北方数省连年旱灾，百姓缺种少粮，无力耕种。加之流寇劫掠，许多地方田地荒芜，人烟稀少。若不及时赈济，今年秋收又将无望。朝廷赈灾银两杯水车薪，大人以为当如何应对？',
       background: `崇祯九年三月，春耕时节，北方数省灾情依旧。
@@ -509,8 +506,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！流寇又反了！高迎祥、李自成、张献忠等流寇首领再次聚众为乱，攻城略地，势如破竹！陕西、河南、湖广数省告急，朝廷疲于奔命！',
       background: `崇祯九年四月，流寇再次大规模起事。
@@ -674,8 +670,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东塘报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！惊天消息！皇太极在盛京正式称帝，改国号为"大清"，改元崇德！这是要与我大明分庭抗礼啊！朝野震动，皇上震怒！',
       background: `崇祯九年五月，皇太极在盛京正式称帝，改国号为"大清"，改元崇德。
@@ -849,8 +844,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '昌平总兵',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！清军入塞了！清将阿济格率数万铁骑从独石口入关，一路烧杀劫掠，直逼京畿！昌平、延庆已失，京师震动！皇上急召天下勤王！',
       background: `崇祯九年六月，清军大举入塞。
@@ -1021,8 +1015,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '锦衣卫指挥使',
-        title: '锦衣卫',
-        avatar: '/avatars/official.png'
+        title: '锦衣卫'
       },
       quote: '大人，京师震动！清军在京畿一带烧杀劫掠，百姓死伤无数。昌平、延庆、良乡、顺义等地尽遭蹂躏，数十万百姓流离失所。朝中人心惶惶，有人主张迁都南京，有人主张死守京师。大人以为如何？',
       background: `崇祯九年七月，清军在京畿一带肆虐，京师震动。
@@ -1191,8 +1184,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，各地勤王军队陆续抵达京师！卢象升率天雄军从畿南赶来，其他各路兵马也在集结之中。然而，勤王军虽多，但互不统属，各怀心思。当如何调度，方能击退清军？',
       background: `崇祯九年八月，各地勤王军队陆续抵达京师。
@@ -1373,8 +1365,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年清军入塞，京畿数州县惨遭蹂躏，颗粒无收。加之辽饷、剿饷、练饷三饷加派，百姓负担沉重，怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯九年九月，秋收已毕，赋税征收在即。
@@ -1538,8 +1529,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略',
-        title: '军情通报',
-        avatar: '/avatars/messenger.png'
+        title: '军情通报'
       },
       quote: '大人，好消息！清军退了！阿济格率清军携带大量掠获北撤，京畿之围已解！然而，清军在京畿肆虐数月，所过之处满目疮痍，百姓死伤无数，田地荒芜。善后之事，千头万绪...',
       background: `崇祯九年十月，清军终于退去。
@@ -1710,8 +1700,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，清军入塞之役，朝中多人失职。皇上震怒，下令整肃朝纲，严惩失职者。温体仁趁机排挤异己，已有多位大臣被革职查办。朝堂之上，人人自危。大人当如何自处？',
       background: `崇祯九年十一月，朝中整肃，人人自危。
@@ -1871,8 +1860,7 @@ export const events1636: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯九年将尽。这一年，清国建立、阿济格入塞、京师震动、流寇再起，国事日非。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯九年十二月，岁末考核。

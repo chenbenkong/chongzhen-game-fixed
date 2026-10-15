@@ -9,8 +9,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十四年了。过去一年，杨嗣昌督师剿寇，然流寇愈剿愈烈，中原糜烂。新年朝会上，皇上面容憔悴，言及"国事如此，朕日夜忧心"。百官默然，朝堂上一片愁云惨雾。大人可有思量？',
       background: `崇祯十四年正月，新年朝会，愁云惨雾。
@@ -171,8 +170,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南急报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！洛阳失守了！李自成攻破洛阳城，福王朱常洵被擒杀！闯贼将福王与鹿肉同煮，号称"福禄宴"！洛阳城中财富被洗劫一空，百姓死伤无数！这是大明开国以来从未有过的奇耻大辱！',
       background: `崇祯十四年二月，李自成攻破洛阳，杀福王朱常洵。
@@ -338,8 +336,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但中原一带兵荒马乱，百姓逃散，田地荒芜。洛阳陷落后，河南大部已非朝廷所有，百姓或从贼或逃亡，春耕根本无法进行。加之连年灾荒，百姓缺种少粮，无力耕种。若今年再误春耕，秋收又将无望，流寇只会更多！',
       background: `崇祯十四年三月，春耕时节，中原大地一片荒芜。
@@ -516,8 +513,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！辽东告急！清军围攻锦州，洪承畴率八总兵十三万大军驰援！此乃大明国运之战，若锦州有失，辽东全线崩溃，山海关外将尽为清军所有！洪督师请朝廷速拨粮饷，以济军需！',
       background: `崇祯十四年四月，松锦之战爆发。
@@ -687,8 +683,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，粮荒蔓延了！中原连年战乱，春耕荒废，加之去岁旱灾蝗灾，粮食歉收。如今粮价飞涨，百姓食不果腹，已有饿殍遍野之象。更可怕的是，粮商囤积居奇，官府赈灾不力，饥民遍野，怨声载道！',
       background: `崇祯十四年五月，粮荒蔓延，饥民遍野。
@@ -865,8 +860,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '太医院御医',
-        title: '太医院',
-        avatar: '/avatars/official.png'
+        title: '太医院'
       },
       quote: '大人，大事不好！京畿一带爆发大鼠疫！死者身上出现黑色肿块，高烧不退，三日内必死！据报，已有数个村庄全村染疫，死者甚众。此疫传染极快，一人染疫，全家难逃！太医院药石有限，难以应对。若不及时控制，疫病恐将蔓延至京师！',
       background: `崇祯十四年六月，京畿一带爆发大鼠疫。
@@ -1033,8 +1027,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '湖广急报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！张献忠再叛了！去年张献忠受抚，朝廷以为湖广可安，谁知此贼贼心不死，趁官军主力北上剿寇之机，再度举旗造反！如今张献忠攻破襄阳，杀襄王朱翊铭！湖广大震，百姓逃散！',
       background: `崇祯十四年七月，张献忠再叛，攻破襄阳，杀襄王朱翊铭。
@@ -1198,8 +1191,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人，辽东战事吃紧！洪承畴率大军在松山、杏山一带与清军对峙，但粮道被断，军心不稳！兵部催促洪督师速战速决，但洪督师认为当稳扎稳打。双方争执不下，前线将士进退两难！朝廷当速做决断！',
       background: `崇祯十四年八月，松锦前线战事吃紧。
@@ -1367,8 +1359,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年中原战乱，粮荒蔓延，收成大减。加之辽饷、剿饷、练饷三饷加派，百姓负担沉重，怨声载道。松锦前线急需粮饷，皇上催得紧，但百姓实在无力缴纳。大人以为当如何应对？',
       background: `崇祯十四年九月，秋收已毕，赋税征收在即。
@@ -1536,8 +1527,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝中变局！杨嗣昌督师以来，流寇愈剿愈烈，洛阳、襄阳相继陷落，两藩被杀。朝中弹劾杨嗣昌之声四起，但皇上仍信任有加。然而，已有传言说皇上对杨嗣昌有所不满，暗中物色替代人选。朝堂之上，暗流涌动，人人自危。大人当如何自处？',
       background: `崇祯十四年十月，朝中变局，暗流涌动。
@@ -1700,8 +1690,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！杨嗣昌死了！杨嗣昌督师剿寇，洛阳、襄阳相继陷落，两藩被杀，杨嗣昌忧惧交加，病逝于军中！朝野震动，有人痛惜，有人暗喜。皇上闻讯，辍朝一日，追赠杨嗣昌为太子太傅。然而，朝堂上的权力真空，将引发新一轮的党争...',
       background: `崇祯十四年十一月，杨嗣昌忧惧而死。
@@ -1866,8 +1855,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十四年将尽。这一年，洛阳陷落，福王被杀；襄阳陷落，襄王被杀；松锦之战，洪承畴大军被困；杨嗣昌忧惧而死；大鼠疫蔓延京畿......这是崇祯朝以来最黑暗的一年。年终考绩在即，大人的政绩如何，全看此次考绩了。',
       background: `崇祯十四年十二月，岁末总结。
@@ -2037,8 +2025,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部职方司郎中',
-        title: '兵部',
-        avatar: '/avatars/messenger.png'
+        title: '兵部'
       },
       quote: '大人，松山、锦州两城已被围困多日，朝廷上下议论纷纷。洪督师十三万大军困于一处，粮道断绝，兵部焦头烂额。有人主张速援，有人主张弃守。大人可愿私下参赞一二？',
       background: `崇祯十四年七月至九月，松锦之战进入最关键阶段。

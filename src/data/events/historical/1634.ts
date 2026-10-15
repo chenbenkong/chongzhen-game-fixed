@@ -9,8 +9,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山西巡按御史',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！山西连年大旱，赤地千里！百姓易子而食！更可怕的是...有人聚众造反了！高迎祥、张献忠...他们号称"闯王"、"八大王"，已经攻破了好几个县城！',
       background: `崇祯六年至七年，山西、陕西连续大旱，赤地千里，饿殍遍野。
@@ -193,8 +192,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！大事不好！高迎祥的义子李自成...他继承了"闯王"的名号！如今流寇已经有几十万人马了！他们不再只是抢粮食，而是开始攻城掠地了！',
       background: `崇祯八年，高迎祥战死，其义子李自成继承"闯王"名号。
@@ -385,8 +383,7 @@ export const events1634: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山西举人',
-        title: '通政司前',
-        avatar: '/avatars/commoner.png'
+        title: '通政司前'
       },
       quote: '大人！你贪墨赈灾银两，害死我晋中数千百姓！今日我便要敲登闻鼓，告御状！',
       background: `崇祯七年，陕西、山西大旱，赤地千里，流民遍野。朝廷拨下赈灾银两，命地方官员赈济灾民。然而，层层克扣之下，真正落到百姓手中的粮食寥寥无几。

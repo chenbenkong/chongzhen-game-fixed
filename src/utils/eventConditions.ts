@@ -151,7 +151,11 @@ export function checkEventConditions(
  *
  * 剧情线加权（v3 新增）：
  *  - 如果传入了 currentStoryline，则在每个 tier 内对同 storyline 的事件加权 4 倍
- *  - 如果上一事件的 nextEvents 列表里有当前可用事件，则 100% 命中第一个匹配项
+ *
+ * 这里原来还写着「如果上一事件的 nextEvents 列表里有当前可用事件，则 100% 命中第一个匹配项」——
+ * 那段实现从来不存在，`nextEvents` 也从来没有任何数据用过（类型上挂着，两条选择器路径都不读）。
+ * 第八轮把 nextEvents 相关的死内容查过一轮后，第九轮直接把这个字段连同声明一起删了，
+ * 注释同步删掉：留着的危害不是啰嗦，是下一个人照着它写数据，然后发现自己的链是断的。
  */
 export function pickEvent(
   availableEvents: GameEvent[],
@@ -177,7 +181,6 @@ export function pickEvent(
       if (!currentStoryline) return 1
       // 同 storyline 加权 4 倍
       if (e.storyline && e.storyline === currentStoryline) return 4
-      // 同 key 前缀 storyline 加权 2 倍（兼容子线）
       return 1
     })
     const total = weights.reduce((a, b) => a + b, 0)

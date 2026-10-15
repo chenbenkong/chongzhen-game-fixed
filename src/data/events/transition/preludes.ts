@@ -18,7 +18,7 @@ export const preludeEvents: GameEvent[] = [
     title: '中兴前夜',
     description: '新年将至，中兴在望。',
     narrative: {
-      speaker: { name: '吏部尚书', title: '吏部天官', avatar: '/avatars/official.png' },
+      speaker: { name: '吏部尚书', title: '吏部天官' },
       quote: '大人，崇祯十六年将尽。这一年来，辽东收复、流寇平定、朝廷肃然——奇迹啊！大人之功，足以彪炳史册。新年朝会，皇上有密旨相召……',
       background: `崇祯十六年除夕，京师万家灯火。
 
@@ -129,7 +129,7 @@ export const preludeEvents: GameEvent[] = [
     title: '城破前夕',
     description: '城破在即，皇上召见。',
     narrative: {
-      speaker: { name: '王承恩', title: '司礼监秉笔太监', avatar: '/avatars/eunuch.png' },
+      speaker: { name: '王承恩', title: '司礼监秉笔太监' },
       quote: '大人，皇上召您入宫。说是要商议……最后的对策。',
       background: `崇祯十七年二月初，李自成兵临京师城下。
 
@@ -256,7 +256,7 @@ export const preludeEvents: GameEvent[] = [
     title: '决战前夜',
     description: '决战在即，凶多吉少。',
     narrative: {
-      speaker: { name: '孙传庭', title: '督师', avatar: '/avatars/general.png' },
+      speaker: { name: '孙传庭', title: '督师' },
       quote: '明日出关。此战，有死无退。某已写好遗书，大人……也要早做准备。',
       background: `崇祯十六年九月初，孙传庭在潼关与李自成决战。
 
@@ -375,7 +375,7 @@ export const preludeEvents: GameEvent[] = [
     title: '权欲之巅',
     description: '权欲之巅，黄袍加身只在一念之间。',
     narrative: {
-      speaker: { name: '心腹幕僚', title: '密室', avatar: '/avatars/eunuch.png' },
+      speaker: { name: '心腹幕僚', title: '密室' },
       quote: '大人，时机已到。京师兵力空虚，皇上威信扫地，只待大人一声令下……',
       background: `崇祯十六年除夕，密室之中。
 
@@ -510,7 +510,7 @@ export const preludeEvents: GameEvent[] = [
     title: '抄家在即',
     description: '抄家在即，灭族之祸。',
     narrative: {
-      speaker: { name: '锦衣卫千户', title: '密访', avatar: '/avatars/eunuch.png' },
+      speaker: { name: '锦衣卫千户', title: '密访' },
       quote: '大人，奉圣上密旨，您的事……发了。明日一早，弟兄们就要登门。某先来通个气，让您……有个准备。',
       background: `崇祯十七年正月，密室之中。
 

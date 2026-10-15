@@ -9,8 +9,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '翰林院编修',
-        title: '翰林院',
-        avatar: '/avatars/official.png'
+        title: '翰林院'
       },
       quote: '大人，崇祯三年了。过去一年，己巳之变惊心动魄，袁崇焕下狱，朝局动荡不安。新年伊始，百官朝贺，皇上面色凝重，似有千言万语。大人可有思量？',
       background: `崇祯三年正月，新年伊始，百官朝贺。
@@ -172,8 +171,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东局势稍缓，朝中有人提议与后金议和，以争取喘息之机。但主战派坚决反对，认为议和就是卖国。皇上犹豫不决，朝堂上争论不休。大人以为如何？',
       background: `崇祯三年二月，辽东议和之争再起。
@@ -335,8 +333,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院御史',
-        title: '监察御史',
-        avatar: '/avatars/official.png'
+        title: '监察御史'
       },
       quote: '大人，袁崇焕下狱已数月，朝野对其处置争论不休。有人主张从轻发落，念其守辽有功；有人主张严惩不贷，以儆效尤。温体仁等人更是暗中推波助澜，欲置袁崇焕于死地。大人以为如何？',
       background: `崇祯三年三月，袁崇焕下狱已数月，朝野对其处置争论不休。
@@ -494,8 +491,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '家中管家',
-        title: '府中管事',
-        avatar: '/avatars/official.png'
+        title: '府中管事'
       },
       quote: '老爷，老家来信了！族长说家乡连年灾荒，族中已有多户人家揭不开锅，恳请老爷施以援手。另外，族中几位子弟今年要参加乡试，也请老爷照拂。',
       background: `崇祯三年四月，你收到了家族的来信。
@@ -658,8 +654,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '同科进士',
-        title: '翰林院检讨',
-        avatar: '/avatars/official.png'
+        title: '翰林院检讨'
       },
       quote: '年兄，好久不见！同科诸君约了在城东酒楼聚会，叙叙旧，也交流一下朝中消息。如今朝局多变，我等同科当互通有无，守望相助啊。',
       background: `崇祯三年五月，同科进士聚会。
@@ -819,8 +814,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，大事不好！陕西、山西大旱，赤地千里，颗粒无收！饥民遍野，饿殍满道，已有百姓聚众为盗。朝廷赈灾粮饷不足，地方官员请求紧急援助。大人以为当如何应对？',
       background: `崇祯三年六月，陕西、山西大旱，赤地千里。
@@ -1001,8 +995,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部尚书',
-        title: '礼部尚书',
-        avatar: '/avatars/official.png'
+        title: '礼部尚书'
       },
       quote: '大人，今年乡试在即，礼部推荐大人出任某省乡试主考官。此乃美差，既可选拔门生，又可博取清名。但也有人托关系，希望大人能"关照"其子弟。大人将如何处之？',
       background: `崇祯三年七月，乡试在即，你被委派为某省乡试主考官。
@@ -1169,8 +1162,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '刑部主事',
-        title: '刑部河南司',
-        avatar: '/avatars/official.png'
+        title: '刑部河南司'
       },
       quote: '大人，皇上已下旨，袁崇焕以通敌叛国之罪，处以凌迟极刑！刑场设在西市，百姓争食其肉。朝野震动，百官噤若寒蝉。大人，此事......您怎么看？',
       background: `崇祯三年八月，袁崇焕被凌迟处死。
@@ -1329,8 +1321,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。然而今年北方大旱，南方虽有收成但也不如往年。百姓困苦，催征困难。加之辽饷、剿饷加派，百姓怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯三年九月，秋收已毕，赋税征收在即。
@@ -1498,8 +1489,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，己巳之变后，边关防线残破，急需重建。朝廷已拨出专款，但经费不足，需要地方配合。大人以为，当如何重建边关？是优先加固防线，还是优先安置流民？',
       background: `崇祯三年十月，己巳之变后的边关重建。
@@ -1669,8 +1659,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝中暗流涌动。温体仁暗中拉拢人心，排挤异己，已有数位大臣被其陷害去职。周延儒虽为首辅，但与温体仁貌合神离。大人身在其中，当如何自处？',
       background: `崇祯三年十一月，朝堂暗流涌动。
@@ -1831,8 +1820,7 @@ export const events1630: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，年关将至，朝廷要进行年终考绩。这一年，己巳之变余波未平，袁崇焕伏法，朝局大变。大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯三年十二月，年关将至，朝廷进行年终考绩。

@@ -9,8 +9,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十一年了。过去一年，杨嗣昌督师剿寇，"十面埋伏"初见成效，张献忠受抚，流寇之势稍敛。然辽东局势暗流涌动，后金蠢蠢欲动，朝中主战主和之争再起。新年朝贺，皇上面有忧色，言及"外患未除，朕心不安"。大人可有思量？',
       background: `崇祯十一年正月，新年朝贺，百官齐聚。
@@ -171,8 +170,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！大事不好！清军大举入塞！岳托、杜度率军从墙子岭、青山口破关而入，边防全线崩溃！清军铁骑长驱直入，京畿震动！皇上急召百官商议对策，大人速速入朝！',
       background: `崇祯十一年二月，清军第四次大举入塞。
@@ -338,8 +336,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但清军入塞，京畿一带兵荒马乱，百姓逃散，田地荒芜。加之连年灾荒，百姓缺种少粮，无力耕种。若不及时恢复春耕，今年秋收又将无望。朝廷赈灾银两杯水车薪，大人以为当如何应对？',
       background: `崇祯十一年三月，春耕时节，京畿因清军入塞而一片狼藉。
@@ -514,8 +511,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山东巡抚急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！济南失守了！清军攻破济南城，德王被俘，山东巡抚宋学朱殉国！城中百姓惨遭屠戮，死伤无数！清军铁骑横扫山东，所过之处，生灵涂炭！这是崇祯朝以来最大的耻辱！',
       background: `崇祯十一年四月，清军攻破济南。
@@ -675,8 +671,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，济南失守，朝野震动，皇上震怒。朝中问责之声四起，有人弹劾杨嗣昌主和误国，有人弹劾卢象升抗敌不力，还有人弹劾地方官员守土失职。杨嗣昌虽受弹劾，但皇上仍信任有加，反而将几位弹劾他的言官下狱。朝堂之上，人人自危。大人当如何自处？',
       background: `崇祯十一年五月，朝中问责，人人自危。
@@ -838,8 +833,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '太医院御医',
-        title: '太医院',
-        avatar: '/avatars/official.png'
+        title: '太医院'
       },
       quote: '大人，京畿一带疫病流行！清军入塞之后，死尸遍地，加之夏季炎热，瘟疫蔓延。据报，已有数个村庄全村染疫，死者甚众。太医院药石有限，难以应对。若不及时控制，疫病恐将蔓延至京师！',
       background: `崇祯十一年六月，京畿一带疫病流行。
@@ -1013,8 +1007,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '卢象升幕僚',
-        title: '督师行辕',
-        avatar: '/avatars/official.png'
+        title: '督师行辕'
       },
       quote: '大人，卢督师率军在巨鹿与清军血战！杨嗣昌只给了卢督师五千老弱残兵，却要他抵挡清军数万铁骑！卢督师明知必死，仍决意一战，以报国恩。他托我转告大人：国家养士百五十年，仗义死节，正在今日！',
       background: `崇祯十一年七月，卢象升在巨鹿与清军血战。
@@ -1180,8 +1173,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，朝中议和之争再起！杨嗣昌力主与清军议和，认为"攘外必先安内"，当先平流寇再御外侮。但黄道周等主战派坚决反对，认为"堂堂天朝，岂可向蛮夷屈膝"！双方在朝堂上唇枪舌剑，互不相让。皇上举棋不定，大人以为如何？',
       background: `崇祯十一年八月，朝中议和之争白热化。
@@ -1346,8 +1338,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年清军入塞，京畿山东惨遭蹂躏，收成大减。加之辽饷、剿饷、练饷三饷加派，百姓负担沉重，怨声载道。皇上催得紧，但百姓实在无力缴纳。大人以为当如何应对？',
       background: `崇祯十一年九月，秋收已毕，赋税征收在即。
@@ -1515,8 +1506,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东总兵',
-        title: '军情急报',
-        avatar: '/avatars/messenger.png'
+        title: '军情急报'
       },
       quote: '大人，清军退了！清军在京畿、山东劫掠数月后，满载而归，已从青山口、墙子岭退去。据报，清军此次入塞，破城六十余座，掳掠人口牲畜数十万，杀伤百姓无数。京畿山东一片废墟，惨不忍睹。然而，清军退去，朝中却无人引咎辞职...',
       background: `崇祯十一年十月，清军退去。
@@ -1685,8 +1675,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝堂又要清洗了！杨嗣昌以"党同伐异"之名，大肆清洗异己。黄道周已被下狱，多位言官被革职查办。杨嗣昌权势熏天，朝堂之上无人敢言。大人若不表态，只怕也会被牵连。大人当如何自处？',
       background: `崇祯十一年十一月，杨嗣昌大肆清洗异己。
@@ -1849,8 +1838,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十一年将尽。这一年，清军入塞，济南失守，卢象升殉国，京畿山东惨遭蹂躏。朝中杨嗣昌专权，黄道周下狱，言路堵塞。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯十一年十二月，岁末总结。
@@ -2021,8 +2009,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '闽浙海商',
-        title: '某商号掌柜',
-        avatar: '/avatars/merchant.png'
+        title: '某商号掌柜'
       },
       quote: '大人若有意，福建那边有一条船的份子，每年稳赚三五千两。您看……',
       background: `崇祯十一年春，福建一位海商通过旧友找到你。

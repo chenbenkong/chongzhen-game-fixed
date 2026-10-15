@@ -9,8 +9,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部尚书',
-        title: '礼部尚书',
-        avatar: '/avatars/official.png'
+        title: '礼部尚书'
       },
       quote: '大人，新年朝贺大典即将举行，皇上要求一切从简，但朝中暗流涌动。东林党和阉党余孽都想借此机会拉拢人心。您身为朝廷命官，将如何在朝贺中表现？',
       background: `崇祯二年正月，新年伊始，皇宫举行盛大的朝贺大典。
@@ -166,8 +165,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，紧急军报！辽东前线传来急报，后金皇太极正在整军备战，似乎有南下之意。袁崇焕上书要求增拨军饷，整顿边防。皇上召集大臣商议，您身为朝廷命官，将如何应对？',
       background: `崇祯二年二月，辽东军情告急。
@@ -328,8 +326,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕时节到了，各地百姓开始耕种。但今年多地干旱，百姓们缺乏种子和农具，春耕困难。皇上要求各地官员"劝课农桑"，您身为朝廷命官，将如何应对？',
       background: `崇祯二年三月，春耕时节，万物复苏。
@@ -492,8 +489,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，税赋征收开始了。但去年多地歉收，百姓困苦，今年又要加派辽饷，百姓怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯二年四月，税赋征收正式开始。
@@ -659,8 +655,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部主考官',
-        avatar: '/avatars/official.png'
+        title: '礼部主考官'
       },
       quote: '大人，大事不好！会试考场发现舞弊迹象，有人举报考官受贿，泄露考题。此事若闹大，将掀起轩然大波。您身为朝廷命官，将如何处理？',
       background: `崇祯二年五月，会试期间，曝出科举舞弊案。
@@ -831,8 +826,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '工部主事',
-        title: '工部都水司',
-        avatar: '/avatars/official.png'
+        title: '工部都水司'
       },
       quote: '大人，不好了！黄河决口了！洪水泛滥，淹没了十几个州县，无数百姓流离失所。皇上要求尽快赈灾，但国库空虚，赈灾粮饷不足。您身为朝廷命官，将如何应对？',
       background: `崇祯二年六月，黄河决口，洪水泛滥。
@@ -1002,8 +996,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部尚书',
-        title: '兵部尚书',
-        avatar: '/avatars/official.png'
+        title: '兵部尚书'
       },
       quote: '大人，紧急军报！皇太极亲率大军，绕开袁崇焕的宁锦防线，从蒙古南下，直逼京师！边关告急，京师震动！皇上召集大臣商议，您身为朝廷命官，将如何应对？',
       background: `崇祯二年七月，边关告急，京师震动。
@@ -1164,8 +1157,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，后金军已经逼近京师，皇上已下令京师戒严！全城百姓人心惶惶，谣言四起。您身为朝廷命官，将如何安抚民心，维持秩序？',
       background: `崇祯二年八月，后金军逼近京师，京师戒严。
@@ -1333,8 +1325,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部尚书',
-        title: '兵部尚书',
-        avatar: '/avatars/official.png'
+        title: '兵部尚书'
       },
       quote: '大人，皇上已下勤王诏书！各地军队正在赶来京师救援。但粮草不足，军饷匮乏，勤王军队人心惶惶。您身为朝廷命官，将如何处理勤王军队的问题？',
       background: `崇祯二年九月，皇上下勤王诏书，各地军队赶来京师救援。
@@ -1494,8 +1485,7 @@ export const events1629: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，袁崇焕已亲率大军，昼夜兼程，赶回京师救援！然而，谣言四起，有人说袁崇焕已与后金勾结，故意放敌入关！皇上对此也心存疑虑。您身为朝廷命官，将如何应对这一局势？',
       background: `崇祯二年十月，袁崇焕亲率大军，昼夜兼程，赶回京师救援。

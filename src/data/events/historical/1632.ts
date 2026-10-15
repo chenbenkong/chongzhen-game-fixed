@@ -9,8 +9,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！袁崇焕以"十二大罪"斩了毛文龙！皮岛总兵孔有德、耿仲明...他们率部出逃，据说要投奔建奴！辽东防线...辽东防线要崩了！',
       background: `崇祯五年六月，蓟辽督师袁崇焕以"十二条罪状"在双岛斩杀东江镇总兵官毛文龙。
@@ -180,8 +179,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山东巡抚',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！孔有德在吴桥哗变了！他率军北上，连陷数城，登州危在旦夕！朝廷急调各路兵马驰援！大人若有意，可随军出征！',
       background: `崇祯四年冬，皮岛事件余波未平，更大的危机爆发了。
@@ -320,8 +318,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院左都御史',
-        title: '弹劾本章',
-        avatar: '/avatars/messenger.png'
+        title: '弹劾本章'
       },
       quote: '臣弹劾某官：崇祯五年皮岛事件中，借机承办军需，以次充好，虚报价格达三倍之多！中饱私囊，数额巨大！乞皇上彻查！',
       background: `你在皮岛事件中敛财的事，终究纸包不住火。

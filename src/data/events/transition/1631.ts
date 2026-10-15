@@ -9,8 +9,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '翰林院编修',
-        title: '翰林院',
-        avatar: '/avatars/official.png'
+        title: '翰林院'
       },
       quote: '大人，崇祯四年了。去岁袁崇焕伏法，朝局虽定，但暗流涌动。新年朝会上，温体仁与周延儒明争暗斗，百官各怀心思。皇上于朝会上申饬百官，令今年务必肃清吏治、充实国库。大人可有思量？',
       background: `崇祯四年正月，新年朝会，百官朝贺。
@@ -167,8 +166,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！登莱巡抚孙元化麾下参将孔有德，率部在吴桥发动兵变！叛军沿途劫掠，声势浩大，已向登州方向推进。孙元化急报朝廷，请求派兵平叛。朝野震动，大人以为当如何应对？',
       background: `崇祯四年二月，登莱兵变爆发。
@@ -331,8 +329,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山东巡抚',
-        title: '山东巡抚',
-        avatar: '/avatars/official.png'
+        title: '山东巡抚'
       },
       quote: '大人，登莱兵变愈演愈烈！孔有德叛军已攻陷登州，孙元化被俘！叛军声势浩大，沿途裹挟百姓，已聚众数万。山东全境震动，各地告急！朝廷若再不增兵，只怕整个山东都要沦陷！',
       background: `崇祯四年三月，登莱兵变蔓延，登州失守。
@@ -501,8 +498,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '顺天府尹',
-        title: '顺天府',
-        avatar: '/avatars/official.png'
+        title: '顺天府'
       },
       quote: '大人，京畿一带涌入大量流民！北方连年旱灾，加之登莱兵变，百姓流离失所，纷纷涌入京师避难。流民遍野，饥寒交迫，已有饿殍倒毙街头。若不妥善安置，只怕会引发民变！',
       background: `崇祯四年四月，大量流民涌入京畿一带。
@@ -672,8 +668,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部',
-        avatar: '/avatars/official.png'
+        title: '礼部'
       },
       quote: '大人，今年会试在即，天下举子云集京师。然而，科场之中暗流涌动——有人托关系走后门，有人散布流言中伤对手，更有人暗中买卖考题。大人身负科场监察之责，当如何处之？',
       background: `崇祯四年五月，会试在即，天下举子云集京师。
@@ -836,8 +831,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '太医院院判',
-        title: '太医院',
-        avatar: '/avatars/official.png'
+        title: '太医院'
       },
       quote: '大人，京畿一带瘟疫蔓延！流民聚集之处，疫病横行，已有数百人染病身亡。太医院药材告急，地方官员请求紧急援助。若不迅速控制疫情，只怕会蔓延全城！',
       background: `崇祯四年六月，京畿一带瘟疫蔓延。
@@ -1008,8 +1002,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部尚书',
-        title: '户部',
-        avatar: '/avatars/official.png'
+        title: '户部'
       },
       quote: '大人，登莱兵变虽已初步遏制，但军饷问题仍是心腹大患！辽东将士欠饷数月，登莱平叛军也急需粮饷。国库入不敷出，加派之饷已让百姓怨声载道。有人提议再加征练饷，有人主张裁撤冗兵。大人以为如何？',
       background: `崇祯四年七月，军饷之争再起。
@@ -1181,8 +1174,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝中温体仁与周延儒的争斗已到了白热化！温体仁暗中罗织罪名，弹劾周延儒一党数位大臣。周延儒也不甘示弱，联合东林党人反击。朝堂之上，人人自危，不知下一个被清洗的会是谁。大人当如何自处？',
       background: `崇祯四年八月，温体仁与周延儒的权力斗争白热化。
@@ -1345,8 +1337,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，今年秋收又歉收了！北方旱灾持续，南方水患频发，全国收成不及往年六成。加之登莱兵变耽误农时，山东一带几乎颗粒无收。百姓困苦，赋税难征，国库更加空虚。这个冬天，怕是不好过啊！',
       background: `崇祯四年九月，秋收歉收，旱灾持续。
@@ -1518,8 +1509,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东前线传来急报！后金在辽东集结重兵，似有大举入犯之意。祖大寿镇守大凌河，兵力不足，请求增援。然而，朝廷兵力已被登莱兵变牵制，难以调兵。辽东若失，京师危矣！大人以为当如何应对？',
       background: `崇祯四年十月，辽东局势紧张。
@@ -1678,8 +1668,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部尚书',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，登莱兵变终于要平定了！朝廷调集大军围攻叛军，孔有德部已退守登州城中，负隅顽抗。然而，叛军火器精良，攻城伤亡惨重。有人提议招抚孔有德，有人主张继续围攻。大人以为如何？',
       background: `崇祯四年十一月，登莱兵变进入尾声。
@@ -1842,8 +1831,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '翰林院编修',
-        title: '翰林院',
-        avatar: '/avatars/official.png'
+        title: '翰林院'
       },
       quote: '大人，崇祯四年将尽。这一年，登莱兵变、流民潮涌、疫病横行、秋收歉收、辽东告急......内忧外患，纷至沓来。温体仁与周延儒的争斗愈演愈烈，朝政日非。大人可有反思？来年又当如何自处？',
       background: `崇祯四年十二月，岁末反思。

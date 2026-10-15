@@ -9,8 +9,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西塘报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！李自成在西安称帝了！国号"大顺"，改元永昌！他...他真的要取代大明了！',
       background: `崇祯十七年正月，李自成在西安称帝，建国号"大顺"，改元永昌。
@@ -186,8 +185,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '宣府塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！大同总兵姜瓖、宣府总兵王承胤...他们投降了！李自成不费一兵一卒，就占领了大同、宣府！北京...北京已经没有屏障了！',
       background: `崇祯十七年二月，大同总兵姜瓖、宣府总兵王承胤相继投降李自成。
@@ -375,8 +373,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '居庸关守将',
-        title: '唐通部将',
-        avatar: '/avatars/soldier.png'
+        title: '唐通部将'
       },
       quote: '大人！李自成大军已到居庸关下！监军太监杜之秩...他打开城门投降了！居庸关...居庸关失守了！',
       background: `崇祯十七年三月，李自成大军逼近居庸关。
@@ -570,8 +567,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '老太监',
-        title: '司礼监',
-        avatar: '/avatars/eunuch.png'
+        title: '司礼监'
       },
       quote: '皇上...皇上在煤山自缢了...留下遗诏"任贼分裂朕尸，勿伤百姓一人"...大明...大明亡了...',
       background: `崇祯十七年三月十九日，李自成攻破北京，崇祯皇帝在煤山自缢殉国，年仅三十三岁。
@@ -789,8 +785,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山海关塘报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！吴三桂...吴三桂引清兵入关了！山海关大战，李自成大败！清军...清军要入主中原了！',
       background: `崇祯十七年四月，吴三桂引清兵入关，在山海关大败李自成。
@@ -971,8 +966,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '宁武关守将',
-        title: '山西镇',
-        avatar: '/avatars/general.png'
+        title: '山西镇'
       },
       quote: '贼军已过宁武关！京师...京师已无险可守！',
       background: `崇祯十七年（1644年）正月初七，李自成在西安称帝，国号"大顺"。
@@ -1146,8 +1140,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '京城守卒',
-        title: '京营',
-        avatar: '/avatars/soldier.png'
+        title: '京营'
       },
       quote: '贼兵已围城了！九门外都是闯军！',
       background: `崇祯十七年（1644年）三月十七日，李自成大军抵达北京城下。
@@ -1331,8 +1324,7 @@ export const events1644: GameEvent[] = [
     narrative: {
       speaker: {
         name: '乾清宫太监',
-        title: '王承恩',
-        avatar: '/avatars/eunuch.png'
+        title: '王承恩'
       },
       quote: '皇上...皇上上煤山了！',
       background: `崇祯十七年（1644年）三月十九日凌晨，崇祯皇帝登上煤山（景山），自缢于寿皇亭海棠树下。

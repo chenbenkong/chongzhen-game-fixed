@@ -9,8 +9,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '兵部急件',
-        avatar: '/avatars/messenger.png'
+        title: '兵部急件'
       },
       quote: '大人！皇上已经下旨了！杨嗣昌出任督师，统辖中原剿匪事宜！他提出了"十面埋伏"之策，要一举荡平流寇！大人若有意，可随军出征，建功立业！',
       background: `崇祯十一年，杨嗣昌出任兵部尚书，不久后升任督师，统领中原剿匪事宜。
@@ -195,8 +194,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '讣告',
-        avatar: '/avatars/messenger.png'
+        title: '讣告'
       },
       quote: '大人...杨督师...薨了。张献忠攻破襄阳，杀襄王。杨嗣昌忧惧成疾，于军中病逝。"十面埋伏"...失败了。',
       background: `崇祯十四年二月，"十面埋伏"之策彻底失败。
@@ -380,8 +378,7 @@ export const events1638: GameEvent[] = [
     narrative: {
       speaker: {
         name: '六科给事中',
-        title: '联名弹劾',
-        avatar: '/avatars/messenger.png'
+        title: '联名弹劾'
       },
       quote: '臣等联名弹劾某官：崇祯十一年至十四年间，承办剿匪军需，以次充好、虚报价格、克扣军饷！据查证，涉案银两达十五万两之巨！乞皇上彻查，以正国法！',
       background: `杨嗣昌死后，御史们开始了大规模的责任追究。

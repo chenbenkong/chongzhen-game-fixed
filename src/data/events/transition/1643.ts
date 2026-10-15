@@ -9,8 +9,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十六年了。过去一年，辽东全失、开封淹没、陈新甲被杀，国事日非。李自成据河南而窥天下，张献忠横行湖广，流寇之势已成燎原。新年朝会之上，皇上言及"中兴"二字，语带悲凉，百官默然。大人可有思量？',
       background: `崇祯十六年正月，新年朝会，百官齐聚。
@@ -171,8 +170,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！李自成率大军南下！自开封淹没后，李自成收拾残部，重整旗鼓，如今拥兵数十万，兵锋直指湖广！襄阳、荆州告急！李自成自称"奉天倡义文武大元帅"，声势浩大，所过之处，百姓纷纷从贼！',
       background: `崇祯十六年二月，李自成率大军南下。
@@ -341,8 +339,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '四川巡抚急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！张献忠入川了！他率大军从湖广入川，连克夔州、万县，兵锋直指成都！四川兵力空虚，秦良玉虽率土司兵抵抗，但寡不敌众。张献忠号称"屠夫"，所过之处，生灵涂炭！大人当速速发兵救援！',
       background: `崇祯十六年三月，张献忠率大军入川。
@@ -504,8 +501,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但中原战乱、四川被侵，数省田地荒芜，百姓逃散。加之三饷加派，百姓困苦到了极点，已无力耕种。李自成、张献忠横行数省，百姓或逃或从贼，无人耕种。若今年春耕再误，来年饥荒更甚，天下将大乱。',
       background: `崇祯十六年四月，春耕荒废，天下大乱。
@@ -673,8 +669,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部尚书',
-        title: '吏部',
-        avatar: '/avatars/official.png'
+        title: '吏部'
       },
       quote: '大人，皇上欲求贤才以挽危局！辽东全失、流寇猖獗，朝中已无可用之将。皇上下旨，令各地举荐贤才，不论出身，唯才是举。然而，朝中党争激烈，各派都想安插自己的人。大人可有贤才举荐？',
       background: `崇祯十六年五月，皇上下旨求贤。
@@ -835,8 +830,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '太医院御医',
-        title: '太医院',
-        avatar: '/avatars/official.png'
+        title: '太医院'
       },
       quote: '大人，京畿一带疫病流行！连年战乱，死尸遍地，加之夏季炎热，瘟疫蔓延。据报，已有数个村庄全村染疫，死者甚众。更可怕的是，疫病正在向京师蔓延！太医院药石有限，难以应对。若不及时控制，疫病恐将蔓延至京师！',
       background: `崇祯十六年六月，京畿一带疫病流行。
@@ -1009,8 +1003,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，孙传庭总督率秦军出潼关了！皇上再三催促，命孙督师速战速决，剿灭李自成。孙督师虽认为准备不足，但皇命难违，只得率军出关。此战关系社稷存亡，若秦军败了，大明将再无可用之兵！大人以为如何？',
       background: `崇祯十六年七月，孙传庭率秦军出潼关。
@@ -1172,8 +1165,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！孙督师与李自成在郏县激战！秦军初战告捷，但李自成设伏诱敌，秦军中伏大败！孙督师率残部退守潼关，但粮草断绝，后路被断！此战凶多吉少，大人当速做决断！',
       background: `崇祯十六年八月，孙传庭与李自成在郏县激战。
@@ -1338,8 +1330,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！孙督师......殉国了！潼关失守，孙传庭战死沙场！秦军主力全军覆没！李自成长驱直入，占领陕西！大明......大明再无可用之兵了！',
       background: `崇祯十六年九月，孙传庭战死潼关，秦军全军覆没。
@@ -1503,8 +1494,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！李自成进兵了！秦军覆没后，李自成长驱直入，占领陕西，建立大顺政权，自称"大顺王"！如今他率大军东进，兵锋直指山西、京师！沿途州县望风而降，无人敢挡！京师......京师危矣！',
       background: `崇祯十六年十月，李自成进兵，直指京师。
@@ -1668,8 +1658,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '京营总兵',
-        title: '京营',
-        avatar: '/avatars/official.png'
+        title: '京营'
       },
       quote: '大人，京师告急！李自成大军已过黄河，山西守军望风而降，京师门户洞开！京营守军不足三万，且多为老弱残兵，粮饷不足，士气低落。各地勤王之师迟迟不至，京师已成孤城！皇上日夜忧急，朝中已有人暗中逃亡。大人当如何自处？',
       background: `崇祯十六年十一月，京师告急。
@@ -1831,8 +1820,7 @@ export const events1643: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十六年将尽。这一年......或许是大明最后的岁末了。孙传庭殉国，秦军覆没，李自成进兵京师，张献忠屠戮川民。年终考绩......还有意义吗？大人，当如何度过这最后的岁末？',
       background: `崇祯十六年十二月，最后的岁末。

@@ -18,7 +18,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '史官',
         title: '明史·列传',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '某公，字某某。崇祯间入仕，历官中外，以清廉正直闻于世。当是时，流寇四起，外患频仍，公独能守正不阿，为民请命...',
@@ -118,9 +117,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若当年纵容私欲',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: -40,
@@ -158,9 +154,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【升级】若还著书立说',
         description: '名臣 + 大儒双全',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           attributes: {
             文韬: 15,
@@ -210,7 +203,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '殉国遗臣',
         title: '绝命书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '臣闻之：君辱臣死。今京城危在旦夕，臣虽不才，愿以颈血溅贼于太庙之前！若不能为国除害，臣请死！',
@@ -274,9 +266,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若降贼求生',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: -50,
@@ -310,9 +299,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】从容就义前留遗书',
         description: '在衣带上写下最后的话',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 20,
@@ -366,7 +352,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '锦衣卫指挥使',
         title: '逮捕令',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '奉圣旨：某官欺君罔上，结党营私，着锦衣卫即刻拿问，下诏狱勘问！抗命者斩！',
@@ -443,9 +428,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若及早抽身',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 10,
@@ -480,9 +462,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】狱中著成血书',
         description: '在囚笼中写下最后的真相',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 30,
@@ -528,7 +507,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '阵亡将士',
         title: '遗书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '父亲、母亲：儿不孝，先走一步了。儿是为国战死的，不是窝囊死的。儿这辈子，值了。',
@@ -623,9 +601,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若在阵前脱逃',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: -30,
@@ -656,9 +631,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】死前斩将夺旗',
         description: '完成最后一击',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           attributes: {
             武略: 20,
@@ -712,7 +684,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '某王',
         title: '即位诏书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '朕本为朝廷重臣，然崇祯无道，失德于天下。今顺应天命，即皇帝位，改元"XX"。望天下苍生，共襄盛举！',
@@ -781,9 +752,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若拥立新帝',
         description: '匡扶幼主而非自立',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 30,
@@ -816,9 +784,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】篡位后一统天下',
         description: '开创不世功业',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             野心值: 20,
@@ -870,7 +835,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '南京礼部',
         title: '登基大典',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '奉天承运，皇帝诏曰：北京沦陷，神器暂移。兹于南京即位，延续大明国祚。望天下臣民，同心协力，光复旧都！',
@@ -943,9 +907,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若随崇祯殉国',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 40,
@@ -978,9 +939,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】南明掌兵',
         description: '作为南明将领力抗清军',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           attributes: {
             武略: 25,
@@ -1030,7 +988,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '史可法',
         title: '绝笔',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '三月十九日，贼陷京城。皇上崩于煤山。大明...二百七十六年基业，毁于一旦。痛哉！痛哉！',
@@ -1099,9 +1056,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若阻止国变',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           attributes: {
             武略: 30,
@@ -1140,9 +1094,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【极致】以身赴国难',
         description: '在北京城破前赴义',
-        showConditions: {
-          custom: () => !0,
-        },
         effects: {
           hidden: {
             道德值: 30,
@@ -1195,7 +1146,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '翰林院',
         title: '中兴实录',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '奇迹！真的是奇迹！某公以一人之力，力挽狂澜，竟使大明起死回生！此乃天佑大明，亦人力可为证也！',
@@ -1265,7 +1215,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若当年刚愎自用',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -25, 机敏值: -20 }, gameState: { 国势: -30, 清议: -20, 圣眷: -25 } },
         resultDescription: '若你当年自恃才高、不纳忠言、强行出战，流寇将卷土重来，大明将再陷绝境。',
         result: {
@@ -1288,7 +1237,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】中兴之后急流勇退',
         description: '功成身退、明哲保身',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 10, 理政: 5 }, hidden: { 道德值: 15, 野心值: -20 }, gameState: { 圣眷: 10, 清议: 5 } },
         resultDescription: '若你在中兴之后主动让贤、归居故里，将留下一段佳话，被后人传颂。',
         result: {
@@ -1330,7 +1278,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '清朝礼部',
         title: '册封诏书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '奉天承运，大清皇帝诏曰：准某公所请，封其为XX王，世袭罔替。岁纳贡银十万两，称臣纳贡，永为大清藩属。',
@@ -1410,7 +1357,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若投降前自刎殉国',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: 30, 机敏值: -10 }, gameState: { 国势: -15, 圣眷: 10, 清议: 25 } },
         resultDescription: '若你在甲申之变时选择自刎殉国，家人将惨遭屠戮，辖区百姓更无幸免。',
         result: {
@@ -1433,7 +1379,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】暗中蓄力反清复明',
         description: '表面称臣、内里图谋',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -15, 野心值: 30, 机敏值: 20 }, gameState: { 国势: 10, 圣眷: -20 } },
         resultDescription: '若你在称臣之后暗中结交豪杰、密谋起事，将有另一番际遇——成则封侯拜将，败则身死族灭。',
         result: {
@@ -1476,7 +1421,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '山中隐士',
         title: '归隐书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '仕途险恶，人心难测。不如归去，做个闲云野鹤。采菊东篱下，悠然见南山。这才是人生真谛啊。',
@@ -1566,7 +1510,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若被强行起复',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -20, 野心值: 15 }, gameState: { 圣眷: 10, 清议: -15 } },
         resultDescription: '若你归隐后被朝廷强行起复、再入官场，恐将身败名裂、抑郁而终。',
         result: {
@@ -1591,7 +1534,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】山中著书立说',
         description: '从政界到学界的二次辉煌',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 25 }, hidden: { 道德值: 10 }, gameState: { 清议: 20 } },
         resultDescription: '若你归隐后专注于著书立说，将成为一代大儒，思想泽被后世。',
         result: {
@@ -1630,7 +1572,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '东海枭雄',
         title: '海上盟约',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '陆地上的规矩，到了海上就不作数了！从今天起，这片海域我说了算！不服的，来战！',
@@ -1740,7 +1681,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '书院山长',
         title: '祭文',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '先生之学，贯通古今；先生之德，垂范后世。先生虽未居高官显位，然其著述思想，影响远超一时一地。实乃当代大儒也！',
@@ -1846,7 +1786,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '商会会长',
         title: '贺信',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '恭喜某公荣登本年度天下首富榜第一名！据估算，公之家产总值已达白银千万两之巨！实乃商业奇才，我辈楷模！',
@@ -1926,7 +1865,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若乱世中破产',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: 20, 野心值: -30 }, gameState: { 民望: 10, 清议: 5 } },
         resultDescription: '若你战乱中遇劫、家产尽失，从首富沦为乞丐，将如何面对这一切？',
         result: {
@@ -1951,7 +1889,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】散尽家财赈济灾民',
         description: '以财富成就善名',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: 35, 野心值: -15 }, attributes: { 财帛: -50 }, gameState: { 民望: 35, 清议: 20 } },
         resultDescription: '若你在富甲一方后散尽家财赈济灾民，将留下千古善名。',
         result: {
@@ -1990,7 +1927,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '南洋华侨',
         title: '家书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '父亲、母亲：儿已在南洋安顿下来。这里气候炎热，但物产丰富，华人众多。儿在此开了个铺子，日子还过得去。勿念。',
@@ -2086,7 +2022,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若海上遇难',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -10, 机敏值: -15 }, gameState: { 国势: -10 } },
         resultDescription: '若你在出海途中遭遇风暴或海盗，恐将葬身鱼腹、魂断异乡。',
         result: {
@@ -2109,7 +2044,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】华侨领袖',
         description: '从流亡者到望族',
-        showConditions: { custom: () => true },
         effects: { attributes: { 财帛: 30, 文韬: 5 }, hidden: { 道德值: 10, 野心值: 20 }, gameState: { 中官: 5 } },
         resultDescription: '若你在南洋建立威望，成为当地华侨领袖，将使华人在异国他乡站稳脚跟。',
         result: {
@@ -2148,7 +2082,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '方丈大师',
         title: '剃度文书',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '施主看尽了红尘滚滚、恩怨情仇。如今放下屠刀，立地成佛。贫僧愿为施主剃度，赐法号"[某]禅师"。',
@@ -2231,7 +2164,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若红尘难断',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -20, 野心值: 25, 欲望值: 15 }, gameState: { 圣眷: -10, 清议: -20 } },
         resultDescription: '若你出家后仍牵挂红尘、卷入俗事，将破戒败德、为世人所不齿。',
         result: {
@@ -2254,7 +2186,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】开宗立派',
         description: '从僧人到一代宗师',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 30 }, hidden: { 道德值: 20 }, gameState: { 清议: 25 } },
         resultDescription: '若你出家后精研佛理、自成一家，将开创一代禅宗流派、影响后世数百年。',
         result: {
@@ -2293,7 +2224,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '家族族长',
         title: '家谱序言',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '某公虽未位极人臣，然其为家族所做之事，远超历任祖先。修族谱、建宗祠、设义田、兴学堂...某氏一族之兴旺，实赖某公之力！',
@@ -2365,7 +2295,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若家族内斗',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -25, 野心值: 20 }, gameState: { 民望: -15 } },
         resultDescription: '若你归乡后卷入家族内斗、兄弟阋墙，将家产散尽、晚景凄凉。',
         result: {
@@ -2388,7 +2317,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】培养科举世家',
         description: '将家族推向鼎盛',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 15 }, hidden: { 道德值: 15 }, gameState: { 清议: 20, 民望: 15 } },
         resultDescription: '若你兴办教育、培育子孙，将家族推向科举世家的鼎盛。',
         result: {
@@ -2427,7 +2355,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '药王庙祝文',
         title: '祭文',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '某公妙手回春，悬壶济世。无论贵贱贫富，一视同仁。经公之手治愈者，不可胜数。乡人感其德，立庙祭祀，尊为"药王"。',
@@ -2545,7 +2472,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '野史笔记',
         title: '轶闻',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '关于某公的下落，历来众说纷纭。一说其隐姓埋名浪迹江湖；一说其出海远走不知所终；更有甚者，称其得道成仙，白日飞升...',
@@ -2635,7 +2561,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若被人寻得下落',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -10, 机敏值: 15 }, gameState: { 清议: -10 } },
         resultDescription: '若你被人寻得真实下落，谜团揭开，赞誉与诋毁同时涌来，你将无法再安享隐姓埋名的生活。',
         result: {
@@ -2656,7 +2581,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】野史流芳',
         description: '化作传说的一部分',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 10 }, hidden: { 道德值: 10, 野心值: -10 }, gameState: { 清议: 15, 民望: 20 } },
         resultDescription: '若你的传说被有心人记录、增饰、传播，你将以另一种方式活在这片土地的记忆里。',
         result: {
@@ -2695,7 +2619,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '吏部尚书',
         title: '同僚',
-        avatar: '/avatars/messenger.png',
       },
       quote: '某公识进退、明得失。当此乱局，能全身而退者，几人哉？',
       background: `你在朝中浮沉二十年，看过太多人起高楼、宴宾客、楼塌了。
@@ -2782,9 +2705,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若贪恋权位',
         description: '一个对照走向',
-        showConditions: {
-          custom: () => true,
-        },
         effects: {
           hidden: {
             道德值: -30,
@@ -2828,7 +2748,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】著书立说',
         description: '将毕生所学传于后世',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 15, 理政: 10 }, hidden: { 道德值: 15, 野心值: -10 }, gameState: { 清议: 20, 民望: 15 } },
         resultDescription: '若你归田后潜心著述，将二十年为官心得写成《居官箴言》，将成后世清官必读。',
         result: {
@@ -2871,7 +2790,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '继任者',
         title: '某府通判',
-        avatar: '/avatars/messenger.png',
       },
       quote: '某公走了。他留下的案头，还有一叠没批完的公文。',
       background: `你是一个老派的官员。
@@ -2971,7 +2889,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若明哲保身',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -20, 野心值: 10 }, gameState: { 民望: -15 } },
         resultDescription: '若你在最后关头选择明哲保身、不入火场，百姓口中"老大人"便只剩一个空名。',
         result: {
@@ -2998,7 +2915,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】入祀名宦祠',
         description: '名垂青史',
-        showConditions: { custom: () => true },
         effects: { attributes: { 文韬: 10, 理政: 10 }, hidden: { 道德值: 20 }, gameState: { 清议: 25, 民望: 25 } },
         resultDescription: '若朝廷追念你的功德，下旨在[某]府为你立名宦祠，你的塑像将与历代清官并列。',
         result: {
@@ -3041,7 +2957,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '兵部侍郎',
         title: '旧友',
-        avatar: '/avatars/messenger.png',
       },
       quote: '某公以一介书生，提孤军守孤城三年。辽东父老，至今犹祀之。',
       background: `你本是个纯粹的文官。
@@ -3185,7 +3100,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '继任御史',
         title: '门生',
-        avatar: '/avatars/messenger.png',
       },
       quote: '先师之风，山高水长；某等虽不才，必继其志。',
       background: `你被廷杖过三次。
@@ -3335,7 +3249,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '守城亲兵',
         title: '幸存者',
-        avatar: '/avatars/messenger.png',
       },
       quote: '某公最后那一刻，还站在城楼上。',
       background: `甲申年三月十八日的那个夜晚，你没有睡。
@@ -3477,7 +3390,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '锦衣卫',
         title: '某百户',
-        avatar: '/avatars/messenger.png',
       },
       quote: '圣上口谕：罪臣某，某某罪，某某罪……着即抄家，夷三族。',
       background: `你以为钱能买来一切。
@@ -3593,7 +3505,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若早早收手',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: 15, 野心值: -15 }, gameState: { 清议: 20, 民望: 10 } },
         resultDescription: '若你早些年悬崖勒马、散财归乡，至少可保家人平安。',
         result: {
@@ -3626,7 +3537,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c3',
         text: '【后续】抄没家产充边饷',
         description: '身后仍有"贡献"',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -5 }, gameState: { 清议: -10 } },
         resultDescription: '若你抄没的家产能充作边饷，或许能赈济灾民一二。讽刺的是，你活着时贪的，死了却救了几条命。',
         result: {
@@ -3678,7 +3588,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '孙儿',
         title: '某府孙辈',
-        avatar: '/avatars/messenger.png',
       },
       quote: '爷爷这辈子……好像什么大事也没做过。但他对我们很好。',
       background: `你不是名臣。
@@ -3919,7 +3828,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '喽啰',
         title: '山寨小头目',
-        avatar: '/avatars/messenger.png',
       },
       quote: '大当家说：抢他娘的！这世道，谁抢谁还不一定呢！',
       background: `你是被朝廷逼反的。
@@ -4118,7 +4026,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '同仁',
         title: '复社同门',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '先生不是死于权奸之手，是死于不肯低头。宁可枝头抱香死，何曾吹落北风中。',
@@ -4249,7 +4156,6 @@ export const allEndingEvents: GameEvent[] = [
         id: 'c2',
         text: '【反事实】若隐忍不发',
         description: '一个对照走向',
-        showConditions: { custom: () => true },
         effects: { hidden: { 道德值: -20, 野心值: 15 }, gameState: { 圣眷: 10, 清议: -15 } },
         resultDescription: '若你当年学会隐忍，熬过这波党争，或许能熬到崇祯醒悟的那天。',
         result: {
@@ -4300,7 +4206,6 @@ export const allEndingEvents: GameEvent[] = [
       speaker: {
         name: '旧友',
         title: '匿名的某人',
-        avatar: '/avatars/messenger.png',
       },
       quote:
         '听说某公"病故"于某地。讣告上写得清清楚楚，连棺材都运回了乡。但我后来在江南见过一个人，眉眼像极了他。',

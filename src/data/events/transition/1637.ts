@@ -9,8 +9,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十年了。九年来，流寇纵横数省，辽东屡遭侵扰，天灾人祸不断。新年朝会之上，皇上言及"中兴"二字，语带期许，却也掩饰不住疲惫。杨嗣昌新受重用，朝局似有变数。大人可有思量？',
       background: `崇祯十年正月，新年朝会。
@@ -172,8 +171,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，杨嗣昌入阁了！皇上对他寄予厚望，命其主持剿寇大局。杨嗣昌素有才略，主张"四正六隅"之策，声势一时无两。朝中大臣或趋附或观望，大人当如何自处？',
       background: `崇祯十年二月，杨嗣昌入阁。
@@ -327,8 +325,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但连年灾荒战乱，北方数省田地荒芜，耕牛稀缺，种子不足。加之杨嗣昌加征剿饷，百姓困苦到了极点。若今年春耕再误，来年饥荒更甚，流寇只会越来越多。大人以为当如何应对？',
       background: `崇祯十年三月，春耕在即，困难重重。
@@ -497,8 +494,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '杨嗣昌',
-        title: '兵部尚书兼东阁大学士',
-        avatar: '/avatars/official.png'
+        title: '兵部尚书兼东阁大学士'
       },
       quote: '大人，本官拟定"四正六隅"之策：以陕西、河南、湖广、凤阳为四正，设四巡抚分剿；以延绥、山西、山东、江南、江西、四川为六隅，设六巡抚分防。合兵十二万，加征剿饷二百八十万两。此策若成，流寇可平！大人以为如何？',
       background: `崇祯十年四月，杨嗣昌提出"四正六隅"围剿计划。
@@ -660,8 +656,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部尚书',
-        title: '礼部',
-        avatar: '/avatars/official.png'
+        title: '礼部'
       },
       quote: '大人，今科会试在即，天下举子云集京师。皇上极为重视，欲选拔真才实学之士充实朝堂。然而，朝中已有人托关系，希望大人能"关照"其子弟。杨嗣昌亦有意安插亲信。大人将如何处之？',
       background: `崇祯十年五月，会试在即，天下举子云集京师。
@@ -826,8 +821,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '南京工部主事',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！南方连日暴雨，江河决堤，洪水泛滥！南京、安庆、苏州等地一片汪洋，良田被淹，百姓溺亡无数！灾民百万，急需救援！加之剿饷加征，百姓雪上加霜，民怨沸腾！',
       background: `崇祯十年六月，南方洪涝灾害。
@@ -1001,8 +995,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！张献忠在谷城诈降！他表面接受招安，暗中却招兵买马，积蓄力量。如今他已重新举旗反叛，声势更胜从前！杨嗣昌的围剿计划被打乱，朝野震动，皇上震怒！',
       background: `崇祯十年七月，张献忠在谷城诈降后再次反叛。
@@ -1158,8 +1151,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东塘报！后金皇太极近日频繁调兵，似有大举入塞之意。辽东将领请求增兵增饷，但朝廷兵力财力皆困于流寇，难以兼顾。杨嗣昌主张"先安内后攘外"，但辽东若失，京师危矣！大人以为当如何应对？',
       background: `崇祯十年八月，辽东军情再起。
@@ -1317,8 +1309,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年北方旱灾、南方洪涝，收成大不如前。加之剿饷加征，百姓困苦到了极点，催征困难。各地已有抗税苗头，但皇上催得紧，杨嗣昌也坚持剿饷不可少。这可如何是好？',
       background: `崇祯十年九月，秋收已毕，赋税征收在即。
@@ -1486,8 +1477,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东总兵',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！清军入塞了！皇太极亲率大军从墙子岭、青山口入关，京师震动！清军铁骑一路烧杀抢掠，畿辅之地惨遭蹂躏！朝廷急调各路兵马勤王，但兵力困于流寇，难以速援！大人当速做决断！',
       background: `崇祯十年十月，清军大举入塞。
@@ -1653,8 +1643,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝堂上争论不休！杨嗣昌"先安内后攘外"之策在清军入塞后遭到猛烈抨击，多位大臣上疏弹劾杨嗣昌"误国"。杨嗣昌据理力争，朝堂上一片混乱。皇上犹豫不决，大人当如何自处？',
       background: `崇祯十年十一月，朝堂争论激烈。
@@ -1808,8 +1797,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十年将尽。这一年，杨嗣昌入阁、四正六隅、张献忠诈降、清军入塞，国事日非。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯十年十二月，岁末总结。
@@ -1973,8 +1961,7 @@ export const events1637: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山野郎中',
-        title: '云游医者',
-        avatar: '/avatars/scholar.png'
+        title: '云游医者'
       },
       quote: '大人，您是读书人，可曾想过——读书不只为做官，更可为苍生？某走遍天下，深感民间疾苦无人问津，若大人愿学医道或开馆授徒，皆是济世良方。',
       background: `崇祯十年春，瘟疫再起。

@@ -9,8 +9,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '老幕僚',
-        title: '府中师爷',
-        avatar: '/avatars/advisor.png'
+        title: '府中师爷'
       },
       quote: '大人，天变了。信王即位，改元崇祯。新帝年方十七，据说性情刚烈，与先帝大不相同。',
       background: `天启七年八月，天启帝驾崩于乾清宫，年仅二十三岁。信王朱由检奉遗诏即位，改元崇祯。
@@ -146,8 +145,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '同年进士',
-        title: '翰林院编修',
-        avatar: '/avatars/scholar.png'
+        title: '翰林院编修'
       },
       quote: '兄台可知？魏阉已在阜城自缢！皇上震怒，下令磔尸于河间。如今朝中正清算阉党，人人自危，又人人欲借此攀附。',
       background: `崇祯元年十一月，魏忠贤在发配凤阳途中，于阜城县自缢身亡。这位曾权倾朝野的"九千岁"，最终落得个身死名裂的下场。
@@ -274,8 +272,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '东林旧友',
-        title: '京师书院',
-        avatar: '/avatars/advisor.png'
+        title: '京师书院'
       },
       quote: '魏阉既除，朝堂空出许多位子。兄台曾助清流，何不就此入我东林？',
       background: `天启七年冬，魏忠贤败亡，阉党作鸟兽散。崇祯帝下令清算阉党，凡依附魏忠贤者，或斩或流或革，朝堂为之一空。
@@ -373,8 +370,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '锦衣卫百户',
-        title: '镇抚司',
-        avatar: '/avatars/messenger.png'
+        title: '镇抚司'
       },
       quote: '有人告发大人曾与阉党往来。事关钦案，还请大人随我走一趟。',
       background: `天启七年秋，魏忠贤死后，阉党清算之风波及甚广。崇祯帝下旨缉拿魏忠贤党羽，锦衣卫四处拿人，朝野人人自危。

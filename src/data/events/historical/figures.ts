@@ -14,8 +14,7 @@ export const figuresEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '司礼监太监',
-        title: '乾清宫',
-        avatar: '/avatars/eunuch.png'
+        title: '乾清宫'
       },
       quote: '皇上今日临朝，召见奏事官。诸臣依次入内奏对。',
       background: `崇祯帝朱由检，是大明王朝的第十六位皇帝，也是最后一位。
@@ -182,8 +181,7 @@ export const figuresEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '蓟辽总督府幕僚',
-        title: '山海关',
-        avatar: '/avatars/scholar.png'
+        title: '山海关'
       },
       quote: '洪督师来了！这位是真正的帅才，文武双全！',
       background: `洪承畴，字亨九，福建南安人。
@@ -356,8 +354,7 @@ export const figuresEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西巡按',
-        title: '西安',
-        avatar: '/avatars/messenger.png'
+        title: '西安'
       },
       quote: '孙白谷又出关了！这一次，他是要和闯王决一死战！',
       background: `孙传庭，字白谷，山西代州人。
@@ -546,8 +543,7 @@ export const figuresEvents: GameEvent[] = [
     narrative: {
       speaker: {
         name: '山海关幕僚',
-        title: '宁远',
-        avatar: '/avatars/scholar.png'
+        title: '宁远'
       },
       quote: '吴总兵又上疏请饷了！这已经是今年的第七封了！',
       background: `吴三桂，字长白，辽东人。

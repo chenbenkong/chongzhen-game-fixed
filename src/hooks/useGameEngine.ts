@@ -38,6 +38,12 @@ export const RANKS = [
   { level: 18, name: '正一品·太师', minScore: 1100, type: 'official' as IdentityType }
 ]
 
+// 开局年份：天启八年，主角入仕。游戏时钟只往前走，所以任何把条件写在
+// 「currentYear < GAME_START_YEAR」区间里的事件在**任何存档里都永不触发**。
+// 以前这个字面量在引擎里散着写了 5 遍（三处初始化 + 一处生平小结 + 一处守卫），
+// 改一局开局年份要同时改五个地方，现在只有这里一处。
+export const GAME_START_YEAR = 1628
+
 // 升官缓冲分：每升一级额外加20分，防止刚升官就贬官
 const PROMOTION_SCORE_BONUS = 20
 
@@ -484,7 +490,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
     return {
-      currentYear: 1628,
+      currentYear: GAME_START_YEAR,
       currentMonth: 1,
       turn: 0,
       圣眷: initialGameStateFromOrigin.圣眷 ?? 50,
@@ -524,7 +530,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
     const initialState = {
-      currentYear: 1628,
+      currentYear: GAME_START_YEAR,
       currentMonth: 1,
       turn: 0,
       圣眷: initialGameStateFromOrigin.圣眷 ?? 50,
@@ -1587,7 +1593,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
     const freshGameState: GameStateValues = {
-      currentYear: 1628,
+      currentYear: GAME_START_YEAR,
       currentMonth: 1,
       turn: 0,
       圣眷: initialGameStateFromOrigin.圣眷 ?? 50,
@@ -1655,7 +1661,7 @@ export function useGameEngine(props: UseGameEngineProps) {
   }, [])
 
   const generateLifeSummary = useCallback((): LifeSummary => {
-    const startYear = 1628
+    const startYear = GAME_START_YEAR
     const endYear = gameStateRef.current.currentYear
     const character = characterRef.current
     const gameState = gameStateRef.current
@@ -1993,7 +1999,7 @@ export function useGameEngine(props: UseGameEngineProps) {
   useEffect(() => {
     if (isProcessing) return
     if (!character || !gameState) return
-    if (gameState.currentYear < 1628) return
+    if (gameState.currentYear < GAME_START_YEAR) return
     if (gameState.currentMonth < 1 || gameState.currentMonth > 12) return
 
     const charForSave = { ...character }

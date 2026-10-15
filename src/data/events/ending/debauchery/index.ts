@@ -56,7 +56,7 @@ const ENDING_DEBAUCH_FALL: GameEvent = {
   description: '酒色财气，伐性之斧；温柔乡里，白骨森森。',
   type: 'ending',
   narrative: {
-    speaker: { name: '老仆', title: '某府旧人', avatar: '/avatars/messenger.png' },
+    speaker: { name: '老仆', title: '某府旧人' },
     quote: '老爷走的时候……还紧紧握着那方汗巾子。',
     background: `你是怎么走到这一步的？
 
@@ -120,7 +120,7 @@ const ENDING_PIMP_LORD: GameEvent = {
   description: '你成了那秦淮河畔的"隐形老板"，以官护商，以色聚财。',
   type: 'ending',
   narrative: {
-    speaker: { name: '名妓', title: '秦淮旧侣', avatar: '/avatars/messenger.png' },
+    speaker: { name: '名妓', title: '秦淮旧侣' },
     quote: '某公是我们的恩人，也是我们的牢笼。这世道，谁不是别人的囚徒呢？',
     background: `你一开始只是"偶识"了几位名妓，赠诗题画，附庸风雅。
 
@@ -193,7 +193,7 @@ const ENDING_TRAITOR: GameEvent = {
   description: '满城文武皆降，独你开城迎敌——为的不是青史留名，是那张盖着大印的契约。',
   type: 'ending',
   narrative: {
-    speaker: { name: '清廷官员', title: '某部侍郎', avatar: '/avatars/messenger.png' },
+    speaker: { name: '清廷官员', title: '某部侍郎' },
     quote: '某公识时务者为俊杰。我大清入主中原，正需这般干才。',
     background: `你不爱大明。至少没有你爱自己那么爱。
 

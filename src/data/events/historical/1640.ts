@@ -10,8 +10,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '宁远总兵',
-        title: '蓟辽督师府',
-        avatar: '/avatars/messenger.png'
+        title: '蓟辽督师府'
       },
       quote: '洪督师的十三万大军，败了！洪督师本人...听说降了。',
       background: `崇祯十三年，明清两军在锦州、松山一带展开决战。
@@ -176,8 +175,7 @@ export const events1640: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南驿卒',
-        title: '洛阳官道',
-        avatar: '/avatars/messenger.png'
+        title: '洛阳官道'
       },
       quote: '李闯王进河南了！他见人就发粮，见地就分田！老百姓都跟着他走了！',
       background: `崇祯十三年，李自成率残部进入河南。

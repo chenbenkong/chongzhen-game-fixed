@@ -112,7 +112,7 @@ flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名
 | Electron 安装包 | 需要真实 Windows 桌面环境与 GUI | 在 Windows 上跑 `npm run desktop:dist`，双击安装包完整玩一局 |
 | Steamworks 真实驱动 | 需要原生模块 + 真实 Steam 客户端 + AppID | 用测试 AppID `480`（Spacewar）先验证成就与云存档通路 |
 | 数值平衡 | 属于主观体验 | 各难度各通关 2–3 遍，观察升迁曲线与结局分布 |
-| 事件覆盖率 | 需要大量游玩 | 跑 `npm run audit:events` / `audit:validate` / `audit:narrative` 做内容侧体检（`@ts-nocheck` 盲区另有 `npm run audit:shape`，已在 CI 里跑） |
+| 事件覆盖率 | 需要大量游玩 | 跑 `npm run audit:events` / `audit:validate` / `audit:narrative` 做内容侧体检（`@ts-nocheck` 盲区另有 `npm run audit:shape` 与 `npm run audit:values`，两者都在 CI 里跑：前者查键名与结构，后者查值——出身/官职/剧情线的拼写、时间区间正反、前情↔结局配对，以及数据里引用的 `/xxx.png` 是否真的存在于 `public/`） |
 | 成人内容角色年龄 | 无法从文本可靠推断 | **人工通读** `src/data/events/gray/debauchery/` 全部文本 |
 | BGM / 美术授权 | 不在代码里 | 追溯素材来源，保留授权凭证 |
 
@@ -209,7 +209,63 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **158 例**，分 18 个文件，全部在 `tests/unit/`。
+回归测试共 **176 例**，分 19 个文件，全部在 `tests/unit/`。
+
+### 第九轮：类型管得住键名，管不住值 —— 以及一批「有声明、无实现」的假接口
+
+第八轮把 `@ts-nocheck` 清零、键名收紧之后，数据侧还剩一整个维度是 tsc 看不见的：
+`conditions.origin` / `conditions.rank` / `storyline` / `linksToEndingId` 这些声明就是 `string`，
+tsc 只保证「它是个字符串」。而引擎拿它们做的是集合判断 ——
+出身写成「晋绅」（正字「缙绅」）编译通过，运行时 `allowed.includes(character.origin)` 恒 false，
+事件在任何存档里都选不中。失效方向和第七轮那批死事件一模一样，只是错的位置从键名挪到了值。
+
+**新建 `scripts/audit-value-domains.ts`（`npm run audit:values`）**，拿运行时真值当词表对账：
+出身表 4 项、`RANKS` 官阶 18 级、`STORYLINES` 15 条、结局池 43 个、开局年 `GAME_START_YEAR`，
+外加 `public/` 的目录实况。查六类：值不在词表（DEAD）、区间倒置 / 月份越出 1..12 /
+年份窗口早于开局年（DEAD）、边界宽到等效于没写（NOOP）、剧情线拼错（NOOP）、
+prelude↔ending 悬空或单向（LINK）、数据里的站内资源路径查不到文件（LINK）。
+结论：**400 个事件，DEAD 0 / NOOP 0 / LINK 0** —— 数据现在是干净的，
+但本轮真正的产出是「以后能一直干净」：`tests/unit/valueDomains.silentFailures.test.ts` 12 例，
+一半钉真实数据为 0，一半用人造坏事件钉「每一类错误都真抓得住」，
+再钉住词表规模本身（词表哪天被 import 成空集合，体检会绿得毫无意义）。
+
+真正动手修的是三批静默死内容：
+
+| 缺陷 | 规模 | 处理 |
+| --- | --- | --- |
+| `showConditions: { custom: () => !0 }` —— 选项级条件里挂着一个**恒真的 lambda** | `endings_all.ts` 37 处 | 双死：`EventDisplay.checkChoiceRequirement` 走的是 attributes/gameState/hidden/flags/出身/体质六条判定，**根本不调用 custom**；就算调用，`() => !0` 也永远为真。整个块删除（行为等价：`showConditions` 缺省与"只有 custom"都是 `available: true`）。这批东西的来历是 `endings_all.ts` 由 `dist` 压缩包还原，`!0` 是压缩器留下的 `true` |
+| `narrative.speaker.avatar` 指向 `/avatars/*.png` | 40 个文件 301 处 | `public/avatars/` 这个目录**从来不存在**（dist 里也没有），且没有任何组件读这个字段 —— 话者头像一直是按姓名首字现画的 SVG 印记。字段与 301 处一起删；值域体检新增资源路径存在性检查，专门拦这一类「接进 UI 就是 301 张碎图」的假接口 |
+| 「有声明、无实现」的类型字段 | 11 个 | 全删：`conditions.charactersAlive / charactersDead / historicalFlags / relationships`、`effects.relationships / family / nextEvents`、`GameEvent.nextEvents`、`EventChoice.condition`、整条 `DiceCheck`（含 `EventChoice.check`）、`EventEffects.special` 的 `death \| promotion \| imprisonment \| exile` 与 `value`（引擎两处分支只认 `'ending'`，43 处数据也全是 `{ type: 'ending' }`；死亡/贬谪走引擎自己的升贬判定） |
+
+删 `nextEvents` 的时候顺手拆掉两句**假文档**（`utils/eventConditions.ts` 的 `pickEvent` 头注释）：
+「如果上一事件的 `nextEvents` 列表里有当前可用事件，则 100% 命中第一个匹配项」—— 那段实现从来没有，
+数据里也没有一处写过 `nextEvents`；「同 key 前缀 storyline 加权 2 倍（兼容子线）」—— `pickEvent` 里那行
+`return 1` 上面挂着这句话，真正的前缀加权在 `useGameEngine.weightedPick`（`startsWith` → 3 倍）。
+假注释比没注释更贵：下一个人会照着它写数据，然后发现自己的链是断的。
+
+`preludeEventId` ↔ `linksToEndingId` 这一对**保留**，但把话说清楚：运行时决定"前奏强制优先播放"的
+是事件上的 `isPreEnding`，这两个 id 字段没人读，它们的全部意义是"人和人之间的双向指认"。
+所以配对完整性改由体检脚本钉（悬空 = LINK，对面没回指 = LINK，有链接却缺 `isPreEnding` = NOOP），
+`valueDomains` 测试另加一条：现存的 5 对必须**双向齐全且都带 `isPreEnding`**。
+
+`GAME_START_YEAR = 1628` 从 `useGameEngine` 里导出。此前 `1628` 在引擎散写 5 遍
+（三处初始 gameState + 一处生平小结 + 一处存档守卫），改一局开局年份要同时改五个地方；
+值域体检也需要它才能判断「`year.max` 早于开局年 = 时钟只往前走，永远等不到」。
+
+顺带把两个体检脚本共用的池子清单抽成 `scripts/event-pools.ts`。以前"有哪些池子"在两个脚本里各抄一遍，
+新加一个池子只改一处，另一处就会**静默少查一批事件**，而"少查一批"在报告里长得和"全部干净"一模一样。
+单独成文件的另一个原因是每个体检脚本末尾都挂着 CLI 输出块，互相 import 会顺带打印别人的报告。
+
+结果：**400 事件 / 43 结局，`audit:shape` 与 `audit:values` 双双 0 处**，六个体检脚本全绿，
+`tsc` 与 `tsc -p tsconfig.test.json` 双 0 错，176 例通过，`vite build` 通过，桌面端 smoke 通过。
+
+方法论两条。**其一**：删字段必须留探针。上一轮删 `EndingConfig.unlocksAchievement` 时没留，
+于是"它被删过"这件事唯一的证据是 git log。这轮在 `types.keysMatchEngine.test.ts` 补了 11 枚
+`@ts-expect-error`，谁把字段加回来 `typecheck:test` 立刻红 —— 顺带踩到一个 tsc 行为：
+**一个对象字面量只报第一个未知键**，所以一枚探针只能钉一个字段，那些钉子得拆成 11 个字面量才数得清。
+**其二**：值域和键名是两半，类型系统只管得到一半；另一半要么靠 `as const` 枚举逼进类型里
+（`origin` 以后若变成 `keyof typeof origins` 就好了这一半），要么就靠脚本 —— 现在选了脚本，
+因为词表本身住在数据里，类型反向依赖数据会让 `types/` 变成循环。
 
 ### 第八轮：拆掉盲区本身，以及 BOM 让"清零"变成假阴性
 
@@ -586,3 +642,21 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
 `?? 50` 这一档最危险：打错的键名会**碰巧通过所有 ≤50 的要求**，
 既不报错也不消失，只是把门槛悄悄放宽了。类型收紧之后这类键名已经写不出来，
 所以引擎不改；但要动它，先读这段。
+
+### 8. 数据里零用法、但引擎实现齐备的字段，是留着的（第九轮已核对，请勿当死代码删）
+
+第九轮逐字段对过一遍「数据写了几处 / 代码谁读了」，下面这几个是**反过来的那种**：
+实现完整、一处数据都没有。
+
+- `EventChoice.staminaCost / staminaRequired / staminaBonus` —— 体力的消耗、门槛与回复。
+  `checkChoiceRequirement` 会据此把选项锁成"体质不足"，`useGameEngine` 会真的加减 `体质`。
+- `EventChoice.failEffects / failResult / failResultDescription` —— 投骰失败分支的作者自定义写法。
+  没写时引擎用 `deriveFailEffects(choice)` 兜底，所以这条路径天天在跑，只是没人覆盖默认值。
+- `EventEffects.meritScore` —— 选项显式政绩分。引擎计入 `meritBonus` 并参与升迁（第六轮修过它的落账 bug），
+  数据侧目前全部走"由属性推导"这条路。
+
+判据不是"有没有数据用过"，而是"删掉它会不会让一段**能跑的代码**失去入口"。
+这三组都会：删了就是把功能拆了。真要清理，正确方向是给它们补数据（或把引擎分支一起删），
+而不是只删类型声明。反过来，第九轮删掉的那 11 个字段（`nextEvents` / `DiceCheck` /
+`charactersAlive` 之类）是**代码里一个读取点都没有**的那种 —— 两边的区别就在这一点上。
+

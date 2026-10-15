@@ -9,8 +9,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯八年了。过去一年，流寇再起，车厢峡之抚成了一场笑话。新年朝会上，皇上面色铁青，言及"流寇不除，朕誓不罢兵"。百官噤若寒蝉，朝堂上一片肃杀之气。大人可有思量？',
       background: `崇祯八年正月，新年朝会，朝堂肃杀。
@@ -169,8 +168,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '凤阳巡抚',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！大事不好！高迎祥、张献忠率流寇数十万，合围凤阳！凤阳乃我朝龙兴之地，皇陵所在，若凤阳有失，皇陵遭毁，天崩地裂！巡抚杨一鹏急请朝廷发兵救援！',
       background: `崇祯八年二月，流寇合围凤阳。
@@ -337,8 +335,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '锦衣卫指挥使',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！天崩地裂！凤阳失守了！流寇攻破凤阳，焚毁皇陵！太祖龙兴之地，竟遭贼人践踏！皇上闻讯，痛哭失声，朝野震动，天下哗然！此乃我朝开国以来未有之大耻！',
       background: `崇祯八年三月，凤阳失守，皇陵被毁。
@@ -501,8 +498,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但凤阳之乱后，中原数省百姓流离失所，田地荒芜。加之连年旱灾蝗灾，百姓缺种少粮，无力耕种。若不及时赈济，今年秋收又将无望，流寇只会越来越多。朝廷赈灾银两杯水车薪，大人以为当如何应对？',
       background: `崇祯八年四月，春耕时节，中原数省灾情依旧。
@@ -678,8 +674,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '刑部尚书',
-        title: '刑部',
-        avatar: '/avatars/official.png'
+        title: '刑部'
       },
       quote: '大人，凤阳失守之罪，朝廷正在追责。凤阳巡抚杨一鹏已被下狱论死，巡按吴振缨亦被逮问。然而，朝中有人认为追责不应止于地方官员，兵部、内阁亦难辞其咎。温体仁则将责任推给反对派，朝堂上一片混战。大人当如何自处？',
       background: `崇祯八年五月，凤阳失守的追责风波。
@@ -838,8 +833,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '顺天府丞',
-        title: '顺天府',
-        avatar: '/avatars/official.png'
+        title: '顺天府'
       },
       quote: '大人，北方大旱！自春以来，滴雨未降，禾苗枯死，井泉干涸。京畿、山东、河南数省赤地千里，百姓掘草根、食树皮，饿殍遍野。更可怕的是，旱灾之后往往伴随瘟疫，若不及时应对，后果不堪设想！',
       background: `崇祯八年六月，北方大旱。
@@ -1016,8 +1010,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，好消息！卢象升大人临危受命，总理直隶、河南、山东、四川、湖广五省军务，誓师剿匪！卢大人治军严明，所部天雄军骁勇善战，已连败流寇数阵。然而，流寇势大，卢大人请求朝廷增拨军饷，充实兵力。大人以为当如何支持？',
       background: `崇祯八年七月，卢象升临危受命，总理五省军务，誓师剿匪。
@@ -1184,8 +1177,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东塘报！后金皇太极再次遣兵入塞，劫掠京畿外围！虽非大举入侵，但后金兵锋锐利，边民死伤惨重。辽东将领请求增兵增饷，但朝廷兵力财力皆困于剿匪，难以兼顾。大人以为当如何应对？',
       background: `崇祯八年八月，后金再次入塞劫掠。
@@ -1343,8 +1335,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年凤阳之乱、北方旱灾，收成大不如前。百姓困苦，催征困难。加之辽饷、剿饷加派，百姓怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯八年九月，秋收已毕，赋税征收在即。
@@ -1510,8 +1501,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，好消息！卢象升连战连捷，流寇内部出现分化！高迎祥与张献忠因分赃不均而反目，李自成则率部独走。有人主张趁流寇分化之机各个击破，有人主张招安抚定以分化瓦解，还有人担心流寇诈降。大人以为当如何应对？',
       background: `崇祯八年十月，流寇内部出现分化。
@@ -1675,8 +1665,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，朝堂人事又有变动。温体仁进一步排挤异己，数位大臣被其陷害去职。卢象升虽立战功，但温体仁暗中掣肘，不愿其坐大。朝堂之上，温体仁一党独大，忠良之士日渐稀少。大人当如何自处？',
       background: `崇祯八年十一月，朝堂人事变动。
@@ -1836,8 +1825,7 @@ export const events1635: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯八年将尽。这一年，凤阳失守、皇陵被毁、北方大旱、卢象升剿匪、流寇分化，国事日非。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯八年十二月，岁末总结。

@@ -26,6 +26,7 @@
     "check:node": "node scripts/check-node-engine.cjs",
     "check:steam": "node desktop/smoke-test.cjs",
     "audit:shape": "vite-node scripts/audit-event-shape.ts",
+    "audit:values": "vite-node scripts/audit-value-domains.ts",
     "audit:dupkeys": "vite-node scripts/audit-dup-keys.ts",
     "audit:flags": "vite-node scripts/audit-flag-reachability.ts",
     "audit:events": "vite-node scripts/audit-events.ts",

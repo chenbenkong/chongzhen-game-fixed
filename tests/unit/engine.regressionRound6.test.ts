@@ -218,9 +218,12 @@ const RESIGN_EVENT: GameEvent = {
 const RESIGN_CHOICE: EventChoice = {
   id: 'resign',
   text: '挂冠求去，辞官归里',
+  // special 只认 type: 'ending'。原先这里还写着 value: 'ending_hermit'，
+  // 但引擎从不读 value（走的是 isResignEndingChoice 对选项文案的判断），
+  // 第九轮把 value 从类型里删掉，这个测试跟着收紧。
   effects: {
     gameState: { 清议: 10 },
-    special: { type: 'ending', value: 'ending_hermit' }
+    special: { type: 'ending' }
   }
 }
 

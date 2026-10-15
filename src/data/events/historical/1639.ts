@@ -9,8 +9,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东急报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！清军重兵围攻锦州！洪承畴总督已率八总兵十三万大军驰援！这一战，关乎大明存亡！',
       background: `崇祯十二年至十五年（1639-1642），明清之间爆发了决定两国命运的战略决战——松锦大战。
@@ -192,8 +191,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东降将',
-        title: '逃回明军',
-        avatar: '/avatars/soldier.png'
+        title: '逃回明军'
       },
       quote: '大人！洪督师...洪督师投降了！他在松山被俘，现在已经剃发易服，归顺了清朝！',
       background: `崇祯十五年（1642年），松锦大战结束，明军大败。
@@ -371,8 +369,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部塘报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！卢象升总督在巨鹿贾庄与清军激战，力竭殉国！全军覆没！高起潜拥兵不救，坐视卢督师殉国！',
       background: `崇祯十一年十月，清军再次入关，兵分三路，直逼北京。
@@ -564,8 +561,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！杨嗣昌杨督师已到襄阳，推行"四正六隅"剿匪之策！十万大军，十面埋伏，誓要将李自成、张献忠等流寇一网打尽！',
       background: `崇祯十二年四月，杨嗣昌出任督师，推行"四正六隅"剿匪计划。
@@ -744,8 +740,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '湖广塘报',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！张献忠在谷城接受招安！熊文灿大人已经答应给他官职和粮饷，让他镇守谷城！这...这能信吗？',
       background: `崇祯十二年六月，张献忠在谷城接受招安，投降明朝。

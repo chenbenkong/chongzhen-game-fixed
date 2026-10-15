@@ -9,8 +9,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部主事',
-        title: '吏部文选司',
-        avatar: '/avatars/official.png'
+        title: '吏部文选司'
       },
       quote: '大人，新君登基已逾月，朝政渐趋稳定。魏忠贤已去职，但其党羽遍布朝野，皇上正密谋清洗。此时正是我等建功立业之机。',
       background: `崇祯元年二月，新君登基已逾月，朝政渐趋稳定。
@@ -158,8 +157,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，辽东塘报！后金皇太极正在整军备战，似有南下之意。袁崇焕上书请求增饷，皇上犹豫不决。这辽东战事，怕是又要起波澜了。',
       background: `崇祯元年三月，辽东军情告急。
@@ -324,8 +322,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部春闱主考',
-        avatar: '/avatars/official.png'
+        title: '礼部春闱主考'
       },
       quote: '大人，今科春闱即将开考，天下士子云集京师。皇上十分重视此次科举，欲选拔真才实学之士，充实朝堂。',
       background: `崇祯元年四月，春闱科举正式开考。
@@ -488,8 +485,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部主事',
-        title: '礼部文选司',
-        avatar: '/avatars/official.png'
+        title: '礼部文选司'
       },
       quote: '大人，今科春闱已经放榜！贡院外聚集了大量落第士子，有人痛哭流涕，有人愤愤不平，还有人聚众闹事。这可如何是好？',
       background: `崇祯元年五月，春闱放榜之日。
@@ -659,8 +655,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，夏收时节到了，各地百姓开始缴纳赋税。但今年多地歉收，百姓困苦，催征困难。皇上催得紧，这可如何是好？',
       background: `崇祯元年六月，夏收时节，赋税征收正式开始。
@@ -828,8 +823,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，夏收赋税的账目已经汇总，但发现有几处疑点。有些地方上报的数字与实际不符，还有些款项去向不明。这可如何是好？',
       background: `崇祯元年七月，夏收赋税账目核查。
@@ -997,8 +991,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部员外郎',
-        title: '礼部祠祭司',
-        avatar: '/avatars/official.png'
+        title: '礼部祠祭司'
       },
       quote: '大人，中秋将至，宫中要举办盛大的中秋夜宴。礼部正在筹备，但人手不足，经费紧张。您可愿意协助筹备？',
       background: `崇祯元年八月，中秋将至，宫中开始筹备中秋夜宴。
@@ -1159,8 +1152,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '司礼监太监',
-        title: '宫中内侍',
-        avatar: '/avatars/eunuch.png'
+        title: '宫中内侍'
       },
       quote: '大人，中秋夜宴已经开始，皇上和大臣们都在等您呢。这可是难得的机会，您可要好好表现啊。',
       background: `崇祯元年九月中秋，宫中举办盛大的中秋夜宴，宴请朝中大臣。
@@ -1323,8 +1315,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院御史',
-        title: '监察御史',
-        avatar: '/avatars/official.png'
+        title: '监察御史'
       },
       quote: '大人，皇上下旨整顿吏治，严查贪官污吏。朝野上下，人心惶惶。这可是个机会，既能建功立业，也能铲除异己。',
       background: `崇祯元年十月，皇上下旨整顿吏治，严查贪官污吏。
@@ -1490,8 +1481,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部员外郎',
-        title: '礼部祠祭司',
-        avatar: '/avatars/official.png'
+        title: '礼部祠祭司'
       },
       quote: '大人，冬至将至，皇上要在南郊祭天。这可是国之大事，朝野上下都在关注。若能参与筹备，必能崭露头角。',
       background: `崇祯元年十一月冬至，皇上要在南郊祭天。
@@ -1649,8 +1639,7 @@ export const events1628: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部文选司主事',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，年关将至，朝廷要进行年终考绩。这一年，大人政绩如何，全看此次考绩了。',
       background: `崇祯元年十二月，年关将至，朝廷进行年终考绩。

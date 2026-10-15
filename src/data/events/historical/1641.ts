@@ -9,8 +9,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南急报',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！闯贼李自成攻破洛阳，福王朱常洵被杀！闯贼自称"奉天倡义大元帅"，声势浩大，河南已非朝廷所有！',
       background: `崇祯十四年，李自成攻破洛阳，杀福王朱常洵，自称"奉天倡义大元帅"。
@@ -186,8 +185,7 @@ export const events1641: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南巡按御史',
-        title: '十万火急',
-        avatar: '/avatars/messenger.png'
+        title: '十万火急'
       },
       quote: '大人！李自成攻破洛阳，杀福王！如今拥兵数十万，号称"闯王"！河南各城相继沦陷！大人辖区危在旦夕！速做决断！',
       background: `崇祯十四年正月，李自成攻克洛阳，杀福王朱常洵。

@@ -9,8 +9,7 @@ export const events1631: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽军把总',
-        title: '孔有德部将',
-        avatar: '/avatars/soldier2.png'
+        title: '孔有德部将'
       },
       quote: '大人！弟兄们已经八个月没发饷了！家里老娘饿得吃树皮，娃儿饿得哭都哭不出来！再不发饷，弟兄们就要造反了！',
       background: `崇祯四年十二月，登莱巡抚孙元化麾下的辽军与山东本地军队矛盾激化。

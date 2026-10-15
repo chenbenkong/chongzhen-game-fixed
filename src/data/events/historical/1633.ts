@@ -10,8 +10,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部主事',
-        title: '京师礼部',
-        avatar: '/avatars/clerk.png'
+        title: '京师礼部'
       },
       quote: '徐阁老走了。这位译过《几何原本》、写过《农政全书》的大人，大明又有几人能及？',
       background: `崇祯六年十一月八日，翰林院学士、礼部尚书徐光启病逝于北京，享年七十一岁。
@@ -141,8 +140,7 @@ export const events1633: GameEvent[] = [
     narrative: {
       speaker: {
         name: '游学士子',
-        title: '某书院同窗',
-        avatar: '/avatars/scholar.png'
+        title: '某书院同窗'
       },
       quote: '徐兄这一去，就是十年。十年踏遍山山水水，回来时怕已是鬓发如霜了。',
       background: `崇祯六年，徐霞客自家乡江阴启程，开始他人生中最后一次、也是时间最长的一次远游。

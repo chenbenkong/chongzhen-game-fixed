@@ -9,8 +9,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十二年了。过去一年，清军入塞，济南失守，卢象升殉国，京畿山东惨遭蹂躏。杨嗣昌虽受弹劾，但皇上仍信之不疑。新年朝会之上，皇上言及"中兴"二字，语带愤懑，百官噤若寒蝉。大人可有思量？',
       background: `崇祯十二年正月，新年朝会。
@@ -171,8 +170,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！杨嗣昌杨督师已奉旨出京，督师剿匪！皇上赐尚方宝剑，节制七省兵马，推行"四正六隅"之策，誓要将流寇一网打尽！杨督师点名要各地配合，大人当如何应对？',
       background: `崇祯十二年二月，杨嗣昌督师剿匪。
@@ -336,8 +334,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但困难重重！去年清军入塞，京畿山东田地荒芜，百姓缺种少粮。加之练饷加派，百姓负担更重，许多农户连口粮都不够，更遑论春耕。若不及时解决，今年秋收又将无望，流寇只会更多！',
       background: `崇祯十二年三月，春耕时节，困难重重。
@@ -508,8 +505,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '湖广急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！张献忠复叛了！他在谷城起兵，攻城略地，势如破竹！熊文灿的招抚之策彻底失败，张献忠杀官劫库，湖广大震！杨督师震怒，誓要将其剿灭！大人当如何应对？',
       background: `崇祯十二年四月，张献忠在谷城复叛。
@@ -667,8 +663,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部主事',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，己卯科会试在即！天下举子齐聚京师，准备参加春闱。然而，今年因清军入塞之故，许多举子未能按时赶到。加之朝中杨嗣昌专权，有人传言此次会试将偏向杨党之人。大人身为考官之一，当如何自处？',
       background: `崇祯十二年五月，己卯科会试。
@@ -824,8 +819,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '工部主事',
-        title: '工部都水司',
-        avatar: '/avatars/official.png'
+        title: '工部都水司'
       },
       quote: '大人，入夏以来，连日暴雨，黄河决口，数省洪涝！河南、山东一带，良田被淹，村庄被毁，百姓流离失所。加之去年清军蹂躏，百姓本就困苦，如今更是雪上加霜！朝廷赈灾银两杯水车薪，大人以为当如何应对？',
       background: `崇祯十二年六月，夏季洪涝，数省受灾。
@@ -999,8 +993,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！清军又入塞了！阿巴泰率军从墙子岭破关而入，边防再次崩溃！京畿震动，百姓惊恐万分！去年清军入塞的惨状犹在眼前，如今虏骑再犯，朝廷将如何应对？',
       background: `崇祯十二年七月，清军再次入塞。
@@ -1164,8 +1157,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '卢象升旧部',
-        title: '天雄军残部',
-        avatar: '/avatars/official.png'
+        title: '天雄军残部'
       },
       quote: '大人......卢督师......战死了......在巨鹿贾庄，卢督师率残兵与清军血战，身中四矢三刃，力战不退，壮烈殉国！高起潜拥兵不救，坐视卢督师孤军奋战！全军覆没，无一投降！大人，卢督师的冤屈，谁来为他昭雪？',
       background: `崇祯十二年八月，卢象升在巨鹿贾庄壮烈战死。
@@ -1333,8 +1325,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，杨嗣昌接替卢象升，出任督师了！皇上命杨嗣昌督师剿匪，赐尚方宝剑，节制七省兵马。杨督师已赴襄阳，推行"四正六隅"之策。然而，卢督师之冤未雪，杨嗣昌却步步高升，朝野议论纷纷。大人当如何自处？',
       background: `崇祯十二年九月，杨嗣昌接替卢象升，出任督师。
@@ -1497,8 +1488,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，朝中又要整肃了！杨嗣昌以"党同伐异"之名，大肆清洗异己。多位言官被革职查办，黄道周已被下狱。杨嗣昌权势熏天，朝堂之上无人敢言。大人若不表态，只怕也会被牵连。大人当如何自处？',
       background: `崇祯十二年十月，杨嗣昌大肆清洗异己。
@@ -1660,8 +1650,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东总兵',
-        title: '军情急报',
-        avatar: '/avatars/messenger.png'
+        title: '军情急报'
       },
       quote: '大人，清军退了！清军在京畿劫掠数月后，满载而归，已从青山口退去。据报，清军此次入塞，又破城数十座，掳掠人口牲畜无数。京畿再次一片废墟，惨不忍睹。然而，清军退去，朝中却无人引咎辞职......',
       background: `崇祯十二年十一月，清军退去。
@@ -1828,8 +1817,7 @@ export const events1639: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十二年将尽。这一年，杨嗣昌督师剿匪，张献忠复叛，清军再次入塞，卢象升壮烈殉国。朝中杨嗣昌专权，大肆清洗异己，言路堵塞。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯十二年十二月，岁末总结。

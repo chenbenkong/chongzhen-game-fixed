@@ -2,7 +2,7 @@
  * 事件数据结构体检：盯住「判定逻辑和数据之间的接线」。
  *
  * 为什么要单独写这个：这个仓库的数据文件曾经整片带 `@ts-nocheck`（第八轮已清零），
- * 那时它们对 tsc 完全透明 —— 写错一个键名不会报错，只会在运行时变成一件**什么都没做**的事。
+ * 那时它们对 tsc 完全透明 —— 写错一个键名不会报错，只会在运行时变成**什么都没做**的事。
  * 类型收紧之后 tsc 能抓住键名了，但抓不住"键名合法、语义错"的那一半
  * （没有 type 的事件、指向不存在 id 的引用、把花费塞进区间对象…），
  * 所以这个脚本继续存在。引擎对未知键的处理方式并不统一，后果分几类，脚本也按类报：
@@ -17,12 +17,18 @@
  *   DROP  —— effects.attributes / gameState / hidden 用了不存在的名字：
  *            ATTR_MAP/STATE_MAP 未命中就按原名写 → 在 character.attributes 上凭空长出一个
  *            垃圾字段。玩家看不到任何效果，但它会跟着存档一路复制下去。
- *   LINK  —— nextEvents / preludeEventId 指向一个不存在的事件 id：引擎会把队列排到那里，
- *            然后什么也找不到。
+ *   LINK  —— endingConfig.preludeEventId 指向一个不存在的事件 id：结局以为自己有前奏，
+ *            排期排到那里然后什么也找不到。（配对是否**双向**、prelude 有没有 isPreEnding，
+ *            由 audit-value-domains.ts 拿结局池当词表来查，这里只查悬空。）
  *   DEAD  —— 还有一类死内容：事件选择**严格按 `e.type` 分层**（pickEvent 与 useGameEngine 两条
  *            路径都是 filter(e => e.type === 'xxx')）。`type` 写错或干脆不写，事件就进不了任何
  *            一层，文本写得再长也永远不会出现在玩家面前。
  *            结局池（ending / triggerable）例外：它们不走选择器，由 BoundaryEventManager 触发。
+ *
+ * 键白名单与 `src/types/event.ts` 手工保持一致。删字段必须同时删这里 ——
+ * 白名单多留一个死字段，等于体检脚本继续替它背书「写了有人读」。
+ * 第九轮据此移除了 nextEvents / relationships / family / charactersAlive / charactersDead /
+ * historicalFlags 和选项级的 condition、check（DiceCheck）：它们既没有实现也没有一处数据。
  *
  * 扫描逻辑导出为 `scanEventShape()`，`eventShape` 是六个事件池合并去重后的现成结论。
  * tests/unit/eventShape.silentFailures.test.ts 两样都用：拿真实数据断言这几类恒为 0，
@@ -31,15 +37,7 @@
  * `src/` 不许有 `@ts-nocheck`，也不许有 BOM 开头的文件（第八轮就是因为后者，
  * 一条 `grep '^// @ts-nocheck'` 假阴性，让我以为盲区已经清零）。
  */
-import {
-  historicalEvents,
-  transitionEvents,
-  initialEvents,
-  allGrayChoiceEvents,
-  emotionEvents
-} from '../src/data/events/index'
-import { allEndingEvents } from '../src/data/events/ending'
-import { triggerableEndingEvents } from '../src/data/boundaryEvents'
+import { allEvents, labelOfPool } from './event-pools'
 
 const ATTR_KEYS = ['财帛', '文韬', '理政', '武略', '体质']
 const ATTR_ALIASES = ['文辩', '朝政', '权势', '机敏', '道德']
@@ -62,14 +60,13 @@ const SELECTABLE_TYPES = [
 const NON_POOL_POOLS = ['ending', 'triggerable']
 
 const EVENT_KEYS = ['id', 'title', 'description', 'narrative', 'conditions', 'choices', 'type',
-  'endingConfig', 'isPreEnding', 'linksToEndingId', 'storyline', 'nextEvents']
+  'endingConfig', 'isPreEnding', 'linksToEndingId', 'storyline']
 const CHOICE_KEYS = ['id', 'text', 'quote', 'description', 'storyline', 'showConditions', 'effects',
-  'resultDescription', 'result', 'failEffects', 'failResultDescription', 'failResult', 'check',
-  'staminaCost', 'staminaRequired', 'staminaBonus', 'condition']
+  'resultDescription', 'result', 'failEffects', 'failResultDescription', 'failResult',
+  'staminaCost', 'staminaRequired', 'staminaBonus']
 const COND_KEYS = ['year', 'month', 'turn', 'rank', 'origin', 'attributes', 'hidden', 'gameState', 'flags',
-  'charactersAlive', 'charactersDead', 'historicalFlags', 'random', 'relationships', 'custom']
-const EFFECT_KEYS = ['attributes', 'hidden', 'gameState', 'flags', 'relationships', 'family',
-  'nextEvents', 'special', 'meritScore']
+  'random', 'custom']
+const EFFECT_KEYS = ['attributes', 'hidden', 'gameState', 'flags', 'special', 'meritScore']
 const NARRATIVE_KEYS = ['speaker', 'quote', 'background', 'situation']
 const RESULT_KEYS = ['title', 'tags', 'echo']
 
@@ -80,7 +77,7 @@ const extraKeys = (obj: object, allowed: string[]) =>
 
 /**
  * 对一批事件做结构体检。
- * `knownIds` 决定 nextEvents / preludeEventId 的悬空判定拿谁当全集，缺省用这批事件自身；
+ * `knownIds` 决定 preludeEventId 的悬空判定拿谁当全集，缺省用这批事件自身；
  * `labelOf` 只影响输出里的来源标签，纯粹是为了报错时能定位到是哪个池子。
  */
 export function scanEventShape(
@@ -98,12 +95,15 @@ export function scanEventShape(
   }
 
   /**
-   * 条件块检查。同一个函数同时用于事件级 `conditions` 和选项级 `showConditions` / `condition`：
+   * 条件块检查。同一个函数同时用于事件级 `conditions` 和选项级 `showConditions`：
    * 后者原先是这个体检脚本自己的盲区（只查了未知键名，没查里面的属性名），
    * 于是 `showConditions.attributes.道德值` 这种"把隐藏属性写成属性"的死条件，
    * 是 tsc 而不是体检脚本先抓到的。
+   *
+   * `level` 只服务一条判定：`custom` 只有 boundaryEventCompiler 在**事件级**、
+   * 且事件来自结局池时才真的会被调用。别的位置写 custom 是一道看不见的门。
    */
-  const scanConditions = (cond: any, prefix: string, where: string) => {
+  const scanConditions = (cond: any, prefix: string, where: string, level: 'event' | 'choice', poolLabel: string) => {
     for (const k of extraKeys(cond, COND_KEYS)) add('结构', where, `${prefix} 上有未知键 ${k}`)
 
     // Range 只认 min / max。往里面塞数值是另一种写法错误：
@@ -152,20 +152,29 @@ export function scanEventShape(
       const r = Number(cond.random)
       if (!Number.isFinite(r) || r <= 0 || r > 100) add('NOOP', where, `${prefix}.random=${cond.random} 越界（应为 0-100 的百分数或 0-1 的小数）`)
     }
+    if (typeof cond.custom === 'function') {
+      const honored = level === 'event' && NON_POOL_POOLS.includes(poolLabel)
+      if (!honored) {
+        const why = level === 'choice'
+          ? '选项级条件走的是 EventDisplay.checkChoiceRequirement，它只读 attributes/gameState/hidden/flags/出身/体质，不调用 custom'
+          : '事件池的条件走的是 checkEventConditions，它不调用 custom（只有 boundaryEventCompiler 会）'
+        add('NOOP', where, `${prefix}.custom 不会被任何求值器调用 —— ${why}，这道门等于没装`)
+      }
+    }
   }
 
   for (const [, event] of seen) {
     const label = labelOf ? labelOf(event.id) : 'pool'
     const where = `${label} · ${event.id}「${String(event.title || '').slice(0, 16)}」`
 
-    for (const k of extraKeys(event, EVENT_KEYS)) add('结构', where, `事件上有未知键 ${k}`)
+    for (const k of extraKeys(event, EVENT_KEYS)) add('结构', where, `事件上有未知键 ${k}（类型里没有这个字段，写了没人读）`)
 
     if (!NON_POOL_POOLS.includes(label)) {
       if (!event.type) add('DEAD', where, '事件没有 type —— 两条选择器路径都按 type 分层，这个事件进不了任何一层，永不触发')
       else if (!SELECTABLE_TYPES.includes(event.type)) add('DEAD', where, `事件 type='${event.type}' 不在选择器认领的类型集合里，永不触发`)
     }
 
-    scanConditions(event.conditions || {}, 'conditions', where)
+    scanConditions(event.conditions || {}, 'conditions', where, 'event', label)
 
     for (const ch of event.choices || []) {
       if (!ch || typeof ch !== 'object') { add('结构', where, 'choices 里有非对象项'); continue }
@@ -183,22 +192,23 @@ export function scanEventShape(
       for (const key of Object.keys(eff.gameState || {})) {
         if (!STATE_KEYS.includes(key) && !STATE_ALIASES.includes(key)) add('DROP', cw, `effects.gameState.${key} 不在 STATE_MAP 里`)
       }
-      for (const id of eff.nextEvents || []) {
-        if (!idUniverse.has(id)) add('LINK', cw, `effects.nextEvents 指向不存在的事件 ${id}`)
+      // special 是"剧情级动作"键，但引擎只实现了 ending 一种（useGameEngine 两处
+      // `special?.type === 'ending'`）。写 death / promotion / imprisonment 不会杀人也不会升官，
+      // 只会安静地什么都不做 —— 这类"看起来像副作用的注释"最容易被后来人当成真接口。
+      for (const k of extraKeys(eff.special || {}, ['type'])) {
+        add('DROP', cw, `effects.special.${k} 引擎不读（这个对象只认 type，且只有 'ending' 有实现）`)
+      }
+      if (eff.special && eff.special.type !== 'ending') {
+        add('DEAD', cw, `effects.special.type='${eff.special.type}' 没有任何分支处理 —— 死亡/贬谪走引擎自己的升贬判定，不经过这里`)
       }
       if (ch.result && typeof ch.result === 'object') {
         for (const k of extraKeys(ch.result, RESULT_KEYS)) add('结构', cw, `result 上有未知键 ${k}`)
       }
-      for (const [sub, name] of [[ch.showConditions, 'showConditions'], [ch.condition, 'condition']] as const) {
-        if (sub && typeof sub === 'object' && typeof (sub as any).min !== 'number') {
-          scanConditions(sub, name, cw)
-        }
+      if (ch.showConditions && typeof ch.showConditions === 'object') {
+        scanConditions(ch.showConditions, 'showConditions', cw, 'choice', label)
       }
     }
 
-    for (const id of event.nextEvents || []) {
-      if (!idUniverse.has(id)) add('LINK', where, `event.nextEvents 指向不存在的事件 ${id}`)
-    }
     if (event.narrative) {
       for (const k of extraKeys(event.narrative, NARRATIVE_KEYS)) add('结构', where, `narrative 上有未知键 ${k}`)
     }
@@ -210,31 +220,12 @@ export function scanEventShape(
   return findings
 }
 
-const pools: Array<[string, any[]]> = [
-  ['initialEvents', initialEvents as any[]],
-  ['gray', allGrayChoiceEvents as any[]],
-  ['ending', allEndingEvents as any[]],
-  ['emotion', emotionEvents as any[]],
-  ['triggerable', triggerableEndingEvents as any[]]
-]
-// 六个事件池合并去重后，来源标签要能区分「参与 type 分层」和「由 BoundaryEventManager 触发」，
-// 所以先按池子建全量标签，再把 initialEvents 里的 historical / transition 覆盖成更精确的来源。
-const poolOf = new Map<string, string>()
-for (const [name, list] of pools) {
-  for (const e of list) if (e?.id && !poolOf.has(e.id)) poolOf.set(e.id, name)
-}
-for (const e of historicalEvents as any[]) poolOf.set(e.id, 'historical')
-for (const e of transitionEvents as any[]) poolOf.set(e.id, 'transition')
-
-const allEvents: any[] = []
-for (const [, list] of pools) allEvents.push(...list)
-
 const order = ['DEAD', 'NOOP', 'DROP', 'LINK', '结构']
 
 /** 六个事件池合并去重后的体检结论（测试和 CLI 用的都是这一份） */
 export const eventShape = {
   total: new Set<string>(allEvents.map(e => e?.id).filter(Boolean)).size,
-  findings: scanEventShape(allEvents, undefined, id => poolOf.get(id) || 'pool')
+  findings: scanEventShape(allEvents, undefined, labelOfPool)
 }
 
 // vite-node 跑脚本时 process.argv 只有 node 和 vite-node 两项（目标文件路径被它吃掉了），

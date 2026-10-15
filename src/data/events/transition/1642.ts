@@ -9,8 +9,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '礼部侍郎',
-        title: '礼部仪制司',
-        avatar: '/avatars/official.png'
+        title: '礼部仪制司'
       },
       quote: '大人，崇祯十五年了。过去一年，松锦之战惨败，洪承畴生死不明，辽东精锐尽丧。流寇李自成在河南势如破竹，围攻开封，天下震动。新年朝会之上，皇上面色铁青，言及"社稷危亡"，百官噤若寒蝉。大人可有思量？',
       background: `崇祯十五年正月，新年朝会，百官齐聚。
@@ -171,8 +170,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！松山城破了！洪承畴总督被清军俘虏！松山坚守半年，粮尽援绝，副将夏承德开门降敌，城池陷落！洪总督生死未卜，十三万大军灰飞烟灭！这是大明开国以来最大的惨败！',
       background: `崇祯十五年二月，松山陷落，洪承畴被俘。
@@ -337,8 +335,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！锦州也失守了！祖大寿献城投降！松山既陷，锦州孤立无援，祖大寿坚守月余，终因粮尽开城降清。至此，辽东四城——松山、锦州、杏山、塔山——全部沦陷！大明在关外再无一城一池！',
       background: `崇祯十五年三月，锦州陷落，祖大寿降清。
@@ -511,8 +508,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南巡抚急递',
-        title: '六百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '六百里加急'
       },
       quote: '大人！李自成围攻开封！流寇数十万大军将开封围得水泄不通，城中粮草将尽，百姓饥困。周王散尽家财犒军，但援军迟迟不至。若开封失守，中原将尽入贼手！朝廷当速速发兵救援！',
       background: `崇祯十五年四月，李自成围攻开封。
@@ -684,8 +680,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但中原战乱，河南数省田地荒芜，耕牛稀缺，种子不足。加之辽饷、剿饷、练饷三饷加派，百姓困苦到了极点。李自成横行河南，百姓逃散，无人耕种。若今年春耕再误，来年饥荒更甚，流寇只会越来越多。',
       background: `崇祯十五年五月，春耕荒废，民生凋敝。
@@ -854,8 +849,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '南京工部主事',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！南方连日暴雨，江河决堤，洪水泛滥！数省一片汪洋，良田被淹，百姓溺亡无数！灾民百万，急需救援！加之三饷加派，百姓雪上加霜，民怨沸腾！',
       background: `崇祯十五年六月，南方洪涝灾害。
@@ -1030,8 +1024,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部',
-        avatar: '/avatars/official.png'
+        title: '兵部'
       },
       quote: '大人，朝中议和之声再起！辽东全失，流寇猖獗，国力枯竭。兵部尚书陈新甲力主与清军议和，认为"攘外必先安内"，当先与清军议和，集中力量剿灭流寇。但主战派坚决反对，认为"堂堂天朝，岂可向蛮夷屈膝"！皇上举棋不定，大人以为如何？',
       background: `崇祯十五年七月，朝中议和之声再起。
@@ -1196,8 +1189,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，大事不好！陈新甲秘密议和之事泄露了！不知何人将陈新甲与清军议和的密函散布于朝堂之上，满朝哗然！主战派群情激愤，弹劾陈新甲"卖国求荣"。皇上震怒，将陈新甲下狱！此事牵连甚广，大人当如何自处？',
       background: `崇祯十五年八月，陈新甲秘密议和泄露，朝野震动。
@@ -1357,8 +1349,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。今年中原战乱、南方洪涝，收成大减。加之三饷加派，百姓负担沉重，怨声载道。各地已有抗税苗头，但皇上催得紧，陈新甲虽已下狱，三饷却不可少。这可如何是好？',
       background: `崇祯十五年九月，秋收已毕，赋税征收在即。
@@ -1524,8 +1515,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '河南巡抚急递',
-        title: '八百里加急',
-        avatar: '/avatars/messenger.png'
+        title: '八百里加急'
       },
       quote: '大人！开封......开封没了！黄河决口，洪水灌城！全城淹没，数十万百姓溺亡！据报，是守军掘堤灌城，欲以洪水退贼，不料水势失控，反淹全城！开封......千年古城，一朝化为泽国！',
       background: `崇祯十五年十月，黄河决口，开封被洪水淹没。
@@ -1694,8 +1684,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，朝堂又动荡了！陈新甲已被处死，议和派遭到清洗。主战派趁机大肆攻击议和派，朝中人人自危。加之开封淹没之惨，朝野对朝廷极为不满，弹劾奏疏如雪片般飞来。皇上多疑善变，动辄罢黜大臣，朝堂之上已无人敢言。大人当如何自处？',
       background: `崇祯十五年十一月，朝堂动荡，人人自危。
@@ -1856,8 +1845,7 @@ export const events1642: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯十五年将尽。这一年，松山陷落、锦州失守、辽东全失、开封淹没、陈新甲被杀......国事日非，社稷危亡。年终考绩在即，大人的政绩如何，全看此次考绩了。不知大人可有准备？',
       background: `崇祯十五年十二月，岁末总结。

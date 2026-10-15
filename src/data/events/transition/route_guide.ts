@@ -700,7 +700,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '一场疫病让你萌生习医之心。',
     type: 'random',
     narrative: {
-      speaker: { name: '老郎中', title: '城南医馆', avatar: '/avatars/scholar.png' },
+      speaker: { name: '老郎中', title: '城南医馆' },
       quote: '大人若真心想救这一方百姓，老朽愿倾囊相授。只是学医苦，且要耐得住寂寞。',
       background: `崇祯年间，疫病频发。这年春天，京畿大疫，十室九病。
 
@@ -807,7 +807,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '官场沉浮数十载，你开始想：是不是该换一种活法？',
     type: 'random',
     narrative: {
-      speaker: { name: '同年进士', title: '致仕老友', avatar: '/avatars/scholar.png' },
+      speaker: { name: '同年进士', title: '致仕老友' },
       quote: '某兄，五十而知天命。你我这一辈子，到底图的是什么？',
       background: `你入仕已近二十年。
 
@@ -918,7 +918,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '朝堂之上，一位权臣的倒行逆施已经到了不可容忍的地步。',
     type: 'random',
     narrative: {
-      speaker: { name: '同科进士', title: '都察院同僚', avatar: '/avatars/scholar.png' },
+      speaker: { name: '同科进士', title: '都察院同僚' },
       quote: '某公，温体仁/杨嗣昌/陈新甲……满朝文武噤若寒蝉，难道我等清流，就任由他们胡作非为吗？',
       background: `崇祯朝的几位权臣，或揽权自重，或主和误国，或欺君罔上——种种劣迹，朝野皆知。
 
@@ -1035,7 +1035,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '辽东告急，满朝文武无人敢去——除了你。',
     type: 'random',
     narrative: {
-      speaker: { name: '兵部尚书', title: '朝会', avatar: '/avatars/general.png' },
+      speaker: { name: '兵部尚书', title: '朝会' },
       quote: '某公，你当真愿去？辽东那地方……去的，十个里能回来三个，就算祖宗保佑了。',
       background: `崇祯某年，辽东前线再次告急。锦州、松山的战报雪片般飞入京师。
 
@@ -1160,7 +1160,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '大明将倾，有人看到风险，有人看到机会——南洋便是其中之一。',
     type: 'random',
     narrative: {
-      speaker: { name: '闽商', title: '泉州海商', avatar: '/avatars/merchant.png' },
+      speaker: { name: '闽商', title: '泉州海商' },
       quote: '大人，与其坐等国破家亡，不如趁早把家眷和银子送到南洋去。巴达维亚、马六甲、吕宋……哪一处不是华人新天地？',
       background: `崇祯某年，朝中流寇四起，辽东告急。
 
@@ -1273,7 +1273,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '朝廷负你，你负天下——这条路一旦踏上，就再无回头。',
     type: 'random',
     narrative: {
-      speaker: { name: '亲兵', title: '深夜', avatar: '/avatars/general.png' },
+      speaker: { name: '亲兵', title: '深夜' },
       quote: '大人，兄弟们已经商量好了。只要您一句话，我们就反了。',
       background: `崇祯某年，你被朝廷构陷，几近下狱。
 
@@ -1395,7 +1395,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '权与钱，从来都是孪生兄弟。',
     type: 'random',
     narrative: {
-      speaker: { name: '晋商', title: '八大皇商之一', avatar: '/avatars/merchant.png' },
+      speaker: { name: '晋商', title: '八大皇商之一' },
       quote: '大人，盐、铁、丝、棉，哪一行不是一本万利？您有官身、有门路，只要您点头，咱们一起干。',
       background: `崇祯年间，朝廷财政濒临崩溃。加征三饷已经让百姓苦不堪言，但国库依然入不敷出。
 
@@ -1511,7 +1511,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '从七品知县到内阁大学士，每一步都是刀尖上跳舞。',
     type: 'random',
     narrative: {
-      speaker: { name: '吏部尚书', title: '天官', avatar: '/avatars/official.png' },
+      speaker: { name: '吏部尚书', title: '天官' },
       quote: '某公，皇上对你青睐有加。内阁正缺一位大学士——你，可愿担此重任？',
       background: `崇祯某年，你在朝中已浮沉十余年。
 
@@ -1645,7 +1645,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '朝堂之上，党同伐异——今日你弹劾他人，明日他人弹劾你。',
     type: 'random',
     narrative: {
-      speaker: { name: '同党', title: '东林/阉党同僚', avatar: '/avatars/scholar.png' },
+      speaker: { name: '同党', title: '东林/阉党同僚' },
       quote: '某公，对面那位某某，可是要置你于死地的人啊！你若不先下手，他必先下手。',
       background: `崇祯年间，党争惨烈。
 
@@ -1765,7 +1765,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '官场沉浮多年，你开始想：为这个家族，我能留下什么？',
     type: 'random',
     narrative: {
-      speaker: { name: '族中长老', title: '族长', avatar: '/avatars/scholar.png' },
+      speaker: { name: '族中长老', title: '族长' },
       quote: '某公，你为官多年，族人皆引以为荣。但祖宗的基业、子弟的前程、族中的孤寡……这些事，也该有人操心了。',
       background: `崇祯某年，你收到一封族中长老的来信。
 
@@ -1882,7 +1882,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '你已年过六旬，但案头的公文还堆得像山一样。',
     type: 'random',
     narrative: {
-      speaker: { name: '属官', title: '你的幕僚', avatar: '/avatars/scholar.png' },
+      speaker: { name: '属官', title: '你的幕僚' },
       quote: '老大人，您歇一歇吧。这些事，下官们能做。',
       background: `崇祯某年，你已年过六旬。
 
@@ -2001,7 +2001,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '你什么都没做错，但你也什么都没做对。',
     type: 'random',
     narrative: {
-      speaker: { name: '同僚', title: '同科进士', avatar: '/avatars/scholar.png' },
+      speaker: { name: '同僚', title: '同科进士' },
       quote: '某公，做官这么多年，你最大的成就是什么？',
       background: `崇祯某年，你在朝中已浮沉多年。
 
@@ -2124,7 +2124,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '大幕落下，你没有死，也没有降——你只是消失了。',
     type: 'random',
     narrative: {
-      speaker: { name: '亲随', title: '你的长随', avatar: '/avatars/messenger.png' },
+      speaker: { name: '亲随', title: '你的长随' },
       quote: '大人，您往哪里去？小的跟着您。',
       background: `崇祯某年——很可能是甲申之变前后。
 
@@ -2238,7 +2238,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '朝堂上你已看透；该为自己活一次了。',
     type: 'random',
     narrative: {
-      speaker: { name: '夫人', title: '你的妻子', avatar: '/avatars/messenger.png' },
+      speaker: { name: '夫人', title: '你的妻子' },
       quote: '老爷，您为朝廷操劳半生，也该为自己、为这个家想想了。',
       background: `崇祯某年，你已在朝中浮沉二十年。
 
@@ -2356,7 +2356,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '在权力顶峰时急流勇退，需要比做大官更大的勇气。',
     type: 'random',
     narrative: {
-      speaker: { name: '吏部尚书', title: '天官', avatar: '/avatars/official.png' },
+      speaker: { name: '吏部尚书', title: '天官' },
       quote: '某公，皇上属意你入阁。这是你这辈子最大的机会。',
       background: `崇祯某年，你仕途最得意的时候。
 

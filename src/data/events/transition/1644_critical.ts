@@ -413,7 +413,7 @@ export const events1644_critical: GameEvent[] = [
     title: '满门何去何从',
     description: '府中灯火通明。所有人都在等你一句话。',
     narrative: {
-      speaker: { name: '夫人', title: '结发妻子', avatar: '/avatars/family.png' },
+      speaker: { name: '夫人', title: '结发妻子' },
       quote: '老爷，您要殉国，妾身不拦您。但孩子们……他们还小啊！',
       background: `城破之前那个夜晚，你已经下定决心以死殉国。
 

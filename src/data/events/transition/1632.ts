@@ -9,8 +9,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '翰林院编修',
-        title: '翰林院',
-        avatar: '/avatars/official.png'
+        title: '翰林院'
       },
       quote: '大人，崇祯五年了。过去一年，辽东局势稍稳，但陕西流民日增，朝中温体仁专权日甚。新年朝会上，皇上言辞恳切，似有振作之意。大人可有思量？',
       background: `崇祯五年正月，新年朝会，百官齐聚。
@@ -159,8 +158,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部主事',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，大事不好！登州参将孔有德率部叛变，沿途劫掠，已攻陷数城！更可怕的是，孔有德有意率军渡海投降后金，若让其得逞，后金将获得我大明火器精锐！大人以为当如何应对？',
       background: `崇祯五年二月，登州参将孔有德率部叛变。
@@ -315,8 +313,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '陕西巡抚幕僚',
-        title: '巡抚衙门',
-        avatar: '/avatars/official.png'
+        title: '巡抚衙门'
       },
       quote: '大人，陕西流寇愈发猖獗！王嘉胤、王自用等人聚众为乱，流民从者如云。地方兵力不足，难以围剿。更可怕的是，流寇所过之处，百姓或从或亡，局势一触即发。大人以为当如何应对？',
       background: `崇祯五年三月，陕西流寇初起。
@@ -480,8 +477,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部郎中',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，春耕在即，但连年灾荒导致种子不足、耕牛匮乏、劳力短缺。百姓无力耕种，若今年再无收成，来年饥荒更甚。地方官员请求朝廷拨发种子和耕牛，但国库空虚，捉襟见肘。大人以为当如何应对？',
       background: `崇祯五年四月，春耕困难，民不聊生。
@@ -649,8 +645,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院御史',
-        title: '监察御史',
-        avatar: '/avatars/official.png'
+        title: '监察御史'
       },
       quote: '大人，温体仁近日又排挤异己，数位正直大臣被其陷害去职。朝中人人自危，敢怒不敢言。周延儒虽为首辅，却无力制衡。大人身在其中，当如何自处？',
       background: `崇祯五年五月，温体仁排挤异己，朝中党争激烈。
@@ -811,8 +806,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '工部主事',
-        title: '工部都水司',
-        avatar: '/avatars/official.png'
+        title: '工部都水司'
       },
       quote: '大人，大事不好！黄河在河南决口，洪水泛滥，数十州县被淹！百姓溺毙者无数，田地房屋尽毁。灾民百万，流离失所，急需救援。朝廷治河经费不足，地方官员请求紧急援助。大人以为当如何应对？',
       background: `崇祯五年六月，黄河决口，洪水泛滥。
@@ -982,8 +976,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '兵部侍郎',
-        title: '兵部职方司',
-        avatar: '/avatars/official.png'
+        title: '兵部职方司'
       },
       quote: '大人，陕西流寇愈剿愈多，朝中对于剿匪与招安之争愈发激烈。杨鹤主张招安抚民，洪承畴主张铁血围剿。皇上举棋不定，朝堂上争论不休。大人以为如何？',
       background: `崇祯五年七月，剿匪与招安之争再起。
@@ -1148,8 +1141,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '辽东经略幕僚',
-        title: '辽东经略府',
-        avatar: '/avatars/official.png'
+        title: '辽东经略府'
       },
       quote: '大人，辽东有新动向！后金在辽东加紧练兵，似有南侵之意。孔有德叛军若渡海投降后金，后金将获得我大明火器精锐，辽东防线将面临巨大压力。朝廷当如何应对？',
       background: `崇祯五年八月，辽东军情紧张。
@@ -1308,8 +1300,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '户部主事',
-        title: '户部度支司',
-        avatar: '/avatars/official.png'
+        title: '户部度支司'
       },
       quote: '大人，秋收已毕，赋税征收在即。然而今年北方旱灾加黄河水患，收成惨淡。百姓困苦，催征困难。加之辽饷、剿饷加派，百姓怨声载道。皇上催得紧，这可如何是好？',
       background: `崇祯五年九月，秋收已毕，赋税征收在即。
@@ -1474,8 +1465,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '都察院佥都御史',
-        title: '都察院',
-        avatar: '/avatars/official.png'
+        title: '都察院'
       },
       quote: '大人，各地民变此起彼伏！陕西、山西、河南、湖广，处处有百姓聚众抗粮抗税。地方官员疲于应对，有的请求增兵围剿，有的请求减免赋税。朝中对此争论不休，大人以为当如何应对？',
       background: `崇祯五年十月，各地民变此起彼伏。
@@ -1641,8 +1631,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '内阁中书',
-        title: '内阁制敕房',
-        avatar: '/avatars/official.png'
+        title: '内阁制敕房'
       },
       quote: '大人，温体仁近日又兴大狱！数位大臣被其以"结党"之名陷害去职，朝中正直之士几乎被清洗殆尽。周延儒也自身难保，首辅之位岌岌可危。朝堂之上，人人自危，噤若寒蝉。大人当如何自处？',
       background: `崇祯五年十一月，温体仁主导朝堂清洗。
@@ -1794,8 +1783,7 @@ export const events1632: GameEvent[] = [
     narrative: {
       speaker: {
         name: '吏部考功司郎中',
-        title: '吏部考功司',
-        avatar: '/avatars/official.png'
+        title: '吏部考功司'
       },
       quote: '大人，崇祯五年将尽，朝廷年终考绩在即。这一年，孔有德叛变、流寇四起、黄河决口、民变遍地、朝堂清洗......大人经历了太多。年终考绩将决定大人的仕途走向，不知大人可有准备？',
       background: `崇祯五年十二月，年关将至，朝廷进行年终考绩。
