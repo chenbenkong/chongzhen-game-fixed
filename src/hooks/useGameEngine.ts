@@ -6,9 +6,10 @@ import { checkAndUnlockAchievements, loadAchievements, Achievement, AchievementC
 import { DifficultyLevel, getDifficultyConfig } from '../types/difficulty'
 import { initialEvents, allGrayChoiceEvents } from '../data/events/index'
 import { origins } from '../data/origins'
+import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
-import { isZeroWarningRegistryId } from '../data/zeroWarningEvents'
+import { isZeroWarningRegistryId, zeroWarnFlag } from '../data/zeroWarningEvents'
 import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
@@ -89,6 +90,65 @@ const PLAY_TIME_TICK_MS = 30_000
  * 挂载路径与 checkBoundary 共用这一个常量，避免两处概率漂移。
  */
 const CRISIS_EVENT_PROBABILITY = 0.3
+
+/**
+ * 可重复事件的冷却期（月），避免同一事件反复出现。
+ *
+ * 支线池和 crisis 类临界事件**共用这一张表**：后者以前完全不设冷却，
+ * 而它的判定条件是状态而不是历史（`0 < 体质 < 20`），于是只要玩家一直病着，
+ * 「重病缠身」就能连着几个月发到同一张方子上——太医前一个月刚说"需静养数月"。
+ * 具体成因与实测见 `tests/unit/engine.cooldown.test.ts`。
+ */
+const EVENT_COOLDOWN_MONTHS: Record<string, number> = {
+  random: 8,
+  gray: 6,
+  character: 6,
+  national: 6,
+  faction: 6,
+  emotion: 12
+}
+
+/**
+ * 事件 `id` 在 `turn` 这一月是否仍处于冷却中。表里没登记这个 type = 不吃冷却。
+ *
+ * `lastTurn > turn` 只可能是撤销／重放留下的「未来记录」，
+ * 这种记录不该挡住事件——否则一次撤销就把那条支线永久锁死了。
+ */
+function isCoolingDown(
+  id: string,
+  type: string,
+  turn: number,
+  lastTurnById: Map<string, number>
+): boolean {
+  const minGap = EVENT_COOLDOWN_MONTHS[type] || 0
+  if (minGap <= 0) return false
+  const lastTurn = lastTurnById.get(id)
+  if (lastTurn === undefined || lastTurn > turn) return false
+  return turn - lastTurn < minGap
+}
+
+/**
+ * crisis 类临界事件能否在这一月登场。挂载路径与 `checkBoundary` 共用，避免两处判定漂移。
+ *
+ * 三层，顺序有意义：
+ * 1. **归零警告必到**，不吃概率门也不吃冷却。它是"判死前的最后一次通知"，漏发一次，
+ *    这一维就停在「归零但没警告」的状态上，而八条死线都要求先见过警告才收尾 ——
+ *    于是既不判死也不给救，整局悬空。
+ * 2. 冷却：crisis 的条件判的是**状态**（`0 < 体质 < 20`）而不是历史，只要玩家一直病着
+ *    就恒真。第十四轮之前这条路径完全不设冷却，于是同一个「重病缠身」能在三个月里
+ *    发作两遍（`engine.cooldown.test.ts` 的 seed=8 实测）。
+ * 3. 概率门 `CRISIS_EVENT_PROBABILITY`，与改造前一致，仍消耗一次 `Math.random()`。
+ */
+function crisisEventMayShow(
+  ruleId: string,
+  event: GameEvent,
+  turn: number,
+  lastTurnById: Map<string, number>
+): boolean {
+  if (isZeroWarningRegistryId(ruleId)) return true
+  if (isCoolingDown(event.id, event.type, turn, lastTurnById)) return false
+  return Math.random() < CRISIS_EVENT_PROBABILITY
+}
 
 /**
  * 把政绩分换算成 RANKS 里的「升序下标」（0 = 从九品司狱，越大官越高）。
@@ -257,6 +317,18 @@ type DemotionReason =
   | '清议不容'
   | '政绩下滑'
 
+/**
+ * 贬官判定的宽限期（月），与 `boundaryEvents.ts` 里阈值结局的
+ * `THRESHOLD_ENDING_GRACE_TURNS` 同一个原则、同一个数值：**先让人真正上任，再让考核杀人。**
+ *
+ * 这条不是可调手感，是实测逼出来的。四个出身里有三个**开局就落在贬官判据里面**：
+ * 「办事不力」的条件是 `圣眷<30 且 理政<40`，而寒门开局 圣眷20/理政30、
+ * 没落世家 20/25、诗文清望 25/28 —— 全部同时成立。
+ * 于是新官上任第一个月就可能被记一次"贬官"，玩家还一个事件都没看完。
+ * 归零那条线早就有宽限期加两级警告，考核这条线此前完全没有。
+ */
+const DEMOTION_GRACE_TURNS = 12
+
 function checkDemotion(
   currentScore: number,
   previousScore: number,
@@ -269,6 +341,8 @@ function checkDemotion(
   reason?: DemotionReason;
   newIdentity?: IdentityType;
 } {
+  if ((gameState?.turn ?? 0) < DEMOTION_GRACE_TURNS) return { demoted: false }
+
   const currentRankData = RANKS.find(r => r.name === character.rank)
   const currentRankBaseScore = currentRankData?.minScore ?? 500
 
@@ -280,7 +354,12 @@ function checkDemotion(
       message: `政绩分低于${currentRankBaseScore}分，不足以胜任${character.rank}，考核不合格`
     },
     {
-      condition: character.hidden.道德值 <= 0,
+      // 道德归零有两条判死通路：`boundaryEvents` 的 `moral_degeneracy`（要求先收到
+      // 「归零警告·道德值」那条危机事件）和这一条 severity 3 的即时革职。
+      // 后者从前不问警告，于是同一个维度上「归零两次才要命」的规则被自己作废了一半 ——
+      // 实测到第十四轮放开灰色池的年代门槛后，49% 的局在第 10 个月被这条直接收尾，
+      // 玩家连"你已经丧尽天良"这句提示都没见过。现在两条通路同进同退。
+      condition: character.hidden.道德值 <= 0 && !!character.flags?.includes(zeroWarnFlag('道德值')),
       reason: '道德败坏',
       severity: 3,
       message: '道德败坏，丧尽天良，天人共愤'
@@ -818,6 +897,25 @@ export function useGameEngine(props: UseGameEngineProps) {
     return pool[pool.length - 1]
   }, [])
 
+  /**
+   * 事件 id → 最后一次被选中的**月份**（state.turn）。
+   *
+   * `EVENT_COOLDOWN_MONTHS` 的表头写的是「冷却期（月）」，可它原先只按 `eventHistory` 的
+   * **条目距离**判定，而一个月会往 history 里追加 1~3 条（一条大事件 + 最多两个支线）。
+   * 于是 gray 的 6 实际是 2~3 个月，emotion 的 12 实际是 4~6 个月 ——
+   * 可重复支线比设计意图早一半以上就能重演。第十四轮把中官 / 体质 / 士绅的回升通道
+   * 做成可重复 gray 之后，这个偏差直接表现成「同一次节礼在三个月里打点了两遍」，
+   * 并被 tests/unit/engine.strictMode.test.ts 的「历史里不该有重复 id」抓到。
+   *
+   * 这里按月份另记一遍，与条目距离**同时**生效：条目距离维持原语义（不劣化既有行为），
+   * 月份距离是新增的上界。存档里没有 turn 轨迹，读档后这张表是空的 ——
+   * 空表等价于「只按条目距离判」，即维持原行为，不会把冷却算成永远走不完。
+   *
+   * crisis 类临界事件（`checkBoundary`）第十四轮之前根本不走这套判定，现在共用同一张表、
+   * 同一份月份轨迹，因此这条 ref 也是那条路径的唯一记录处。
+   */
+  const lastTurnByIdRef = useRef<Map<string, number>>(new Map())
+
   const findAllEventsForState = useCallback((state: GameStateValues): GameEvent[] => {
     const history = eventHistoryRef.current
     const available = ALL_EVENTS.filter(e => checkEventConditions(e, characterRef.current, state))
@@ -836,25 +934,20 @@ export function useGameEngine(props: UseGameEngineProps) {
     const lastIndexById = new Map<string, number>()
     for (let i = 0; i < history.length; i++) lastIndexById.set(history[i], i)
 
-    // 计算某个事件 ID 距离上次触发有多远（月数）
+    // 某个事件距离上次出现在 history 里隔了**几条**（不是几个月，见上面的说明）
     const lastOccurrenceDistance = (eventId: string): number => {
       const lastIndex = lastIndexById.get(eventId)
       if (lastIndex === undefined) return Infinity
       return history.length - lastIndex
     }
 
-    // 可重复事件的冷却期（月），避免同一事件反复出现
-    const cooldowns: Record<string, number> = {
-      random: 8,
-      gray: 6,
-      character: 6,
-      national: 6,
-      faction: 6,
-      emotion: 12
-    }
     const withCooldown = (pool: GameEvent[], type: string): GameEvent[] => {
-      const minGap = cooldowns[type] || 0
-      return minGap <= 0 ? pool : pool.filter(e => lastOccurrenceDistance(e.id) > minGap)
+      const minGap = EVENT_COOLDOWN_MONTHS[type] || 0
+      if (minGap <= 0) return pool
+      return pool.filter(e => {
+        if (lastOccurrenceDistance(e.id) <= minGap) return false
+        return !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current)
+      })
     }
 
     const results: GameEvent[] = []
@@ -902,8 +995,7 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     // 4. 支线事件：emotion 一次性，gray/character/national/faction 可重复但带冷却
     const branchEmotion = available.filter(e => e.type === 'emotion' && !seen.has(e.id))
-    const branchRepeatableTypes = ['gray', 'character', 'national', 'faction'] as const
-    const branchRepeatable = branchRepeatableTypes.flatMap(type =>
+    const branchRepeatable = branchRepeatableEventTypes.flatMap(type =>
       withCooldown(available.filter(e => e.type === type), type)
     )
     const branchPool = [...branchEmotion, ...branchRepeatable]
@@ -933,7 +1025,12 @@ export function useGameEngine(props: UseGameEngineProps) {
     results.push(...branchSelected)
 
     // 去重并过滤掉已经在本月结果中的事件
-    return results.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i)
+    const picked = results.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i)
+    // 记下本月真正发给玩家的这些事件（含支线）发生在哪一格月份上。
+    // 三个调用点都在「拿到非空结果就 break / 就使用」的路径上，所以这里不会给
+    // 从未发出的事件记冷却；重复调用只会把同一个 id 写回同一个 turn，是幂等的。
+    for (const e of picked) lastTurnByIdRef.current.set(e.id, state.turn)
+    return picked
   }, [getCurrentStoryline, weightedPick])
 
   const addLifeRecord = useCallback((record: Omit<LifeRecord, 'id'>) => {
@@ -1382,10 +1479,9 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 这里补上同一条检查，概率门与挂载路径共用 CRISIS_EVENT_PROBABILITY。
       const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
       if (crisisEvent) {
-        // 归零警告不吃概率门。它是"判死前的最后一次通知"：漏发一次，这一维就停在
-        // 「归零但没警告」的状态上，而八条死线现在都要求先见过警告才收尾 ——
-        // 于是既不判死也不给救，整局悬空。通知这种东西应当是必到的。
-        if (isZeroWarningRegistryId(crisisEvent.id) || Math.random() < CRISIS_EVENT_PROBABILITY) {
+        if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, currentGameState.turn, lastTurnByIdRef.current)) {
+          // 记进月份轨迹：这条路径以前什么都不记，所以它挡不住下个月的原地重演。
+          lastTurnByIdRef.current.set(crisisEvent.event.id, currentGameState.turn)
           setCurrentEvent(crisisEvent.event)
           return true
         }
@@ -1663,6 +1759,8 @@ export function useGameEngine(props: UseGameEngineProps) {
     setCharacter(freshCharacter)
     setGameState(freshGameState)
     setEventHistory([])
+    // 月份冷却表是局内状态，必须跟着新局清空，否则上一局看过的支线会把新一局挡住。
+    lastTurnByIdRef.current.clear()
     setPendingEvents([])
     setCurrentEvent(null)
     setUndoHistory([])
@@ -2016,9 +2114,9 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
     if (crisisEvent) {
-      // 与 checkBoundary 同一条规则：归零警告不吃概率门，否则读档进来漏发一次
-      // 就再也补不上（第二道闸门要求"先见过警告"才允许判死）。
-      if (isZeroWarningRegistryId(crisisEvent.id) || Math.random() < CRISIS_EVENT_PROBABILITY) {
+      // 与 checkBoundary 同一条规则（读档时月份轨迹是空的，所以这里等价于只过概率门）。
+      if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, gameStateRef.current.turn, lastTurnByIdRef.current)) {
+        lastTurnByIdRef.current.set(crisisEvent.event.id, gameStateRef.current.turn)
         setCurrentEvent(crisisEvent.event)
         return
       }

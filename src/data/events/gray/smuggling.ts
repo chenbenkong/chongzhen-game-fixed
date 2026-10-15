@@ -24,7 +24,6 @@ export const smugglingGrayEvents: GameEvent[] = [
       situation: '李老板深夜来访，神秘兮兮。他开门见山："大人，朝廷的马市名存实亡，边境的蒙古人需要我们的铁器和粮食，我们也缺他们的好马。私下交易对双方都有利。我每年给您三千两白银，您只当不知道就行。"他见你犹豫，又压低声音补充："大人，这一带的官员，哪个不是靠这个发财？前任巡抚每年从我这里拿五千两。"'
     },
     conditions: {
-      year: { min: 1633, max: 1633 },
       month: { min: 7, max: 9 },
       attributes: {
         理政: { min: 30 }
@@ -40,7 +39,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         text: '【收钱默许】收下银子，假装不知',
         description: '你收下李老板的贿赂，对走私之事不闻不问。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: 30 },
           gameState: { 民望: -15,
               国势: -10
         },
@@ -50,7 +49,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         },
         result: {
           title: '同流合污',
-          tags: ['财帛+30%', '国势-10', '民望-15', '道德-15', '野心+10'],
+          tags: ['财帛+30', '国势-10', '民望-15', '道德-15', '野心+10'],
           echo: `你收下三千两银票，笑容可掬："李兄放心做你的生意，本官什么都不知情。"
 
 李老板大喜，连连作揖而去。从此，你对他的走私视而不见。边境的马市越来越热闹，铁器、硝石源源不断地流向蒙古部落——而这些都是制造兵器的原料。
@@ -68,7 +67,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         text: '【暗中分赃】与李老板合作分成',
         description: '你不收贿赂，而是直接参与走私分成。',
         effects: {
-          attributes: {理政: -5 },
+          attributes: { 理政: -5, 财帛: 60 },
           gameState: {
               国势: -20
         },
@@ -78,7 +77,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         },
         result: {
           title: '利益捆绑',
-          tags: ['财帛+60%', '理政-5', '国势-20', '道德-25', '野心+20', '欲望+10'],
+          tags: ['财帛+60', '理政-5', '国势-20', '道德-25', '野心+20', '欲望+10'],
           echo: `你不仅收下银票，还更进一步："李兄，银子我不要，我要分成。走私利润的六成归我。"
 
 李老板先是一愣，然后大笑："大人爽快！六成就六成！"
@@ -145,7 +144,6 @@ export const smugglingGrayEvents: GameEvent[] = [
       situation: '陈老六深夜登门，开门见山："大人，我有一批盐要过你的地盘。一千引，每引给您十两，共计一万两。您高抬贵手，放我过去。"一万两白银——这是你十年俸禄的总和。他又补充："大人，您管的这片水域，穷得叮当响，朝廷的俸禄连家都养不起。我这一万两，能让您过上好日子。"'
     },
     conditions: {
-      year: { min: 1641, max: 1641 },
       month: { min: 5, max: 7 },
       attributes: {
         理政: { min: 20 }
@@ -161,7 +159,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         text: '【收钱放行】收一万两，让他过境',
         description: '你收下陈老六的银子，放他的私盐船过境。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: 50 },
           gameState: { 圣眷: -8,
               民望: -5
         },
@@ -171,7 +169,7 @@ export const smugglingGrayEvents: GameEvent[] = [
         },
         result: {
           title: '通匪受赇',
-          tags: ['财帛+50%', '圣眷-8', '民望-5', '道德-12', '野心+8'],
+          tags: ['财帛+50', '圣眷-8', '民望-5', '道德-12', '野心+8'],
           echo: `你看着那一万两银票，心中挣扎了整整一个时辰。最终，你还是收下了。
 
 陈老六大喜，连夜让盐船过境。一千引私盐流入市场，盐价暴跌，百姓欢天喜地——但朝廷的盐税却少了一大截。
@@ -189,14 +187,14 @@ export const smugglingGrayEvents: GameEvent[] = [
         text: '【减半放行】只收五千两',
         description: '你讨价还价，最终只收五千两。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: 30 },
           hidden: {机敏值: 5,
               道德值: -6
         }
         },
         result: {
           title: '讨价还价',
-          tags: ['财帛+30%', '道德-6', '机敏+5'],
+          tags: ['财帛+30', '道德-6', '机敏+5'],
           echo: `你慢悠悠地品着茶："陈兄，一万两太多了。五千两，我让你过去。"
 
 陈老六皱眉："大人，这可是我的血本钱。"

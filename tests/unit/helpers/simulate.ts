@@ -5,7 +5,7 @@ import { checkChoiceRequirement } from '../../../src/components/EventDisplay'
 import { allEndingEvents } from '../../../src/data/events/ending'
 import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
-import type { Character, GameStateValues } from '../../../src/types/game'
+import type { Character, GameStateValues, OriginType } from '../../../src/types/game'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
 
 /**
@@ -43,6 +43,12 @@ export interface SimOutcome {
    */
   endingId: string | null
   endingTitle: string | null
+  /**
+   * 与 `firedEventIds` 一一对应的**月份格**（`gameState.turn`，从 0 起算）。
+   * 事件历史里只有 id，看不出「同一场病是不是三个月内治了两回」，
+   * 而可重复支线的冷却期恰恰是按月份定义的 —— 这张平行表就是给那条不变量用的。
+   */
+  firedTurns: number[]
   /** 这一局里真正播出来的事件 id（按播放顺序） */
   firedEventIds: string[]
   /** 终局时算出 NaN / Infinity 的字段，正常应当恒空 */
@@ -230,18 +236,25 @@ function thresholdSnapshot(character: Character, gameState: GameStateValues): Re
 /**
  * 跑一局。`maxMonths` 默认 260（1628 起算约等于玩到 1649 年，早已越过甲申之变）。
  * 到点还没结束就返回 ended=false —— 那本身就是一个结论，不是失败。
+ *
+ * `origin` 默认 '寒门'。这个参数是第十四轮加上去的：**在此之前所有模拟跑的都只是寒门一个出身**，
+ * 于是"出身之间的平衡"这件事从来没被测过 —— 而出身恰恰决定了你开局踩在哪几条死线旁边
+ * （旧数据里 寒门 财帛15/士绅15、诗文清望 中官15），也决定了你头几个月看得见哪几条支线
+ * （纵欲线的门槛是 欲望值 25~35）。跨出身取样才有资格说"平均局长"。
  */
 export async function simulateRun(opts: {
   seed: number
   policy?: SimPolicy
   maxMonths?: number
+  origin?: OriginType
 }): Promise<SimOutcome> {
-  const { seed, policy = 'random', maxMonths = 260 } = opts
+  const { seed, policy = 'random', maxMonths = 260, origin = '寒门' } = opts
   const rand = mulberry32(seed)
   const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => rand())
   vi.useFakeTimers()
 
   const fired: string[] = []
+  const firedTurns: number[] = []
   let badNumbers: string[] = []
   let outcomeMonths = 0
   let choices = 0
@@ -252,7 +265,7 @@ export async function simulateRun(opts: {
   let finalYear = 1628
   let finalRank = ''
 
-  const hook = renderGameEngine()
+  const hook = renderGameEngine({ origin })
   let endEventId: string | null = null
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
@@ -285,6 +298,7 @@ export async function simulateRun(opts: {
           })
           choices++
           fired.push(event.id)
+          firedTurns.push(hook.result.current.gameState.turn)
           if (hook.result.current.isGameOver) {
             endEventId = hook.result.current.currentEvent?.id ?? event.id
             break
@@ -354,6 +368,7 @@ export async function simulateRun(opts: {
     endingId,
     endingTitle,
     firedEventIds: fired,
+    firedTurns,
     badNumbers,
     finalYear,
     finalRank,

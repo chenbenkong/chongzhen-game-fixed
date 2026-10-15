@@ -23,7 +23,6 @@ export const colleagueDebaucheryEvents: GameEvent[] = [
       situation: '今日县丞因公出差，慕容雪来衙门送些文书。她身穿一袭月白色长裙，外罩淡紫色纱衣，发髻高挽，插着一支金步摇。她步履轻盈，身姿婀娜，举手投足间尽显大家闺秀的风范。你见她容貌秀丽，气质出尘，心生爱慕。她察觉到你的目光，显得有些惶恐，脸颊微微泛红，连忙低下头，手指紧紧攥着衣角。'
     },
     conditions: {
-      year: { min: 1636, max: 1636 },
       month: { min: 10, max: 12 },
       attributes: {
         理政: { min: 65 }
@@ -194,7 +193,6 @@ export const colleagueDebaucheryEvents: GameEvent[] = [
       situation: '今日，夏侯轻衣借故来拜访你，身穿一袭红色罗裙，外罩轻纱，发髻高挽，插着一支金步摇。她的素服剪裁合体，勾勒出丰腴的曲线，腰间系着一条淡蓝色的丝带，更显得腰肢纤细。她对你频频暗送秋波，眼波流转间风情万种，暗示愿意以身相许。她的声音软糯，带着一丝哀求，让你心中升起强烈的保护欲和占有欲。'
     },
     conditions: {
-      year: { min: 1637, max: 1637 },
       month: { min: 2, max: 4 },
       attributes: {
         理政: { min: 60 }

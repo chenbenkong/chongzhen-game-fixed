@@ -45,7 +45,7 @@ function makeHighRankSave(overrides: Parameters<typeof makeCharacter>[0] = {}) {
       hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
       ...overrides
     }),
-    gameState: makeGameState({ 圣眷: 50, 民望: 50, 士绅: 50, 清议: 50 })
+    gameState: makeGameState({ turn: AFTER_GRACE, 圣眷: 50, 民望: 50, 士绅: 50, 清议: 50 })
   })
 }
 
@@ -53,6 +53,13 @@ function makeHighRankSave(overrides: Parameters<typeof makeCharacter>[0] = {}) {
 function lastDemotion(result: { current: { lifeRecords: Array<{ type: string; title: string; description: string }> } }) {
   return [...result.current.lifeRecords].reverse().find(r => r.type === 'demotion')
 }
+
+/**
+ * 贬官判定有 12 个月的宽限期（`DEMOTION_GRACE_TURNS`，与阈值结局同一原则：
+ * 先让人真正上任，再让考核杀人）。本文件的用例测的是**依赖数组**，
+ * 所以存档必须落在宽限期之后，否则判定的第一条分支就 return 了，用例会红得毫无信息量。
+ */
+const AFTER_GRACE = 12
 
 describe('缺陷 K-4：升迁/贬官判定必须响应 体质 / 野心值 的变化', () => {
   it('体质跌破 15 时应触发「体弱多病」贬官（该字段此前不在依赖数组里）', async () => {
@@ -91,7 +98,7 @@ describe('缺陷 K-4：升迁/贬官判定必须响应 体质 / 野心值 的变
         attributes: { 财帛: 60, 文韬: 90, 理政: 90, 武略: 90, 体质: 50 },
         hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 }
       }),
-      gameState: makeGameState({ 圣眷: 35, 民望: 50, 士绅: 50, 清议: 50 })
+      gameState: makeGameState({ turn: AFTER_GRACE, 圣眷: 35, 民望: 50, 士绅: 50, 清议: 50 })
     })
     const ambitious = makeSaveData({
       character: makeCharacter({
@@ -100,7 +107,7 @@ describe('缺陷 K-4：升迁/贬官判定必须响应 体质 / 野心值 的变
         attributes: { 财帛: 60, 文韬: 90, 理政: 90, 武略: 90, 体质: 50 },
         hidden: { 道德值: 50, 欲望值: 50, 野心值: 80, 机敏值: 50, 忠诚值: 50 }
       }),
-      gameState: makeGameState({ 圣眷: 35, 民望: 50, 士绅: 50, 清议: 50 })
+      gameState: makeGameState({ turn: AFTER_GRACE, 圣眷: 35, 民望: 50, 士绅: 50, 清议: 50 })
     })
 
     const { result, rerender } = renderGameEngine({ loadSaveData: loyal })
@@ -151,7 +158,7 @@ describe('缺陷 K-4：升迁/贬官判定必须响应 体质 / 野心值 的变
         attributes: { 财帛: 60, 文韬: 90, 理政: 90, 武略: 90, 体质: 10 },
         hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 }
       }),
-      gameState: makeGameState({ 圣眷: 50, 民望: 50, 士绅: 50, 清议: 50 }),
+      gameState: makeGameState({ turn: AFTER_GRACE, 圣眷: 50, 民望: 50, 士绅: 50, 清议: 50 }),
       currentEvent: syntheticEvent,
       currentEventId: syntheticEvent.id
     })

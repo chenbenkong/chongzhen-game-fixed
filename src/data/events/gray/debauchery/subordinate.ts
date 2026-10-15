@@ -23,9 +23,9 @@ export const subordinateDebaucheryEvents: GameEvent[] = [
       situation: '今日黄昏，周文德带着他的妻子柳如烟前来拜访。柳如烟身穿一袭淡粉色罗裙，外罩轻纱，发髻高挽，插着一支白玉簪子。她低垂着头，脸颊绯红，胸前的衣襟随着呼吸微微起伏，隐约可见雪白的肌肤。周文德跪在你面前，声音颤抖地说，若大人能网开一面，他愿让妻子"侍奉"大人左右。柳如烟闻言，身子微微颤抖，却不敢抬头，只是咬着嘴唇，眼中含着泪光。'
     },
     conditions: {
-      year: { min: 1628, max: 1628 },
       month: { min: 3, max: 5 },
       attributes: {
+        财帛: { min: 20 },
         理政: { min: 50 }
       },
       hidden: {
@@ -192,7 +192,6 @@ export const subordinateDebaucheryEvents: GameEvent[] = [
       situation: '近日张老四告诉你，他女儿对你"仰慕已久"，甚至说"非大人不嫁"。张老四虽然不舍，但若是女儿能跟了大人，也是她的福气。今日，苏婉儿又来送饭，她穿着一身淡绿色的衣裙，发间插着一朵野花，清纯中带着几分娇俏。她偷偷看你，见你望过来，慌忙低下头，脸颊绯红，手指绞着衣角，显得既紧张又期待。'
     },
     conditions: {
-      year: { min: 1629, max: 1629 },
       month: { min: 6, max: 8 },
       attributes: {
         理政: { min: 60 }
@@ -359,7 +358,6 @@ export const subordinateDebaucheryEvents: GameEvent[] = [
       situation: '今日，沈碧瑶借故来拜访你，身穿素服，却难掩成熟妇人的风韵。她的素服剪裁合体，勾勒出丰腴的曲线，腰间系着一条淡蓝色的丝带，更显得腰肢纤细。她告诉你，前任知府去世后，她在府中备受欺凌，想要另寻依靠。她对你频频暗送秋波，眼波流转间风情万种，暗示愿意以身相许。她的声音软糯，带着一丝哀求，让你心中升起强烈的保护欲和占有欲。'
     },
     conditions: {
-      year: { min: 1630, max: 1630 },
       month: { min: 2, max: 4 },
       attributes: {
         理政: { min: 70 }

@@ -23,7 +23,6 @@ export const commonerDebaucheryEvents: GameEvent[] = [
       situation: '今日，顾倾城来衙门求情，希望你能放了她丈夫。她身穿一袭粗布衣裙，却难掩秀丽的容貌。她跪在你面前，泪流满面，求你开恩。你见她容貌秀丽，心生怜惜，但她也察觉到了你眼中的欲望，显得有些惶恐。她的衣襟在跪拜时微微敞开，露出一片雪白的肌肤，让你心神荡漾。'
     },
     conditions: {
-      year: { min: 1634, max: 1634 },
       month: { min: 4, max: 6 },
       attributes: {
         理政: { min: 50 }
@@ -204,9 +203,9 @@ export const commonerDebaucheryEvents: GameEvent[] = [
       situation: '今日，你在下乡巡视时见到王语嫣，一见倾心。她正在田间劳作，虽然穿着粗布衣裳，但天生丽质，难掩芳华。阳光洒在她身上，勾勒出纤细的腰肢和饱满的胸脯，让你心神荡漾。你暗示王老汉，想要纳他女儿为妾。王老汉苦苦哀求，求你放过他的女儿。王语嫣躲在父亲身后，眼中满是惊恐，手指紧紧攥着衣角。'
     },
     conditions: {
-      year: { min: 1635, max: 1635 },
       month: { min: 7, max: 9 },
       attributes: {
+        财帛: { min: 50 },
         理政: { min: 60 }
       },
       hidden: {

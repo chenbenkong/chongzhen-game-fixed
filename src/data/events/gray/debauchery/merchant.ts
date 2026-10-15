@@ -23,9 +23,9 @@ export const merchantDebaucheryEvents: GameEvent[] = [
       situation: '今日，沈万三带着他的独生女沈清瑶前来拜访。沈清瑶身穿一袭淡粉色罗裙，外罩轻纱，发髻高挽，插着一支白玉簪子。她低垂着头，脸颊绯红，一双明眸似秋水般清澈，却又含着泪光。沈万三跪在你面前，声音颤抖地说，若大人能帮他摆平私盐案，他愿将女儿献给大人。沈清瑶闻言，身子微微颤抖，却不敢抬头，只是咬着嘴唇，眼中满是绝望。'
     },
     conditions: {
-      year: { min: 1631, max: 1631 },
       month: { min: 5, max: 7 },
       attributes: {
+        财帛: { min: 30 },
         理政: { min: 60 }
       },
       hidden: {
@@ -192,7 +192,6 @@ export const merchantDebaucheryEvents: GameEvent[] = [
       situation: '今日，赵德昌邀请你到他府上赴宴，暗示他的第三房小妾柳梦璃对你"仰慕已久"。柳梦璃身穿一袭红色罗裙，外罩轻纱，发髻高挽，插着一支金步摇。她容貌艳丽，眼波流转间风情万种，对你频频暗送秋波。你心知肚明，这是赵德昌的"美人计"，但看着柳梦璃艳丽的容貌，你心中还是涌起了一丝欲望。'
     },
     conditions: {
-      year: { min: 1632, max: 1632 },
       month: { min: 8, max: 10 },
       attributes: {
         理政: { min: 55 }
@@ -357,10 +356,9 @@ export const merchantDebaucheryEvents: GameEvent[] = [
       situation: '李妈妈邀请你到醉仙楼，暗示花想容对你"仰慕已久"，愿意免费侍奉大人。花想容身穿一袭淡紫色罗裙，外罩轻纱，发髻高挽，插着一支白玉簪子。她容貌绝美，肌肤如雪，一双明眸似秋水般清澈，眼波流转间风情万种。她对你微微一笑，露出两个浅浅的酒窝，让你心神荡漾。'
     },
     conditions: {
-      year: { min: 1633, max: 1633 },
       month: { min: 1, max: 3 },
       attributes: {
-        财帛: { min: 30 }
+        财帛: { min: 50 }
       },
       hidden: {
         欲望值: { min: 15 }

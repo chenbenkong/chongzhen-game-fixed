@@ -24,7 +24,6 @@ export const briberyGrayEvents: GameEvent[] = [
       situation: '王大盛亲自登门拜访，恭敬地呈上礼单。他开门见山地说明来意——希望能获得更多盐引，并暗示只要配合，他在"孝敬"方面绝不会亏待你。礼单上的数字让你心惊：白银三千两，这在你的俸禄之外是一笔巨款。他见你犹豫，又加了一句："大人初到贵地，日后用钱的地方多的是。这只是见面礼，往后每年都有。"'
     },
     conditions: {
-      year: { min: 1635, max: 1635 },
       month: { min: 4, max: 6 },
       attributes: {
         理政: { min: 30 }
@@ -40,7 +39,7 @@ export const briberyGrayEvents: GameEvent[] = [
         text: '【收下重礼】笑纳白银，许诺盐引',
         description: '你收下王大盛的厚礼，承诺为他争取更多盐引。从此你走上了贪墨之路。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: 30 },
           gameState: { 民望: -15 },
           hidden: {野心值: 15,
               道德值: -20
@@ -48,7 +47,7 @@ export const briberyGrayEvents: GameEvent[] = [
         },
         result: {
           title: '初涉贪墨',
-          tags: ['财帛+30%', '民望-15', '道德-20', '野心+15'],
+          tags: ['财帛+30', '民望-15', '道德-20', '野心+15'],
           echo: `你看着礼单上的数字，心中天人交战。良久，你伸手接过银票，笑容可掬："王兄客气了，你我日后还要多多合作。"
 
 王大盛大喜，连连作揖："大人爽快！小人这就回去准备。"
@@ -68,7 +67,7 @@ export const briberyGrayEvents: GameEvent[] = [
         text: '【收礼不办事】收下礼物，但不给盐引',
         description: '你收下礼物，但找借口推脱盐引之事。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: 10 },
           gameState: { 圣眷: -5 },
           hidden: {野心值: 5,
               道德值: -10
@@ -76,7 +75,7 @@ export const briberyGrayEvents: GameEvent[] = [
         },
         result: {
           title: '灰色交易',
-          tags: ['财帛+10%', '圣眷-5', '道德-10', '野心+5'],
+          tags: ['财帛+10', '圣眷-5', '道德-10', '野心+5'],
           echo: `你收下一千两白银，但将盐引之事含糊带过："此事关系重大，容我细细思量。"
 
 王大盛脸色一沉，但很快恢复笑容："大人思虑周全，小人佩服。"
@@ -142,9 +141,9 @@ export const briberyGrayEvents: GameEvent[] = [
       situation: '中秋将至，周延儒派人送来一封信，信中看似寒暄，实则暗示："佳节将至，望诸同僚不忘朝廷之恩，各尽忠心。"信中夹着一张"礼单范例"——上面列着各级官员的"孝敬标准"。按你现在的品级，应该送"纹银八百两"。这已经是你半年俸禄的总和。'
     },
     conditions: {
-      year: { min: 1640, max: 1640 },
       month: { min: 8, max: 9 },
       attributes: {
+        财帛: { min: 20 },
         理政: { min: 40 }
       }
     },
@@ -155,7 +154,7 @@ export const briberyGrayEvents: GameEvent[] = [
         text: '【照单全送】按标准送节礼',
         description: '你按周延儒的暗示送上了八百两白银，期待他的提拔。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: -20 },
           gameState: { 圣眷: 8 },
           hidden: {野心值: 10,
               道德值: -8
@@ -163,7 +162,7 @@ export const briberyGrayEvents: GameEvent[] = [
         },
         result: {
           title: '攀附权贵',
-          tags: ['财帛-20%', '圣眷+8', '道德-8', '野心+10'],
+          tags: ['财帛-20', '圣眷+8', '道德-8', '野心+10'],
           echo: `你咬咬牙，从积蓄中取出八百两白银，包装精美，派心腹连夜送入周府。
 
 第二天，周延儒在朝会上对你微笑点头。散朝后，他私下召见你："嗯，年轻人很懂事嘛。日后有机会，本阁会提拔你的。"
@@ -181,7 +180,7 @@ export const briberyGrayEvents: GameEvent[] = [
         text: '【减半送】象征性送四百两',
         description: '你只送一半的"标准"，试探周延儒的反应。',
         effects: {
-          attributes: {},
+          attributes: { 财帛: -10 },
           gameState: { 圣眷: -3 },
           hidden: {机敏值: 5,
               道德值: -3
@@ -189,7 +188,7 @@ export const briberyGrayEvents: GameEvent[] = [
         },
         result: {
           title: '试探底线',
-          tags: ['财帛-10%', '圣眷-3', '道德-3', '机敏+5'],
+          tags: ['财帛-10', '圣眷-3', '道德-3', '机敏+5'],
           echo: `你只送四百两白银，比"标准"少了一半。这是你的一次试探——看看周延儒是真的贪财，还是只在乎"态度"。
 
 周延儒收到后，脸色明显不悦。他虽然没说什么，但随后的一个月里，对你明显冷淡。朝会上他不再点你的名，重要会议也不叫你参加。

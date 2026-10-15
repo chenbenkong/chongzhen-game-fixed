@@ -479,10 +479,18 @@ function originFirstChoiceCost(origin: '寒门'): { start: number; cost: number 
 }
 
 describe('缺陷：开局第一个选项就能把人当场判死（阈值类结局没有宽限期）', () => {
-  it('寒门开局财帛 15，首选项 财帛 -20 会直接归零 —— 这是缺陷的前提', () => {
+  /**
+   * 这一条原本是**缺陷的前提**：寒门 财帛15，开局首选项 −20 ⇒ 当场归零。
+   * 第十四轮把出身的最低一档抬到 25（见 `origins.ts` 顶部那段实测说明），
+   * 前提本身不再成立，于是断言改成反向的护栏：
+   * **任何出身的开局首选项，都不许在第一个月就把该维打到零。**
+   * 若有人为了"更有压迫感"把 财帛 调回 15，这里会红 —— 那正是要拦的改动。
+   */
+  it('寒门开局的第一个选项不再能把财帛当场打空', () => {
     const drain = originFirstChoiceCost('寒门')
     expect(drain).not.toBeNull()
-    expect(drain!.start + drain!.cost).toBeLessThanOrEqual(0)
+    expect(drain!.cost, '这条首选项仍然是一笔真金白银的重罚，护栏不是因为把代价删了才通过的').toBeLessThanOrEqual(-20)
+    expect(drain!.start + drain!.cost).toBeGreaterThan(0)
   })
 
   it('宽限期内归零不判死', () => {

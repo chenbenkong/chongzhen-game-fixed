@@ -24,7 +24,6 @@ export const informerGrayEvents: GameEvent[] = [
       situation: '杨御史神秘兮兮地来找你："大人，机会来了。钱谦益贪赃枉法，我有确凿证据。只要您愿意出面作证，指证他收受贿赂，朝廷必定重赏大人。"他又压低声音补充："更重要的是，钱谦益倒台后，他空出来的位子，您就有机会了。"他拿出一叠文书，里面详细记载了钱谦益的罪状——你认得其中一些条目，是真的。'
     },
     conditions: {
-      year: { min: 1636, max: 1636 },
       month: { min: 10, max: 12 },
       attributes: {
         理政: { min: 30 }
@@ -138,7 +137,6 @@ export const informerGrayEvents: GameEvent[] = [
       situation: '李师爷跪在你面前，泣不成声："大人，小人一时糊涂，收了那商人的银子。但小人真的不知道他是流寇内应啊！求大人看在多年情分上，救救小人！"他又说："大人，如果东厂来查，您就说不知道此事。小人也会咬紧牙关，绝不牵连大人。"他磕头如捣蒜，额头都磕出了血。'
     },
     conditions: {
-      year: { min: 1639, max: 1639 },
       month: { min: 5, max: 7 },
       attributes: {
         理政: { min: 40 }

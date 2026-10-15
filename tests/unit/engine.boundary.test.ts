@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { act } from '@testing-library/react'
 import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
+import { simulateRun } from './helpers/simulate'
 
 /**
  * 缺陷 K-2：`crisis` 类临界事件只在引擎挂载时检查过一次。
@@ -66,4 +67,48 @@ describe('缺陷 K-2：游戏中途应能触发 crisis 类临界事件', () => {
 
     expect(result.current.currentEvent?.id).not.toBe(CRISIS_EVENT_ID)
   })
+})
+
+/**
+ * 缺陷 K-14c：crisis 类临界事件**完全不吃冷却**。
+ *
+ * `EVENT_COOLDOWN_MONTHS` 的表头写的是「冷却期（月）」，但第十四轮之前这张表只管支线池。
+ * crisis 路径不一样：它的条件判的是**状态**（`0 < 体质 < 20`）而不是历史，
+ * 只要玩家一直病着就恒真，于是同一个「重病缠身」能在三个月里发作两遍 ——
+ * 太医前一个月刚说"需静养数月"，下个月又是同一张方子。
+ *
+ * 实测对照（真引擎 + 假时钟 + 固定种子，见 `helpers/simulate.ts`）：
+ * 修复前 seed=8 的发作月份是 **[12, 15]**（隔 3 个月，而 random 档位写的是 8）；
+ * 修复后同样这局是 **[12, 24]**。
+ * 24 个种子里只有 seed=8 会重发，所以它既是唯一的载体、也是反空跑的依据。
+ */
+const COOLDOWN_RANDOM_MONTHS = 8
+
+const ILLNESS_SEEDS = Array.from({ length: 24 }, (_, i) => i + 1)
+
+describe('缺陷 K-14c：crisis 临界事件发作后要隔满冷却才能再发', () => {
+  it('「重病缠身」两次发作之间至少隔 8 个月，且取样里确实重发过', async () => {
+    const runs = []
+    for (const seed of ILLNESS_SEEDS) {
+      runs.push(await simulateRun({ seed, policy: 'random', maxMonths: 200 }))
+    }
+
+    let repeats = 0
+    for (const r of runs) {
+      const turns = r.firedEventIds
+        .map((id, i) => (id === CRISIS_EVENT_ID ? r.firedTurns[i] : -1))
+        .filter(t => t >= 0)
+
+      for (let i = 1; i < turns.length; i++) {
+        repeats++
+        expect(
+          turns[i] - turns[i - 1],
+          `seed=${r.seed}：第 ${turns[i - 1]} 月 → 第 ${turns[i]} 月，同一场病隔了 ${turns[i] - turns[i - 1]} 个月`
+        ).toBeGreaterThanOrEqual(COOLDOWN_RANDOM_MONTHS)
+      }
+    }
+
+    // 反空跑：取样里必须真的重发过一次，否则上面那个断言等于没跑
+    expect(repeats, `${ILLNESS_SEEDS.length} 局里「重病缠身」一次也没重发 —— 冷却这条没被检验`).toBeGreaterThan(0)
+  }, 240_000)
 })

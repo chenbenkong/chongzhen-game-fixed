@@ -24,7 +24,6 @@ export const publicDebaucheryEvents: GameEvent[] = [
       situation: '今日，你到白云寺为亡母做超度法事。法事结束后，妙音以"请大人参观寺中珍藏"为由，将你引入佛堂深处。这里供奉着一尊巨大的金身佛像，香火缭绕，庄严肃穆。妙音突然从背后抱住你，说她在这清规戒律的寺庙中压抑了太久，今日要在佛像面前"破戒"。她的呼吸急促，身体微微颤抖，显然既紧张又兴奋...'
     },
     conditions: {
-      year: { min: 1638, max: 1638 },
       month: { min: 4, max: 6 },
       attributes: {
         理政: { min: 55 },
@@ -215,7 +214,6 @@ export const publicDebaucheryEvents: GameEvent[] = [
       situation: '今日，本地举办了一场盛大的戏曲表演，杜月娥饰演《牡丹亭》中的女主角。戏台上锣鼓喧天，台下座无虚席，几百名观众看得如痴如醉。戏演到一半，杜月娥突然借故下场，派人传话邀你到后台"对戏"。你来到后台，只见她戏服半解，脸上还带着浓妆，眼波流转间满是媚意。她告诉你，她想在戏演完之前，在这后台与你"对一出好戏"...'
     },
     conditions: {
-      year: { min: 1639, max: 1639 },
       month: { min: 7, max: 9 },
       attributes: {
         理政: { min: 60 },
@@ -402,7 +400,6 @@ export const publicDebaucheryEvents: GameEvent[] = [
       situation: '今日，潘巧云举办了一场游船宴会，邀请了众多达官贵人。你也在受邀之列。画舫在湖上缓缓行驶，湖光山色，美不胜收。酒过三巡，潘巧云以"头晕"为由，邀你陪她进舱"休息"。你跟随她进入船舱，只见舱内布置精美，一张大床占据了半个船舱。潘巧云告诉你，这湖上风光虽好，但不如舱内"风景"宜人...'
     },
     conditions: {
-      year: { min: 1640, max: 1640 },
       month: { min: 5, max: 7 },
       attributes: {
         理政: { min: 60 },
@@ -590,7 +587,6 @@ export const publicDebaucheryEvents: GameEvent[] = [
       situation: '今日，你到藏书楼查阅典籍，上官芸儿亲自为你引路。她带你来到藏书楼最深处的一间密室，这里收藏着各种珍本古籍，外人不得入内。密室中光线昏暗，只有几缕阳光从高窗透入，照在满架的古籍上。上官芸儿突然从背后抱住你，说她在这藏书楼中寂寞了太久，今日要在这"书的海洋"中与你"共读一本好书"...'
     },
     conditions: {
-      year: { min: 1641, max: 1641 },
       month: { min: 9, max: 11 },
       attributes: {
         文韬: { min: 75 }
@@ -766,7 +762,6 @@ export const publicDebaucheryEvents: GameEvent[] = [
       situation: '今日，皇家举办秋猎，你也在受邀之列。白日里你随众人在猎场上驰骋，虽然没有猎到什么大猎物，但也算是尽兴。夜幕降临，众人在猎场扎营休息。穆红袖以"帐篷漏风"为由，邀你到她帐中"帮忙查看"。你跟随她进入帐篷，只见帐内布置简陋，只有一张行军床和几件兵器。穆红袖告诉你，这猎场夜深人静，她一个人害怕，要你陪她"取暖"...'
     },
     conditions: {
-      year: { min: 1642, max: 1642 },
       month: { min: 10, max: 12 },
       attributes: {
         理政: { min: 65 },

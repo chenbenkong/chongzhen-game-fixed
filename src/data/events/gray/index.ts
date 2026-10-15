@@ -4,6 +4,10 @@ import { briberyGrayEvents } from './bribery'
 import { smugglingGrayEvents } from './smuggling'
 import { informerGrayEvents } from './informer'
 import { fortuneGrayEvents } from './fortune'
+import { patronageGrayEvents } from './patronage'
+import { regimenGrayEvents } from './regimen'
+import { locallineGrayEvents } from './localline'
+import { reformGrayEvents } from './reform'
 
 // 所有灰色支线事件（不含结局）
 // 灰色结局（ending_debauch_fall 等）已迁移到 events/ending/debauchery/，由 BoundaryEventManager 统一注册触发
@@ -12,7 +16,18 @@ export const allGrayChoiceEvents: GameEvent[] = [
   ...briberyGrayEvents,
   ...smugglingGrayEvents,
   ...informerGrayEvents,
-  ...fortuneGrayEvents
+  ...fortuneGrayEvents,
+  // 有代价的回升通道：中官（patronage）、体质（regimen）、士绅与民望（localline）。
+  // 这三项从前只有下降通道，掉下去就再也回不来，中期基本等于被判了死缓。
+  ...patronageGrayEvents,
+  ...regimenGrayEvents,
+  ...locallineGrayEvents,
+  // reform 是第四条、也是最重要的一条：全内容池的账面统计显示 欲望值 的升降比是
+  // **进 291 条 +3516 / 出 37 条 −282（比 12.47）** —— 欲望几乎只涨不跌，
+  // 而纵欲线（单条最高 −65 道德）偏偏以 欲望值 25~35 为开门条件。
+  // 于是"腐化"是一条自我强化的下坡滑梯：欲望涨 → 纵欲事件解锁 → 道德崩 → 第 13 个月被考核革职。
+  // reform 补的正是那条缺失的下行通道（欲望 −172 / 道德 +126），也是道德值唯一的主动回升口。
+  ...reformGrayEvents
 ]
 
 export {
@@ -20,5 +35,9 @@ export {
   briberyGrayEvents,
   smugglingGrayEvents,
   informerGrayEvents,
-  fortuneGrayEvents
+  fortuneGrayEvents,
+  patronageGrayEvents,
+  regimenGrayEvents,
+  locallineGrayEvents,
+  reformGrayEvents
 }
