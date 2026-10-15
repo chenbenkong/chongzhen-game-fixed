@@ -52,6 +52,18 @@ describe('真实数据的值域体检', () => {
       expect(prelude.linksToEndingId, `${ending.id} ↔ ${prelude.id} 只写了单向`).toBe(ending.id)
     }
   })
+
+  it('第十轮逮到的两处撞号已改名，被压住的那个事件回到池子里', () => {
+    // 撞号时引擎按 id 去重（useGameEngine 的 findIndex 去重 + eventConditions 的 seen），
+    // 「孙传庭殉国」「新年朝会」正是被压住的那一个。
+    const byId = valueDomains.vocab.eventsById
+    expect(byId.get('historical_014')?.title, 'historical_014 现在只该是洪承畴降清').toBe('洪承畴降清')
+    expect(byId.get('historical_1643_sunchuanting')?.title).toBe('孙传庭殉国')
+    expect(byId.get('transition_163')?.title).toBe('松锦战报与辽东密议')
+    expect(byId.get('transition_1642_newyear')?.title).toBe('新年朝会')
+    // 同名不同 id 的事件本来就该有（每年一场新年朝会），那是内容设计，不是撞号
+    expect([...byId.values()].filter(e => e.title === '新年朝会').length).toBeGreaterThan(1)
+  })
 })
 
 /**
@@ -156,17 +168,34 @@ describe('scanValueDomains 自身能抓住每一类值域错误', () => {
   })
 
   it('LINK：数据里的站内资源路径必须真的存在（public/ 下查不到就报）', () => {
-    const stub: ValueVocab = { ...vocab, assetExists: (p: string) => p === '/avatars/real.png' }
+    const stub: ValueVocab = { ...vocab, assetExists: (p: string) => p === '/scenes/real.png' }
     const ghost: any[] = [{
       id: 'with_asset', title: '带插图的事件', type: 'historical', conditions: {}, choices: [],
-      narrative: { background: 'b', situation: 's', speaker: { name: '老仆', title: '某府旧人', avatar: '/avatars/ghost.png' } }
+      narrative: { background: '/scenes/ghost.png', situation: 's', speaker: { name: '老仆', title: '某府旧人' } }
     }]
     const found = scanValueDomains(ghost, stub, () => 'pool').filter(f => f.kind === 'LINK')
     expect(found).toHaveLength(1)
-    expect(found[0].detail).toContain('narrative.speaker.avatar')
+    expect(found[0].detail).toContain('narrative.background')
 
-    const real: any[] = [{ ...ghost[0], narrative: { ...ghost[0].narrative, speaker: { name: '老仆', title: '某府旧人', avatar: '/avatars/real.png' } } }]
+    const real: any[] = [{ ...ghost[0], narrative: { ...ghost[0].narrative, background: '/scenes/real.png' } }]
     expect(scanValueDomains(real, stub, () => 'pool')).toEqual([])
+  })
+
+  it('DEAD：两个不同事件共用一个 id —— 撞号者只剩一个播得出来', () => {
+    const collide: any[] = [
+      { id: 'same_id', title: '甲事件', type: 'historical', conditions: {}, choices: [{ id: 'a', text: '甲', effects: {} }] },
+      { id: 'same_id', title: '乙事件', type: 'historical', conditions: {}, choices: [{ id: 'b', text: '乙', effects: {} }] }
+    ]
+    const found = scanValueDomains(collide, vocab, () => 'pool').filter(f => f.kind === 'DEAD')
+    expect(found).toHaveLength(1)
+    expect(found[0].detail).toContain("id='same_id'")
+    expect(found[0].detail).toContain('甲事件')
+    expect(found[0].detail).toContain('乙事件')
+  })
+
+  it('同一个事件被两个池子各引一次是**正常**的，不能报成撞号（情感线就同时挂在 initialEvents 与 emotionEvents）', () => {
+    const shared = { id: 'shared_once', title: '两边都引它', type: 'emotion', conditions: {}, choices: [] }
+    expect(scanValueDomains([shared, shared, { ...shared }], vocab, () => 'pool')).toEqual([])
   })
 
   it('词表里的合法值什么都不会报（防止检查器把正常数据也报成一堆，逼后人加豁免）', () => {

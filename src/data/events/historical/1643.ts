@@ -2,7 +2,7 @@ import { GameEvent } from '../../../types/event'
 
 export const events1643: GameEvent[] = [
 {
-    id: 'historical_014',
+    id: 'historical_1643_sunchuanting', // 原先与 1639.ts 的洪承畴降清同为 historical_014：撞号的两个事件永远只有一个播得出来
     storyline: 'border_war',
     title: '孙传庭殉国',
     description: '孙督师殉国，秦军覆没。',

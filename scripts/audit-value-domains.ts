@@ -14,7 +14,8 @@
  * kind 沿用 shape 体检的分类，报告和断言都能一以贯之：
  *   DEAD —— origin / rank 不在词表里（恒 false，死内容）；
  *            year / month / turn 区间倒置；month 边界落在 1..12 之外（没有任何月份满足）；
- *            year.max 早于开局年（时钟只往前走，永远回不去）
+ *            year.max 早于开局年（时钟只往前走，永远回不去）；
+ *            两个不同事件共用一个 id（引擎按 id 去重，撞号者只剩一个能播）
  *   NOOP —— storyline 不在 STORYLINES 里（加权命不中、getStoryline 也查不到）；
  *            边界写得比值域还宽（month.min<1 / month.max>12 / year.min<开局年），等效于没装这道门；
  *            年份漏了世纪（1628 写成 28）；
@@ -85,10 +86,28 @@ export function scanValueDomains(
   const findings: Finding[] = []
   const add = (kind: string, where: string, detail: string) => findings.push({ kind, where, detail })
 
+  // id 撞号：同一个 id 挂两个**不同**的事件。
+  // 引擎到处按 id 行事 —— useGameEngine 里 `results.filter((e,i,arr) => arr.findIndex(x => x.id === e.id) === i)`
+  // 会把后出现的那个直接从候选池里剔掉，eventConditions 的 `new Set(eventHistory)` 又会把它的孪生兄弟
+  // 永久标记成「已播过」。于是两个事件只剩一个能播，而且剩哪个取决于数组顺序 —— 数据里看不出问题，
+  // 只有真跑一局才看得见。第十轮就是这么逮到 historical_014 / transition_163 的。
+  // 注意：同一个对象被两个池子各引一次（情感线既在 initialEvents 也在 emotionEvents）是**正常**的，
+  // 内容完全相同的那一份也算正常 —— 池子以后要是改成 `list.map(e => ({ ...e }))`，引用会变但内容不变，
+  // 这时候还报错就是体检自己造噪音，后人只会顺手加豁免。所以比的是「标题 + 选项 id 序列」。
+  const choiceKey = (ev: any) => (ev.choices || []).map((c: any) => c?.id).join('|')
   const seen = new Map<string, any>()
   for (const e of events) {
     if (!e || !e.id) continue
-    if (!seen.has(e.id)) seen.set(e.id, e)
+    const prev = seen.get(e.id)
+    if (prev === undefined) {
+      seen.set(e.id, e)
+    } else if (prev !== e && !(prev.title === e.title && choiceKey(prev) === choiceKey(e))) {
+      add(
+        'DEAD',
+        labelOf?.(e.id) || 'pool',
+        `id='${e.id}' 被两个不同事件共用：「${prev.title}」与「${e.title}」 —— 引擎按 id 去重，其中一个永远播不出来`
+      )
+    }
   }
 
   const scanTime = (cond: any, prefix: string, where: string) => {

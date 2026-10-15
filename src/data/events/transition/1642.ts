@@ -2,7 +2,7 @@ import { GameEvent } from '../../../types/event'
 
 export const events1642: GameEvent[] = [
   {
-    id: 'transition_163',
+    id: 'transition_1642_newyear', // 原先与 1641.ts 的松锦战报同为 transition_163：撞号的两个事件永远只有一个播得出来
     storyline: 'ordinary',
     title: '新年朝会',
     description: '新年朝会，社稷危亡。',
