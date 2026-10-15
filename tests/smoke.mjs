@@ -7,7 +7,7 @@
  *   cd tests && npm test
  *
  * 或用 BASE_URL 指向任意已部署地址：
- *   BASE_URL=https://chenbenkong.github.io/chongzhen-game/ npm test
+ *   BASE_URL=https://chenbenkong.github.io/chongzhen-game-fixed/ npm test
  *
  * 断言重点：
  *   1. 访问口令门已彻底移除（这是本次改造的核心诉求，必须硬失败）

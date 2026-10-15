@@ -5,7 +5,7 @@
 > 最后由《青史》为你写下一卷。
 
 <p>
-  <a href="https://chenbenkong.github.io/chongzhen-game/">在线试玩</a> ·
+  <a href="https://chenbenkong.github.io/chongzhen-game-fixed/">在线试玩</a> ·
   <a href="docs/STEAM_RELEASE.md">Steam 上架评估</a> ·
   <a href="docs/CODE_WIKI.md">代码结构</a> ·
   <a href="docs/事件设计指南.md">事件设计指南</a>
@@ -329,7 +329,7 @@ node store-assets.mjs             # 生成 Steam 商店页物料到 store-assets
 也可以直接对着线上地址跑：
 
 ```bash
-cd tests && BASE_URL=https://chenbenkong.github.io/chongzhen-game/ npm test
+cd tests && BASE_URL=https://chenbenkong.github.io/chongzhen-game-fixed/ npm test
 ```
 
 ### Steam 相关检查
@@ -394,10 +394,15 @@ echo "VITE_AI_API_KEY=你的_API_KEY" > .env.local
 
 ## 在线演示
 
-https://chenbenkong.github.io/chongzhen-game/
+https://chenbenkong.github.io/chongzhen-game-fixed/
 
 推送到 `main` 分支后，`.github/workflows/deploy.yml` 会执行构建并发布到 Pages；
 AI Key 通过仓库 Secret `VITE_AI_API_KEY` 注入（未设置则线上 AI 功能不可用）。
+
+> 本仓库是 [chenbenkong/chongzhen-game](https://github.com/chenbenkong/chongzhen-game)
+> 的修复分支：原仓库保持只读、未接收任何推送。
+> 六轮缺陷整改的完整清单（含每条缺陷的表现与回归测试）见
+> [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)。
 
 ## 说明 / 备注
 
