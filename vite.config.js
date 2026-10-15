@@ -23,6 +23,18 @@ function resolveDebugPanelDefault(mode) {
   return mode !== 'steam'
 }
 
+/** 历史大事件按 4 年一片（1628–1631 / 1632–1635 / 1636–1639 / 1640–1643 / 1644+） */
+function historicalBucket(year) {
+  const start = 1628 + Math.floor((year - 1628) / 4) * 4
+  return year >= 1644 ? '1644' : `${start}`
+}
+
+/** 过渡事件按 5 年一片（1627–1631 / 1632–1636 / 1637–1641 / 1642–1646） */
+function transitionBucket(year) {
+  const start = 1627 + Math.floor((year - 1627) / 5) * 5
+  return `${start}`
+}
+
 // 说明：
 // - base 固定为相对路径 './'：同一份产物要同时跑在
 //     GitHub Pages 子路径（/chongzhen-game/）、本地 preview、以及 Electron 的 file:// 下。
@@ -76,16 +88,25 @@ export default defineConfig(({ mode }) => ({
             return 'react-vendor'
           }
           // 游戏数据分片：按年份/类型拆包，提升缓存命中率
+          //
+          // 原来 17 个历史年份 + 18 个过渡年份各自成包，而 `src/data/events/index.ts`
+          // 是**静态** import 全部年份的，于是这 35 个分片在首屏被无差别预取：
+          // 1.36MB 拆成 46 个请求，GitHub Pages 上实测 FCP 1.34s（本地仅 112ms）。
+          // 也就是说这个拆分在这里没有换来按需加载，只换来了往返次数 ——
+          // 每多一个分片就多一次请求往返，而体积一个字节都没省。
+          //
+          // 改成每 4~5 年一个分片：首屏请求数从 46 降到 20 左右，
+          // 同时保留分片粒度（将来若真要做按年份懒加载，仍然只需改一处 import）。
           const historicalYearMatch = id.match(/\/src\/data\/events\/historical\/(\d{4})[^/]*\.ts$/)
           if (historicalYearMatch) {
-            return `events-historical-${historicalYearMatch[1]}`
+            return `events-historical-${historicalBucket(Number(historicalYearMatch[1]))}`
           }
           if (id.includes('/src/data/events/historical/')) {
             return 'events-historical-misc'
           }
           const transitionYearMatch = id.match(/\/src\/data\/events\/transition\/(\d{4})[^/]*\.ts$/)
           if (transitionYearMatch) {
-            return `events-transition-${transitionYearMatch[1]}`
+            return `events-transition-${transitionBucket(Number(transitionYearMatch[1]))}`
           }
           if (id.includes('/src/data/events/transition/')) {
             return 'events-transition-misc'

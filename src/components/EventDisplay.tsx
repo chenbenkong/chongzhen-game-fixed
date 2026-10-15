@@ -668,6 +668,9 @@ function EventDisplay({
       if (isTypingTarget(e.target)) return
       if (e.ctrlKey || e.altKey || e.metaKey) return
       if (!event || isProcessing || showResult || isGhostMode) return
+      // 投骰弹窗（勉力一试）开着时，数字键不能穿透到背后的事件面板：
+      // 那会在弹窗里结算之前就把事件选定，并消耗掉本局唯一一次投骰机会。
+      if (diceModal.show) return
 
       const idx = Number(e.key) - 1
       const choice = event.choices[idx]
@@ -677,7 +680,7 @@ function EventDisplay({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [event, isProcessing, showResult, isGhostMode, shortcutsEnabled, handleSelectChoice])
+  }, [event, isProcessing, showResult, isGhostMode, shortcutsEnabled, handleSelectChoice, diceModal.show])
 
   const openDiceModal = useCallback((choice: EventChoice) => {
     const check = choiceChecks.get(choice.id)

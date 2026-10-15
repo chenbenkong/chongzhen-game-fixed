@@ -134,6 +134,31 @@ function applyOriginStateModifier(origin: OriginType, stateKey: string, value: n
   return value
 }
 
+/**
+ * 「辞官/归隐」类结局文案。这类结局不可逆，需要二次确认。
+ * 判定口径与数据侧约定一致：没有独立的标记字段，只能读选项文本。
+ */
+function isResignEndingChoice(choice: EventChoice): boolean {
+  return choice.text.includes('辞官') ||
+    choice.text.includes('归隐') ||
+    choice.text.includes('请辞') ||
+    choice.text.includes('致仕') ||
+    choice.text.includes('挂冠') ||
+    choice.text.includes('急流勇退') ||
+    choice.text.includes('隐姓埋名')
+}
+
+/**
+ * 破产结局在 BoundaryEventManager 里注册的 id 是 `triggerable_bankrupt`，
+ * 而结局成就与图鉴登记认的是 `ending_bankrupt`。
+ * 这里保留成就侧 id、改用注册版本携带的完整叙事（引文 / 处境 / 【结局·倾家荡产】回声）。
+ * 此前引擎里手抄了一份只有两句描述的克隆，玩家看到的永远是干瘪版本，
+ * 那整段结局回声从未显示过。
+ */
+function withEndingId(event: GameEvent): GameEvent {
+  return { ...event, id: 'ending_bankrupt' }
+}
+
 function calculateMeritScore(
   character: Character,
   gameState: GameStateValues,
@@ -475,7 +500,21 @@ export function useGameEngine(props: UseGameEngineProps) {
   const [pendingEvents, setPendingEvents] = useState<GameEvent[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [eventHistory, setEventHistory] = useState<string[]>(() => loadSaveData ? loadSaveData.eventHistory : [])
-  const [undoHistory, setUndoHistory] = useState<Array<{ character: Character; gameState: GameStateValues; eventHistory: string[] }>>([])
+  // 悔棋快照。字段必须覆盖一次抉择改动的**全部**东西 ——
+  // 此前只存了 character / gameState / eventHistory，于是悔棋之后
+  // 生平记录里仍然留着那一条（悔过的选择在「生平回顾」里赖着不走），
+  // 连击统计（luckyStreak / unluckyStreak）也不会回退，
+  // 「时来运转 / 屋漏偏逢雨」可以靠 选→悔→选 反复刷。
+  const [undoHistory, setUndoHistory] = useState<Array<{
+    character: Character
+    gameState: GameStateValues
+    eventHistory: string[]
+    lifeRecords: LifeRecord[]
+    playerStats: PlayerStats
+    pendingEvents: GameEvent[]
+    currentStoryline?: string
+    meritBonus: number
+  }>>([])
 
   const initialScoreForMerit = (() => {
     if (loadSaveData) {
@@ -499,6 +538,20 @@ export function useGameEngine(props: UseGameEngineProps) {
   })()
 
   const [meritScore, setMeritScore] = useState<number>(() => initialScoreForMerit)
+
+  /**
+   * 选项显式声明的政绩分累计值（`choice.effects.meritScore`）。
+   *
+   * 它必须单独记账：calculateMeritScore 只从属性/圣眷/民望推导分数，
+   * 完全看不到这类加分。此前加分是写进 previousMeritScore 的（`prev => prev + finalChange`），
+   * 而升迁 effect 末尾无条件执行 `setPreviousMeritScore(adjustedScore)` 重新算基准 ——
+   * 同一次抉择必然改动属性、属性就在该 effect 的依赖里，于是它紧接着重跑并把加分冲掉。
+   * 结果是全部事件的 meritScore 加分都是空转：提示「政绩分变化：+30」照常弹出，
+   * 分数与升迁却纹丝不动。
+   */
+  const [meritBonus, setMeritBonus] = useState(0)
+  const meritBonusRef = useRef(meritBonus)
+  useEffect(() => { meritBonusRef.current = meritBonus }, [meritBonus])
 
   const [previousMeritScore, setPreviousMeritScore] = useState<number>(() =>
     initialScoreForMerit / difficultyConfig.promotionThresholdMultiplier
@@ -608,6 +661,8 @@ export function useGameEngine(props: UseGameEngineProps) {
   const pendingEventsRef = useRef(pendingEvents)
   const eventHistoryRef = useRef(eventHistory)
   const undoHistoryRef = useRef(undoHistory)
+  /** 推进月份的同步重入闸门（见 handleNextMonth） */
+  const advanceInFlightRef = useRef(false)
   const identityTypeRef = useRef(identityType)
   const lifeRecordsRef = useRef(lifeRecords)
   const isProcessingRef = useRef(isProcessing)
@@ -773,7 +828,18 @@ export function useGameEngine(props: UseGameEngineProps) {
     const results: GameEvent[] = []
 
     // 1. 历史大事件（一次性）
-    const historical = available.filter(e => e.type === 'historical' && !seen.has(e.id))
+    //
+    // `chain` 必须与 `historical` 同层。数据侧有 15 个 type='chain' 的事件
+    // （新君登基 / 皮岛经营 / 松山之战 / 勤王末路 …，全在 src/data/events/historical/*.ts），
+    // 它们带完整的年份 + 月份 + 出身 + flags 条件，是这个游戏的主线正文；
+    // 但选择器此前只认 historical / transition / random / emotion / gray / character /
+    // national / faction，从来没有 chain 这一支 —— 于是这 15 个事件在任何存档里
+    // 都不可能被子选中，属于彻头彻尾的死内容。
+    // 其中 002_danger / 020_crisis / 013_aftermath 这类续写事件本身带 flags.has 前置，
+    // 只有玩家在前序事件里拿到对应标记后才会解锁，正好符合"接续"的设计意图。
+    const historical = available.filter(
+      e => (e.type === 'historical' || e.type === 'chain') && !seen.has(e.id)
+    )
     const pickedHistorical = weightedPick(historical, activeStoryline)
     if (pickedHistorical) {
       results.push(pickedHistorical)
@@ -941,7 +1007,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     setIsGameOver(true)
   }, [])
 
-  const handleChoice = useCallback((choice: EventChoice, opts?: { random?: boolean }) => {
+  const handleChoice = useCallback((choice: EventChoice, opts?: { random?: boolean; skipResignConfirm?: boolean }) => {
     const currentCharacter = characterRef.current
     const currentGameState = gameStateRef.current
     const currentEvent = currentEventRef.current
@@ -949,6 +1015,14 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     const snapshotChar = JSON.parse(JSON.stringify(currentCharacter))
     const snapshotState = JSON.parse(JSON.stringify(currentGameState))
+    // 这些必须在**任何统计计数之前**取，而不是等到 push 的时候取：
+    // 下面的 firstChoiceCount / randomChoiceCount / 连击数都会同步改写 playerStatsRef，
+    // 到 setUndoHistory 那一步 ref 已经带着本次抉择的痕迹了，快照会变成「事后」而非「事前」。
+    const snapshotStats: PlayerStats = { ...playerStatsRef.current }
+    const snapshotLifeRecords = [...lifeRecordsRef.current]
+    const snapshotPendingEvents = [...pendingEventsRef.current]
+    const snapshotStoryline = currentStorylineRef.current
+    const snapshotMeritBonus = meritBonusRef.current
 
     let newAttrs = { ...currentCharacter.attributes }
 
@@ -987,6 +1061,22 @@ export function useGameEngine(props: UseGameEngineProps) {
     const attrsForCheck = { ...newAttrs } as Record<string, number>
     const stateForCheck = { ...newStateVals } as Record<string, number>
     const hiddenForCheck = { ...currentCharacter.hidden } as Record<string, number>
+
+    // 辞官类结局的二次确认必须发生在**任何写入之前**。
+    // 原先这段判定排在 setCharacter / addLifeRecord / 统计计数之后，只把
+    // setGameState 挡在了后面 —— 于是「取消」会留下一个半应用的抉择：
+    // 属性、隐藏属性、flags、生平记录、连击统计全部生效，唯独五方态度被丢掉；
+    // 而玩家重新选一次又会把属性再加一遍。确认后走 handleChoice(skipResignConfirm)
+    // 重放整条链路（含结局落账），取消则什么都不发生。
+    if (choice.effects.special?.type === 'ending' && !opts?.skipResignConfirm && isResignEndingChoice(choice)) {
+      setResignConfirmModal({
+        isOpen: true,
+        choice: choice,
+        newStateVals: newStateVals,
+        newAttrs: newAttrs
+      })
+      return
+    }
 
     // ===== 成就统计（选项侧）=====
 
@@ -1028,7 +1118,12 @@ export function useGameEngine(props: UseGameEngineProps) {
     setUndoHistory(prev => [...prev, {
       character: snapshotChar,
       gameState: snapshotState,
-      eventHistory: [...currentEventHistory]
+      eventHistory: [...currentEventHistory],
+      lifeRecords: snapshotLifeRecords,
+      playerStats: snapshotStats,
+      pendingEvents: snapshotPendingEvents,
+      currentStoryline: snapshotStoryline,
+      meritBonus: snapshotMeritBonus
     }])
 
     setCharacter(prev => {
@@ -1147,38 +1242,22 @@ export function useGameEngine(props: UseGameEngineProps) {
       const eventMultiplier = (currentEvent?.type === 'historical' || currentEvent?.type === 'ending') ? 2 : 1
       const finalChange = baseChange * eventMultiplier * difficultyConfigRef.current.meritScoreMultiplier
 
-      setPreviousMeritScore(prev => prev + finalChange)
-
+      // 记账到独立的 meritBonus（升迁 effect 会把它并进分数与判定标尺）。
+      // 原先这里是 `setPreviousMeritScore(prev => prev + finalChange)`，
+      // 而升迁 effect 结尾无条件用 adjustedScore 覆写 previousMeritScore，
+      // 同一次抉择一定改属性 → 该 effect 立刻重跑 → 加分被冲掉，等于白加。
       if (finalChange !== 0) {
+        setMeritBonus(prev => prev + finalChange)
         const changeText = finalChange > 0 ? `+${Math.round(finalChange)}` : `${Math.round(finalChange)}`
         setPromotionMessage(`政绩分变化：${changeText}`)
         setTimeout(() => setPromotionMessage(null), 2000)
       }
     }
 
-    if (choice.effects.special?.type === 'ending') {
-      const isResignEnding = choice.text.includes('辞官') ||
-        choice.text.includes('归隐') ||
-        choice.text.includes('请辞') ||
-        choice.text.includes('致仕') ||
-        choice.text.includes('挂冠') ||
-        choice.text.includes('急流勇退') ||
-        choice.text.includes('隐姓埋名')
-
-      if (isResignEnding) {
-        setResignConfirmModal({
-          isOpen: true,
-          choice: choice,
-          newStateVals: newStateVals,
-          newAttrs: newAttrs
-        })
-        return
-      }
-
-      handleGameOver(currentEvent ?? undefined)
-      return
-    }
-
+    // 五方态度必须在结局分支**之前**落账。
+    // 原先这段排在 ending 分支的 return 之后，于是所有带 special.type='ending' 的选项
+    // 都会丢掉 gameState 增量：属性、隐藏属性、flags 已经写了，五方态度却停在原地，
+    // 结局屏与史馆传略读到的是「改了一半」的局势。
     setGameState(prev => {
       const newState = { ...prev, ...newStateVals }
       if (newState.民望 !== undefined) {
@@ -1196,6 +1275,13 @@ export function useGameEngine(props: UseGameEngineProps) {
       return newState
     })
 
+    if (choice.effects.special?.type === 'ending') {
+      // 辞官类结局已在函数开头完成确认（未确认时根本走不到这里），
+      // 其余结局直接结算。
+      handleGameOver(currentEvent ?? undefined)
+      return
+    }
+
     try {
       const params = {
         attributes: attrsForCheck,
@@ -1211,21 +1297,8 @@ export function useGameEngine(props: UseGameEngineProps) {
 
       if (triggeredEvent) {
         if (triggeredEvent.id === 'bankrupt') {
-          const bankruptEndingEvent: GameEvent = {
-            id: 'ending_bankrupt',
-            title: '【结局】倾家荡产',
-            description: `你的银两已经耗尽，再也无法维持生计。\n\n债主们堵上了门，官府也下了文书——再不还钱就要抄家问罪。\n\n你这一生，终究是在贫困潦倒中落下了帷幕。`,
-            conditions: {},
-            choices: [{
-              id: 'accept',
-              text: '接受命运',
-              effects: {},
-              resultDescription: '游戏结束'
-            }],
-            type: 'ending'
-          }
-          setCurrentEvent(bankruptEndingEvent)
-          handleGameOver(bankruptEndingEvent)
+          setCurrentEvent(withEndingId(triggeredEvent.event))
+          handleGameOver(withEndingId(triggeredEvent.event))
           return
         }
         setCurrentEvent(triggeredEvent.event)
@@ -1246,7 +1319,12 @@ export function useGameEngine(props: UseGameEngineProps) {
 
       const params = {
         attributes: { ...currentCharacter.attributes } as Record<string, number>,
-        gameState: { 圣眷: currentGameState.圣眷, 中官: currentGameState.中官, 清议: currentGameState.清议, 士绅: currentGameState.士绅, 民望: currentGameState.民望, 国势: currentGameState.国势 },
+        // gameState 里必须带上 turn。wrapBatchAsBoundaryEvents 会给每个叙事结局
+        // 注入 `gameState.turn >= 36` 这道「不许开局秒结束」的兜底门，
+        // 而 checkLegacyObj 取值是 `src[key] ?? 0` —— 不带 turn 就等于 turn=0，
+        // 于是这条注入把所有结局都判成「还没玩满 3 年」，
+        // 本函数（推进月份时的边界检查）永远不可能触发任何结局。
+        gameState: { 圣眷: currentGameState.圣眷, 中官: currentGameState.中官, 清议: currentGameState.清议, 士绅: currentGameState.士绅, 民望: currentGameState.民望, 国势: currentGameState.国势, turn: currentGameState.turn },
         hidden: { ...currentCharacter.hidden } as Record<string, number>,
         faction: currentCharacter.faction,
         flags: currentCharacter.flags,
@@ -1257,21 +1335,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
       if (triggeredEvent) {
         if (triggeredEvent.id === 'bankrupt') {
-          const bankruptEndingEvent: GameEvent = {
-            id: 'ending_bankrupt',
-            title: '【结局】倾家荡产',
-            description: `你的银两已经耗尽，再也无法维持生计。\n\n债主们堵上了门，官府也下了文书——再不还钱就要抄家问罪。\n\n你这一生，终究是在贫困潦倒中落下了帷幕。`,
-            conditions: {},
-            choices: [{
-              id: 'accept',
-              text: '接受命运',
-              effects: {},
-              resultDescription: '游戏结束'
-            }],
-            type: 'ending'
-          }
-          setCurrentEvent(bankruptEndingEvent)
-          handleGameOver(bankruptEndingEvent)
+          setCurrentEvent(withEndingId(triggeredEvent.event))
+          handleGameOver(withEndingId(triggeredEvent.event))
           return true
         }
         setCurrentEvent(triggeredEvent.event)
@@ -1295,6 +1360,14 @@ export function useGameEngine(props: UseGameEngineProps) {
   }, [])
 
   const handleNextMonth = useCallback(() => {
+    // 同步的重入闸门。isProcessing 是 state，要等渲染后才由 effect 回写进 ref，
+    // 而真正的推进排在 300ms 定时器里 —— 双击或连按 Space 时两次调用都落在
+    // 同一次 flush 之前，state 与 ref 都还是旧值，于是 turn +2、age += 2/12、
+    // 两批事件 id 各写一次历史、pendingEvents 被第二次覆盖。
+    // ActionBar 那边又把 isProcessing 当成「可点」，所以按钮在这 300ms 里根本不禁用。
+    if (advanceInFlightRef.current) return
+    advanceInFlightRef.current = true
+
     setIsProcessing(true)
     setUndoHistory([])
 
@@ -1359,6 +1432,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     }))
 
     window.setTimeout(() => {
+      advanceInFlightRef.current = false
       if (checkBoundary()) {
         setIsProcessing(false)
         return
@@ -1392,12 +1466,21 @@ export function useGameEngine(props: UseGameEngineProps) {
   const handleUndo = useCallback(() => {
     const history = undoHistoryRef.current
     if (history.length === 0) return
-    // 「谨慎行事」成就：只有真正执行了回退才计数
-    updatePlayerStats(prev => ({ ...prev, undoCount: prev.undoCount + 1 }))
     const snapshot = history[history.length - 1]
+    // 先整体回到抉择前，再单独把「悔棋」这一次计数加回去 ——
+    // 顺序反过来会被快照覆写，undoCount 恒为 0，「谨慎行事」成就永远达不成。
     setCharacter({ ...snapshot.character })
     setGameState(snapshot.gameState)
     setEventHistory(snapshot.eventHistory)
+    setLifeRecords([...snapshot.lifeRecords])
+    setPendingEvents([...snapshot.pendingEvents])
+    setMeritBonus(snapshot.meritBonus)
+    meritBonusRef.current = snapshot.meritBonus
+    currentStorylineRef.current = snapshot.currentStoryline
+    setCurrentStoryline(snapshot.currentStoryline)
+    const restoredStats: PlayerStats = { ...snapshot.playerStats, undoCount: snapshot.playerStats.undoCount + 1 }
+    playerStatsRef.current = restoredStats
+    setPlayerStats(restoredStats)
     setUndoHistory(prev => prev.slice(0, -1))
   }, [])
 
@@ -1444,7 +1527,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       achievements: loadAchievements(),
       difficulty,
       currentStoryline: currentStorylineRef.current,
-      stats: statsForSave
+      stats: statsForSave,
+      meritBonus: meritBonusRef.current
     }
     const ok = saveSaveSlot(slotId, saveData)
     if (ok) {
@@ -1522,6 +1606,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     setCurrentEvent(null)
     setUndoHistory([])
     setMeritScore(freshMeritScore)
+    // 选项加分属于上一局，必须清零，否则新的一局开局就白拿一段政绩分。
+    meritBonusRef.current = 0
+    setMeritBonus(0)
     setPreviousMeritScore(freshMeritScore / difficultyConfig.promotionThresholdMultiplier)
     setIdentityType('official')
     setCurrentStoryline(undefined)
@@ -1674,11 +1761,23 @@ export function useGameEngine(props: UseGameEngineProps) {
   const closeDeathEnding = useCallback(() => setDeathEndingState(prev => ({ ...prev, show: false })), [])
 
   const confirmResign = useCallback(() => {
+    const pending = resignConfirmModal.choice
     setResignConfirmModal(prev => ({ ...prev, isOpen: false, choice: null, newStateVals: {}, newAttrs: characterRef.current.attributes }))
-    setIsGameOver(true)
-  }, [])
+    if (!pending) {
+      setIsGameOver(true)
+      return
+    }
+    // 重放这次抉择，让它走完整条结算链路：属性、五方态度、隐藏属性、flags、
+    // 生平记录、成就统计、结局图鉴登记，以及最重要的 handleGameOver
+    // —— 它负责生成史馆传略并解锁对应结局成就。
+    // 此前这里只有一句 setIsGameOver(true)：确认辞官后 gameState 的五方态度被整份丢弃，
+    // 结局屏的「史馆传略」是空的，这个结局也永远不会写进图鉴。
+    handleChoice(pending, { skipResignConfirm: true })
+  }, [resignConfirmModal.choice, handleChoice])
 
   const cancelResign = useCallback(() => {
+    // 什么都不必回滚：确认弹窗现在在一切写入之前就弹出（见 handleChoice 开头的辞官分支），
+    // 取消 = 这次抉择从未发生。
     setResignConfirmModal(prev => ({ ...prev, isOpen: false, choice: null, newStateVals: {}, newAttrs: characterRef.current.attributes }))
   }, [])
 
@@ -1720,16 +1819,25 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
 
     const oldState = loadSaveData.gameState
+    // 旧存档的键名迁移必须走 STATE_MAP 的同一张表。
+    // 这里原来是 `士绅: 百姓口碑 ?? 士绅` —— 把「百姓口碑」错接给了士绅，
+    // 而按 STATE_MAP，百姓口碑→民望、商贾→士绅。后果是 v1 存档读进来后，
+    // 士绅态度被民望的数字顶替，且这个错误同时污染政绩分与贬官判定。
+    const legacyState = oldState as unknown as Record<string, unknown>
+    const numOr = (value: unknown, fallback: number): number => {
+      const n = typeof value === 'number' ? value : Number(value)
+      return Number.isFinite(n) ? n : fallback
+    }
     const initialGameState = {
       currentYear: oldState.currentYear,
       currentMonth: oldState.currentMonth,
       turn: oldState.turn,
-      圣眷: (oldState as any).帝心 ?? oldState.圣眷 ?? 50,
-      中官: (oldState as any).中官 ?? 50,
-      清议: (oldState as any).派系立场 ?? oldState.清议 ?? 50,
-      士绅: (oldState as any).百姓口碑 ?? oldState.士绅 ?? 50,
-      民望: (oldState as any).百姓口碑 ?? oldState.民望 ?? 50,
-      国势: oldState.国势 ?? 75
+      圣眷: numOr(legacyState.帝心 ?? oldState.圣眷, 50),
+      中官: numOr(legacyState.安全 ?? legacyState.中官, 50),
+      清议: numOr(legacyState.派系立场 ?? oldState.清议, 50),
+      士绅: numOr(legacyState.商贾 ?? oldState.士绅, 50),
+      民望: numOr(legacyState.百姓口碑 ?? oldState.民望, 50),
+      国势: numOr(oldState.国势, 75)
     }
 
     const currentScore = calculateMeritScore(fixedCharacter, initialGameState)
@@ -1744,7 +1852,14 @@ export function useGameEngine(props: UseGameEngineProps) {
     setEventHistory(loadSaveData.eventHistory)
     setUndoHistory([])
     setPendingEvents((loadSaveData as any).pendingEvents || [])
-    setCurrentEvent((loadSaveData as any).currentEvent || null)
+    const restoredEvent = (loadSaveData as any).currentEvent || null
+    setCurrentEvent(restoredEvent)
+    // 必须同步 ref：本文件末尾的「初始化第一个事件」effect 用 currentEventRef 作守卫，
+    // 而 ref 由另一个 effect 在渲染后才回写。两个 effect 在同一次 commit 里按声明顺序执行，
+    // 读档 effect 先跑、初始化 effect 后跑，此时 ref 仍是首帧的 null ——
+    // 于是守卫失效，初始化逻辑重新摇一个事件覆盖掉刚读出来的那个，
+    // 并把它的 id 连同整批候选 id 一起烧进 eventHistory（该事件永久消失）。
+    currentEventRef.current = restoredEvent
 
     // 生平流水必须一起换掉。此前这里漏了 lifeRecords，导致在引擎已挂载的情况下
     // 切换存档（切槽位 / 读另一份自动存档）时，新的「生平回顾」里混着上一辈子的记录。
@@ -1765,8 +1880,20 @@ export function useGameEngine(props: UseGameEngineProps) {
     playerStatsRef.current = restoredStats
     setPlayerStats(restoredStats)
 
-    setMeritScore(currentScore)
-    setPreviousMeritScore(currentScore)
+    // 事件侧显式加成的「政绩分」不来自属性，必须随存档一起存活，
+    // 否则读档后这些加分被清零（见 meritBonus 状态声明处的说明）。
+    const restoredMeritBonus = numOr((loadSaveData as any).meritBonus, 0)
+    setMeritBonus(restoredMeritBonus)
+    meritBonusRef.current = restoredMeritBonus
+
+    const displayScore = currentScore + restoredMeritBonus
+    setMeritScore(displayScore)
+    // previousMeritScore 与升迁判定用的是**除以难度系数之后**的那条标尺
+    // （见文件末尾升迁 effect 里的 adjustedScore）。这里必须一致，
+    // 否则读档后 previous=base、current=base/系数，两者之差会被误判成
+    // 「政绩下滑/擢升」——简单模式一读档就凭空升一级、困难模式就凭空贬一级。
+    // 重开一局那条路径（handleRestart）本来就除了，唯独这里漏了。
+    setPreviousMeritScore(displayScore / difficultyConfig.promotionThresholdMultiplier)
 
     if ((loadSaveData as any).identityType) {
       setIdentityType((loadSaveData as any).identityType)
@@ -1796,19 +1923,34 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     const params = {
       attributes: { ...characterRef.current.attributes } as Record<string, number>,
-      gameState: { 圣眷: gameStateRef.current.圣眷, 中官: gameStateRef.current.中官, 清议: gameStateRef.current.清议, 士绅: gameStateRef.current.士绅, 民望: gameStateRef.current.民望, 国势: gameStateRef.current.国势 },
+      // 同 checkBoundary：turn 缺失会让注入的 turn ≥ 36 判定恒假。
+      gameState: { 圣眷: gameStateRef.current.圣眷, 中官: gameStateRef.current.中官, 清议: gameStateRef.current.清议, 士绅: gameStateRef.current.士绅, 民望: gameStateRef.current.民望, 国势: gameStateRef.current.国势, turn: gameStateRef.current.turn },
       hidden: { ...characterRef.current.hidden } as Record<string, number>,
       faction: characterRef.current.faction,
-      flags: characterRef.current.flags
+      flags: characterRef.current.flags,
+      // 这两个键缺失时 compileConditions 的第 1)、2) 步会直接 `return false`
+      // （它要求 currentYear / currentMonth 必须是 number 才继续判定年份窗口），
+      // 于是所有带年份窗口的结局（甲申之变、殉国煤山这一类）在挂载路径上永不触发。
+      // 「读档进来时条件本来就已经成立」这种最常见的场景恰好走的就是这条路径。
+      currentYear: gameStateRef.current.currentYear,
+      currentMonth: gameStateRef.current.currentMonth
     }
 
     const endingEvent = boundaryEventManager.checkByType(params, 'ending')
     if (endingEvent) {
-      setCurrentEvent(endingEvent.event)
-      if (endingEvent.id === 'bankrupt') {
-        setIsGameOver(true)
+      const bankrupt = endingEvent.id === 'bankrupt'
+      const shown = bankrupt ? withEndingId(endingEvent.event) : endingEvent.event
+      // 这个结局如果已经在历史里出现过，说明玩家是带着它走过一段之后才存的档。
+      // 此时不再重播，否则会变成「读档 → 立刻又弹同一个结局」的死循环，存档再也进不去。
+      if (eventHistoryRef.current.includes(shown.id) || eventHistoryRef.current.includes(endingEvent.event.id)) {
+        // 继续走下面的正常开局流程
+      } else {
+        setCurrentEvent(shown)
+        if (bankrupt) {
+          handleGameOver(shown)
+        }
+        return
       }
-      return
     }
 
     const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
@@ -1873,7 +2015,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       achievements: loadAchievements(),
       difficulty,
       currentStoryline,
-      stats: playerStats
+      stats: playerStats,
+      meritBonus
     }
 
     const fingerprint = `${gameState.currentYear}|${gameState.currentMonth}|${gameState.turn}|${eventHistory.length}|${character.attributes.财帛}|${character.attributes.文韬}|${character.attributes.理政}|${character.attributes.武略}|${character.attributes.体质}|${gameState.圣眷}|${gameState.中官}|${gameState.清议}|${gameState.士绅}|${gameState.民望}|${gameState.国势}|${character.flags.length}|${currentEvent?.id || ''}|${currentStoryline || ''}`
@@ -1903,13 +2046,14 @@ export function useGameEngine(props: UseGameEngineProps) {
         autosaveTimerRef.current = null
       }
     }
-  }, [character, gameState, eventHistory, currentEvent, pendingEvents, isProcessing, identityType, lifeRecords, playTime, lastAutosaveFingerprint, origin, degree, playerName, difficulty, currentStoryline, playerStats])
+  }, [character, gameState, eventHistory, currentEvent, pendingEvents, isProcessing, identityType, lifeRecords, playTime, lastAutosaveFingerprint, origin, degree, playerName, difficulty, currentStoryline, playerStats, meritBonus])
 
   // 升官贬官检查
   useEffect(() => {
     const currentCharacter = characterRef.current
     const currentGameState = gameStateRef.current
-    const baseScore = calculateMeritScore(currentCharacter, currentGameState)
+    // 属性推导分 + 选项显式加分。两者必须同尺计入，否则 effects.meritScore 无处落地。
+    const baseScore = calculateMeritScore(currentCharacter, currentGameState) + Math.round(meritBonus)
     const adjustedScore = baseScore / difficultyConfig.promotionThresholdMultiplier
 
     setMeritScore(baseScore)
@@ -1986,7 +2130,11 @@ export function useGameEngine(props: UseGameEngineProps) {
           }
           setCurrentEvent(demotionEndingEvent)
           setIdentityType(demotion.newIdentity || 'civilian')
-          setIsGameOver(true)
+          // 必须走 handleGameOver：它负责把结局 id 写进 eventHistory、登记结局成就、
+          // 生成史馆传略。此前这里只有 setIsGameOver(true)，于是革职为民/流放边疆
+          // 这两个结局的结算屏是空白传略，而成就 ending_demotion_done
+          // （判据是 eventHistory 含 'ending_demotion'）在数学上永远无法达成。
+          handleGameOver(demotionEndingEvent)
           return
         }
 
@@ -2021,7 +2169,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     // 刻意**不**加入 character.rank：rank 会被贬官/升官本身改写，
     // 一旦进依赖就会形成「贬官 → rank 变 → 重新判定 → 再贬」的自激循环。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [character.attributes.理政, character.attributes.文韬, character.attributes.武略, character.attributes.财帛, character.attributes.体质, character.hidden.道德值, character.hidden.欲望值, character.hidden.野心值, character.degree, gameState.圣眷, gameState.中官, gameState.清议, gameState.士绅, gameState.民望, gameState.国势, difficultyConfig, identityType, previousMeritScore])
+  }, [character.attributes.理政, character.attributes.文韬, character.attributes.武略, character.attributes.财帛, character.attributes.体质, character.hidden.道德值, character.hidden.欲望值, character.hidden.野心值, character.degree, gameState.圣眷, gameState.中官, gameState.清议, gameState.士绅, gameState.民望, gameState.国势, difficultyConfig, identityType, previousMeritScore, meritBonus])
 
   return {
     // 状态

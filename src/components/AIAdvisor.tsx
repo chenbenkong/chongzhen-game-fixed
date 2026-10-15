@@ -94,12 +94,21 @@ export default function AIAdvisor({ isOpen, onClose, gameContext }: AIAdvisorPro
   }, [isOpen, keyConfigured])
 
   // 打开/关闭时清理
+  //
+  // 依赖里必须带 isOpen。本组件在 !isOpen 时直接 return null，容器根本不在 DOM 里，
+  // 而初次挂载时正是关闭状态 → `messagesContainerRef.current` 是 null → 这个 effect
+  // 在第一行就 return 掉了。依赖只有稳定的 checkScrollPosition，意味着它此后
+  // **永远不会再执行**：滚动监听从未挂上，shouldAutoScrollRef 恒为 true，
+  // 于是谋士每次流式刷新都把画面强拉回底部，玩家想往上翻看自己刚问的问题都做不到。
   useEffect(() => {
+    if (!isOpen) return
     const el = messagesContainerRef.current
     if (!el) return
+    // 每次重新打开都回到「跟随最新消息」的默认姿态
+    shouldAutoScrollRef.current = true
     el.addEventListener('scroll', checkScrollPosition)
     return () => el.removeEventListener('scroll', checkScrollPosition)
-  }, [checkScrollPosition])
+  }, [isOpen, checkScrollPosition])
 
   // 流式期间用 setInterval 定期滚动（与 flush 节流同频）
   useEffect(() => {

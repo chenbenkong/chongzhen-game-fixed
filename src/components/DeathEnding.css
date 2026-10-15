@@ -8,7 +8,13 @@
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  /* 必须压过结局屏（.ending-screen，z-index 9999）。
+     殉国 / 自尽 / 处斩这类选项同时命中两条路径：EventDisplay 先按关键词回调
+     onDeathEnding 弹出本组件，又照常把这次抉择交给 onChoice，而这类选项带的正是
+     special.type = 'ending'，于是 handleGameOver 同步把结局屏（9999）也打开了。
+     原来这里是 1000，死亡场景被结局屏整个盖住 —— 玩家从来没见过专属的死亡演出，
+     点完「殉国明志」直接跳到结算页。 */
+  z-index: 10200;
   animation: fadeIn 1s ease;
   overflow-y: auto;
 }

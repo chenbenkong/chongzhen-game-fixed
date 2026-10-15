@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useModal } from '../hooks/useModal'
 import './TutorialModal.css'
@@ -57,7 +57,23 @@ const tutorialSteps = [
   }
 ]
 
-export default function TutorialModal({ isOpen, onClose, onComplete }: TutorialModalProps) {
+export default function TutorialModal(props: TutorialModalProps) {
+  // 用 key 复位翻页进度。本组件在 GameScreen 里常驻挂载（教程与帮助各一个实例，
+  // isOpen 只决定渲染分支、不卸载），所以 currentStep 会跨开关保留：
+  // 玩家翻完 8 页帮助、关掉、再点「帮 助」，看到的会是最后一页
+  // 「准备好了吗？」加一个「开始游戏」按钮，而不是第一页。
+  // 每次从关闭变为打开都换一次 key → React 重建内部组件、状态回到第 0 页。
+  const [resetKey, setResetKey] = useState(0)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (props.isOpen && !wasOpen.current) setResetKey(k => k + 1)
+    wasOpen.current = props.isOpen
+  }, [props.isOpen])
+
+  return <TutorialModalBody key={resetKey} {...props} />
+}
+
+function TutorialModalBody({ isOpen, onClose, onComplete }: TutorialModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
   // 对话框语义 + ESC + Tab 焦点陷阱 + 焦点还原 + 滚动锁

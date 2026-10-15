@@ -350,13 +350,18 @@
 .codex-card { cursor: pointer; user-select: none; }
 
 .codex-detail-overlay {
-  position: absolute;
+  /* 这个详情面板由 EndingCodex.tsx 用 createPortal(node, document.body) 挂到 body 上，
+     与图鉴本体（.ending-codex-overlay，z-index 1100）处在同一个根堆叠上下文里。
+     原来的 z-index: 10 直接被 1100 压在后面 —— 点卡片「查看详情」后画面毫无变化，
+     而页脚明明写着「单击卡片查看详情」。portal 到 body 就必须用 fixed 定位，
+     absolute 的 inset:0 是相对初始包含块的，滚动后会错位。 */
+  position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 1200;
   padding: 20px;
   animation: codex-fade-in 0.2s ease;
 }

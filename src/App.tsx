@@ -117,6 +117,9 @@ function App() {
     // 不要再自己 JSON.parse 原始字符串（会绕过迁移）。
     const saveData = loadAutosave()
     if (!saveData) return
+    // 必须显式关闭：这个弹窗与 phase 是平级的，切到 'playing' 不会把它顺带卸掉。
+    // 缺了这一句，读档成功之后弹窗仍盖在游戏画面上（handleSelectSaveSlot 就有这一句）。
+    setIsSaveSlotsOpen(false)
     applySaveData(saveData)
   }, [applySaveData])
 
@@ -199,6 +202,7 @@ function App() {
             isOpen={isSaveSlotsOpen}
             mode={saveSlotsMode}
             onSelect={handleSelectSaveSlot}
+            onLoadAutosave={handleLoadAutosave}
             onClose={() => setIsSaveSlotsOpen(false)}
           />
         </Suspense>

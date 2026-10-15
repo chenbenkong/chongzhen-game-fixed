@@ -116,9 +116,16 @@ export function checkEventConditions(
     if (upperAll && upperAll.some((f: string) => !own.includes(f))) return false
   }
 
-  // 概率门（0-1）。此前未实现，导致「每月25%」这类事件实际 100% 触发。
-  if (typeof cond.random === 'number' && cond.random < 1) {
-    if (Math.random() >= cond.random) return false
+  // 概率门。
+  //
+  // 这里原来写的是 `cond.random < 1` 才生效，把值当成 0-1 的小数；
+  // 而数据侧（以及 boundaryEventCompiler 的同一条判定）用的是**百分数**，
+  // 例如 transition/1638.ts 的 `random: 25` 配注释「每月 25% 概率触发」。
+  // 25 不满足 `< 1`，于是这道门被整个跳过 —— 该事件在满足其余条件的每个月都必然触发，
+  // 频率是设计值的 4 倍。两种写法都支持：>1 按百分数，<=1 按小数。
+  if (typeof cond.random === 'number' && Number.isFinite(cond.random)) {
+    const probability = cond.random > 1 ? cond.random / 100 : cond.random
+    if (probability < 1 && Math.random() >= probability) return false
   }
 
   return true

@@ -41,6 +41,7 @@ import { preludeEvents as transitionPreludes } from './transition/preludes'
 import { allGrayChoiceEvents } from './gray'
 import { allEndingEvents } from './ending'
 import { allEmotionEvents as emotionEvents } from './emotion'
+import { factionEvents } from './faction/faction_events'
 import { originEvents } from './origin'
 
 export const historicalEvents: GameEvent[] = [
@@ -92,6 +93,11 @@ export const initialEvents: GameEvent[] = [
   ...historicalEvents,
   ...transitionEvents,
   ...emotionEvents,
+  // 党争事件（4 个，type='faction'）。引擎的 withCooldown 分支和
+  // 事件池的 branchRepeatableTypes 一直都在处理 'faction' 这一类，
+  // 但这份数据从来没被并进任何池子 —— 只有调试面板 CheatMode 单独 import 了它，
+  // 于是正常游玩永远碰不到党争事件。这里补进主池，让那套冷却逻辑真正生效。
+  ...factionEvents,
   ...originEvents
 ];
 

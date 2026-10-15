@@ -181,7 +181,7 @@
 | 持久化 | `localStorage`（带 schema 版本与迁移） |
 | 桌面端 | Electron + electron-builder（见 `desktop/`） |
 | Steam 接入 | steamworks.js，带完整 mock 驱动（无 AppID 也能跑） |
-| 测试 | vitest（**71 例**）+ Playwright（真实 Chromium 冒烟、9 档视口 × 两屏布局回归、崩溃压力、存档模糊、内存检查） |
+| 测试 | vitest（**90 例**）+ Playwright（真实 Chromium 冒烟、9 档视口 × 两屏布局回归、崩溃压力、存档模糊、内存检查） |
 | 部署 | GitHub Actions → GitHub Pages |
 
 ## 目录结构

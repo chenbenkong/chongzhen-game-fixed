@@ -1,7 +1,7 @@
 import { lazy, Suspense, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { OriginType, DegreeType, Attributes } from '../types/game'
 import { SaveData } from '../types/save'
-import { DifficultyLevel } from '../types/difficulty'
+import { DifficultyLevel, DIFFICULTY_CONFIGS } from '../types/difficulty'
 import { useGameShortcuts } from '../hooks/useGameShortcuts'
 import { useGameEngine, RANKS } from '../hooks/useGameEngine'
 import StatusBar from './StatusBar'
@@ -192,7 +192,10 @@ function GameScreen(props: GameScreenProps) {
     }
   }, [currentEvent, handleContinue, handleNextMonth])
 
-  const canAdvance = !currentEvent || isProcessing || eventResolved
+  // isProcessing **不再**算「可点」。推进真正落地是在 handleNextMonth 里排的那个
+  // 300ms 定时器之后，把这段窗口算作可点会让双击 / 连按 Space 变成跳过两个月
+  // （turn +2、增龄两次、两批事件 id 各写一次历史、pendingEvents 被覆盖）。
+  const canAdvance = !currentEvent || eventResolved
 
   const advanceHint = useMemo(() => {
     if (canAdvance) return null
@@ -211,7 +214,9 @@ function GameScreen(props: GameScreenProps) {
     showImageGenerator ||
     isLifeReviewOpen ||
     isAchievementPanelOpen ||
-    resignConfirmModal.isOpen
+    resignConfirmModal.isOpen ||
+    // 结局屏已经接管画面，此时任何游戏快捷键都不该再生效
+    isGameOver
 
   // Space / Enter 推进，S 存档，A 成就，H 帮助。
   // 数字键在 EventDisplay 内部处理（它才知道哪个选项可选）。
@@ -223,7 +228,12 @@ function GameScreen(props: GameScreenProps) {
     onSave: handleSave,
     onAchievements: openAchievementPanel,
     onHelp: openHelp,
-    blocked: modalOpen || !canAdvance
+    // 这两类门控必须分开。此前是 `blocked: modalOpen || !canAdvance` 一个开关管到底，
+    // 而「事件还没做出抉择」正好是 canAdvance=false 的主场景 —— 于是玩家面对一个
+    // 读不懂的事件时，按 H 调不出帮助、按 S 存不了档、按 A 打不开成就，
+    // 三个纯查看功能被一个推进用的门一起锁死，恰好卡在玩家最需要它们的时候。
+    blocked: modalOpen,
+    blockedAdvance: !canAdvance
   })
 
   useEffect(() => {
@@ -244,13 +254,24 @@ function GameScreen(props: GameScreenProps) {
     identityType === 'exiled' ? 'exiled' : 'other'
   }`
 
+  // 「下一级需多少分」必须换算到面板展示所用的那把标尺上。
+  // 升迁判定比较的是 baseScore / promotionThresholdMultiplier 与 RANKS.minScore，
+  // 而这里显示的是未经换算的 meritScore —— 两边不换算，就会出现
+  // 「显示 620/需 700，却已经连升两级」或「明明过了 700 却一动不动」。
+  // 换到同一口径即 minScore × 系数（两者数学等价：base/mult ≥ min ⟺ base ≥ min×mult）。
+  const nextRankRequirement = useMemo(() => {
+    const mult = DIFFICULTY_CONFIGS[props.difficulty].promotionThresholdMultiplier
+    const next = RANKS.find(r => r.minScore * mult > meritScore)
+    return next ? Math.round(next.minScore * mult) : null
+  }, [props.difficulty, meritScore])
+
   const identityTitle = identityType === 'official' ? '官 职' :
     identityType === 'rebel' ? '反 贼 身 份' :
     identityType === 'exiled' ? '罪 臣 身 份' :
     identityType === 'retired' ? '归 隐 身 份' : '民 间 身 份'
 
   const identityDesc = identityType === 'official'
-    ? `朝廷命官，当前政绩分${meritScore}，下一级需${RANKS.find(r => r.minScore > meritScore)?.minScore || '已达最高'}分`
+    ? `朝廷命官，当前政绩分${meritScore}，下一级需${nextRankRequirement ?? '已达最高'}分`
     : identityType === 'rebel'
     ? '占山为王，与朝廷为敌'
     : identityType === 'exiled'

@@ -11,20 +11,24 @@
 
 ## 一、尚未修复的问题
 
-### 1.1 · 本轮新增 · 首屏 46 个 JS 分片全部预取（性能，未修）
+### 1.1 · 第六轮已部分处理 · 首屏预取的分片数量从 46 降到 23
 
-**位置**：`src/data/events/index.ts`、`vite.config.js` 的 `manualChunks`。
+**位置**：`vite.config.js` 的 `manualChunks`（`historicalBucket` / `transitionBucket`）。
 
-**现状**：Vite 把 17 个历史年份 + 18 个过渡年份各自分包，
-而 `events/index.ts` 静态 import 全部，于是首屏一次性预取 **1.36MB / 46 个 JS 请求**。
-实测线上 FCP 1.34s（本地 112ms，差异来自网络往返）。
+**原状**：Vite 把 17 个历史年份 + 18 个过渡年份各自分包，
+而 `events/index.ts` 静态 import 全部，于是首屏一次性预取 **1.36MB / 46 个 JS 请求**，
+线上 FCP 1.34s（本地 112ms，差异全是网络往返）。
 
-**为什么没修**：改成按年份懒加载需要把同步的事件挑选改成异步，
-会大幅改动 `useGameEngine` 核心，风险明显高于收益；
-而且桌面版（Steam 的实际发行形态）跑在本地磁盘上，这个成本根本不存在。
+**这一轮做了什么**：按本文原来的建议 —— 先合并年份分片，不动引擎的异步模型 ——
+把每个年份一片改成「历史 4 年一片 / 过渡 5 年一片」。
+产物 JS 分片从 **46 个降到 23 个**，总体积一个字节没变，
+省掉的是 23 次请求往返，正是 FCP 差距的来源。
 
-**触发条件**：如果将来要继续优化首屏，更划算的方向是**先合并年份分片数量**
-（例如把 17 个历史年份合成 4~5 个），而不是改引擎的异步模型。
+**仍未解决的部分**：这些分片**依然是全量预取** —— 因为
+`events/index.ts` 是静态 import，`manualChunks` 只影响"切成几个文件"，不影响"何时取"。
+要真正做到按需加载，必须把事件挑选改成异步，那会大改 `useGameEngine` 核心。
+桌面版（Steam 的实际发行形态）跑在本地磁盘上，这个成本根本不存在，
+所以完整的懒加载仍然排在低优先级。
 
 ### 1.2 · 本轮新增 · 长周目性能只做了推理、未做实测
 
@@ -166,7 +170,48 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **71 例**，分 13 个文件，全部在 `tests/unit/`。
+回归测试共 **90 例**，分 14 个文件，全部在 `tests/unit/`。
+
+### 第六轮：逻辑与数据缺陷专项
+
+这一轮的主题是「**代码写了，但那条路径从来没被走到过**」。
+上面几轮修的是崩溃与白屏，这一轮修的是**静默的错误** ——
+不报错、不闪退，只是玩家永远看不到该看到的东西。
+每条都先在 pristine HEAD 上跑回归用例确认它确实是缺陷（19 例里 9 例在改前直接失败），
+再动手改。回归测试 `tests/unit/engine.regressionRound6.test.ts`。
+
+| 缺陷 | 表现 | 位置 |
+| --- | --- | --- |
+| `conditions.random` 量纲不一致：判定按 0-1 小数写、数据按百分数给 | `random: 25`（"每月 25%"）不满足 `< 1`，概率门被整个跳过 → 该事件每月**必然**触发，频率是设计值的 4 倍 | `utils/eventConditions.ts` |
+| 4 个党争事件从未并进任何事件池 | 引擎的 `withCooldown` 分支一直在处理 `'faction'` 类型，但正常游玩永远遇不到 —— 只有调试面板单独 import 了它 | `data/events/index.ts` |
+| 15 个 `chain` 主线事件不在挑选范围内 | tier-1 的类型白名单漏了 `'chain'`，整条主线剧情不可达 | `hooks/useGameEngine.ts` |
+| `effects.meritScore` 无人读取 | 数据里给事件配了政绩加成，引擎算完就丢，既不入账也不进存档 | `useGameEngine.ts` + `types/save.ts`（`meritBonus`，schema v4） |
+| 结局分支在 `setGameState` **之前** return | 所有 `special.type='ending'` 的选项丢掉五方态度增量：属性、隐藏属性、flags 都写了，圣眷/士绅/民望停在原地，结局屏与史馆传略读到的是"改了一半"的局势 | `useGameEngine.ts` |
+| 挂载路径给边界判定的 params 缺 `turn` / `currentYear` / `currentMonth` | 编译器注入的 `turn >= 36` 恒假；缺年份两键时 `compileConditions` 第 1)、2) 步直接 `return false`，所有带年份窗口的结局（甲申之变、殉国煤山）**读档进来永不触发** | `useGameEngine.ts` |
+| 阈值结局在开局第一个月就能把人打死 | 寒门 `财帛=15`，开局事件「家书催银」第一个选项扣 20 → 财帛 0 → `bankrupt` 立刻达成；读档路径同样会重播 | `data/boundaryEvents.ts`（`THRESHOLD_ENDING_GRACE_TURNS = 12`，见第五节） |
+| 存档里的 `currentEvent` / `pendingEvents` 不做规整 | 外部改坏或旧版本残留时，组件按下标访问 `choices[i].text` → ErrorBoundary 白屏。模糊测试 37 例崩 4 例，现 0 例 | `types/save.ts`（`normalizeEvent`） |
+| 辞官二次确认排在写入**之后** | 点"取消"会留下一个半应用的抉择：属性、隐藏属性、flags、生平记录、连击统计全部生效，只有五方态度被丢掉；玩家重选一次又把属性加一遍。现把闸门提到任何写入之前，取消则什么都不发生 | `useGameEngine.ts`（`isResignEndingChoice`） |
+| 破产结局用的是引擎里手抄的两句克隆 | `BoundaryEventManager` 注册的 `triggerable_bankrupt` 带着完整叙事（引文 / 处境 /「倾家荡产」回声），引擎却自己 new 了一个只有 description 的对象，那段结局回声从未显示过。现保留成就侧 id、换用注册版本的叙事 | `useGameEngine.ts`（`withEndingId`） |
+| 撤销只还原属性与局势 | `lifeRecords` / `playerStats` / `meritScore` 不回滚，撤销一次等于白得一次成就进度；`undoCount` 也不计数 | `useGameEngine.ts`（快照在统计自增**之前**采集） |
+| 同一个月能被推进两次 | 推进落地在 300ms 定时器里，而这段窗口 `canAdvance` 判为"可点" → 双击 / 连按 Space = 跳两个月、增龄两次、事件 id 重复写历史、`pendingEvents` 被覆盖 | `GameScreen.tsx` + `useGameEngine.ts`（`advanceInFlightRef`） |
+| 结局屏已接管画面时快捷键仍生效 | `modalOpen` 清单漏了 `isGameOver` | `GameScreen.tsx` |
+| 投骰弹窗开着时数字键穿透到背后面板 | 在弹窗结算前就选定事件，并消耗掉本局唯一一次投骰机会 | `EventDisplay.tsx` |
+| 快捷键被"推进门"一起锁死 | `blocked: modalOpen \|\| !canAdvance` 一个开关管到底 → 面对读不懂的事件时按 H 调不出帮助、按 S 存不了档、按 A 打不开成就，恰好在最需要的时候 | `useGameShortcuts.ts`（拆出 `blockedAdvance`） |
+| 「下一级需 X 分」用未经难度换算的标尺显示 | 判定比较的是 `baseScore / mult` 与 `minScore`，显示却直接用 `meritScore` → "显示 620/需 700，却已连升两级" | `GameScreen.tsx` |
+| 死亡演出被结局屏盖住 | 殉国/自尽/处斩这类选项同时命中两条路径，`.death-ending-overlay` 只有 `z-index: 1000`，结局屏是 9999 → 玩家从来没见过专属死亡演出 | `DeathEnding.css` |
+| 结局图鉴「查看详情」点了没反应 | portal 到 `document.body` 后仍用 `absolute` + `z-index: 10`，被本体 1100 压在后面 | `EndingCodex.css`（`fixed` / 1200） |
+| 谋士对话每次流式刷新都强拉回底部 | `AIAdvisor` 的滚动监听 effect 依赖里没有 `isOpen`：组件关闭时 `return null`、容器不在 DOM，effect 第一行就 return，此后**永不再执行** | `AIAdvisor.tsx` |
+| 帮助翻到第 8 页、关掉、再打开还停在第 8 页 | 教程组件常驻挂载，`isOpen` 只切渲染分支不卸载 → `currentStep` 跨开关保留 | `TutorialModal.tsx`（开→关→开时换 key 复位） |
+| 一键永久删除玩家生成的丹青，无确认、无撤销 | 组件早就引入了 `useConfirm` 并渲染了 dialog，只是从来没调用 `confirm` | `EventImages.tsx` |
+| 从标题屏读自动存档后，存档槽弹窗仍盖在游戏画面上 | `handleLoadAutosave` 少了 `setIsSaveSlotsOpen(false)`（`handleSelectSaveSlot` 有） | `App.tsx` |
+| 首屏 46 个 JS 分片全部预取 | 见第一节 1.1，本轮把分片数降到 23（体积未变，省掉 23 次请求往返） | `vite.config.js` |
+
+一条方法论记录：**判据要先确认"这条路径真的会被走到"**。
+上面 `random` 量纲、`chain` 不可达、`factionEvents` 未登记、`meritScore` 无人读
+四条，共同点是「数据和判定逻辑都写好了，中间缺一根线」。
+这类缺陷 grep 是查不出来的 —— 得让数据反过来质问代码："你配的这个值，谁读了？"
+`regressionRound6.test.ts` 里那几条断言正是这么写的：拿真实数据源当输入，
+断言引擎**必须**对它做出反应。
 
 ### 第五轮：闪退专项
 
@@ -336,3 +381,46 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 （`recent` 变量不再被使用）才暴露出来的。
 
 **不要"顺手优化"掉那两处 `new Set(eventHistory.slice(-5))`。**
+
+### 3. 阈值结局的 12 个月宽限期（`THRESHOLD_ENDING_GRACE_TURNS`）
+
+**现状**：`src/data/boundaryEvents.ts` 里 8 个"数值归零即达成"的结局
+（破产 / 病故 / 圣眷尽失 / 中官构陷 / 清议不容 / 士绅反叛 / 民变 / 道德沦丧），
+判定都写成 `pastGrace(params) && <原条件>`，`pastGrace` 即 `gameState.turn >= 12`。
+
+**为什么这么设计**：这条判定本身没问题，问题在于它在**开局第一个月**就会误杀。
+寒门出身 `财帛 = 15`，而开局事件「家书催银」的第一个选项扣 20 两 ——
+15 − 20 = 0，`bankrupt` 当场达成。玩家刚点下第一个选项就看见
+「【结局】倾家荡产」，整局在 turn=1 结束。
+挂载路径（读档进来）同样会立刻重播。
+这类"阈值结局"的语义是**长期状态恶化到无法挽回**，不是"单个月份的瞬时读数"，
+所以给一年宽限期是符合设计的：真要走投无路，12 个月后照样触发。
+
+**刻意没有加宽限期的两条**：`serious_illness`（体质 1–19）是 `crisis` 而非 `ending`，
+它是"重病缠身、需要立刻抉择"的玩法事件，本来就该随时出现。
+
+**回归保护**：`engine.regressionRound6.test.ts` §八 钉住了
+"turn < 12 时阈值不成立 / turn ≥ 12 时成立"两侧。
+
+### 4. 结局分支之前必须先 `setGameState`
+
+`useGameEngine.ts` 的 `handleChoice` 里，五方态度的 `setGameState`
+排在 `special.type === 'ending'` 分支**之前**。这不是随手挪的：
+结局屏和史馆传略都会读 `gameState`，若让结局分支先 return，
+玩家看到的局势就是"属性改了、态度没改"的半成品。
+`regressionRound6.test.ts` 用 `清议 +10` 的辞官选项钉住了这一点 ——
+改之前拿到的是原值 50，改之后是 60。
+
+### 5. 存档 schema 已到 v4，`currentEvent` 也走兜底
+
+`SAVE_SCHEMA_VERSION = 4`：v4 新增 `meritBonus`，并把 `currentEvent` /
+`pendingEvents` 纳入 `migrateSave` 的规整范围（`normalizeEvent`）。
+**这条属于项目既有信条的延伸：兜底必须发生在数据层，不能指望每个组件自己判空。**
+组件是直接用下标访问 `currentEvent.choices[i].text` 的，
+一个被外部改坏的存档就能让它在渲染第一帧撞进 ErrorBoundary。
+
+### 6. `manualChunks` 的年份分桶是刻意的粗粒度
+
+`vite.config.js` 的 `historicalBucket`（4 年一片）与 `transitionBucket`（5 年一片）
+取代了原先的"一年一片"。不要改回逐片 —— 那 46 个分片不会因为拆得更细而变少，
+`events/index.ts` 是静态 import，首屏照样全量预取，多出来的只是 23 次请求往返。

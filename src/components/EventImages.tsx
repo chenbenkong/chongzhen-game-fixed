@@ -58,7 +58,7 @@ export default function EventImages({ eventId, onGenerateClick }: EventImagesPro
   const [images, setImages] = useState<SavedImage[]>([])
   const [viewerSrc, setViewerSrc] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
-  const { dialog: confirmDialog } = useConfirm()
+  const { confirm, dialog: confirmDialog } = useConfirm()
 
   // 每次 eventId 变化或 mounted 时重读
   const reload = useCallback(() => {
@@ -91,7 +91,19 @@ export default function EventImages({ eventId, onGenerateClick }: EventImagesPro
 
   if (!eventId) return null
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    // 删掉之前必须确认：这些丹青是玩家花额度生成出来的作品，
+    // 点一下缩略图边上的「删」就永久消失、且没有任何撤销途径。
+    // 本组件早就引入了 useConfirm 并把 dialog 渲染出来了，只是从来没调用 confirm。
+    const ok = await confirm({
+      title: '删除丹青',
+      message: '确定删除这幅丹青吗？',
+      detail: '删除后无法恢复，且生成它所消耗的额度不会退回。',
+      variant: 'danger',
+      confirmText: '删除',
+      cancelText: '保留'
+    })
+    if (!ok) return
     deleteImage(id)
     reload()
     // 通知其他监听器（ImageGenerator 画册）刷新

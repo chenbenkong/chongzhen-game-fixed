@@ -28,8 +28,17 @@ export interface ShortcutHandlers {
   onSave: () => void
   onAchievements: () => void
   onHelp: () => void
-  /** 当前是否有弹窗打开（打开时不处理游戏快捷键） */
+  /** 当前是否有弹窗 / 结局屏处于打开状态（打开时所有快捷键让路） */
   blocked: boolean
+  /**
+   * 仅门控「推进」按键（Space / Enter）。
+   *
+   * 与 blocked 分开是必须的：推进需要「本事件已做出抉择」，
+   * 而存档 / 成就 / 帮助只是查看功能，跟当前有没有选完毫无关系。
+   * 合成一个开关的后果是玩家卡在一个看不懂的抉择上时按 H 调不出帮助 ——
+   * 那正是最需要它的时刻。
+   */
+  blockedAdvance?: boolean
 }
 
 export function useGameShortcuts({
@@ -38,7 +47,8 @@ export function useGameShortcuts({
   onSave,
   onAchievements,
   onHelp,
-  blocked
+  blocked,
+  blockedAdvance
 }: ShortcutHandlers): void {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -58,6 +68,8 @@ export function useGameShortcuts({
         case ' ':
         case 'Spacebar':
         case 'Enter':
+          // 推进单独受 blockedAdvance 管控，其余快捷键不受它影响
+          if (blockedAdvance) return
           e.preventDefault()
           onAdvance()
           return
@@ -83,5 +95,5 @@ export function useGameShortcuts({
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onPickChoice, onAdvance, onSave, onAchievements, onHelp, blocked])
+  }, [onPickChoice, onAdvance, onSave, onAchievements, onHelp, blocked, blockedAdvance])
 }

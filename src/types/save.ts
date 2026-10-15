@@ -43,6 +43,12 @@ export interface SaveData {
    * 旧存档缺失时由 migrateSave 补成全 0。
    */
   stats?: PlayerStats
+  /**
+   * 本局由选项显式声明的政绩分累计（`choice.effects.meritScore`）。
+   * calculateMeritScore 只看属性与五方态度，看不到这部分加分，
+   * 所以它必须单独持久化，否则读档后这类加成被清零。旧存档缺失时按 0 处理。
+   */
+  meritBonus?: number
   /** 存档格式版本，用于后续迁移 */
   schemaVersion?: number
 }
@@ -110,14 +116,56 @@ export interface SaveSlot {
  *  1 — 初始版本（character.hidden 只有三项，可能含 NaN/null）
  *  2 — 补齐 机敏值 / 忠诚值；隐藏属性统一规整为 0-100 的有限数
  *  3 — 新增 stats（局内成就统计计数）；旧存档补成全 0
+ *  4 — 新增 meritBonus（选项显式声明的政绩分累计）；
+ *      currentEvent / pendingEvents 纳入读档兜底
  * 每次改动 SaveData 的结构都应递增，并在 migrateSave 里补上对应分支。
  */
-export const SAVE_SCHEMA_VERSION = 3
+export const SAVE_SCHEMA_VERSION = 4
 
 /** 角色生平流水最大长度：纯展示用，超长时截断以约束存档体积 */
 export const MAX_CHARACTER_HISTORY = 400
 /** 单条存档序列化后的软上限（字符数）。超过则进一步裁剪 */
 export const SAVE_SIZE_SOFT_LIMIT = 1_200_000
+
+/** 存档里的任何对象都必须「是纯对象」才算数：null、数组、字符串、数字一律否掉 */
+function isPlainObject(value: unknown): value is Record<string, any> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+/**
+ * 存档里「正在进行的事件」的兜底。
+ *
+ * 第五轮给 `attributes` 补了兜底（缺整个 attributes 会在渲染第一帧就白屏），
+ * 但同一条读档路径上的 `currentEvent` 一直没管 —— 它是**整份存档里唯一
+ * 直接进 React 树的外部对象**：EventDisplay 无条件地 `event.description.split(...)`、
+ * `event.choices.map(c => c.text)`。于是存档里 currentEvent 缺 description /
+ * choices 为 null / choices 含 null 项 / currentEventId 指向已被删除的事件，
+ * 任何一种都会让 ErrorBoundary 接管整个界面（实测 4 例崩溃）。
+ *
+ * 判据与 normalizeAttributes 一致：**兜底发生在数据层**，
+ * 因为渲染组件是直接下标访问的，指望每个组件自己判空只会漏。
+ * 无法救活（缺 id）时返回 null，读档后回到「没有进行中事件」的正常状态。
+ */
+function normalizeEvent(raw: unknown): GameEvent | null {
+  if (!isPlainObject(raw)) return null
+  if (typeof raw.id !== 'string') return null
+
+  const event = { ...raw }
+  if (typeof event.title !== 'string') event.title = ''
+  if (typeof event.description !== 'string') event.description = ''
+  if (!isPlainObject(event.conditions)) event.conditions = {}
+  if (typeof event.type !== 'string') event.type = 'normal'
+
+  const choices = Array.isArray(event.choices) ? event.choices : []
+  event.choices = choices.filter(isPlainObject).map(choice => ({
+    ...choice,
+    id: typeof choice.id === 'string' ? choice.id : '',
+    text: typeof choice.text === 'string' ? choice.text : '',
+    effects: isPlainObject(choice.effects) ? choice.effects : {}
+  }))
+
+  return event as unknown as GameEvent
+}
 
 /**
  * 把任意版本的存档对象升级到当前 schema，并做字段规整。
@@ -163,6 +211,14 @@ function migrateSave(parsed: unknown): SaveData | null {
 
   if (!Array.isArray(raw.eventHistory)) raw.eventHistory = []
   if (!Array.isArray(raw.lifeRecords)) raw.lifeRecords = []
+
+  raw.currentEvent = normalizeEvent(raw.currentEvent)
+  // currentEvent 没救活却留着 id，会让「初始化第一个事件」的守卫以为已有事件而跳过，
+  // 界面上则是一个空的进行中事件 —— 两者都必须一起清掉。
+  if (raw.currentEvent === null) raw.currentEventId = null
+  raw.pendingEvents = (Array.isArray(raw.pendingEvents) ? raw.pendingEvents : [])
+    .map(normalizeEvent)
+    .filter((e): e is GameEvent => e !== null)
 
   // v2 -> v3：局内统计计数。旧存档没有 stats，这里补成全 0；
   // 已损坏的值（NaN / null / 负数）也一并规整，避免成就计数被污染成 NaN。

@@ -1,4 +1,4 @@
-import { BoundaryEvent } from '../types/boundaryEvent'
+import { BoundaryEvent, BoundaryEventCheckParams } from '../types/boundaryEvent'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
 import { wrapBatchAsBoundaryEvents } from './boundaryEventCompiler'
@@ -445,61 +445,79 @@ const ENDING_MORAL_DEGENERACY: GameEvent = {
   type: 'ending'
 }
 
+/**
+ * 阈值类结局的宽限期（月）。
+ *
+ * 寒门开局 `财帛` 只有 15，而它的第一个事件「家书催银」首选项就是 `财帛 -20`：
+ * 变卖家产救母这个在叙事上被褒奖的选择，会把财帛直接打到 0，
+ * 于是 `bankrupt` 在**开局第一个月**命中，一局当场结束 ——
+ * 玩家连一次月俸都没来得及领，更没有任何回旋余地。
+ *
+ * 这与 `wrapBatchAsBoundaryEvents` 给叙事结局加的 `turn >= 36` 兜底是同一个原则：
+ * 先让玩家真正开始经营，再让「归零」成为致命事件。
+ * 宽限期内归零不判死，但也**不会被偷偷修复** —— 期满时仍为 0 的，结局照常触发。
+ */
+const THRESHOLD_ENDING_GRACE_TURNS = 12
+
+function pastGrace(params: BoundaryEventCheckParams): boolean {
+  return (params.gameState?.turn ?? 0) >= THRESHOLD_ENDING_GRACE_TURNS
+}
+
 export const BOUNDARY_EVENTS: BoundaryEvent[] = [
   {
     id: 'bankrupt',
     priority: 1,
     type: 'ending',
-    check: (params) => params.attributes['财帛'] <= 0,
+    check: (params) => pastGrace(params) && params.attributes['财帛'] <= 0,
     event: ENDING_BANKRUPT
   },
   {
     id: 'death_illness',
     priority: 2,
     type: 'ending',
-    check: (params) => params.attributes['体质'] <= 0,
+    check: (params) => pastGrace(params) && params.attributes['体质'] <= 0,
     event: ENDING_DEATH_ILLNESS
   },
   {
     id: 'emperor_hate',
     priority: 3,
     type: 'ending',
-    check: (params) => (params.gameState?.['圣眷'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.gameState?.['圣眷'] ?? 50) <= 0,
     event: ENDING_EMPEROR_HATE
   },
   {
     id: 'eunuch_conspiracy',
     priority: 4,
     type: 'ending',
-    check: (params) => (params.gameState?.['中官'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.gameState?.['中官'] ?? 50) <= 0,
     event: ENDING_EUNUCH
   },
   {
     id: 'scholar_ostracism',
     priority: 5,
     type: 'ending',
-    check: (params) => (params.gameState?.['清议'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.gameState?.['清议'] ?? 50) <= 0,
     event: ENDING_SCHOLAR_OSTRACISM
   },
   {
     id: 'gentry_rebellion',
     priority: 6,
     type: 'ending',
-    check: (params) => (params.gameState?.['士绅'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.gameState?.['士绅'] ?? 50) <= 0,
     event: ENDING_GENTRY_REBELLION
   },
   {
     id: 'popular_uproar',
     priority: 7,
     type: 'ending',
-    check: (params) => (params.gameState?.['民望'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.gameState?.['民望'] ?? 50) <= 0,
     event: ENDING_POPULAR_UPROAR
   },
   {
     id: 'moral_degeneracy',
     priority: 8,
     type: 'ending',
-    check: (params) => (params.hidden?.['道德值'] ?? 50) <= 0,
+    check: (params) => pastGrace(params) && (params.hidden?.['道德值'] ?? 50) <= 0,
     event: ENDING_MORAL_DEGENERACY
   },
   {
