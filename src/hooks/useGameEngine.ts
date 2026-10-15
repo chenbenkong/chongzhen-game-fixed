@@ -8,6 +8,7 @@ import { initialEvents, allGrayChoiceEvents } from '../data/events/index'
 import { origins } from '../data/origins'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
+import { isZeroWarningRegistryId } from '../data/zeroWarningEvents'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
 import { checkEventConditions, pickEvent } from '../utils/eventConditions'
@@ -37,6 +38,30 @@ export const RANKS = [
   { level: 17, name: '从一品·少师', minScore: 1020, type: 'official' as IdentityType },
   { level: 18, name: '正一品·太师', minScore: 1100, type: 'official' as IdentityType }
 ]
+
+/**
+ * 岁俸：每年正月按当前官职等级发一次俸银（两）。
+ *
+ * 为什么引擎里原本一分收入都没有，以及为什么这次只加这么少。
+ * 整局模拟器（`tests/unit/helpers/simulate.ts`，16 局守成玩法）实测到
+ * `财帛` 声明净增量为 **−0.77/月**，于是 8/16 局最后都归零死于「倾家荡产」——
+ * 换句话说**破产不是玩家选错了，是这个经济系统里根本没有进项**：
+ * `npm run audit:economy` 数出来数据里有 **369 个选项在扣财帛、240 个在给**，
+ * 而"俸禄"这条所有明清题材都有的进钱管道在引擎里一条都没有。
+ *
+ * 但把俸银开到位会让破产结局整族消失（`财帛` 上限 100，一旦月薪盖过出血点，
+ * 归零就只能靠特定豪赌才会发生）。所以这里刻意只补**大约一半**的缺口：
+ * 一年一发、每品级 1 两 —— 七品知县 6 两/年（≈0.5/月），
+ * 刚好让"省着花"能活下去、"随便花"照样破产，钱仍然是压力源而不是背景噪声。
+ *
+ * 发在正月而不是按月发，是因为推进月份时一次调用可能连跳 12 个月（空月合并），
+ * 按月发会让"连跳"与"逐月点"两种手感在数值上不等价；跨年检查在循环里数得清楚。
+ *
+ * 非官员身份（`rank` 不在 `RANKS` 里，例如已还乡、经商）拿 0 —— 没有俸禄可言。
+ */
+export function annualStipend(rankName: string): number {
+  return RANKS.find(r => r.name === rankName)?.level ?? 0
+}
 
 // 开局年份：天启八年，主角入仕。游戏时钟只往前走，所以任何把条件写在
 // 「currentYear < GAME_START_YEAR」区间里的事件在**任何存档里都永不触发**。
@@ -1355,9 +1380,14 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 满足条件时才可能遇到，「重病缠身」之类在游戏中途永远触发不了。
       // 这里补上同一条检查，概率门与挂载路径共用 CRISIS_EVENT_PROBABILITY。
       const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
-      if (crisisEvent && Math.random() < CRISIS_EVENT_PROBABILITY) {
-        setCurrentEvent(crisisEvent.event)
-        return true
+      if (crisisEvent) {
+        // 归零警告不吃概率门。它是"判死前的最后一次通知"：漏发一次，这一维就停在
+        // 「归零但没警告」的状态上，而八条死线现在都要求先见过警告才收尾 ——
+        // 于是既不判死也不给救，整局悬空。通知这种东西应当是必到的。
+        if (isZeroWarningRegistryId(crisisEvent.id) || Math.random() < CRISIS_EVENT_PROBABILITY) {
+          setCurrentEvent(crisisEvent.event)
+          return true
+        }
       }
     } catch (e) {
       console.error('checkBoundary error:', e)
@@ -1392,6 +1422,8 @@ export function useGameEngine(props: UseGameEngineProps) {
     let allEvents: GameEvent[] = []
     let skippedMonths = 0
     const maxSkip = 12
+    // 本次推进跨过了几个"正月"，用来结算岁俸（见下方 setCharacter）
+    let newYearTicks = 0
 
     // 连续跳过空月，直到找到事件或达到上限，避免玩家反复点击继续
     while (skippedMonths < maxSkip) {
@@ -1401,6 +1433,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       if (nextMonth > 12) {
         nextMonth = 1
         nextYear++
+        newYearTicks++
       }
 
       const current国势 = newState.国势 ?? 75
@@ -1432,10 +1465,19 @@ export function useGameEngine(props: UseGameEngineProps) {
     setGameState(newState)
 
     // ── 副作用部分：每次调用只执行一次 ────────────────────────────────
-    setCharacter(prevChar => ({
-      ...prevChar,
-      age: prevChar.age + skippedMonths / 12
-    }))
+    const stipend = newYearTicks > 0 ? annualStipend(characterRef.current.rank) : 0
+    setCharacter(prevChar => {
+      const aged = { ...prevChar, age: prevChar.age + skippedMonths / 12 }
+      if (stipend <= 0) return aged
+      const bounds = ATTR_BOUNDS.财帛
+      return {
+        ...aged,
+        attributes: {
+          ...aged.attributes,
+          财帛: Math.max(bounds.min, Math.min(bounds.max, aged.attributes.财帛 + stipend))
+        }
+      }
+    })
 
     window.setTimeout(() => {
       advanceInFlightRef.current = false
@@ -1960,9 +2002,13 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
 
     const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
-    if (crisisEvent && Math.random() < CRISIS_EVENT_PROBABILITY) {
-      setCurrentEvent(crisisEvent.event)
-      return
+    if (crisisEvent) {
+      // 与 checkBoundary 同一条规则：归零警告不吃概率门，否则读档进来漏发一次
+      // 就再也补不上（第二道闸门要求"先见过警告"才允许判死）。
+      if (isZeroWarningRegistryId(crisisEvent.id) || Math.random() < CRISIS_EVENT_PROBABILITY) {
+        setCurrentEvent(crisisEvent.event)
+        return
+      }
     }
 
     let allEvents = findAllEventsForState(gameStateRef.current)

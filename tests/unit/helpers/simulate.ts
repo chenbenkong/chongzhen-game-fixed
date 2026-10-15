@@ -4,6 +4,7 @@ import { renderGameEngine } from './gameEngine'
 import { checkChoiceRequirement } from '../../../src/components/EventDisplay'
 import { allEndingEvents } from '../../../src/data/events/ending'
 import { triggerableEndingEvents } from '../../../src/data/boundaryEvents'
+import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
 import type { Character, GameStateValues } from '../../../src/types/game'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
 
@@ -431,7 +432,7 @@ export async function simulateMany(opts: {
     months.push(r.months)
     if (r.endingId) endingCounts.set(r.endingId, (endingCounts.get(r.endingId) || 0) + 1)
     for (const id of r.firedEventIds) {
-      if (id.startsWith('boundary_warn_')) zeroWarnings.add(id)
+      if (id.startsWith(ZERO_WARNING_EVENT_ID)) zeroWarnings.add(id)
       else eventsFired.add(id)
     }
 

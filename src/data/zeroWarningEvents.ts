@@ -524,6 +524,17 @@ const WARNINGS: WarningSpec[] = [
 ]
 
 /**
+ * 警告事件的注册 id / 事件 id 前缀。
+ * 导出来是因为引擎要认得"这条 crisis 是归零警告"，从而把它从
+ * `CRISIS_EVENT_PROBABILITY` 的概率门里摘出来 —— 警告漏发一次，
+ * 第二道闸门（死于归零必须先见过警告）就把这局卡成既不判死也不给救的悬空态。
+ * 前缀写成常量而不是在两处各拼一遍字符串，是为了让它不可能与下面的 id 漂移。
+ */
+export const ZERO_WARNING_REGISTRY_ID = 'warn_zero_'
+export const ZERO_WARNING_EVENT_ID = 'boundary_warn_'
+export const isZeroWarningRegistryId = (id: string) => id.startsWith(ZERO_WARNING_REGISTRY_ID)
+
+/**
  * 由内容表生成八条 crisis 边界事件。
  * `flags.add` 在这里统一注入而不是写在每条内容里：
  * "任何一条警告选项都必须写下 flag"是这一层的承重墙 —— 漏了某一条，
@@ -533,7 +544,7 @@ export function buildZeroWarningEvents(): BoundaryEvent[] {
   return WARNINGS.map(spec => {
     const flag = zeroWarnFlag(spec.key)
     const event: GameEvent = {
-      id: `boundary_warn_${spec.key}`,
+      id: `${ZERO_WARNING_EVENT_ID}${spec.key}`,
       title: spec.title,
       description: spec.description,
       narrative: spec.narrative,
@@ -548,7 +559,7 @@ export function buildZeroWarningEvents(): BoundaryEvent[] {
       }))
     }
     return {
-      id: `warn_zero_${spec.key}`,
+      id: `${ZERO_WARNING_REGISTRY_ID}${spec.key}`,
       priority: spec.priority,
       type: 'crisis',
       check: (params: BoundaryEventCheckParams) =>
