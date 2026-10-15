@@ -39,7 +39,9 @@ import { events1644_critical as transition1644Critical } from './transition/1644
 import { eventsRouteGuide as routeGuideEvents } from './transition/route_guide'
 import { preludeEvents as transitionPreludes } from './transition/preludes'
 import { allGrayChoiceEvents } from './gray'
-import { allEndingEvents } from './ending'
+// ./ending 不在这里 import。此前那行 `import { allEndingEvents } from './ending'`
+// 只被早已删掉的 `export { allEndingEvents }` 用过，是个死引用；
+// 而 `noUnusedLocals` 并没有报它。为什么结局数据仍然在首屏，见文件末尾。
 import { allEmotionEvents as emotionEvents } from './emotion'
 import { factionEvents } from './faction/faction_events'
 import { originEvents } from './origin'
@@ -104,17 +106,24 @@ export const initialEvents: GameEvent[] = [
 // 灰色支线（type='gray'，会进入 findAvailableEvent 走"30% 支线触发窗口"）
 export { allGrayChoiceEvents };
 
-// ⚠️ 全部结局（81 KB）**刻意不再**从这里导出。
+// ⚠️ 全部结局**刻意不再**从这里导出，本文件对 ./ending 的静态依赖也已彻底移除。
 //
-// 原来这里有一行 `export { allEndingEvents }`，而 useGameEngine 是从本 barrel
-// 取 initialEvents 的 —— 于是结局数据（连同 boundaryEvents / endings_all /
-// debauchery）被硬拖进首屏模块图：45 个分片、1.3 MB 在启动时全部预取，
-// 其中结局那一坨只在玩家打开「结局图鉴」或调试面板时才用得上。
+// 原来这里有一行 `export { allEndingEvents }`：useGameEngine 从本 barrel 取
+// initialEvents，于是结局数据被硬拖进首屏模块图。删掉导出是正确的方向，
+// 但**它并没有真的把结局数据移出首屏** —— 下面这条实测结论请一起记住，
+// 免得继任者以为已经优化完了：
 //
-// 现在只有真正需要它的两处直接按路径 import：
+//   dist/index.html 的 modulepreload 列表里仍然有 events-ending-*.js（167 KB）。
+//   原因是 data/boundaryEvents.ts 静态 import 了 endings_all 与 debauchery，
+//   要把它们逐个注册给 BoundaryEventManager；而 boundaryEvents 又被 useGameEngine
+//   依赖。引擎在任何一个月都可能抛出结局，所以这份数据按定义就必须在首屏可用。
+//
+// 真要把它挪走，只有一条路：把结局注册本身改成异步（首次判定时再 dynamic import），
+// 那会牵动 BoundaryEventManager 的同步判定接口，风险高于收益。
+//
+// 现在需要全部结局的两处直接按路径 import：
 //   - components/EndingCodex.tsx  → data/events/ending（该组件本身是 lazy 的）
 //   - components/CheatMode.tsx    → data/events/ending（该组件也是 lazy 的）
-// 两者都不在首屏关键路径上，因此结局数据不再阻塞首屏。
 //
 // 真实触发仍由 BoundaryEventManager 负责（见 data/boundaryEvents.ts），
 // 结局也不进入 findAvailableEvent 的事件池。

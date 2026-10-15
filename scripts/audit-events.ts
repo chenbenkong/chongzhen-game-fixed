@@ -3,9 +3,11 @@ import {
   transitionEvents,
   initialEvents,
   allGrayChoiceEvents,
-  allEndingEvents,
   emotionEvents
 } from '../src/data/events/index'
+// 结局数据刻意不从 barrel 导出（它会把 81 KB 拖回首屏模块图），
+// 体检脚本要读它就按路径直取。
+import { allEndingEvents } from '../src/data/events/ending'
 import { GameEvent, EventChoice } from '../src/types/event'
 
 interface AuditIssue {

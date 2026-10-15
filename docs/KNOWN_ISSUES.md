@@ -30,6 +30,39 @@
 桌面版（Steam 的实际发行形态）跑在本地磁盘上，这个成本根本不存在，
 所以完整的懒加载仍然排在低优先级。
 
+**第六轮之后实测的准确口径**（`dist/index.html` 的 modulepreload 列表）：
+首屏预取 **19 个 JS / 2.63 MB**。其中 `events-ending-*.js` 占 167 KB，
+它**按定义无法延后** —— `data/boundaryEvents.ts` 必须静态拿到全部结局事件
+逐个注册给 `BoundaryEventManager`，而引擎在任何一个月都可能抛出结局。
+上一轮在 `events/index.ts` 末尾留下的注释声称"结局数据不再阻塞首屏"，
+这是**错的**（本轮实测推翻并已改正）。同轮还删掉了该文件里一个
+`import { allEndingEvents } from './ending'` 死引用 —— 它只被早已删除的
+同名 export 用过，而 `noUnusedLocals` 没有报它（已用探针验证：往该文件追加一个
+完全无用的 import，`tsc --noEmit` 依然通过）。
+**结论：类型检查对"死 import"这一类是盲的，别把它当成防线。**
+
+**本轮顺带修掉的真实缺陷（开发工具侧）**：
+`scripts/validate-events.ts`、`scripts/audit-events.ts`、`scripts/audit-narrative-quality.ts`
+三个事件体检脚本**全部在运行时崩溃** —— 它们都从 barrel import 那个已被删除的
+`allEndingEvents`，拿到 `undefined` 后 `for (const event of events)` 抛
+`TypeError: events is not iterable`。也就是说本文「需要人工验收的项」里
+指向的那两条内容体检命令，其实从上一次性能改造起就一直跑不了。
+三处已改为按路径直取 `../src/data/events/ending`，现在全部跑通且结论是干净的：
+六个事件池 0 问题（标签与效果对账、空标题/缺描述/缺选项/条件矛盾/年份区间倒置）。
+
+**并把这一类钉进 CI**：`tsconfig.test.json` 的 include 加上 `scripts/*.ts`。
+改之前 `scripts/` 完全不在类型检查范围内，所以那次删 export 的改动才会一路沉默下来。
+加上之后，同样的破坏会以 `error TS2459: Module '"../src/data/events/index"'
+declares 'allEndingEvents' locally, but it is not exported` 直接拦住部署
+（已实测：把 import 改回 barrel 形式，typecheck 立刻失败）。
+
+**本轮新增的体检脚本**：`scripts/audit-flag-reachability.ts` ——
+它把「事件条件要求的 flag」与「任何选项能获得的 flag」两张表对拍，
+用来找"因前置 flag 永不可能获得而永远选不中的事件"。
+当前结果：400 个事件里 **0 个** 这类死内容，0 个"只 remove 从不 add"的 flag。
+另外 207 个 flag 属于"写进去但没有任何条件读它"（妻室线、党争立场居多），
+是记账冗余而非缺陷，动它们等于发明玩法，故保留。
+
 ### 1.2 · 本轮新增 · 长周目性能只做了推理、未做实测
 
 本轮把引擎热路径从 O(n×m) 改成 O(n+m)（见 STEAM_RELEASE §2.6），

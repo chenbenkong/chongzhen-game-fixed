@@ -6,5 +6,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "tests/unit"]
+  "include": ["src", "tests/unit", "scripts/*.ts"]
 }
