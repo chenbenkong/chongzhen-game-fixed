@@ -47,6 +47,8 @@
 `boundaryEvents.ts` 静态 import 这批警告事件，它们和结局是同一块，
 这正好再次印证上面那句"结局数据按定义无法延后"。请求数从 19 变 20 是分片切法的连带位移，
 不是新增了一个"警告事件专属文件"。
+**第十三轮**给图鉴补了"罢黜归田"一格，同样落在这片：仍是 20 个 JS / **2,700,390 B**（+1,961 B），
+`events-ending-*.js` 现为 **185,172 B**。
 线上 FCP 第十轮实测 **244 ms**，仍然没有回到当年 1.34s 那个量级 ——
 也就是说这一路减请求的改动是有效的，本文上面那句"完整懒加载排低优先级"照旧成立。
 
@@ -154,26 +156,28 @@ flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名
 另外 `simulate.ts` 目前只覆盖 `'steady'` 与 `'warden'` 两种策略、默认 12 局，
 出身 × 官职的全 sweeps 没有做（`SIM_GAMES` / `SIM_MONTHS` / `SIM_POLICIES` / `SIM_VERBOSE` 可现场调）。
 
-**⑥ 第十二轮量出来的新一条：「革职为民 / 流放边疆」根本不在结局图鉴里。**
-`useGameEngine.ts:2163` 内联构造了一个 `id: 'ending_demotion'` 的结局事件（革职与流放
-两条分支**共用同一个 id**，内容靠 `isExiled` 三元式分岔），它从来没进 `allEndingEvents`。
-后果是两头对不上：成就 `ending_demotion_done`（判据 `eventHistory.includes('ending_demotion')`）
-会正常点亮，而图鉴 `EndingCodex` 是拿 `allEndingEvents` 列举的 ——
-玩家打出一个有完整叙事、有 echo 的结局，图鉴上却没有这一格。
-模拟器跑到这条分支时把它量了出来（`simulation.playthrough.test.ts` 的
-`KNOWN_UNREGISTERED_ENDINGS` 记账名单，当前**只有这一条**，加第二条之前先补文档）。
-100 局 steady 里有 **5 局**打死在这条分支上（约 5%），不是边角料。
+**⑥ 「革职为民 / 流放边疆」以前根本不在结局图鉴里 —— 第十三轮已修，见 §三 第十三轮。**
+`useGameEngine.ts:2163` 那个内联构造的 `id: 'ending_demotion'` 结局（革职与流放两条分支
+**共用同一个 id**，内容靠 `isExiled` 三元式分岔）从来没进 `allEndingEvents`，
+于是成就 `ending_demotion_done` 会点亮、图鉴却没有这一格。
+现在整段搬进了 `src/data/events/ending/endingsDemotion.ts` 并登记了一格，
+模拟器的 `KNOWN_UNREGISTERED_ENDINGS` 记账名单也删掉了。
 
-**为什么没在同一轮修**：图鉴的解锁状态是从成就 id 反推的
-（`ending_xxx_done` → `ending_xxx`），要让"流放边疆"成为独立一格就得再加一条成就，
-而 `desktop/steam.cjs` 的 `STEAM_ACHIEVEMENT_LIMIT = 100`、
-现在**正好 100 条**（`npm run check:steam` 会钉这个数）。
-可行的修法有三种，都需要你先点头：
-① 只把「革职为民」补进 `allEndingEvents`（id 已有成就，图鉴立刻能对上），流放仍并作同一格；
-② 退役 1–2 条低价值成就换出名额，把两个结局做成两格（`RETIRED_ACHIEVEMENT_IDS` 这条路是通的）；
-③ 保持现状，只在 `ending_demotion_done` 的文案里说明"含流放"。
-无论选哪种，**内联那个对象都应当搬进数据文件** —— 引擎里手写整段结局文本
-是第六轮那批"声明与实现对不上"问题的同源形态。
+**还剩一半没修**：这一格是**两支承共用**的（革职为民 / 流放边疆合成"罢黜归田"一格），
+和成就 `ending_demotion_done` 的口径一致，所以三方现在是对上的。
+要把流放边疆单独做成一格，就得再加一条成就，而 `desktop/steam.cjs` 的
+`STEAM_ACHIEVEMENT_LIMIT = 100` 现在**正好用满 100 条**（`npm run check:steam` 钉着这个数）。
+只有两条路：退役 1–2 条低价值成就换名额（`RETIRED_ACHIEVEMENT_IDS` 这条路是通的，
+老存档里的退役 id 会被清掉），或者把上限抬高、接受 Steam 侧手工同步映射表。
+**这属于取舍而不是缺陷，需要你点头**，所以我按"共用一格"落地了。
+
+**⑦ 十条边界结局（`triggerable_*`）在 Steam 侧仍然没有成就可以点亮。**
+它们是图鉴里的格子、引擎里真的会触发，但成就表里一条都不指它们 ——
+以前因此永远灰，第十三轮起靠存档里的 `reachedEndings` 达成记录点亮，
+玩家在本机图鉴里看得见，**但不会同步成 Steam 成就**。
+补齐同样是名额问题（10 格 = 10 条成就 > 剩余 0 个名额），刻意没做。
+名单由 `scripts/audit-ending-codex.ts` 的 `KNOWN_TILES_WITHOUT_ACHIEVEMENT` 钉住，
+将来给其中某格加了成就却没把名字从名单里划掉，体检会直接报错。
 
 ---
 
@@ -184,7 +188,7 @@ flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名
 | Electron 安装包 | 需要真实 Windows 桌面环境与 GUI | 在 Windows 上跑 `npm run desktop:dist`，双击安装包完整玩一局 |
 | Steamworks 真实驱动 | 需要原生模块 + 真实 Steam 客户端 + AppID | 用测试 AppID `480`（Spacewar）先验证成就与云存档通路 |
 | 数值平衡 | 手感与难度曲线仍属主观 | 第十一轮已经把"客观那一半"机器化了：`simulation.playthrough.test.ts` 会打印局长/结局分布/触达率，`npm run audit:economy` 会列出八维在各年份窗口的回升渠道缺不缺。**剩下的主观部分**：各难度各通关 2–3 遍，看升迁曲线顺不顺、警告事件给的回天之路是否"贵得有道理" |
-| 事件覆盖率 | ~~需要大量游玩~~ **第十一轮起已可自动验收** | 内容侧体检照旧跑 `npm run audit:events` / `audit:validate` / `audit:narrative`（`@ts-nocheck` 盲区另有 `npm run audit:shape` 与 `npm run audit:values`，两者都在 CI 里跑：前者查键名与结构，后者查值——出身/官职/剧情线的拼写、时间区间正反、前情↔结局配对，以及数据里引用的 `/xxx.png` 是否真的存在于 `public/`）。**触达率**改由 `tests/unit/helpers/simulate.ts` 带种子跑整局实测（12 局 steady 触达 86/402，`warden` 策略能推到 1644 触达 248/402），跑法见 §三 第十一轮 |
+| 事件覆盖率 | ~~需要大量游玩~~ **第十一轮起已可自动验收** | 内容侧体检照旧跑 `npm run audit:events` / `audit:validate` / `audit:narrative`（`@ts-nocheck` 盲区另有 `npm run audit:shape` 与 `npm run audit:values`，两者都在 CI 里跑：前者查键名与结构，后者查值——出身/官职/剧情线的拼写、时间区间正反、前情↔结局配对，以及数据里引用的 `/xxx.png` 是否真的存在于 `public/`）。**触达率**改由 `tests/unit/helpers/simulate.ts` 带种子跑整局实测（12 局 steady 触达 86/402，`warden` 策略能推到 1644 触达 248/402），跑法见 §三 第十一轮。**第十三轮起**再加 `npm run audit:codex`：图鉴格子 / 结局成就 / 事件 id 三方对账（CI 里由 `endingCodex.registry.test.ts` 断言它为 0，与其余体检脚本同一套路） |
 | 成人内容角色年龄 | 无法从文本可靠推断 | **人工通读** `src/data/events/gray/debauchery/` 全部文本 |
 | BGM / 美术授权 | 不在代码里 | 追溯素材来源，保留授权凭证 |
 
@@ -281,7 +285,85 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **190 例**，分 21 个文件，全部在 `tests/unit/`。
+回归测试共 **219 例**，分 22 个文件，全部在 `tests/unit/`。
+
+### 第十三轮：结局图鉴上那 11 格永远点不亮的灰
+
+第十一、十二两轮把"整局能不能跑完"机器化了之后，第十二轮顺手量出来一条孤立缺陷
+（图鉴里没有"革职为民"这格）。这一轮去查它为什么能存在这么久，挖到的是一整片：
+**结局的 id 有三套互不相认的命名**，而"哪些格子已经点亮"是把成就 id 砍掉 `_done`
+直接当事件 id 猜出来的。三套 id + 一个靠猜的映射，从来没有放在一起比过，
+所以坏掉的方式不是报错，是**界面安静地少亮一格**。
+
+实测出来的账（`npm run audit:codex`，本轮新增）：
+
+| | 数量 | 说明 |
+| --- | --- | --- |
+| 图鉴格子（`allEndingEvents`） | 43 → **44** | 本轮把"罢黜归田"补进去 |
+| 结局成就（`ending_*_done`） | 34 | |
+| **有格子、没有任何成就指向它** | **10** | 全是 `triggerable_*` 边界结局，以前**永远灰** |
+| **有成就、但 id 对不上格子** | 1 | 破产：成就判据硬写 `ending_bankrupt`，格子叫 `triggerable_bankrupt`（引擎 `withEndingId` 会改名） |
+| **成就点得亮、图鉴根本没这格** | 1 | `ending_demotion`：整段结局内联在引擎里 |
+
+也就是说玩家能达成 44 种结局，图鉴上有 33 种会亮。剩下 11 种打出来了、
+成就也弹了，图鉴上那一格却一辈子是灰的 —— 这不是数据缺失，是**没有对账点**。
+
+**修法（刻意不加成就、不动 Steam 那 100 条上限）**：
+1. `src/data/endingRegistry.ts` —— 唯一的换算点。`resolveEndingTileId(id)` 把引擎
+   改名过的 id 映射回格子（`ENDING_ID_ALIASES` 一张小表，现在只有破产一条），
+   认不出的返回 `null` 而不是"猜一个接近的"。
+2. `AchievementData.reachedEndings` —— 存档里新增"本局真正达成过哪些格子"的记录，
+   由 `triggerEndingAchievements` 用**换算后的格子 id** 写入，只记首次。
+   图鉴点亮 = 成就反推 ∪ 达成记录，成就那份的时间戳优先（玩家看得见的那份是成就）。
+   为什么非要和成就解耦：成就有 100 条硬上限，而"打过"这件事本身不需要名额。
+3. 引擎里那 32 行内联结局搬进 `src/data/events/ending/endingsDemotion.ts`，
+   两支（革职为民 / 流放边疆）**共用一个 id**，因此只占一格 —— 与成就
+   `ending_demotion_done` 的口径完全一致，三方这才对上。
+   搬的时候补了 `description`：人物志最后一段就是它的值，以前内联那份写的是空串，
+   等于传略结尾白了一块。
+4. `EndingCodex` 的推导从 `useEffect` 里提成导出的纯函数 `buildUnlockedTileIndex`。
+   **这段以前写在 effect 内部，正是"猜错名字没有任何东西会红"的原因**；
+   现在纯函数能用真组件直接压。
+5. `scripts/audit-ending-codex.ts` + `npm run audit:codex`：把上面那张表变成断言，
+   11 类问题（重复格子 / 分类或档位越界 / 格子渲染不出来 / 成就判据解析不出 id /
+   有成就无格子 / 有格子无成就 / 已知名单过期 / 别名悬空或多余 / 边界事件无格子）。
+   老规矩：脚本导出纯 `scanEndingCodex()`，CI 跑的是断言它为空的那条用例。
+
+**顺带修掉的两个口径漏洞**（都是这一轮的意外收获）：
+- `simulate.ts` 以前也自己硬写了破产那条别名，现在走同一个 `resolveEndingTileId`。
+  于是第十一轮"死于归零必须先见过警告"那条不变量**第一次真的覆盖了财帛归零** ——
+  以前破产局的 `endingId` 是 null，压根没进那条断言。
+- 第十二轮加的 `KNOWN_UNREGISTERED_ENDINGS` 记账名单删掉了。留着它等于给以后
+  "再往引擎里内联一段结局"开一条没人检查的通道；根因修完之后，
+  走到未注册结局必须让 CI 直接红。
+
+**取样宽度这件事必须说清楚**：`ending_demotion` 这条分支在默认 12 局里未必出现
+（第十二轮是 16 局里撞出 2 局才看见的），所以本轮把 5 个**实测固定种子**
+（1 / 2 / 3 / 4 / 7）写进用例，并要求取样里**必须同时含**改名过的破产与革职结局 ——
+换种子测不到这两条时用例会直接失败，而不是悄悄空跑。
+
+**新回归**：`tests/unit/endingCodex.registry.test.ts`（26 例）—— id 对账表 4 例、
+革职结局搬进 data 3 例、点亮口径 4 例、达成记录与成就解耦 4 例、
+真组件渲染 5 例、存档 JSON 往返 2 例、体检脚本 2 例、**真引擎跑完整局再到图鉴亮格** 2 例。
+其中最后那组是唯一穿过真引擎的：`handleChoice` 打到 `handleGameOver`，
+让引擎自己改名、自己调 `triggerEndingAchievements`，再回头看图鉴
+（5 局 0.59 秒，断言"达成的格子集合 == 达成记录的键集合 == 亮起的格数"）。
+`achievement.store.test.ts` 另加 3 例盯 `reachedEndings` 的读写边界拷贝、
+旧存档缺字段、只记首次。
+
+**线上/构建侧验证到什么程度（说清楚边界）**：`vite build` + `vite preview` 在真浏览器里
+走完创建角色 → 进游戏 → 幽灵模式 → 结局图鉴，列表里**确实是 44 张卡**
+（`endingRegistry` 新加的那条 import 没有把生产分片的模块图弄断，这是必须实测的一件事）。
+但"打一局真结局再看格子亮没亮"这一下**没在浏览器里点出来** ——
+`CheatMode` 的结局卡片双击只做预览（`handleEndingDoubleClick` 只 `setSelectedEvent`），
+幽灵模式没有触发结局的入口，真打要几十个月。这一段改由上面那组真引擎用例压住：
+它们跑的是同一个 `triggerEndingAchievements` → `recordEndingReached` → `buildUnlockedTileIndex`
+链路，只是渲染环境是 jsdom。**浏览器里缺的只是"生产包 + 真点击"这一层。**
+
+**代价**：首屏负载 20 个 JS / **2,700,390 B**（+1,961 B）。
+增量全在 `events-ending` 那片（新格子的文案），而它**本来就必须进 modulepreload** ——
+`data/boundaryEvents.ts` 要静态拿到全部结局事件逐个注册给 `BoundaryEventManager`，
+理由和实测口径都写在 §1.1，不是本轮新引出来的耦合。
 
 ### 第十二轮：官俸这条管道根本不存在 —— 以及"通知必达"
 
@@ -965,3 +1047,22 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
 **如果以后要改**：调之前先跑一遍模拟器拿到改动前后的分布对照，别凭手感改数字 ——
 这一条之所以能被写出来，就是因为上一轮先有了量尺。同理，别给中官也加一条被动回复：
 关系不会自己回暖，要加得加成一条有代价的玩法（见 §1.4 ②）。
+
+### 10. 图鉴点亮刻意允许"没有成就也算达成"（第十三轮）
+
+**现状**：`AchievementData.reachedEndings`（格子 id → 首次达成时间）与成就表是**两条独立的链**。
+`triggerEndingAchievements` 先无条件写这条记录，再去解 `${event.id}_done` ——
+后者在成就表里查无此 id 时是个静默 no-op（`unlockAchievement` 守的就是这个）。
+于是 10 条 `triggerable_*` 边界结局和"罢黜归田"这一格，**玩家在本机图鉴里看得见，
+Steam 侧却没有对应成就**（名额被 `STEAM_ACHIEVEMENT_LIMIT = 100` 用满，见 §1.4 ⑥⑦）。
+
+**为什么不是 bug 而是取舍**：把"打过"记下来不需要任何人批准，加一条成就需要。
+如果坚持"图鉴只反映成就"，那 11 格会永远灰着 —— 玩家明明打出来了，界面说他没有。
+**别把它"顺手统一"回去**，也别反过来偷偷往成就表里塞东西：`endingCodex.registry.test.ts`
+有一条用例专门钉"没有成就的格子被达成之后，成就表里不会凭空多出一条"。
+
+**要动它就先动名额**：`RETIRED_ACHIEVEMENT_IDS` 这条路是通的（退役 id 在
+`cloneAchievementData` 里被过滤掉，老存档也不会因此报错），
+想给某条边界结局补成就，先从那里退役等量的低价值条目，再把
+`scripts/audit-ending-codex.ts` 的 `KNOWN_TILES_WITHOUT_ACHIEVEMENT` 里那条名字划掉 ——
+划不干净体检就会红（它同时是下限和上限）。

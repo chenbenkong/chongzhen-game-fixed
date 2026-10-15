@@ -3,7 +3,7 @@ import { vi } from 'vitest'
 import { renderGameEngine } from './gameEngine'
 import { checkChoiceRequirement } from '../../../src/components/EventDisplay'
 import { allEndingEvents } from '../../../src/data/events/ending'
-import { triggerableEndingEvents } from '../../../src/data/boundaryEvents'
+import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
 import type { Character, GameStateValues } from '../../../src/types/game'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
@@ -85,17 +85,22 @@ function mulberry32(seed: number) {
   }
 }
 
+/**
+ * 图鉴格子 id → 标题。
+ *
+ * 只从 `allEndingEvents` 取 —— 它就是图鉴的那 44 格。
+ * 终局事件 id 换成格子 id 一律走 `resolveEndingTileId`（同一张对账表），
+ * 这里不再自己硬记别名：此前 `ending_bankrupt` 是手抄的一条，
+ * 于是模拟报告和图鉴各说各话。
+ */
 const ENDING_TITLES = new Map<string, string>()
-for (const e of [...(allEndingEvents as any[]), ...(triggerableEndingEvents as any[])]) {
+for (const e of allEndingEvents as any[]) {
   if (e?.id) ENDING_TITLES.set(e.id, e.title)
 }
-/**
- * 破产结局的别名。引擎在触发破产时会把注册 id `triggerable_bankrupt` 换成
- * `ending_bankrupt`（useGameEngine.ts 的 `withEndingId`，因为成就与图鉴认的是后者），
- * 所以跑出来的终局事件 id 在两张表里都查不到 —— 不补这一条，
- * 模拟报告会把"正常走到了破产结局"错报成"结束了却没有结局"。
- */
-ENDING_TITLES.set('ending_bankrupt', ENDING_TITLES.get('triggerable_bankrupt') ?? '倾家荡产')
+
+/** 终局事件 id（注册 id / 改名后的 id / 引擎内联卡片的 id）→ 图鉴格子 id */
+export const endingTileOf = (id: string | null | undefined): string | null =>
+  id ? resolveEndingTileId(id) : null
 
 /** 贪心策略的打分：把可见收益粗略加总（属性 + 州府态度 + 隐藏属性） */
 function scoreChoice(choice: EventChoice): number {
@@ -318,15 +323,18 @@ export async function simulateRun(opts: {
     if (ended && !endEventId) {
       const history = hook.result.current.eventHistory
       for (let i = history.length - 1; i >= 0; i--) {
-        if (ENDING_TITLES.has(history[i])) {
+        if (endingTileOf(history[i])) {
           endEventId = history[i]
           break
         }
       }
     }
-    if (endEventId && ENDING_TITLES.has(endEventId)) {
-      endingId = endEventId
-      endingTitle = ENDING_TITLES.get(endEventId) ?? null
+    // endingId 存的是**图鉴格子 id**（注册 id 可能被引擎改过名），
+    // endEventId 保留原始事件 id 供排查。
+    const endingTile = endingTileOf(endEventId)
+    if (endingTile) {
+      endingId = endingTile
+      endingTitle = ENDING_TITLES.get(endingTile) ?? null
     }
     outcomeMonths = months
   } catch (e) {

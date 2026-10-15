@@ -9,6 +9,7 @@ import { origins } from '../data/origins'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
 import { isZeroWarningRegistryId } from '../data/zeroWarningEvents'
+import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
 import { checkEventConditions, pickEvent } from '../utils/eventConditions'
@@ -2160,44 +2161,15 @@ export function useGameEngine(props: UseGameEngineProps) {
             impact: '被贬为庶民'
           })
           const isExiled = demotion.newIdentity === 'exiled'
-          const demotionEndingEvent: GameEvent = {
-            id: 'ending_demotion',
-            title: isExiled ? '流放边疆' : '革职为民',
-            description: '',
-            endingConfig: { category: 'personal_fate', tier: isExiled ? 'dark' : 'tragic' },
-            narrative: {
-              speaker: { title: '吏部文书', name: '吏部主事' },
-              quote: isExiled
-                ? '奉旨：某某革职查办，永不起用，即日押解宁古塔，交驻防将军管束。'
-                : '奉旨：某某才疏学浅，难胜其任。着即革职，削籍为民，永不录用。',
-              background: demotion.message + '\n\n吏部的文书送到的时候，你正在批阅最后几份公文。接过的那一刻，你知道——一切都结束了。',
-              situation: isExiled
-                ? '押解官已经在门外等候。你被允许带一床被子、两件换洗衣服和三本书。从京城到宁古塔，要走整整四个月。'
-                : '你脱下官服，换上布衣。腰间的铜鱼袋解下来放在案头，发出一声轻响。从此以后，你只是一个普通百姓。'
-            },
-            conditions: {},
-            choices: [{
-              id: 'accept',
-              text: '接受命运',
-              effects: { special: { type: 'ending' } },
-              result: {
-                title: isExiled ? '万里投荒' : '布衣终老',
-                tags: isExiled
-                  ? ['贬官流放', '个人命运', '黑暗']
-                  : ['贬官为民', '个人命运', '悲剧'],
-                echo: isExiled
-                  ? `【结局·流放边疆】\n\n宁古塔的风像刀子一样割在脸上。\n\n你在这里已经待了三年。三年里，你见过零下四十度的严寒，见过被冻死在路边的流民，见过驻防将军鞭打逃卒时溅出的血点。\n\n起初你还想着翻案、想着申诉。后来你就不想了。在这片苦寒之地，活着本身就是一种奢侈。\n\n你开始学着和当地的女真人打交道，学着种他们叫做"哈拉"的庄稼，学着在暴风雪来临前把地窖封好。\n\n某年冬天，一个来自京城的信使带来了消息：崇祯帝自缢于煤山，大顺军攻入北京。\n\n你站在雪地里，看着南方的天空，久久没有说话。\n\n第二天，人们发现你坐在地窖门口，脸上带着一种奇怪的表情——像是释然，又像是悲哀。\n\n手里攥着一封没写完的信，收信人写着两个字："陛下"。\n`
-                  : `【结局·革职为民】\n\n回乡的路比想象中更长。\n\n不是距离上的远——而是当你以一个庶民的身份走在曾经管辖过的土地上时，那种物是人非的感觉几乎让人窒息。\n\n你路过自己曾经审过案的县衙，门口的差役换了一批又一批，没人认得你。你在路边摊吃了一碗面，味道和你当年微服私访时吃过的一模一样，但心境已天差地别。\n\n你在老家置了几亩薄田，日出而作，日落而息。日子过得清贫倒也安稳。\n\n偶尔有旧识路过来看你，你们喝茶聊天，谁也不提当年的事。只有临走时，他们会多看你一眼，眼神里有惋惜，也有某种说不清的释然。\n\n你活到了六十三岁。去世那天是一个普通的秋日，阳光很好，院子里的菊花开了。\n\n你没有留下什么丰功伟绩，也没有留下什么骂名。就像这世间千千万万的普通人一样，来过，走过，然后离开了。\n\n《县志》载："某公，曾为朝廷命官，后因故罢归。居家课子，乡党称善。"\n`
-              }
-            }],
-            type: 'ending'
-          }
+          const demotionEndingEvent = buildDemotionEndingEvent(isExiled, demotion.message)
           setCurrentEvent(demotionEndingEvent)
           setIdentityType(demotion.newIdentity || 'civilian')
           // 必须走 handleGameOver：它负责把结局 id 写进 eventHistory、登记结局成就、
           // 生成史馆传略。此前这里只有 setIsGameOver(true)，于是革职为民/流放边疆
           // 这两个结局的结算屏是空白传略，而成就 ending_demotion_done
           // （判据是 eventHistory 含 'ending_demotion'）在数学上永远无法达成。
+          // 卡片本身已挪到 data/events/ending/endingsDemotion.ts —— 图鉴要认它，
+          // 而图鉴只认 data 里登记过的格子。
           handleGameOver(demotionEndingEvent)
           return
         }

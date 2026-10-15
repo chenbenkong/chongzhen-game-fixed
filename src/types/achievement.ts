@@ -67,6 +67,24 @@ export interface AchievementContext {
 export interface AchievementData {
   unlocked: string[]
   unlockTimes: Record<string, string>
+  /**
+   * 本存档**达成过的结局**：图鉴格子 id → 首次达成时间（ISO）。
+   *
+   * 为什么图鉴不能只看成就：结局成就的 id 是从事件 id 拼出来的
+   * （`${event.id}_done`，见 endingSystem.triggerEndingAchievements），
+   * 而 44 个格子里有 10 个**根本没有对应的成就条目** —— 病逝任上、龙颜震怒、
+   * 宦官构陷、士林唾弃、乡绅反目、民怨沸腾、众叛亲离、东林烈士、权奸末路、
+   * 党争牺牲品，全是边界/阈值结局。玩家反复打到它们，
+   * 图鉴那一格却永远是灰的。成就表受 Steam 单 App 100 条上限约束加不动，
+   * 所以达成记录自己存一份，与成就解耦。
+   * （破产那一格是另一种对不上：注册 id `triggerable_bankrupt` 被引擎改名成
+   *  `ending_bankrupt` 才去拼成就 id。那种在 data/endingRegistry.ts 里登记别名解决，
+   *  不靠这里兜。）
+   *
+   * 可选：老存档没有这个字段，读档时按空处理；那些存档里已经点亮的结局成就
+   * 仍会照常点亮图鉴，不会倒退。
+   */
+  reachedEndings?: Record<string, string>
 }
 
 /**
@@ -1173,7 +1191,20 @@ function cloneAchievementData(data: AchievementData): AchievementData {
     unlockTimes[id] = at
   }
 
-  return { unlocked, unlockTimes }
+  // reachedEndings 不过 retired 过滤：它存的不是成就 id，而是图鉴格子 id
+  const reachedEndings = cloneReachedEndings(data.reachedEndings)
+
+  return { unlocked, unlockTimes, ...(reachedEndings ? { reachedEndings } : {}) }
+}
+
+/** 独立一份达成记录；空/缺失时返回 undefined，让老存档的字段形状保持不变 */
+function cloneReachedEndings(src?: Record<string, string>): Record<string, string> | undefined {
+  if (!src) return undefined
+  const out: Record<string, string> = {}
+  for (const [id, at] of Object.entries(src)) {
+    if (typeof id === 'string' && typeof at === 'string') out[id] = at
+  }
+  return out
 }
 
 /** 获取当前内存中的成就数据（返回副本，改它不会影响内部状态） */
@@ -1298,6 +1329,28 @@ export function getAllAchievements(): Achievement[] {
     unlocked: data.unlocked.includes(a.id),
     unlockTime: data.unlockTimes[a.id]
   }))
+}
+
+/**
+ * 记下"这个存档达成过某个结局"。参数必须是**图鉴格子 id**
+ * —— 调用方（endingSystem.triggerEndingAchievements）负责用
+ * data/endingRegistry.ts 的 resolveEndingTileId 把事件 id 换算过来。
+ * 这里不 import 那张表，是为了让 types/achievement 不依赖 data 层。
+ *
+ * 只记首次：重复达成不覆盖时间戳。
+ */
+export function recordEndingReached(tileId: string): void {
+  if (!tileId) return
+  const data = loadAchievements()
+  const reached = data.reachedEndings ?? {}
+  if (reached[tileId]) return
+  reached[tileId] = new Date().toISOString()
+  saveAchievements({ ...data, reachedEndings: reached })
+}
+
+/** 本存档达成过的结局格子 id → 时间戳（老存档没有该字段时为空对象） */
+export function getReachedEndings(): Record<string, string> {
+  return loadAchievements().reachedEndings ?? {}
 }
 
 // 解锁成就

@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   getCurrentAchievementData,
+  getReachedEndings,
   loadAchievements,
+  recordEndingReached,
   saveAchievements,
   setAchievementData,
   unlockAchievement,
@@ -92,5 +94,49 @@ describe('K-6：成就存储的读写边界', () => {
   it('每个成就 id 唯一（重复 id 会让收集链计数失真）', () => {
     const ids = ALL_ACHIEVEMENTS.map(a => a.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  /**
+   * 第十三轮新增的 `reachedEndings`（结局图鉴的第二个数据源：本存档达成过的结局格子）。
+   * 它和 unlocked / unlockTimes 走同一个收口，所以同样要过"边界拷贝"这一关。
+   */
+  it('reachedEndings 在边界上同样拷贝，且不被 retired 名单当成成就 id 清掉', () => {
+    const reached: Record<string, string> = { ending_demotion: 't1' }
+    const mine = { unlocked: [], unlockTimes: {}, reachedEndings: reached }
+    setAchievementData(mine)
+
+    reached.ending_demotion = '被改掉了'
+    reached['伪造的'] = 'now'
+
+    expect(getReachedEndings()).toEqual({ ending_demotion: 't1' })
+
+    // 与成就 id 不同：已退役的成就 id 会被清掉，达成记录不会（存的本来就是格子 id）
+    setAchievementData({ unlocked: ['saver'], unlockTimes: {}, reachedEndings: { saver: 't' } })
+    expect(loadAchievements().unlocked).toEqual([])
+    expect(getReachedEndings()).toEqual({ saver: 't' })
+  })
+
+  it('老存档没有 reachedEndings 字段时按空处理，已点亮的结局成就不倒退', () => {
+    setAchievementData({ unlocked: ['ending_bankrupt_done'], unlockTimes: { ending_bankrupt_done: 't' } })
+
+    expect(getReachedEndings()).toEqual({})
+    expect(loadAchievements().reachedEndings).toBeUndefined()
+
+    recordEndingReached('triggerable_bankrupt')
+    expect(getReachedEndings()).toEqual({ triggerable_bankrupt: expect.any(String) })
+    // 写记录不应碰到成就表
+    expect(loadAchievements().unlocked).toEqual(['ending_bankrupt_done'])
+  })
+
+  it('recordEndingReached 只记首次，空名字直接忽略', () => {
+    setAchievementData({ unlocked: [], unlockTimes: {}, reachedEndings: { triggerable_eunuch: '很久以前' } })
+
+    recordEndingReached('triggerable_eunuch')
+    recordEndingReached('')
+    recordEndingReached('triggerable_emperor_hate')
+
+    const reached = getReachedEndings()
+    expect(reached.triggerable_eunuch).toBe('很久以前')
+    expect(Object.keys(reached).sort()).toEqual(['triggerable_emperor_hate', 'triggerable_eunuch'])
   })
 })

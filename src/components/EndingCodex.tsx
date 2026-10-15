@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { GameEvent } from '../types/event'
 import { allEndingEvents } from '../data/events/ending'
-import { getUnlockedAchievements } from '../types/achievement'
+import { ENDING_TILE_IDS, resolveEndingTileId } from '../data/endingRegistry'
+import { getReachedEndings, getUnlockedAchievements } from '../types/achievement'
 import { ENDING_ARCHETYPES, EndingArchetype } from '../utils/endingSystem'
 import { useModal } from '../hooks/useModal'
 import Icon from './Icon'
@@ -41,6 +42,41 @@ const TIER_LABEL: Record<string, string> = {
   redemptive: '救赎'
 }
 
+/**
+ * 图鉴「已达成」的唯一推导口径。做成纯函数是为了它能被单测直接钉住 ——
+ * 这一层原本是组件 useEffect 里的一段字符串拼接，猜错的代价是 44 格里 10 格
+ * 永远灰、破产那格达成过也永远灰，而且**不会有任何报错**。
+ *
+ * 两个数据源，缺一不可：
+ *  1. 结局成就。id 形如 `ending_xxx_done`，但**不能直接砍掉 `_done` 就当格子 id**
+ *     —— 破产那格注册 id 是 `triggerable_bankrupt`，要靠 data/endingRegistry 的别名换算。
+ *  2. 存档里的达成记录（`AchievementData.reachedEndings`）。有 10 个格子没有任何
+ *     成就条目（全是边界/阈值结局，Steam 的 100 条上限已经用满），只读成就它们永远是灰的。
+ */
+export function buildUnlockedTileIndex(
+  unlockedAchievements: Array<{ id: string; unlockTime?: string }>,
+  reachedEndings: Record<string, string>
+): { tileIds: Set<string>; times: Record<string, string> } {
+  const tileIds = new Set<string>()
+  const times: Record<string, string> = {}
+
+  for (const a of unlockedAchievements) {
+    if (!(a.id.startsWith('ending_') && a.id.endsWith('_done'))) continue
+    const tileId = resolveEndingTileId(a.id.replace(/_done$/, ''))
+    if (!tileId) continue
+    tileIds.add(tileId)
+    if (a.unlockTime && !times[tileId]) times[tileId] = a.unlockTime
+  }
+
+  for (const [tileId, at] of Object.entries(reachedEndings)) {
+    if (!ENDING_TILE_IDS.includes(tileId)) continue
+    tileIds.add(tileId)
+    if (!times[tileId]) times[tileId] = at
+  }
+
+  return { tileIds, times }
+}
+
 export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
   const [endings] = useState<GameEvent[]>(allEndingEvents)
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('personal_fate')
@@ -72,22 +108,10 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
   })
 
   useEffect(() => {
-    if (isOpen) {
-      const achs = getUnlockedAchievements()
-      const ids = new Set<string>()
-      const times: Record<string, string> = {}
-      achs.forEach(a => {
-        // 结局成就 ID 形如 "ending_xxx_done"，还原成 ending ID
-        // 严格匹配：必须以 "_done" 结尾
-        if (a.id.startsWith('ending_') && a.id.endsWith('_done')) {
-          const baseId = a.id.replace(/_done$/, '')
-          ids.add(baseId)
-          if (a.unlockTime) times[baseId] = a.unlockTime
-        }
-      })
-      setUnlockedIds(ids)
-      setUnlockTimes(times)
-    }
+    if (!isOpen) return
+    const { tileIds, times } = buildUnlockedTileIndex(getUnlockedAchievements(), getReachedEndings())
+    setUnlockedIds(tileIds)
+    setUnlockTimes(times)
   }, [isOpen])
 
   if (!isOpen) return null
