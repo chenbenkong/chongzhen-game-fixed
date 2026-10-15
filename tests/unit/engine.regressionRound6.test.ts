@@ -11,7 +11,8 @@ import { checkEventConditions } from '../../src/utils/eventConditions'
 import { initialEvents } from '../../src/data/events'
 import { factionEvents } from '../../src/data/events/faction/faction_events'
 import { wrapBatchAsBoundaryEvents } from '../../src/data/boundaryEventCompiler'
-import { BOUNDARY_EVENTS } from '../../src/data/boundaryEvents'
+import { BOUNDARY_EVENTS, THRESHOLD_ENDING_BY_KEY } from '../../src/data/boundaryEvents'
+import { ZERO_THRESHOLDS, zeroWarnFlag } from '../../src/data/zeroWarningEvents'
 import { origins } from '../../src/data/origins'
 import { RANKS } from '../../src/hooks/useGameEngine'
 import type { BoundaryEventCheckParams } from '../../src/types/boundaryEvent'
@@ -437,17 +438,31 @@ describe('缺陷：checkBoundary 传给结局判定的参数缺 turn / currentYe
 /* 阈值类结局的宽限期                                                     */
 
 /** 只关心某几个数值 + turn 的判定参数 */
-function thresholdParams(values: Record<string, number>, turn: number): BoundaryEventCheckParams {
+function thresholdParams(values: Record<string, number>, turn: number, flags: string[] = []): BoundaryEventCheckParams {
   return {
     attributes: { 财帛: 50, 体质: 50, ...values },
     gameState: { 圣眷: 50, 中官: 50, 清议: 50, 士绅: 50, 民望: 50, 国势: 50, turn },
-    hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 }
+    hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
+    flags
   } as unknown as BoundaryEventCheckParams
 }
 
 function boundaryById(id: string) {
   const found = BOUNDARY_EVENTS.find(e => e.id === id)
   expect(found, `边界事件 ${id} 不存在`).toBeDefined()
+  return found!
+}
+
+/**
+ * 按归零维度找回它对应的那条阈值结局边界事件。
+ * 查的是注册 id（'bankrupt'）而不是事件 id（'triggerable_bankrupt'），
+ * 所以这一步顺带对账了 `THRESHOLD_ENDING_BY_KEY`：
+ * 表里指的事件若没有被注册成边界事件，这里就红。
+ */
+function thresholdBoundaryOf(key: keyof typeof THRESHOLD_ENDING_BY_KEY) {
+  const endingId = THRESHOLD_ENDING_BY_KEY[key]
+  const found = BOUNDARY_EVENTS.find(e => e.event.id === endingId)
+  expect(found, `维度 ${key} 的结局 ${endingId} 没有注册成边界事件`).toBeDefined()
   return found!
 }
 
@@ -476,9 +491,62 @@ describe('缺陷：开局第一个选项就能把人当场判死（阈值类结�
     expect(boundaryById('emperor_hate').check(thresholdParams({}, 1))).toBe(false)
   })
 
-  it('宽限期满后仍归零，结局照常触发', () => {
-    expect(boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12))).toBe(true)
-    expect(boundaryById('death_illness').check(thresholdParams({ 体质: 0 }, 36))).toBe(true)
+  /**
+   * 第十一轮把这条改成了两段式：**同一维度归零两次才要命**。
+   * 原用例断言「期满仍归零 → 结局照常触发」，测的是一段静默的雷 ——
+   * 整局模拟实测 3/4 局恰好死在第 13 个月，因为宽限期只是把死期推迟、
+   * 却没有在那十二个月里给玩家任何提示或出路。
+   * 现在判死必须同时满足：过了宽限期、该维归零、且 `归零警告·X` 这个 flag 已在身上。
+   */
+  it('宽限期满后归零，但没被警告过 —— 不判死（第一次归零给活路）', () => {
+    expect(boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12))).toBe(false)
+    expect(boundaryById('death_illness').check(thresholdParams({ 体质: 0 }, 36))).toBe(false)
+    expect(boundaryById('eunuch_conspiracy').check(thresholdParams({ 中官: 0 }, 40))).toBe(false)
+  })
+
+  it('警告过之后再次归零，结局照常触发（第二次没人救）', () => {
+    expect(
+      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12, [zeroWarnFlag('财帛')]))
+    ).toBe(true)
+    expect(
+      boundaryById('death_illness').check(thresholdParams({ 体质: 0 }, 36, [zeroWarnFlag('体质')]))
+    ).toBe(true)
+    // 别的维度的警告不作数：警告与死线必须同一键
+    expect(
+      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12, [zeroWarnFlag('圣眷')]))
+    ).toBe(false)
+  })
+
+  /**
+   * 八条死线都要有对应的警告事件，且这一对必须**互斥地**覆盖同一个状态：
+   * 归零而未警告 → 只出警告；归零且已警告 → 只出结局。
+   * 少了这条对账，将来加第九条死线时很容易只写结局不写警告，
+   * 而那种缺口在实机上要等到玩家恰好把那一维打到 0 才看得见。
+   */
+  it('每一维的警告事件都存在，且与死线交替接管', () => {
+    for (const t of ZERO_THRESHOLDS) {
+      const warn = BOUNDARY_EVENTS.find(e => e.id === `warn_zero_${t.key}`)
+      expect(warn, `维度 ${t.key} 缺少对应的归零警告事件`).toBeDefined()
+      expect(warn!.type, `维度 ${t.key} 的警告不应同时被登记成结局`).toBe('crisis')
+      expect(warn!.event.choices.length).toBeGreaterThanOrEqual(2)
+      for (const choice of warn!.event.choices) {
+        expect(
+          choice.effects.flags?.add,
+          `维度 ${t.key} 的选项 ${choice.id} 没有写下警告 flag —— 玩家救回来了，可死线永远等不到第二次归零的判据`
+        ).toContain(zeroWarnFlag(t.key))
+      }
+
+      const params = (flags: string[]) => {
+        const p = thresholdParams({}, 20, flags) as any
+        p[t.group][t.key] = 0
+        return p as BoundaryEventCheckParams
+      }
+      expect(warn!.check(params([])), `维度 ${t.key} 归零时应给出警告`).toBe(true)
+      expect(warn!.check(params([zeroWarnFlag(t.key)])), `维度 ${t.key} 已警告过就不该重复警告`).toBe(false)
+      const ending = thresholdBoundaryOf(t.key)
+      expect(ending.check(params([zeroWarnFlag(t.key)])), `维度 ${t.key} 第二次归零必须判死`).toBe(true)
+      expect(ending.check(params([])), `维度 ${t.key} 第一次归零不该判死`).toBe(false)
+    }
   })
 
   it('非归零状态任何时候都不该误判', () => {

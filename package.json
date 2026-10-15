@@ -29,6 +29,7 @@
     "audit:values": "vite-node scripts/audit-value-domains.ts",
     "audit:dupkeys": "vite-node scripts/audit-dup-keys.ts",
     "audit:flags": "vite-node scripts/audit-flag-reachability.ts",
+    "audit:economy": "vite-node scripts/audit-state-economy.ts",
     "audit:events": "vite-node scripts/audit-events.ts",
     "audit:narrative": "vite-node scripts/audit-narrative-quality.ts",
     "audit:validate": "vite-node scripts/validate-events.ts",

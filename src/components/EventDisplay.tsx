@@ -67,7 +67,14 @@ interface ChoiceCheckResult {
   }
 }
 
-function checkChoiceRequirement(
+/**
+ * 玩家能不能点这个选项 —— 唯一的判据。
+ *
+ * 导出它不是为了让别人复用逻辑，而是因为**任何**离线工具都必须用同一把尺子：
+ * 自动跑局模拟（`tests/unit/helpers/simulate.ts`）要按玩家真实的可选集合来选，
+ * 自己再写一遍就等于给模拟开了一个玩家没有的后门，模拟结论也就不可信了。
+ */
+export function checkChoiceRequirement(
   choice: EventChoice,
   character: Character,
   gameState: GameStateValues

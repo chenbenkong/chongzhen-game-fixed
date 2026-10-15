@@ -2,6 +2,7 @@ import { BoundaryEvent, BoundaryEventCheckParams } from '../types/boundaryEvent'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
 import { wrapBatchAsBoundaryEvents } from './boundaryEventCompiler'
+import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
 import { allEndingEvents as mainNarrativeEndings } from './events/ending/endings_all'
 import { debaucheryEndingEvents } from './events/ending/debauchery'
@@ -455,7 +456,14 @@ const ENDING_MORAL_DEGENERACY: GameEvent = {
  *
  * 这与 `wrapBatchAsBoundaryEvents` 给叙事结局加的 `turn >= 36` 兜底是同一个原则：
  * 先让玩家真正开始经营，再让「归零」成为致命事件。
- * 宽限期内归零不判死，但也**不会被偷偷修复** —— 期满时仍为 0 的，结局照常触发。
+ *
+ * 但**光有宽限期不够**，第十一轮的整局模拟实测到：宽限期只是把雷往后挪了十二个月，
+ * 而挪出去的这段时间里归零毫无提示，于是 3/4 局恰好死在第 13 个月，
+ * 一整局只碰得到 31/402 个事件。现在的规则是一句清楚的话：
+ *   **同一个维度，归零两次才要命。**
+ * 第一次归零由 `zeroWarningEvents` 那条 crisis 事件当面告知并给出回天之路（写下
+ * `归零警告·X` 这个 flag），下面的 check 因此统一改成 `pastGrace && isFatalZero`
+ * —— 没被警告过的归零不判死，警告过又再次归零的，这一次没有人再救你。
  */
 const THRESHOLD_ENDING_GRACE_TURNS = 12
 
@@ -463,61 +471,84 @@ function pastGrace(params: BoundaryEventCheckParams): boolean {
   return (params.gameState?.turn ?? 0) >= THRESHOLD_ENDING_GRACE_TURNS
 }
 
+/** 阈值类结局的统一判据：过了宽限期、该维归零、且这一维已经被警告过 */
+function doomedBy(params: BoundaryEventCheckParams, key: Parameters<typeof isFatalZero>[1]): boolean {
+  return pastGrace(params) && isFatalZero(params, key)
+}
+
+/**
+ * 「哪一维归零收尾于哪个结局」的对照表。
+ * 这张表过去只存在于八个 check 各写各的字面量里，而现在它是**规则的一半**：
+ * 警告层按维度写 flag，结局按维度读 flag，两侧必须指同一个键。
+ * 导出出来给测试与图鉴用 —— 将来加第九条死线，漏了这一行就会有人报错，
+ * 而不是静默地"这个结局永远不需要警告"。
+ */
+export const THRESHOLD_ENDING_BY_KEY: Record<ZeroKey, string> = {
+  财帛: ENDING_BANKRUPT.id,
+  体质: ENDING_DEATH_ILLNESS.id,
+  圣眷: ENDING_EMPEROR_HATE.id,
+  中官: ENDING_EUNUCH.id,
+  清议: ENDING_SCHOLAR_OSTRACISM.id,
+  士绅: ENDING_GENTRY_REBELLION.id,
+  民望: ENDING_POPULAR_UPROAR.id,
+  道德值: ENDING_MORAL_DEGENERACY.id
+}
+
 export const BOUNDARY_EVENTS: BoundaryEvent[] = [
   {
     id: 'bankrupt',
     priority: 1,
     type: 'ending',
-    check: (params) => pastGrace(params) && params.attributes['财帛'] <= 0,
+    check: (params) => doomedBy(params, '财帛'),
     event: ENDING_BANKRUPT
   },
   {
     id: 'death_illness',
     priority: 2,
     type: 'ending',
-    check: (params) => pastGrace(params) && params.attributes['体质'] <= 0,
+    check: (params) => doomedBy(params, '体质'),
     event: ENDING_DEATH_ILLNESS
   },
   {
     id: 'emperor_hate',
     priority: 3,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.gameState?.['圣眷'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '圣眷'),
     event: ENDING_EMPEROR_HATE
   },
   {
     id: 'eunuch_conspiracy',
     priority: 4,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.gameState?.['中官'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '中官'),
     event: ENDING_EUNUCH
   },
   {
     id: 'scholar_ostracism',
     priority: 5,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.gameState?.['清议'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '清议'),
     event: ENDING_SCHOLAR_OSTRACISM
   },
   {
     id: 'gentry_rebellion',
     priority: 6,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.gameState?.['士绅'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '士绅'),
     event: ENDING_GENTRY_REBELLION
   },
   {
     id: 'popular_uproar',
     priority: 7,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.gameState?.['民望'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '民望'),
     event: ENDING_POPULAR_UPROAR
   },
   {
     id: 'moral_degeneracy',
     priority: 8,
     type: 'ending',
-    check: (params) => pastGrace(params) && (params.hidden?.['道德值'] ?? 50) <= 0,
+    check: (params) => doomedBy(params, '道德值'),
     event: ENDING_MORAL_DEGENERACY
   },
   {
@@ -736,7 +767,10 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
       ],
       type: 'ending'
     }
-  }
+  },
+
+  // 八条「归零警告」crisis 事件：上面那八条 check 要求先见过这一面，见 zeroWarningEvents.ts
+  ...zeroWarningEvents
 ]
 
 boundaryEventManager.registerBatch(BOUNDARY_EVENTS)
