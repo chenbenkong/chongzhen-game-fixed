@@ -80,6 +80,7 @@ export const jinshenEvents: GameEvent[] = [
         text: '【私下劝说】"我帮不了堂兄的案子，但可以让他主动自首，从轻发落"',
         description: '既不徇私也不全然无情，劝堂兄自首以争取从轻',
         effects: {
+          flags: { add: ['origin_jinshen_001_done', '法理兼顾'] },
           attributes: { 文韬: 5, 理政: 3 },
           gameState: { 清议: 8, 士绅: -5, 民望: 5 },
           hidden: { 道德值: 5, 机敏值: 3 }
@@ -103,7 +104,6 @@ export const jinshenEvents: GameEvent[] = [
 
 你心里明白：这条路最不好走，但你走出了第三条路。`
         },
-        flags: { add: ['origin_jinshen_001_done', '法理兼顾'] }
       }
     ]
   },
@@ -184,6 +184,7 @@ export const jinshenEvents: GameEvent[] = [
         text: '【反诉李家】"李家也未必干净，倒不如掀个底朝天"',
         description: '既不补税也不求情，搜集李家偷逃税款的证据反诉',
         effects: {
+          flags: { add: ['origin_jinshen_002_done', '以攻为守'] },
           attributes: { 文韬: 5, 理政: 5 },
           gameState: { 士绅: -3, 清议: 10, 民望: 5 },
           hidden: { 道德值: -3, 野心值: 5, 机敏值: 5 }
@@ -205,7 +206,6 @@ export const jinshenEvents: GameEvent[] = [
 
 你淡淡一笑："他们怕我，那是因为我没有把柄在他们手里。"`
         },
-        flags: { add: ['origin_jinshen_002_done', '以攻为守'] }
       }
     ]
   },
@@ -282,6 +282,7 @@ export const jinshenEvents: GameEvent[] = [
         text: '【以荐代交】"我不便直接交往，但你可推荐几位寒门俊彦"',
         description: '不结党但也不孤立，转而推荐寒门俊彦以培养新血',
         effects: {
+          flags: { add: ['origin_jinshen_003_done', '以荐代交'] },
           attributes: { 文韬: 5, 理政: 3 },
           gameState: { 清议: 10, 圣眷: 5, 士绅: -3 },
           hidden: { 道德值: 5, 野心值: -3 }
@@ -307,7 +308,6 @@ export const jinshenEvents: GameEvent[] = [
 
 但他们的故事，被写进了史书。`
         },
-        flags: { add: ['origin_jinshen_003_done', '以荐代交'] }
       }
     ]
   }

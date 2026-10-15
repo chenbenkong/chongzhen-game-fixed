@@ -79,6 +79,7 @@ export const shiwenEvents: GameEvent[] = [
         text: '【以客入社】"我不入社，但愿以客卿身份列席雅集"',
         description: '不加入复社，但保持来往，作为独立之友',
         effects: {
+          flags: { add: ['origin_shiwen_001_done', '社外之友'] },
           attributes: { 文韬: 5, 理政: 3 },
           gameState: { 清议: 8, 圣眷: 3, 中官: -3 },
           hidden: { 道德值: 3, 机敏值: 3 }
@@ -106,7 +107,6 @@ export const shiwenEvents: GameEvent[] = [
 
 "某氏，复社之友也。不入社而能以友存，独立而不偏，议论而不党。所谓'君子群而不党'者，其在斯人欤？"`
         },
-        flags: { add: ['origin_shiwen_001_done', '社外之友'] }
       }
     ]
   },
@@ -195,6 +195,7 @@ export const shiwenEvents: GameEvent[] = [
         text: '【奏陈利害】"臣愿奏陈此次廷杖之弊，请求收回成命"',
         description: '不求饶也不硬扛，而是在受刑前奏陈廷杖之弊',
         effects: {
+          flags: { add: ['origin_shiwen_002_done', '以理抗争'] },
           attributes: { 文韬: 8 },
           gameState: { 圣眷: 5, 清议: 8 },
           hidden: { 道德值: 5, 机敏值: 3 }
@@ -222,7 +223,6 @@ export const shiwenEvents: GameEvent[] = [
 
 一纸奏疏，能让帝王悔之一生，亦足矣。`
         },
-        flags: { add: ['origin_shiwen_002_done', '以理抗争'] }
       }
     ]
   },
@@ -302,6 +302,7 @@ export const shiwenEvents: GameEvent[] = [
         text: '【广传士林】"不呈皇上，先传士林，借舆论促朝廷改革"',
         description: '不直接呈上皇帝，而是先在士林广为传播',
         effects: {
+          flags: { add: ['origin_shiwen_003_done', '舆论先导'] },
           attributes: { 文韬: 5 },
           gameState: { 清议: 15, 圣眷: 3, 中官: -3 },
           hidden: { 道德值: 3, 野心值: 3 }
@@ -325,7 +326,6 @@ export const shiwenEvents: GameEvent[] = [
 
 这一篇《论辽东饷银疏》，后来被收入《皇明经世文编》，成为研究明末财政的必读文献。`
         },
-        flags: { add: ['origin_shiwen_003_done', '舆论先导'] }
       }
     ]
   }

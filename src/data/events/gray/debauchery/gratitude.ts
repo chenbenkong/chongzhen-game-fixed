@@ -28,7 +28,11 @@ export const gratitudeDebaucheryEvents: GameEvent[] = [
       year: { min: 1633, max: 1633 },
       month: { min: 7, max: 9 },
       attributes: {
-        理政: { min: 60 },
+        理政: { min: 60 }
+      },
+      // 清议 是五方态度（gameState），不是人物属性：写在 attributes 里
+      // 会被引擎当成 `attributes['清议'] || 0` → 恒为 0，本事件永不触发。
+      gameState: {
         清议: { min: 40 }
       },
       hidden: {

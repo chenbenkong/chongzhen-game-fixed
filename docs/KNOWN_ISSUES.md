@@ -60,8 +60,14 @@ declares 'allEndingEvents' locally, but it is not exported` 直接拦住部署
 它把「事件条件要求的 flag」与「任何选项能获得的 flag」两张表对拍，
 用来找"因前置 flag 永不可能获得而永远选不中的事件"。
 当前结果：400 个事件里 **0 个** 这类死内容，0 个"只 remove 从不 add"的 flag。
-另外 207 个 flag 属于"写进去但没有任何条件读它"（妻室线、党争立场居多），
+另外 216 个 flag 属于"写进去但没有任何条件读它"（妻室线、党争立场居多），
 是记账冗余而非缺陷，动它们等于发明玩法，故保留。
+（这 9 个新出现的白存 flag 是第七轮把出身线 c3 的 `flags.add` 搬进 `effects` 之后
+才第一次真的被写入存档的 —— 数字变大恰好是那处修复生效的证据。）
+
+**第七轮补的第二个体检**：`scripts/audit-event-shape.ts`（`npm run audit:shape`）。
+flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名引擎认不认"，
+两类问题互相覆盖不到。详见第三节第七轮。
 
 ### 1.2 · 本轮新增 · 长周目性能只做了推理、未做实测
 
@@ -106,7 +112,7 @@ declares 'allEndingEvents' locally, but it is not exported` 直接拦住部署
 | Electron 安装包 | 需要真实 Windows 桌面环境与 GUI | 在 Windows 上跑 `npm run desktop:dist`，双击安装包完整玩一局 |
 | Steamworks 真实驱动 | 需要原生模块 + 真实 Steam 客户端 + AppID | 用测试 AppID `480`（Spacewar）先验证成就与云存档通路 |
 | 数值平衡 | 属于主观体验 | 各难度各通关 2–3 遍，观察升迁曲线与结局分布 |
-| 事件覆盖率 | 需要大量游玩 | 跑 `npx tsx scripts/audit-events.ts` 与 `validate-events.ts` 做内容侧体检 |
+| 事件覆盖率 | 需要大量游玩 | 跑 `npm run audit:events` / `audit:validate` / `audit:narrative` 做内容侧体检（`@ts-nocheck` 盲区另有 `npm run audit:shape`，已在 CI 里跑） |
 | 成人内容角色年龄 | 无法从文本可靠推断 | **人工通读** `src/data/events/gray/debauchery/` 全部文本 |
 | BGM / 美术授权 | 不在代码里 | 追溯素材来源，保留授权凭证 |
 
@@ -203,7 +209,36 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **90 例**，分 14 个文件，全部在 `tests/unit/`。
+回归测试共 **102 例**，分 15 个文件，全部在 `tests/unit/`。
+
+### 第七轮：`@ts-nocheck` 盲区里的静默失效
+
+这一轮的对象不是引擎代码，而是**数据**。`src/` 里有 **70 个文件**带 `@ts-nocheck`
+（全部事件数据 + 结局数据），它们对 `tsc` 完全透明：键名写错、层级放错，
+编译照样通过、线上照样不崩，只是在运行时变成一件**什么都没做**的事。
+第六轮末尾我写了一个结构体检脚本手工跑，一跑就掉出两类真缺陷。
+
+| 缺陷 | 表现 | 位置 |
+| --- | --- | --- |
+| 五方态度被当成人物属性写进 `conditions.attributes` | `圣眷: { min: 30 }` / `清议: { min: 50 }` 这类条件取值走 `attributes[key] \|\| 0`，恒为 0 → **5 个纵欲线事件在任何存档里都不可能触发**，写了整篇文本却一行都看不到 | `gray/debauchery/{spy,gratitude,powersex}.ts`（改判 `gameState`；`政绩` 两处直接删除，保留同事件里更严的 `理政` 门，不为它新造别名） |
+| `flags: { add: [...] }` 挂在**选项层**而不是 `effects` 里 | 引擎只读 `choice.effects.flags`，这一整段从没生效过 → `origin_*_done` 不置位（出身事件在整局里**反复触发**），而 `法理兼顾` / `孝义两全` 这类下游条件要用的 flag 也从未被授予 | `origin/{jinshen,moluo,shiwen}.ts`（9 个 c3 选项，搬进 `effects`） |
+| 三个体检脚本自己崩了半年 | 见第一节 1.1：它们从 barrel 取已被删掉的 `allEndingEvents`，拿到 `undefined` 后 `TypeError: events is not iterable`。文档里指向这两条人工验收命令，其实一条都跑不了 | `scripts/{validate-events,audit-events,audit-narrative-quality}.ts`（已在上一提交修复并把 `scripts/*.ts` 纳入 `tsconfig.test.json`） |
+| 检查器没人检查 | 只做"真实数据必须为 0"的断言，证明不了检查器抓得住坏数据 | `scripts/audit-event-shape.ts` 导出 `scanEventShape()`，`tests/unit/eventShape.silentFailures.test.ts` 既跑真实四个池（DEAD / NOOP / DROP / LINK 各 0 处），又喂一份人造坏事件把四类失效逐条抓出来 |
+| 上一轮刚搭的类型守卫本身是坏的 | `tsconfig.test.json` 把 `scripts/*.ts` 纳入 include 之后，脚本里只要用一次 `fs` / `process` 就报 TS2307 / TS2580 —— 因为没有 `@types/node` | `package.json`（devDependency `@types/node`） |
+
+现在的体检结论：**400 个事件，DEAD 0 / NOOP 0 / DROP 0 / LINK 0**，
+另剩 11 处「结构」告警 —— 全是 `result.echo_2: ''` 这种空串历史遗留，不丢内容（见第五节第 7 条）。
+flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因前置 flag 永不可得而选不中的死内容。
+
+还有第三查 `npm run audit:dupkeys`（`scripts/audit-dup-keys.ts`，走 TypeScript AST）：
+对象字面量里的**重复键**是 TS1117，属于语义错误，被 `@ts-nocheck` 整文件静音；
+后果是后写的半块条件 / 效果**静默覆盖**前半块，而运行时对象里只留一个键，
+所以从数据侧（`audit-event-shape.ts`）一点痕迹都看不出来 —— 只能回到源码去数。
+当前 `src/` 的 100 个 `.ts` 文件里 **0 组**重复键。它暂时只做手动脚本，没接进 CI。
+
+方法论记录（承接第六轮那条）：**数据和判定逻辑之间的"接线"必须被机器盯着**。
+`@ts-nocheck` 是这个仓库最大的单一体检盲区 —— 它让 400 个事件、上万条数值
+完全脱离类型系统。要么哪天真的给数据补上类型，要么就一直养着这个体检脚本。
 
 ### 第六轮：逻辑与数据缺陷专项
 
@@ -457,3 +492,19 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 `vite.config.js` 的 `historicalBucket`（4 年一片）与 `transitionBucket`（5 年一片）
 取代了原先的"一年一片"。不要改回逐片 —— 那 46 个分片不会因为拆得更细而变少，
 `events/index.ts` 是静态 import，首屏照样全量预取，多出来的只是 23 次请求往返。
+
+### 7. 体检脚本剩下的三类噪音，是刻意不清理的
+
+`npm run audit:shape` 目前仍报 11 处「结构」告警，全是同一形态：
+`result.echo_2: ''`（散落在 historical_028 / 030 与 9 个 route_* 的 c3 选项）。
+`echo` 里装的是完整回声文本，`echo_2` 是当初想写两段式回声留下的空键 ——
+不丢任何内容，删它只是让 diff 变长，故保留；但测试把它钉成
+"结构告警只允许是 echo_2、且不超过 11 处"，所以**新写一个错键名照样红**。
+
+另两类同源噪音也不打算"顺手修掉"：216 个只写不读的 flag（见第一节 1.1），
+以及引擎对未知键的宽容姿态 —— `conditions.gameState` 撞上不认识的键时，
+比较的是 `undefined`，两侧都为 false，于是**静默跳过这条条件**而不是否决整个事件。
+把它改成"未知键即否决"确实更符合"宁可少触发也别错触发"，但代价是
+旧存档配新数据、或新数据配旧引擎时，一批事件会集体消失，而消失比提前触发更难被发现。
+所以这里的取舍是：**引擎保持宽容，用 CI 里的体检脚本把错键名挡在数据层**
+（与本仓库"兜底发生在数据层"的信条一致，见第五节第 5 条）。

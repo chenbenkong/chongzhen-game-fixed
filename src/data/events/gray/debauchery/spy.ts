@@ -28,7 +28,12 @@ export const spyDebaucheryEvents: GameEvent[] = [
       year: { min: 1634, max: 1634 },
       month: { min: 9, max: 11 },
       attributes: {
-        理政: { min: 70 },
+        理政: { min: 70 }
+      },
+      // 圣眷 是五方态度（gameState），不是人物属性。
+      // 原来写在 attributes 里 → 引擎按 `attributes['圣眷'] || 0` 取到 0，
+      // `min: 30` 永不满足，本事件在任何存档里都不可能触发。
+      gameState: {
         圣眷: { min: 30 }
       },
       hidden: {
@@ -206,7 +211,10 @@ export const spyDebaucheryEvents: GameEvent[] = [
       year: { min: 1638, max: 1638 },
       month: { min: 4, max: 6 },
       attributes: {
-        理政: { min: 65 },
+        理政: { min: 65 }
+      },
+      // 同上：清议 是五方态度，写在 attributes 里等于条件恒不满足（见 015 的注释）。
+      gameState: {
         清议: { min: 50 }
       },
       hidden: {

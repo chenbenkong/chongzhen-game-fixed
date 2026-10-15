@@ -80,6 +80,7 @@ export const moluoEvents: GameEvent[] = [
         text: '【以工代偿】"银子我拿不出，但祖上留下的田庄我转给你经营"',
         description: '用祖产田庄作价抵债，让马三爷以工代偿',
         effects: {
+          flags: { add: ['origin_moluo_001_done', '以工代偿'] },
           attributes: { 文韬: 5, 理政: 5 },
           gameState: { 士绅: 3, 清议: 5, 民望: 3 },
           hidden: { 道德值: 5, 机敏值: 3 }
@@ -105,7 +106,6 @@ export const moluoEvents: GameEvent[] = [
 
 后来你才知道，这笔交易救了你一命——那两处田庄三年后被流贼洗劫，而你已经远离家乡，没有受到任何牵连。`
         },
-        flags: { add: ['origin_moluo_001_done', '以工代偿'] }
       }
     ]
   },
@@ -184,6 +184,7 @@ export const moluoEvents: GameEvent[] = [
         text: '【上书陈情】"我将赵叔之事写成奏疏，为祖父旧部请求抚恤"',
         description: '不收留也不遣散，而是上书朝廷为祖父旧部请求官方抚恤',
         effects: {
+          flags: { add: ['origin_moluo_002_done', '上书请命'] },
           attributes: { 文韬: 8, 武略: 3 },
           gameState: { 圣眷: 5, 清议: 10, 民望: 5 },
           hidden: { 道德值: 8, 野心值: -3 }
@@ -209,7 +210,6 @@ export const moluoEvents: GameEvent[] = [
 
 这件事，被写进了《辽东志》的"忠义传"。`
         },
-        flags: { add: ['origin_moluo_002_done', '上书请命'] }
       }
     ]
   },
@@ -293,6 +293,7 @@ export const moluoEvents: GameEvent[] = [
         text: '【请为幕僚】"我不便从军，但愿以幕僚身份，为边关出谋划策"',
         description: '不弃文不就武，而是以文官身份兼任边关幕僚',
         effects: {
+          flags: { add: ['origin_moluo_003_done', '以文参武'] },
           attributes: { 文韬: 5, 武略: 5, 理政: 3 },
           gameState: { 圣眷: 5, 清议: 5, 民望: 5 },
           hidden: { 道德值: 3, 机敏值: 5 }
@@ -316,7 +317,6 @@ export const moluoEvents: GameEvent[] = [
 
 这一条第三条路，使你成为崇祯朝最独特的官员之一。`
         },
-        flags: { add: ['origin_moluo_003_done', '以文参武'] }
       }
     ]
   }

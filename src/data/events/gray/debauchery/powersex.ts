@@ -28,9 +28,12 @@ export const powersexDebaucheryEvents: GameEvent[] = [
       year: { min: 1639, max: 1639 },
       month: { min: 5, max: 7 },
       attributes: {
-        理政: { min: 70 },
-        政绩: { min: 50 }
+        理政: { min: 70 }
       },
+      // 原来的第二行是 `政绩: { min: 50 }`。政绩 既不是人物属性、也不在
+      // ATTR_MAP 的别名表里 → 引擎取到 0，min 50 永不满足，本事件永不触发。
+      // 它与 理政 出自同一段文案（"对你的政绩赞不绝口"），而 理政 ≥ 70 本来就
+      // 覆盖了 ≥ 50，所以按更严的那道闸门保留、删掉失效的一行，不额外发明语义。
       hidden: {
         欲望值: { min: 25 }
       }
@@ -208,9 +211,9 @@ export const powersexDebaucheryEvents: GameEvent[] = [
       year: { min: 1635, max: 1635 },
       month: { min: 2, max: 4 },
       attributes: {
-        理政: { min: 65 },
-        政绩: { min: 40 }
+        理政: { min: 65 }
       },
+      // 同 019：删掉永不满足的 `政绩: { min: 40 }`，保留更高的 理政 闸门。
       hidden: {
         欲望值: { min: 20 }
       }
