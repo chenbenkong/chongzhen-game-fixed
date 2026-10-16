@@ -1,7 +1,7 @@
 import { act } from '@testing-library/react'
 import { vi } from 'vitest'
 import { renderGameEngine } from './gameEngine'
-import { checkChoiceRequirement } from '../../../src/components/EventDisplay'
+import { checkChoiceRequirement } from '../../../src/utils/choiceRequirements'
 import { allEndingEvents } from '../../../src/data/events/ending'
 import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'

@@ -701,7 +701,7 @@ export const events1640: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 武略: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '诗文清望'],
         },
         effects: {
           attributes: { 理政: 5, 武略: 2,

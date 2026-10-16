@@ -65,8 +65,7 @@ export const events1633: GameEvent[] = [
         text: '【驳徐文派】"徐光启私通洋教，玷辱斯文"',
         description: '抨击徐光启信奉西学、引入洋人，主张"辟邪卫道"',
         showConditions: {
-          origin: ['缙绅', '没落世家'],
-          flags: { notHas: ['崇敬徐文定'] }
+          origin: ['缙绅', '没落世家']
         },
         effects: {
           attributes: { 文韬: 2 },

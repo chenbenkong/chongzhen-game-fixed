@@ -24,7 +24,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 2, max: 3 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -316,7 +316,7 @@ export const events1642: GameEvent[] = [
         description: '在城破前提前疏散百姓，减少伤亡',
         showConditions: {
           attributes: { 理政: { min: 65 }, 财帛: { min: 30 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '诗文清望'],
         },
         effects: {
           attributes: {理政: 8,
@@ -463,7 +463,7 @@ export const events1642: GameEvent[] = [
         description: '利用之前弹劾陈新甲的政治资本，参与清理其残余势力',
         showConditions: {
           flags: { has: ['弹劾陈新甲'] },
-          origin: ['缙绅']
+          origin: ['寒门', '诗文清望'],
         },
         effects: {
           attributes: { 文韬: 3,
@@ -570,7 +570,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           flags: { has: ['疏散百姓'] },
           attributes: { 理政: { min: 55 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '诗文清望'],
         },
         effects: {
           attributes: { 理政: 8,
@@ -608,7 +608,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           flags: { has: ['掘堤水攻'] },
           attributes: { 文韬: { min: 50 } },
-          origin: ['缙绅']
+          origin: ['没落世家'],
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -668,6 +668,48 @@ export const events1642: GameEvent[] = [
 回到府中，你看着镜中的自己。那个人是谁？是当年意气风发的进士？还是如今人人唾弃的逃将？
 
 你不知道答案。你只知道，从今往后，"开封"两个字将是你一生都无法摆脱的梦魇。`
+        }
+      },
+      {
+        id: 'c4',
+        storyline: 'ordinary',
+        text: '【城淹志不沉】"城可没，不可没于贼。"',
+        description: '三度守住开封的人，看着城被黄河一寸寸吞下去',
+        showConditions: {
+          flags: { has: ['死守开封'] },
+          attributes: { 武略: { min: 55 } },
+          origin: ['没落世家']
+        },
+        effects: {
+          attributes: { 武略: 3, 体质: -25 },
+          gameState: { 圣眷: -10, 清议: 10, 民望: 20 },
+          hidden: {
+              道德值: 10,
+              野心值: -5
+        },
+          flags: { add: ['城淹志不沉'] }
+        },
+        resultDescription: '',
+        result: {
+          title: '孤城三守，一水沉之',
+          tags: ['武略+3', '体质-25', '圣眷-10', '清议+10', '民望+20', '道德+10', '野心-5'],
+          echo: `你守了开封三年，击退李自成三次。崇祯十五年九月，最后淹掉这座城的不是流寇，是河。
+
+那夜雨如注。你巡到曹门，听见的不是炮声，是一种闷响，像有人在城外推一整面墙。你后来才明白，那是黄河。
+
+水从护城河倒灌进来，一寸一寸往上涨。你下令上房，再上屋顶，最后上鼓楼。天亮时开封只剩下屋顶，水面平得像一块灰布，看不见边界。
+
+周王溺死在宫城。你被亲兵从鼓楼上拽下来，塞进一条只坐得下两人的小舟。你回头看了一眼：城头的旗还立在水里，斜着，到半夜才倒。
+
+七日后水落，城中尸首枕藉，浊泥没膝。你带人从淤泥里捞周府的玉牒，十七匣泡烂了十五匣。你在城隍庙前搭了个祭棚，祭四十万人，牌位只写下三千二百个——写不下去的那些，你让人在棚柱上刻了一行"余者不可计"。
+
+朝廷的追责疏先到，你的辩疏后到。疏里只有一句实话："城非贼破，天实破之。"
+
+御史案视时对你说，当日若在城头的是别人，这笔账便再无人肯认。你没答，只把名字署在最前面。
+
+降级、留任、戴罪。清议替你说话，百姓给你立了块没写完的石碑。而从那以后，你每逢升转都要被人问一句："开封是你丢的么？"
+
+你答了十七年。答到南都，答到剃发那年。`
         }
       }
     ],

@@ -24,7 +24,7 @@ export const events1643: GameEvent[] = [
     conditions: {
       year: { min: 1643, max: 1643 },
       month: { min: 9, max: 9 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -34,7 +34,7 @@ export const events1643: GameEvent[] = [
         description: '上疏朝廷，阻止孙传庭出战，建议坚守潼关',
         showConditions: {
           attributes: { 文韬: { min: 75 }, 理政: { min: 70 } },
-          origin: ['诗文清望', '寒门']
+          origin: ['寒门', '缙绅', '诗文清望'],
         },
         effects: {
           attributes: { 文韬: 5, 理政: 5 },
@@ -218,7 +218,7 @@ export const events1643: GameEvent[] = [
         description: '因劝阻孙传庭推迟出师而使秦军保存了部分实力',
         showConditions: {
           flags: { has: ['阻止孙传庭出战'] },
-          origin: ['诗文清望', '寒门']
+          origin: ['寒门', '缙绅', '诗文清望'],
         },
         effects: {
           attributes: { 武略: 5, 理政: 5 },

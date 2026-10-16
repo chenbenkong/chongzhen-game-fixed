@@ -44,6 +44,7 @@ import { allGrayChoiceEvents } from './gray'
 import { allEmotionEvents as emotionEvents } from './emotion'
 import { factionEvents } from './faction/faction_events'
 import { originEvents } from './origin'
+import { allEchoEvents } from './echo'
 
 export const historicalEvents: GameEvent[] = [
   ...historical1628,
@@ -99,7 +100,9 @@ export const initialEvents: GameEvent[] = [
   // 但这份数据从来没被并进任何池子 —— 只有调试面板 CheatMode 单独 import 了它，
   // 于是正常游玩永远碰不到党争事件。这里补进主池，让那套冷却逻辑真正生效。
   ...factionEvents,
-  ...originEvents
+  ...originEvents,
+  // 回响池：不新增剧情线，只把已有的死 flag 接成因果（见 echo/index.ts 的接线表）
+  ...allEchoEvents
 ];
 
 // 灰色支线（type='gray'，会进入 findAvailableEvent 走"30% 支线触发窗口"）

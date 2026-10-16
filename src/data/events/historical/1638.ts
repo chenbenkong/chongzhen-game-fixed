@@ -26,7 +26,7 @@ export const events1638: GameEvent[] = [
     conditions: {
       year: { min: 1638, max: 1639 },
       month: { min: 5, max: 10 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -210,7 +210,7 @@ export const events1638: GameEvent[] = [
       year: { min: 1641, max: 1641 },
       month: { min: 2, max: 5 },
       flags: { any: ['随军出征', '反对增饷', '主抚派', '军需牟利'] },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -221,7 +221,7 @@ export const events1638: GameEvent[] = [
         showConditions: {
           flags: { has: ['随军出征'] },
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['没落世家'],
         },
         effects: {
           attributes: { 文韬: 8, 武略: 5 },
@@ -257,7 +257,7 @@ export const events1638: GameEvent[] = [
         description: '"十面埋伏"失败证明了你的预见，借机巩固自己的政治地位',
         showConditions: {
           flags: { has: ['反对增饷'] },
-          origin: ['诗文清望', '缙绅']
+          origin: ['寒门', '诗文清望'],
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -289,8 +289,7 @@ export const events1638: GameEvent[] = [
         description: '尽管熊文灿招抚失败，仍坚持认为招抚是正确方向，改进方法后继续推动',
         showConditions: {
           flags: { has: ['主抚派'] },
-          attributes: { 理政: { min: 60 } },
-          origin: ['诗文清望', '缙绅']
+          attributes: { 理政: { min: 60 } }
         },
         effects: {
           attributes: { 理政: 5,
@@ -479,7 +478,7 @@ export const events1638: GameEvent[] = [
         text: '【坦白从宽】"罪孽深重，愿受任何惩处！"',
         description: '主动向朝廷认罪，退还全部赃款并加倍赔偿',
         showConditions: {
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '诗文清望'],
         },
         effects: {
           attributes: {

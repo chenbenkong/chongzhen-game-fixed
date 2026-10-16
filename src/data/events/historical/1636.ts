@@ -24,7 +24,7 @@ export const events1636: GameEvent[] = [
     conditions: {
       year: { min: 1636, max: 1636 },
       month: { min: 5, max: 5 },
-      origin: ['没落世家', '缙绅']
+      origin: ['缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {

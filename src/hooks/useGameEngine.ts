@@ -14,6 +14,7 @@ import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
 import { checkEventConditions, pickEvent } from '../utils/eventConditions'
+import { hasOpenChoice } from '../utils/choiceRequirements'
 
 // 身份类型
 type IdentityType = 'official' | 'civilian' | 'rebel' | 'exiled' | 'retired'
@@ -138,8 +139,13 @@ function isCoolingDown(
  *    就恒真。第十四轮之前这条路径完全不设冷却，于是同一个「重病缠身」能在三个月里
  *    发作两遍（`engine.cooldown.test.ts` 的 seed=8 实测）。
  * 3. 概率门 `CRISIS_EVENT_PROBABILITY`，与改造前一致，仍消耗一次 `Math.random()`。
+ *
+ * 导出与 `annualStipend` 同一理由：这一层的载体（"同一场病隔 8 个月再发"）在整局取样里
+ * 已经抓不到了 —— 第十四轮的体质回升通道把 `0 < 体质 < 20` 这个窗口压得很短，
+ * 180 局（random / steady / warden 各 60）里一次也没有重发过。没有确定性入口，
+ * 这条冷却就只能靠运气被检验，等于没检验。见 `engine.boundary.test.ts` 的 K-14c。
  */
-function crisisEventMayShow(
+export function crisisEventMayShow(
   ruleId: string,
   event: GameEvent,
   turn: number,
@@ -868,13 +874,30 @@ export function useGameEngine(props: UseGameEngineProps) {
     return undefined
   }, [])
 
+  /**
+   * 事件能不能抛给玩家：先过事件级条件，再过"至少有一个选项点得动"。
+   *
+   * 后半句在第十五轮之前是可以省的——那时候选项级 flag 门槛根本不参与判定
+   * （`checkChoiceRequirement` 里只有一行「简化处理，假设所有 flag 都满足」），
+   * 所以「全部选项都锁着」的事件不可能出现。现在它出现了，而且正是设计意图：
+   * `historical_*_aftermath` 那一族分支事件，每个选项都要求上一事件对应分支写下的 flag。
+   *
+   * 不补这道筛子的后果不是"少一个事件"，是**卡死**：底部「进 下 月」在玩家作出选择
+   * 之前一直是禁用的，而一屏不能点的选项里没有出路。
+   * 判定用的是 UI 同一个函数（`utils/choiceRequirements`），所以"抛出来"与"点得动"
+   * 不会因为两份实现而漂移。
+   */
   const findAvailableEvent = useCallback((): GameEvent | null => {
-    const available = ALL_EVENTS.filter(e => checkEventConditions(e, characterRef.current, gameStateRef.current))
+    const available = ALL_EVENTS
+      .filter(e => checkEventConditions(e, characterRef.current, gameStateRef.current))
+      .filter(e => hasOpenChoice(e, characterRef.current, gameStateRef.current))
     return pickEvent(available, eventHistoryRef.current, getCurrentStoryline())
   }, [])
 
   const findAvailableEventWithState = useCallback((state: GameStateValues): GameEvent | null => {
-    const available = ALL_EVENTS.filter(e => checkEventConditions(e, characterRef.current, state))
+    const available = ALL_EVENTS
+      .filter(e => checkEventConditions(e, characterRef.current, state))
+      .filter(e => hasOpenChoice(e, characterRef.current, state))
     return pickEvent(available, eventHistoryRef.current, getCurrentStoryline())
   }, [])
 
@@ -918,7 +941,11 @@ export function useGameEngine(props: UseGameEngineProps) {
 
   const findAllEventsForState = useCallback((state: GameStateValues): GameEvent[] => {
     const history = eventHistoryRef.current
-    const available = ALL_EVENTS.filter(e => checkEventConditions(e, characterRef.current, state))
+    // 与 findAvailableEvent 同一把尺子：事件级条件 + 「至少一个选项点得动」。
+    // 放在这一步是因为只有过了条件的少数事件才需要算选项门，全池 400 条不必都算。
+    const available = ALL_EVENTS
+      .filter(e => checkEventConditions(e, characterRef.current, state))
+      .filter(e => hasOpenChoice(e, characterRef.current, state))
     if (available.length === 0) return []
 
     const activeStoryline = getCurrentStoryline()

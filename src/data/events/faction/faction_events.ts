@@ -24,7 +24,12 @@ export const factionEvents: GameEvent[] = [
     conditions: {
       year: { min: 1628, max: 1632 },
       month: { min: 1, max: 12 },
-      origin: ['诗文清望', '寒门']
+      origin: ['诗文清望', '寒门'],
+      // 东林开场白是"吾观阁下气度不凡，正气凛然，实乃东林同调"。
+      // 从前它对玩家身上的 `阉党关系`／`中官系` 一无所知，于是崇祯元年刚【暗结阉党】，
+      // 第二年东林照样来请你入伙 —— 记忆不是没存，是没人读。
+      // 被这道门挡在外面的人，走的是 echo_faction_001「门生帖子」。
+      flags: { notHas: ['阉党关系', '中官系', '阉党余孽', '缄口御史'] }
     },
     choices: [
       {
@@ -146,7 +151,7 @@ export const factionEvents: GameEvent[] = [
     conditions: {
       year: { min: 1628, max: 1632 },
       month: { min: 1, max: 12 },
-      origin: ['缙绅', '没落世家']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -276,7 +281,7 @@ export const factionEvents: GameEvent[] = [
       year: { min: 1630, max: 1636 },
       month: { min: 1, max: 12 },
       flags: { has: ['东林党人'] },
-      origin: ['诗文清望', '寒门']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {

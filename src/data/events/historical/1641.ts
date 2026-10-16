@@ -24,7 +24,7 @@ export const events1641: GameEvent[] = [
     conditions: {
       year: { min: 1641, max: 1641 },
       month: { min: 1, max: 2 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家']
     },
     choices: [
       {
@@ -199,7 +199,7 @@ export const events1641: GameEvent[] = [
       year: { min: 1641, max: 1642 },
       month: { min: 3, max: 8 },
       flags: { any: ['死守开封', '追击流寇', '招抚流民', '保存实力'] },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {

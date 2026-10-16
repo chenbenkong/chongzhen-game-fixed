@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { act } from '@testing-library/react'
 import {
+  DEFAULT_ATTRIBUTES,
   flush,
   makeCharacter,
   makeGameState,
@@ -84,28 +85,55 @@ describe('缺陷：conditions.random 量纲不一致（数据用百分数，判�
  * 15 个主线后续事件（整条松山—锦州—开封—孙传庭的主线）永远不可能出现。
  */
 describe('缺陷：type 为 chain 的主线事件不在任何挑选层级里（15 个事件是死内容）', () => {
-  it('候选池里只有 chain 事件时，它仍必须被选中', () => {
-    // tier-1 每轮只挑 1 个大事件，所以这里把所有 historical 事件都记为「已触发」，
-    // 让候选池里只剩 chain —— 这样断言的才正是「chain 有没有被这一层认出来」。
-    const allHistoricalIds = initialEvents.filter(e => e.type === 'historical').map(e => e.id)
-    expect(allHistoricalIds.length).toBeGreaterThan(0)
+  /** 把所有 historical 都记成"已触发"，于是候选池里只剩 chain */
+  const allHistoricalIds = initialEvents.filter(e => e.type === 'historical').map(e => e.id)
 
+  const poolFor = (character: ReturnType<typeof makeCharacter>) => {
     const save = makeSaveData({
-      character: makeCharacter({ flags: ['死守开封'] }),
+      character,
       gameState: makeGameState({ currentYear: 1641, currentMonth: 11, turn: 160 }),
       eventHistory: allHistoricalIds
     })
-
     const { result, unmount } = renderGameEngine({ loadSaveData: save })
+    let pool: GameEvent[] = []
     act(() => {
-      const pool = result.current.findAllEventsForState(
+      pool = result.current.findAllEventsForState(
         makeGameState({ currentYear: 1642, currentMonth: 9, turn: 161, 国势: 40 })
       )
-      const chains = pool.filter(e => e.type === 'chain')
-      expect(chains.length).toBeGreaterThan(0)
-      expect(chains.map(e => e.id)).toContain('historical_013_aftermath')
     })
     unmount()
+    return pool.filter(e => e.type === 'chain').map(e => e.id)
+  }
+
+  it('候选池里只有 chain 事件时，它仍必须被选中', () => {
+    // tier-1 每轮只挑 1 个大事件，所以这里把所有 historical 事件都记为「已触发」，
+    // 让候选池里只剩 chain —— 这样断言的才正是「chain 有没有被这一层认出来」。
+    expect(allHistoricalIds.length).toBeGreaterThan(0)
+
+    // 「弃守开封」这条分支只要求经历，不要求出身／属性，
+    // 所以它是这条事件里最不容易被别的东西挡掉的一支。
+    const chains = poolFor(makeCharacter({ flags: ['弃守开封'] }))
+    expect(chains.length).toBeGreaterThan(0)
+    expect(chains).toContain('historical_013_aftermath')
+  })
+
+  it('但每个选项都被门槛锁住的 chain 事件必须消失 —— 否则玩家面对一屏点不动的选项', () => {
+    // 第十五轮把选项级出身门实装之后，`开封浩劫` 的四支分别要求
+    // 疏散百姓／掘堤水攻／弃守开封／死守开封，且各自带出身门。
+    // 手里只有「死守开封」却是寒门出身的人，一支也点不动 ⇒ 引擎必须整条不抛。
+    expect(poolFor(makeCharacter({ origin: '寒门', flags: ['死守开封'] }))).not.toContain(
+      'historical_013_aftermath'
+    )
+    // 同一份经历换成没落世家 + 武略够线，就又能抛出来（新写的那一支）
+    expect(
+      poolFor(
+        makeCharacter({
+          origin: '没落世家',
+          flags: ['死守开封'],
+          attributes: { ...DEFAULT_ATTRIBUTES, 武略: 60 }
+        })
+      )
+    ).toContain('historical_013_aftermath')
   })
 })
 

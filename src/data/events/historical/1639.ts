@@ -26,7 +26,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1642 },
       month: { min: 1, max: 12 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -209,7 +209,7 @@ export const events1639: GameEvent[] = [
       year: { min: 1642, max: 1642 },
       month: { min: 1, max: 6 },
       flags: { any: ['增援松锦', '建议撤军', '主张议和'] },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -386,7 +386,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 10, max: 10 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -512,7 +512,7 @@ export const events1639: GameEvent[] = [
         description: '上疏为卢象升请恤，请求朝廷给予优厚抚恤',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '缙绅', '诗文清望'],
         },
         effects: {
           attributes: { 文韬: 3,
@@ -576,7 +576,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 4, max: 4 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -755,7 +755,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 6, max: 6 },
-      origin: ['诗文清望', '寒门']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {

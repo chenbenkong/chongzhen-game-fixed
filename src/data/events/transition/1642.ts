@@ -189,7 +189,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 2, max: 2 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
@@ -354,7 +354,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 3, max: 3 },
-      origin: ['没落世家', '缙绅']
+      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
     },
     choices: [
       {
