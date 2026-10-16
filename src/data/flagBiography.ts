@@ -1,0 +1,159 @@
+/**
+ * flag（经历）→ 玩家看得懂的一句「履历」。
+ *
+ * 为什么要有这张表：`character.flags` 在游戏里原本**只有门槛读得懂**。
+ * 447 条可写经历里 250 条没有任何门槛引用过 —— 对玩家来说，那次抉择等于没发生。
+ * 第十五轮把能被玩法接住的接住了，剩下这些接不住的，至少要让他**看见自己做过**。
+ *
+ * 三条规矩：
+ *  1. 只给"玩家真的会带上"的经历写文案。实测（200 局）250 条死经历里有 143 条
+ *     一局都没被带上 —— 给它们写文案是自欺，那条预算应该花在内容上。
+ *  2. 没登记的 flag 一律**不显示**。`wife_wangshi`、`xianv_info` 这类是机器 id，
+ *     漏到界面上比不显示更糟。
+ *  3. 文案必须忠于写出这条经历的那个选项（`choice.effects.flags.add`）——
+ *     玩家做的是"联名弹劾"，履历就不能写"弹劾阉党成功"。
+ *
+ * 名单来源与对账：`tests/unit/flagMemoirs.test.ts` 钉住"不许有全游戏写不出来的文案"。
+ */
+
+export type MemoirGroup = '朝局' | '风骨' | '家宅' | '人情'
+
+export interface Memoir {
+  /** 给玩家看的一句话，过去式，不超过 20 来字 */
+  line: string
+  group: MemoirGroup
+}
+
+/** 分组呈现顺序：先说朝堂上的事，再说这个人怎么站的，然后家宅，最后是不肯忘的人。 */
+export const MEMOIR_GROUP_ORDER: MemoirGroup[] = ['朝局', '风骨', '家宅', '人情']
+
+export const FLAG_MEMOIRS: Record<string, Memoir> = {
+  // —— 朝局：官、兵、奏议、党派 ——
+  地方官任职: { line: '在地方上实任过一职', group: '朝局' },
+  崇祯近臣: { line: '御前奏对称旨，皇帝记得这名儿', group: '朝局' },
+  言路官: { line: '拜在言路，以说话为职', group: '朝局' },
+  台谏之声: { line: '台谏之上有人替你传过话', group: '朝局' },
+  外任实缺: { line: '辞了台职，外任一处实缺', group: '朝局' },
+  外放督抚: { line: '请旨外放，领过督抚的兵', group: '朝局' },
+  武将路线: { line: '投笔从戎，自请赴辽东', group: '朝局' },
+  以文参武: { line: '不曾从军，以幕僚赞画军务', group: '朝局' },
+  支持辽东: { line: '上言辽东是国门，宜加饷固守', group: '朝局' },
+  辽东旧部: { line: '收留过辽东来的旧部', group: '朝局' },
+  军事人脉: { line: '军中有人认得你的名姓', group: '朝局' },
+  保蜀策: { line: '上疏《保蜀十二策》', group: '朝局' },
+  洪承畴幕僚: { line: '受洪承畴延揽，进过幕府', group: '朝局' },
+  上报朝廷: { line: '事无大小先上闻，请旨而定', group: '朝局' },
+  延误时机: { line: '因等候请旨批复，错过了时机', group: '朝局' },
+  调停成功: { line: '在辽军与城守之间斡停，压住了火', group: '朝局' },
+  化解矛盾: { line: '两军之怨经你劝解，暂且解开', group: '朝局' },
+  仁政官员: { line: '开仓放粮，救过一境灾民', group: '朝局' },
+  独对之荣: { line: '独对御前，答的是饥荒实数不是祥瑞', group: '朝局' },
+  召对无言: { line: '大问当前，以才疏学浅缄默', group: '朝局' },
+  平台三策: { line: '平台召对，力陈停内帑、核辽饷、清驿递', group: '朝局' },
+  上书建言: { line: '不敢面圣，把方略写成奏疏呈上', group: '朝局' },
+  上书请命: { line: '为祖父旧部上书请抚恤', group: '朝局' },
+  面圣陈词: { line: '自请面陈利弊，为国尽言', group: '朝局' },
+  舆论先导: { line: '不呈御前，先传士林，借舆论行事', group: '朝局' },
+  刊刻农书: { line: '上疏请将《农政全书》刊刻流传', group: '朝局' },
+  辟徐文派: { line: '公开辟徐光启私通洋教之说', group: '朝局' },
+  反袁派: { line: '上疏劾袁崇焕擅杀大将', group: '朝局' },
+  挺袁派: { line: '支持督师处决毛文龙', group: '朝局' },
+  袁党嫌疑: { line: '力保袁督师，说是反间之计', group: '朝局' },
+  持续保袁: { line: '袁督师死后仍继续为他鸣冤', group: '朝局' },
+  袁党余孽: { line: '为袁督师执言，被记作余孽', group: '朝局' },
+  弹劾阉党: { line: '联名弹劾阉党余孽', group: '朝局' },
+  暗中结交宦官: { line: '与宫里的人假意周旋，暗通声气', group: '朝局' },
+  内廷奥援: { line: '认了门生帖上的名字，内廷遂有人', group: '朝局' },
+  与内廷绝: { line: '把帖子原封送都察院，与内廷绝了', group: '朝局' },
+  守旧派: { line: '哭庙之后，人把你归在守旧章一边', group: '朝局' },
+  东林系: { line: '与东林一路通了声气', group: '朝局' },
+  独立文人: { line: '婉拒复社之招，愿为独立文人', group: '朝局' },
+  投机派: { line: '见势早为之所，人唤作识时务', group: '朝局' },
+  务实派: { line: '不问清议，只办眼前办得动的事', group: '朝局' },
+  两头取利: { line: '逆案名册两头解释，两边落了好', group: '朝局' },
+  逆案自承: { line: '逆案的事当众认下：是我写的', group: '朝局' },
+  逆案脱身: { line: '推说册子众人同抄，自己不过誊录', group: '朝局' },
+  私祭不党: { line: '只祭先生，不入齿录', group: '朝局' },
+  门生网络: { line: '与人脉互通，往后彼此照应', group: '朝局' },
+  以荐代交: { line: '不便深交，便荐几位寒门俊彦', group: '朝局' },
+  座师之门: { line: '赴会列名，认了这门座师', group: '朝局' },
+  门生故吏: { line: '座师门下自此有了你的名字', group: '朝局' },
+  遣祭代归: { line: '遣人代祭，身留官守不曾归乡', group: '朝局' },
+  丁忧在籍: { line: '解职回乡奔丧，在籍守制', group: '朝局' },
+  武力威慑: { line: '把上门讨债的人打了出去', group: '朝局' },
+
+  // —— 风骨：站姿、名节、银子上的取舍 ——
+  忠臣: { line: '先帝宾天，于众目之前尽臣子哀礼', group: '风骨' },
+  直笔: { line: '直笔实录，先帝之失也照样写', group: '风骨' },
+  先帝旧臣: { line: '以先帝旧臣自居，不作新朝之语', group: '风骨' },
+  讳言旧朝: { line: '先帝朝事，只道臣下不当深论', group: '风骨' },
+  廷杖受刑: { line: '廷杖之下昂首受刑，不曾改口', group: '风骨' },
+  以理抗争: { line: '上奏陈廷杖之弊，请收回成命', group: '风骨' },
+  大义灭亲: { line: '族兄的案子秉公处置，不曾插手', group: '风骨' },
+  徇私说情: { line: '为族叔的案子去拜访知府', group: '风骨' },
+  法理兼顾: { line: '劝族兄自首从轻，国法人情两顾', group: '风骨' },
+  守口至终: { line: '咬定册上那人从未见过，守口到底', group: '风骨' },
+  卖人求安: { line: '供出她藏身的地方，换一日平安', group: '风骨' },
+  寒窗苦读: { line: '通宵苦读，一卷不尽不休', group: '风骨' },
+  孝廉之名: { line: '受乡评之称，乡里以为孝廉', group: '风骨' },
+  乡党依倚: { line: '乡党有事，先来寻你拿主意', group: '风骨' },
+  择债而偿: { line: '三笔债只兑了不必害人的那笔', group: '风骨' },
+  依法补缴: { line: '该补的补、该罚的罚，不给人把柄', group: '风骨' },
+  分期还债: { line: '与债主面议，分期归还', group: '风骨' },
+  以工代偿: { line: '无银可还，转祖上田庄与人经营', group: '风骨' },
+  以攻为守: { line: '反诉仇家，先把水搅浑', group: '风骨' },
+  遣散旧部: { line: '赠银遣散旧部，教他归乡养老', group: '风骨' },
+
+  // —— 家宅：妻、妾、子、门里的事 ——
+  wife_wangshi: { line: '娶了王氏，这段姻缘认下了', group: '家宅' },
+  wife_zhangshi: { line: '娶了张氏，拜过堂', group: '家宅' },
+  harmonious_family: { line: '妻妾共处一堂，家里难得和睦', group: '家宅' },
+  protect_childless_wife: { line: '母亲逼纳妾，你护住了无子的妻', group: '家宅' },
+  wife_respected: { line: '待正室以敬，夫人从此有体面', group: '家宅' },
+  legitimate_heir: { line: '妾生之子记在正室名下，算作嫡出', group: '家宅' },
+  open_marriage: { line: '与夫人默认各过各的，不再相强', group: '家宅' },
+  wife_caught_affair: { line: '外遇被夫人撞见，一时遮不住', group: '家宅' },
+  wife_forgave_once: { line: '跪地认错，夫人原谅了这一回', group: '家宅' },
+  wife_forgave: { line: '低头认错，屋里人也让了这一回', group: '家宅' },
+  crime_line: { line: '为掩一桩丑事，手上沾了血', group: '家宅' },
+  wife_murdered: { line: '为灭口下了毒手，从此背一条人命', group: '家宅' },
+  corruption_record: { line: '替岳父办过一笔见不得钱的事', group: '家宅' },
+
+  // —— 人情：不肯忘的那些人 ——
+  红袖的下落: { line: '出钱问明红袖如今在何处', group: '人情' },
+  徐霞客故交: { line: '赠诗送霞客远游，算是故交', group: '人情' },
+  namuzhong_grateful: { line: '将公主体面送还本部，受其一谢', group: '人情' },
+  ruan_dacheng_enemy: { line: '替香君收好那把扇子，与阮大铖成仇', group: '人情' },
+  soulmate_lixiangjun_soft: { line: '暗中收下香君的扇子，替她另付', group: '人情' },
+  xialing_distance: { line: '知道她的事不曾告发，只与她疏远', group: '人情' },
+  xianv_info: { line: '向侠女问过刺客的来路', group: '人情' },
+  hongxiu_heartbreak: { line: '说自己能力有限，教她空欢喜一场', group: '人情' },
+  zhaomei_restrained: { line: '喝止赵美，不许再提旧事', group: '人情' },
+  三日之信: { line: '提前三日，把杀身的消息说与她听', group: '人情' },
+  李氏恩断: { line: '与李氏自此恩断，再无来处', group: '人情' }
+}
+
+export interface MemoirEntry extends Memoir {
+  flag: string
+}
+
+/**
+ * 把身上的 flag 翻成履历。
+ *
+ * 未登记的 flag 直接丢掉（机器 id 不能上界面）；同一句不重复。
+ * 组内保持 flag 身上的先后次序 —— 那是玩家做选择的次序，读起来像一段一段回忆。
+ */
+export function memoirsOf(flags: readonly string[] | undefined): MemoirEntry[] {
+  const seen = new Set<string>()
+  const hit = new Map<MemoirGroup, MemoirEntry[]>()
+  for (const f of flags ?? []) {
+    if (seen.has(f)) continue
+    seen.add(f)
+    const m = FLAG_MEMOIRS[f]
+    if (!m) continue
+    const list = hit.get(m.group)
+    if (list) list.push({ flag: f, ...m })
+    else hit.set(m.group, [{ flag: f, ...m }])
+  }
+  return MEMOIR_GROUP_ORDER.flatMap(g => hit.get(g) ?? [])
+}

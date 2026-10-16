@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { LifeRecord, LifeSummary, Character, GameStateValues } from '../types/game'
 import { GameEvent } from '../types/event'
 import { generateEpitaph, toChineseNum, toMingEraYear } from '../utils/endingSystem'
+import { MEMOIR_GROUP_ORDER, memoirsOf } from '../data/flagBiography'
 import { useModal } from '../hooks/useModal'
 import Icon, { IconName } from './Icon'
 import './LifeReview.css'
@@ -28,7 +29,7 @@ export default function LifeReview({
   onClose,
   onRestart
 }: LifeReviewProps) {
-  const [activeTab, setActiveTab] = useState<'timeline' | 'summary' | 'achievements' | 'epitaph'>('timeline')
+  const [activeTab, setActiveTab] = useState<'timeline' | 'memoirs' | 'summary' | 'achievements' | 'epitaph'>('timeline')
 
   // 全屏覆盖层（盖在仍在运行的游戏之上）：需要完整对话框语义 + ESC + Tab 焦点陷阱
   // + 焦点还原 + 滚动锁，否则键盘用户会 Tab 到底下看不见的游戏界面。
@@ -88,6 +89,49 @@ export default function LifeReview({
             </div>
           </div>
         ))}
+      </div>
+    )
+  }
+
+  /**
+   * 「这一生」——把身上的经历翻成人话。
+   *
+   * 这一池数据（`character.flags`）原本只有门槛读得懂：一个选项写了 flag，
+   * 而全游戏没有一处门槛引用它，那次抉择对玩家就是**没有发生过**。
+   * 玩法接不住的这一部分，至少让他结算时看得见自己做过。
+   * 没登记文案的 flag 不显示（那些是机器 id，漏出来比不显示更糟）。
+   */
+  const renderMemoirs = () => {
+    const memos = memoirsOf(character.flags)
+    if (memos.length === 0) {
+      return (
+        <div className="life-review-memoirs compact">
+          <p className="memoirs-empty">这一生没留下可考的事。</p>
+        </div>
+      )
+    }
+    return (
+      <div className="life-review-memoirs compact">
+        <div className="memoirs-lede">
+          <span className="memoirs-lede-text">史官按你这一生留下的名目，拣出可记者</span>
+          <span className="memoirs-lede-count">{memos.length}</span>
+        </div>
+        {MEMOIR_GROUP_ORDER.map(group => {
+          const rows = memos.filter(m => m.group === group)
+          if (rows.length === 0) return null
+          return (
+            <section key={group} className="memoirs-group">
+              <div className="memoirs-group-title">{group}</div>
+              <ul className="memoirs-list">
+                {rows.map(m => (
+                  <li key={m.flag} className="memoirs-item">
+                    {m.line}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        })}
       </div>
     )
   }
@@ -232,6 +276,12 @@ export default function LifeReview({
             生平大事
           </button>
           <button
+            className={`tab-btn ${activeTab === 'memoirs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('memoirs')}
+          >
+            这一生
+          </button>
+          <button
             className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
             onClick={() => setActiveTab('summary')}
           >
@@ -256,6 +306,7 @@ export default function LifeReview({
         {/* 内容区域 */}
         <div className="life-review-content">
           {activeTab === 'timeline' && renderTimeline()}
+          {activeTab === 'memoirs' && renderMemoirs()}
           {activeTab === 'summary' && renderSummary()}
           {activeTab === 'achievements' && renderAchievements()}
           {activeTab === 'epitaph' && endingEvent && renderEpitaph()}

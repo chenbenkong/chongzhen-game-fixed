@@ -6,6 +6,7 @@ import {
   emotionEvents
 } from '../src/data/events/index'
 import { allEndingEvents } from '../src/data/events/ending'
+import { FLAG_MEMOIRS } from '../src/data/flagBiography'
 import { GameEvent } from '../src/types/event'
 
 /**
@@ -54,6 +55,22 @@ export interface FlagReachabilityReport {
   inertNegative: string[]
   /** 写得出来**且**被读过的那部分占全部可写经历的比例，0..1 */
   readbackRate: number
+  /**
+   * 第十六轮加的**第二把尺子**，不要和上面那把混起来：
+   *
+   * `writeOnly` 只算门槛读者，量的是"这段经历有没有改变玩法"；
+   * 履历表（`src/data/flagBiography.ts`）让一部分只写不读的经历**至少被玩家看见**，
+   * 那是可见性，不是因果。所以 `writeOnly` 的口径一个字都没动 ——
+   * 想给"看得见"记功，记在下面这两个数上，别去改上面那把尺子。
+   */
+  /** 上了履历表的经历（玩家结算时看得见） */
+  memoirized: string[]
+  /** 履历表里写了、但全游戏没人写得出来的 flag —— 那段文案永远显不出来 */
+  deadMemoirs: string[]
+  /** 既没有门槛读、又没上履历：对玩家等于没发生 */
+  invisible: string[]
+  /** 玩家看得见（被门槛读 ∪ 上履历）占全部可写经历的比例，0..1 */
+  visibilityRate: number
 }
 
 export function scanFlagReachability(
@@ -143,6 +160,10 @@ export function scanFlagReachability(
   const writeOnly = [...granted].filter(f => !readBy.has(f))
   const readCount = granted.size - writeOnly.length
 
+  const memoirKeys = Object.keys(FLAG_MEMOIRS)
+  const memoirSet = new Set(memoirKeys)
+  const invisible = writeOnly.filter(f => !memoirSet.has(f))
+
   return {
     eventCount: events.length,
     granted,
@@ -151,7 +172,11 @@ export function scanFlagReachability(
     unsatisfiable,
     inertNegative,
     orphanRemove: [...removed].filter(f => !granted.has(f)),
-    readbackRate: granted.size === 0 ? 0 : readCount / granted.size
+    readbackRate: granted.size === 0 ? 0 : readCount / granted.size,
+    memoirized: memoirKeys.filter(f => granted.has(f)),
+    deadMemoirs: memoirKeys.filter(f => !granted.has(f)),
+    invisible,
+    visibilityRate: granted.size === 0 ? 0 : (granted.size - invisible.length) / granted.size
   }
 }
 
@@ -172,9 +197,20 @@ if (!process.env.VITEST) {
 
   console.log(`\n=== 被 add 但没有任何门槛引用的 flag（白存）：${r.writeOnly.length} 个 ===`)
   console.log(
-    `记忆回读率：${r.granted.size - r.writeOnly.length}/${r.granted.size} = ` +
+    `玩法回读率：${r.granted.size - r.writeOnly.length}/${r.granted.size} = ` +
       `${(r.readbackRate * 100).toFixed(1)}%` +
       `（口径：事件级 conditions.flags ∪ 选项级 showConditions.flags，六个子句全算）`
   )
-  console.log(r.writeOnly.join(', ') || '（无）')
+  console.log(`\n=== 玩家可见性（第十六轮的第二把尺子）===`)
+  console.log(
+    `  上了履历表：${r.memoirized.length} 条；玩家看得见（门槛读 ∪ 履历）= ` +
+      `${(r.visibilityRate * 100).toFixed(1)}%`
+  )
+  console.log(
+    `  既没门槛读、又没上履历（对玩家等于没发生）：${r.invisible.length} 个` +
+      (r.deadMemoirs.length
+        ? `\n  履历表里的死文案（全游戏写不出这段经历）：${r.deadMemoirs.join(', ')}`
+        : `\n  履历表没有死文案`)
+  )
+  console.log(r.invisible.join(', ') || '（无）')
 }

@@ -807,3 +807,73 @@
     min-width: 44px;
   }
 }
+
+/* ============================================================
+   这一生（履历）
+   这些名目原本只有门槛读得懂；这一页把它们念给人听。
+   ============================================================ */
+.memoirs-lede {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+
+.memoirs-lede-text {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: rgba(139, 115, 85, 0.75);
+}
+
+.memoirs-lede-count {
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+  font-size: 22px;
+  color: #d4af37;
+}
+
+.memoirs-group {
+  margin-bottom: 18px;
+}
+
+.memoirs-group-title {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding-bottom: 3px;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #c9a227;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+}
+
+.memoirs-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memoirs-item {
+  position: relative;
+  padding: 6px 10px 6px 22px;
+  font-family: 'STKaiti', 'KaiTi', '楷体', 'FangSong', '仿宋', serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(235, 220, 190, 0.92);
+  background: linear-gradient(90deg, rgba(245, 234, 212, 0.07), rgba(245, 234, 212, 0));
+  border-left: 2px solid rgba(139, 111, 58, 0.55);
+}
+
+.memoirs-empty {
+  padding: 40px;
+  font-style: italic;
+  text-align: center;
+  color: rgba(139, 115, 85, 0.6);
+}
+
+@media (max-width: 600px) {
+  .memoirs-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
