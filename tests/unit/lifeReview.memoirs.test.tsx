@@ -51,9 +51,9 @@ describe('生平回顾 ·「这一生」', () => {
   })
 
   it('没登记文案的 flag 一条都不显示', () => {
-    openMemoirs(['忠臣', 'xianv_unknown_id', 'liushi_dead', 'pending_zhanggui'])
+    openMemoirs(['忠臣', 'xianv_unknown_id', 'liushi_dead', 'blackmailed'])
     expect(document.querySelectorAll('.memoirs-item')).toHaveLength(1)
-    for (const raw of ['xianv_unknown_id', 'liushi_dead', 'pending_zhanggui']) {
+    for (const raw of ['xianv_unknown_id', 'liushi_dead', 'blackmailed']) {
       expect(document.body.textContent).not.toContain(raw)
     }
   })

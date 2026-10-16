@@ -14,6 +14,9 @@
  *   NO_ORIGIN   —— 某个出身在这条事件里一个选项都点不动（全部门槛都把它排除在外）。
  *                  引擎现在有 `hasOpenChoice` 兜底，不会卡死，但代价是**这条事件对该出身永久消失**。
  *                  数据侧要修：要么去掉不该存在的出身门，要么补一条该出身能选的分支。
+ *   RAW_FLAG_ID —— 门槛引用的是 `wife_hurt` 这类机器 id，而 `FLAG_GATE_LABELS` 没登记它。
+ *                  被锁的选项会把缺哪段经历**印在屏幕上**，于是玩家读到一行调试输出。
+ *                  第十七轮浏览器实测逮到的就是这一类（9 个 id 全在家宅/人情一支）。
  *
  * 判定只看"硬"门槛（出身、经历、官阶），不看属性/状态/隐藏那类可以投骰换掉的门 ——
  * 本脚本管的是"有没有出路"，不是"出路贵不贵"。
@@ -24,13 +27,16 @@
  */
 import { GameEvent } from '../src/types/event'
 import { origins } from '../src/data/origins'
+import { gateLabel } from '../src/data/flagBiography'
 import { allEvents, labelOfPool } from './event-pools'
 
 export interface Finding {
-  kind: 'DEAD_OPTION' | 'NO_ORIGIN' | 'ORIGIN_CONTRADICTION'
+  kind: 'DEAD_OPTION' | 'NO_ORIGIN' | 'ORIGIN_CONTRADICTION' | 'RAW_FLAG_ID'
   where: string
   detail: string
 }
+
+const MACHINE_ID = /^[a-z0-9_]+$/
 
 /** 出身子句 → 数组（数据里两种写法都有：`origin: '寒门'` 与 `origin: ['寒门','缙绅']`） */
 function originList(v?: string | string[]): string[] | null {
@@ -95,6 +101,18 @@ export function scanChoiceLockout(events: GameEvent[] = allEvents): Finding[] {
           !choiceOrigin.some(o => eventOrigin.includes(o))) {
         add('ORIGIN_CONTRADICTION', `${where} / 选项 ${c.id}`, `选项只给出身「${choiceOrigin.join('、')}」，而这条事件本身只对「${eventOrigin.join('、')}」开放 —— 两边无交集，这个选项永远不会出现`)
       }
+
+      // 1c) 这道门的文案会不会印出机器 id？
+      //     六种子句都会印（`相冲`那两支在玩家**带着**该经历时印），所以一并查。
+      //     判据用的是渲染方同一个 `gateLabel`，表和文案不可能各说各话。
+      const sf = c.showConditions?.flags
+      const printed = [
+        ...(sf?.has ?? []), ...(sf?.all ?? []), ...(sf?.any ?? []), ...(sf?.some ?? []),
+        ...(sf?.notHas ?? []), ...(sf?.none ?? [])
+      ].filter(f => MACHINE_ID.test(f) && !gateLabel(f))
+      if (printed.length) {
+        add('RAW_FLAG_ID', `${where} / 选项 ${c.id}`, `门槛引用了没登记人话的机器 id「${printed.join('、')}」—— 玩家会在锁定的选项下面读到它`)
+      }
     }
 
     // 2) 事件级：某个出身是否一个选项都点不动
@@ -136,11 +154,15 @@ if (!process.env.VITEST) {
   const counts = {
     DEAD_OPTION: findings.filter(f => f.kind === 'DEAD_OPTION').length,
     NO_ORIGIN: findings.filter(f => f.kind === 'NO_ORIGIN').length,
-    ORIGIN_CONTRADICTION: findings.filter(f => f.kind === 'ORIGIN_CONTRADICTION').length
+    ORIGIN_CONTRADICTION: findings.filter(f => f.kind === 'ORIGIN_CONTRADICTION').length,
+    RAW_FLAG_ID: findings.filter(f => f.kind === 'RAW_FLAG_ID').length
   }
   console.log(`硬门槛体检：事件 ${allEvents.length} 条（去重后 ${new Set(allEvents.map(e => e.id)).size}）`)
-  console.log(`永锁选项 ${counts.DEAD_OPTION} 处 / 出身级无出路事件 ${counts.NO_ORIGIN} 处 / 出身门互相抵消 ${counts.ORIGIN_CONTRADICTION} 处\n`)
+  console.log(
+    `永锁选项 ${counts.DEAD_OPTION} 处 / 出身级无出路事件 ${counts.NO_ORIGIN} 处 / ` +
+      `出身门互相抵消 ${counts.ORIGIN_CONTRADICTION} 处 / 门槛文案漏机器 id ${counts.RAW_FLAG_ID} 处\n`
+  )
   for (const f of findings) console.log(`  [${f.kind}] ${f.where}\n      ${f.detail}`)
   if (findings.length) process.exitCode = 1
-  else console.log('  每个选项都还有路可走。')
+  else console.log('  每个选项都还有路可走，锁住它们时说的也是人话。')
 }

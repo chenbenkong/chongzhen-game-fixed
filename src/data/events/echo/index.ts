@@ -3,6 +3,7 @@ import { imperialEchoEvents } from './imperial'
 import { familyEchoEvents } from './family'
 import { factionEchoEvents } from './faction'
 import { emotionEchoEvents } from './emotion'
+import { aftermathEchoEvents } from './aftermath'
 
 /**
  * 回响池（echo）。
@@ -34,6 +35,19 @@ import { emotionEchoEvents } from './emotion'
  *   读 `lixiangjun_respect` → echo_emotion_005 桃叶渡再闻 写 桃花扇底 / 还扇之义
  *   读 `wife_lishi|lishi_benefactor` → echo_emotion_006 李家那条船 写 三日之信 / 改漕之案 / 恩义付之
  *
+ * 上面那十二环的**产出**里仍有一批没人读。第十六轮实测（warden / steady 各 100 局）：
+ * 携带榜前十五条有七条是这一池自己写的——`不系一党` 一局带上 49/100 次，无人读它。
+ * 于是有了**第二波** `aftermath.ts`，专读上面这一栏的产出，并且刻意不产新词
+ * （每个选项除了自己的 `echo_*_done` 之外，只写早已存在的 flag）：
+ *
+ *   读 不系一党 / 半门之客 / 求外避察 / 晚归清流 / 负讥不辩 / 改文之讥 → echo_faction_006 不系之名
+ *   读 乡里护产 / 让善于乡 / 乡党依倚 / 孝廉之名 / 债清人疏           → echo_family_004 学田的碑
+ *   读 wife_broken / tyrant_husband / wife_hurt / concubine_killed /
+ *       wife_jealous / pingqi_attempt                                → echo_family_005 门内门外
+ *   读 恩义付之 / 改漕之案 / 三日之信                                → echo_emotion_007 李家的旧账
+ *   读 lixiangjun_disappointed / lixiangjun_poem / 桃花扇底 / 还扇之义 /
+ *       ruan_dacheng_enemy                                           → echo_emotion_008 扇价
+ *
  * 其中 `藏人于外`、`萧灵血案`、`不孝之名`、`夺情起复`、`阉党核心` 这几条是**池内自接**：
  * 上一环写，下一环读，这样新产出的 flag 不会立刻变成新的白存。
  * 另有几条被派去读旧事件（见 faction_events.ts 的 notHas 门与 echo_imperial_004 的门）。
@@ -42,12 +56,15 @@ export const allEchoEvents: GameEvent[] = [
   ...imperialEchoEvents,
   ...familyEchoEvents,
   ...factionEchoEvents,
-  ...emotionEchoEvents
+  ...emotionEchoEvents,
+  // 第二波：读上面那十二环的产出（见 aftermath.ts 顶部的接线表）
+  ...aftermathEchoEvents
 ]
 
 export {
   imperialEchoEvents,
   familyEchoEvents,
   factionEchoEvents,
-  emotionEchoEvents
+  emotionEchoEvents,
+  aftermathEchoEvents
 }

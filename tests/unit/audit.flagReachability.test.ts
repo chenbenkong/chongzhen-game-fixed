@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { scanFlagReachability } from '../../scripts/audit-flag-reachability'
-import { allEchoEvents } from '../../src/data/events/echo'
+import { allEchoEvents, aftermathEchoEvents } from '../../src/data/events/echo'
 import { allEvents } from '../../scripts/event-pools'
 
 /**
@@ -19,8 +19,12 @@ import { allEvents } from '../../scripts/event-pools'
  * 取样口径提醒：平均局长对策略组极敏感（苟活组含 warden：39.3 月；玩家组含 steady：23.4 月），
  * 换策略组等于换一批局，跨轮比数字之前先比这两行。
  *
- * 所以这里钉的是**棘轮**而不是"降到多少"：白存数量不许超过第十五轮记录的 250。
+ * 所以这里钉的是**棘轮**而不是"降到多少"：白存数量不许超过最近一次实测。
  * 想调这个数，就得先回答"这条 flag 谁来读" —— 该改的是内容，不是这个常量。
+ *
+ * 第十七轮把上面那段"净变化是变差的"还掉了：回响池的产出自己成了新的白存，
+ * 就再写一波**只读不造词**的回响（`src/data/events/echo/aftermath.ts`）去接它们。
+ * 实测白存 250 → 224、玩法回读率 44.1% → 50.4%，这是这个数第一次真正下降。
  *
  * 第十五轮 C 顺手把 71 处「假门槛」清零了：负面子句（notHas / none）里引用了全游戏
  * 没人写得出的经历 —— 那个条件恒真，纯装饰，留着只会让下一个改数据的人误以为有闸门。
@@ -28,8 +32,8 @@ import { allEvents } from '../../scripts/event-pools'
  * 同一事件内结构上不可能成立的删除。**这个数不许回到非零**，见下一条断言。
  */
 
-/** 第十五轮记录：447 条可写经历里 250 条只写不读 */
-const WRITE_ONLY_CEILING = 250
+/** 第十七轮实测：452 条可写经历里 224 条只写不读（第十五轮记录为 447/250） */
+const WRITE_ONLY_CEILING = 224
 
 const report = scanFlagReachability()
 
@@ -127,5 +131,56 @@ describe('回响池自身的接线契约', () => {
       readBack.length,
       `回响池产出 ${produced.size} 条经历，被下游读到的只有 ${readBack.length} 条`
     ).toBeGreaterThanOrEqual(5)
+  })
+
+  /**
+   * 第十七轮的规矩：第二波（aftermath）**只读不造词**。
+   *
+   * 第十五轮记下过一次教训 —— 回响池一边接住旧经历，一边又攒出一批新的白存，
+   * 净效果是"只写不读"反而变多。第二波要是也这么写，棘轮就只是往前挪了一格而已。
+   * 所以这一池除了自己的一次性开关 `echo_*_done`，只许写**别处早已写得出**的经历。
+   */
+  it('第二波回响不许造新词', () => {
+    const aftermathIds = new Set(aftermathEchoEvents.map(e => e.id))
+    const writtenElsewhere = new Map<string, Set<string>>()
+    for (const e of allEvents) {
+      if (aftermathIds.has(e.id)) continue
+      for (const c of e.choices ?? []) {
+        for (const f of c.effects?.flags?.add ?? []) {
+          if (!writtenElsewhere.has(f)) writtenElsewhere.set(f, new Set())
+          writtenElsewhere.get(f)!.add(e.id)
+        }
+      }
+    }
+    const coined: string[] = []
+    for (const e of aftermathEchoEvents) {
+      for (const c of e.choices ?? []) {
+        for (const f of c.effects?.flags?.add ?? []) {
+          if (f.endsWith('_done')) continue
+          if (!writtenElsewhere.has(f)) coined.push(`${e.id}/${c.id}：「${f}」只有这一池写得出来`)
+        }
+      }
+    }
+    expect(coined, '第二波回响是读者，不是作者 —— 新词得由别的事件先写出来').toEqual([])
+  })
+
+  it('第二波回响确实存在，且读到的是第一波的产出', () => {
+    expect(aftermathEchoEvents.length).toBeGreaterThanOrEqual(5)
+    const firstWaveOutput = new Set<string>()
+    const aftermathIds = new Set(aftermathEchoEvents.map(e => e.id))
+    for (const e of allEchoEvents) {
+      if (aftermathIds.has(e.id)) continue
+      for (const c of e.choices ?? []) {
+        for (const f of c.effects?.flags?.add ?? []) {
+          if (!f.endsWith('_done')) firstWaveOutput.add(f)
+        }
+      }
+    }
+    const reads = aftermathEchoEvents.flatMap(e => positiveClauses(e.id))
+    const chained = reads.filter(f => firstWaveOutput.has(f))
+    expect(
+      chained.length,
+      `第二波开门用的 ${reads.length} 条经历里，只有 ${chained.length} 条接的是第一波产出`
+    ).toBeGreaterThanOrEqual(8)
   })
 })

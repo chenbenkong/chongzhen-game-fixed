@@ -2,18 +2,24 @@
  * flag（经历）→ 玩家看得懂的一句「履历」。
  *
  * 为什么要有这张表：`character.flags` 在游戏里原本**只有门槛读得懂**。
- * 447 条可写经历里 250 条没有任何门槛引用过 —— 对玩家来说，那次抉择等于没发生。
- * 第十五轮把能被玩法接住的接住了，剩下这些接不住的，至少要让他**看见自己做过**。
+ * 第十六轮初见数时，447 条可写经历里 250 条没有任何门槛引用过 —— 对玩家来说，
+ * 那次抉择等于没发生。第十五轮把能被玩法接住的接住了，剩下这些接不住的，
+ * 至少要让他**看见自己做过**。
  *
  * 三条规矩：
- *  1. 只给"玩家真的会带上"的经历写文案。实测（200 局）250 条死经历里有 143 条
+ *  1. 只给"玩家真的会带上"的经历写文案。实测（200 局）那 250 条死经历里有 143 条
  *     一局都没被带上 —— 给它们写文案是自欺，那条预算应该花在内容上。
- *  2. 没登记的 flag 一律**不显示**。`wife_wangshi`、`xianv_info` 这类是机器 id，
- *     漏到界面上比不显示更糟。
+ *  2. 没登记的 flag 一律**不显示**，界面上只可能出现这张表里的句子。
+ *     `lishi_tension`、`pending_zhanggui` 这类机器 id 因此要么配一句人话，要么就别露出来。
  *  3. 文案必须忠于写出这条经历的那个选项（`choice.effects.flags.add`）——
  *     玩家做的是"联名弹劾"，履历就不能写"弹劾阉党成功"。
+ *     一条 flag 有多个出处时，写它们共同的那一层事实，不写其中某一个结局。
+ *  4. 同一个"说人话"的义务也落在**门外的文案**上：选项被经历门槛锁住时会把缺哪段
+ *     经历印在屏幕上，所以机器 id 还得进下面那张 `FLAG_GATE_LABELS`。
  *
- * 名单来源与对账：`tests/unit/flagMemoirs.test.ts` 钉住"不许有全游戏写不出来的文案"。
+ * 名单来源与对账：`tests/unit/flagMemoirs.data.test.ts` 钉住两件事 ——
+ * 不许有"全游戏写不出来的文案"（deadMemoirs），也不许让已钉住的常被带走者掉出表外；
+ * `tests/unit/audit.choiceLockout.test.ts` 钉住"选项级门槛里不许有没登记的机器 id"。
  */
 
 export type MemoirGroup = '朝局' | '风骨' | '家宅' | '人情'
@@ -81,6 +87,10 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   遣祭代归: { line: '遣人代祭，身留官守不曾归乡', group: '朝局' },
   丁忧在籍: { line: '解职回乡奔丧，在籍守制', group: '朝局' },
   武力威慑: { line: '把上门讨债的人打了出去', group: '朝局' },
+  动用关系: { line: '托人压下过一桩公事，用的是交情', group: '朝局' },
+  阉党嫌疑: { line: '朝堂上认了旧事，自此有阉党之嫌', group: '朝局' },
+  旧议已收: { line: '当年的疏稿收进箱底，不再提', group: '朝局' },
+  洪承畴故交: { line: '登门与洪承畴纵论过兵法', group: '朝局' },
 
   // —— 风骨：站姿、名节、银子上的取舍 ——
   忠臣: { line: '先帝宾天，于众目之前尽臣子哀礼', group: '风骨' },
@@ -103,6 +113,10 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   以工代偿: { line: '无银可还，转祖上田庄与人经营', group: '风骨' },
   以攻为守: { line: '反诉仇家，先把水搅浑', group: '风骨' },
   遣散旧部: { line: '赠银遣散旧部，教他归乡养老', group: '风骨' },
+  不论旧朝: { line: '史馆征旧事，称病不预，一概不答', group: '风骨' },
+  游历天下: { line: '抛下官身，随霞客走了十年山水', group: '风骨' },
+  归隐之志: { line: '山水既久，不复作还朝之想', group: '风骨' },
+  贪声已著: { line: '把交情折价换利，贪名自此在外', group: '风骨' },
 
   // —— 家宅：妻、妾、子、门里的事 ——
   wife_wangshi: { line: '娶了王氏，这段姻缘认下了', group: '家宅' },
@@ -118,6 +132,10 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   crime_line: { line: '为掩一桩丑事，手上沾了血', group: '家宅' },
   wife_murdered: { line: '为灭口下了毒手，从此背一条人命', group: '家宅' },
   corruption_record: { line: '替岳父办过一笔见不得钱的事', group: '家宅' },
+  lishi_tension: { line: '当面回了岳父的请托，李家生了隙', group: '家宅' },
+  pending_zhanggui: { line: '首辅赐婚，你推说禀明家母、三日奉复', group: '家宅' },
+  wife_hates_cuir: { line: '揽下翠屏的事，正妻自此恨她', group: '家宅' },
+  纳妾之议: { line: '妾的名分议了起来，门上有闲话', group: '家宅' },
 
   // —— 人情：不肯忘的那些人 ——
   红袖的下落: { line: '出钱问明红袖如今在何处', group: '人情' },
@@ -130,7 +148,51 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   hongxiu_heartbreak: { line: '说自己能力有限，教她空欢喜一场', group: '人情' },
   zhaomei_restrained: { line: '喝止赵美，不许再提旧事', group: '人情' },
   三日之信: { line: '提前三日，把杀身的消息说与她听', group: '人情' },
-  李氏恩断: { line: '与李氏自此恩断，再无来处', group: '人情' }
+  李氏恩断: { line: '与李氏自此恩断，再无来处', group: '人情' },
+  如烟已嫁: { line: '三十两算作嫁妆，送她体面出门', group: '人情' },
+  旧盟重寻: { line: '遣媒毁其新聘，替她担下这一场', group: '人情' },
+  再负一回: { line: '托春杏把当年那句话又说了一遍', group: '人情' },
+  一刻钟之恩: { line: '拖住缇骑一刻钟，教她先去报信', group: '人情' },
+  秦淮债清: { line: '秦淮旧债照数还清，契撕在当面', group: '人情' },
+  侠女之盟: { line: '城南两间房安下她，不曾令她入门', group: '人情' },
+  直言相告: { line: '把自身处境如实说与她听', group: '人情' },
+  侠女自去: { line: '她当夜踏瓦而去，玉佩留在案上', group: '人情' }
+}
+
+/**
+ * flag（经历）→ 锁门时给玩家看的一句「你缺的那段前事」。
+ *
+ * 为什么这一张表要单独存在：第十五轮把选项级 `showConditions.flags` 实装之后，
+ * 被挡在门外的选项会把缺哪段经历**印在屏幕上**（`choiceRequirements.ts` 的
+ * 「须有这段经历：…」）。中文名（`忠臣`、`夺情起复`）本来就说得出，
+ * 但 `wife_hurt` 这类机器 id 直接进文案，等于让玩家读一行调试输出。
+ * 实测（第十七轮）全池选项级正向子句里真有 9 个这种 id，全部住在家宅/人情一支。
+ *
+ * 三条规矩跟履历表一致：短语必须忠于写出该 flag 的那个选项；机器 id 没登记就
+ * **不要印出来**（`gateLabel` 返回 null，由调用方改说泛指）；这里只用一句话的长度。
+ */
+export const FLAG_GATE_LABELS: Record<string, string> = {
+  wife_broken: '与正妻决裂',
+  tyrant_husband: '以夫权压过家内',
+  pingqi_attempt: '为妻妾排解过',
+  wife_hurt: '因纳妾伤了正妻',
+  wife_jealous: '偏宠致正妻生怨',
+  concubine_killed: '妾室因你而死',
+  lixiangjun_poem: '赠诗李香君',
+  lixiangjun_disappointed: '凉了香君的心',
+  ruan_dacheng_enemy: '与阮大铖结怨'
+}
+
+/** 纯机器 id：没有汉字、只有小写字母数字下划线的那一类 flag 名 */
+const MACHINE_ID = /^[a-z0-9_]+$/
+
+/**
+ * 一段经历的门禁文案。中文名照抄；机器 id 查这张表，查不到就退回履历句；
+ * 两句都凑不出来的，返回 `null` —— 宁可说"须有前事"，也不把 `wife_hurt` 印给玩家。
+ */
+export function gateLabel(flag: string): string | null {
+  if (!MACHINE_ID.test(flag)) return flag
+  return FLAG_GATE_LABELS[flag] ?? FLAG_MEMOIRS[flag]?.line ?? null
 }
 
 export interface MemoirEntry extends Memoir {

@@ -1,5 +1,6 @@
 import { EventChoice, GameEvent } from '../types/event'
 import { Attributes, Character, GameStateValues } from '../types/game'
+import { gateLabel } from '../data/flagBiography'
 import { ATTR_DISPLAY_MAP, STATE_DISPLAY_MAP } from './constants'
 
 export interface ChoiceCheckResult {
@@ -168,15 +169,15 @@ export function checkChoiceRequirement(
     // has/all = 全部要有，any/some = 至少一个，notHas/none = 一个都不能有。
     const missingAll = [...(f.has ?? []), ...(f.all ?? [])].filter(x => !own.includes(x))
     if (missingAll.length) {
-      return lockedByFlag(`须有这段经历：${missingAll.join('、')}`, missingAll[0])
+      return lockedByFlag(`须有这段经历：${sayFlags(missingAll)}`, missingAll[0])
     }
     const anyList = f.any ?? f.some
     if (anyList && anyList.length && !anyList.some(x => own.includes(x))) {
-      return lockedByFlag(`须有过其中一段经历：${anyList.join('、')}`, anyList[0])
+      return lockedByFlag(`须有过其中一段经历：${sayFlags(anyList)}`, anyList[0])
     }
     const forbidden = [...(f.notHas ?? []), ...(f.none ?? [])].filter(x => own.includes(x))
     if (forbidden.length) {
-      return lockedByFlag(`与你的另一段经历相冲：${forbidden.join('、')}`, forbidden[0])
+      return lockedByFlag(`与你的另一段经历相冲：${sayFlags(forbidden)}`, forbidden[0])
     }
   }
 
@@ -225,6 +226,19 @@ export function checkChoiceRequirement(
  */
 function lockedByFlag(reason: string, conditionKey: string): ChoiceCheckResult {
   return { available: false, reason, gap: 0, conditionType: 'flag' as const, conditionKey }
+}
+
+/**
+ * 把"缺哪段经历"翻成玩家读得懂的一句。
+ *
+ * 第十五轮刚把选项级经历门实装时，这里直接 `join('、')` 了 flag 名，
+ * 浏览器实测逮到屏幕上印出「wife_hurt、wife_jealous、pingqi_attempt」——
+ * 门槛是真门槛，文案却是调试输出。现在查 `FLAG_GATE_LABELS`，
+ * 查不到的机器 id 一个都不印出来，改说"前头有一段没走到的旧事"这种泛指。
+ */
+function sayFlags(flags: string[]): string {
+  const named = flags.map(gateLabel).filter((s): s is string => !!s)
+  return named.length ? named.join('、') : '前头有一段没走到的旧事'
 }
 
 /**

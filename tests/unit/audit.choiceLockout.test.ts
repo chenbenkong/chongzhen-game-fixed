@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { scanChoiceLockout } from '../../scripts/audit-choice-lockout'
 import { allEvents } from '../../scripts/event-pools'
-import type { GameEvent } from '../../src/types/event'
+import { checkChoiceRequirement } from '../../src/utils/choiceRequirements'
+import { FLAG_GATE_LABELS } from '../../src/data/flagBiography'
+import type { EventChoice, GameEvent } from '../../src/types/event'
+import { makeCharacter, makeGameState } from './helpers/gameEngine'
 
 /**
  * 第十五轮的看门狗：**门槛真的会锁人**之后，锁错方向就是新的失效模式。
@@ -16,6 +19,11 @@ import type { GameEvent } from '../../src/types/event'
  * 再把分支事件与写 flag 的上游事件对上。所以钉成测试，CI 里跑。
  *
  * 与人造坏事件同批跑：只断言"真实数据 0 处"是不够的，那可能只是检查器自己没电。
+ *
+ * 第十七轮加了第四类 `RAW_FLAG_ID`：浏览器实测发现被锁的选项下面印着
+ * 「须有过其中一段经历：wife_hurt、wife_jealous、pingqi_attempt」——
+ * 门槛本身是对的，文案是把 flag 名直接给了玩家。于是判据（`gateLabel`）与
+ * 渲染方共用一张表，这里再钉住"这张表不许漏项"。
  */
 
 const base = (over: Partial<GameEvent>): GameEvent =>
@@ -29,7 +37,7 @@ const base = (over: Partial<GameEvent>): GameEvent =>
   }) as unknown as GameEvent
 
 describe('选项级硬门槛体检（第十五轮实装门槛之后新增）', () => {
-  it('真实数据里三类问题均为 0 处', () => {
+  it('真实数据里四类问题均为 0 处', () => {
     const findings = scanChoiceLockout()
     expect(
       findings.map(f => `[${f.kind}] ${f.where} → ${f.detail}`),
@@ -89,5 +97,68 @@ describe('选项级硬门槛体检（第十五轮实装门槛之后新增）', (
     const findings = scanChoiceLockout(allGated).filter(f => f.kind === 'NO_ORIGIN')
     expect(findings.map(f => f.where).join('\n')).toContain('synthetic_ev')
     expect(findings.map(f => f.where).join('\n')).not.toContain('synthetic_ev2')
+  })
+
+  it('门槛引用没登记的机器 id ⇒ RAW_FLAG_ID；中文名不算', () => {
+    const events = [
+      base({
+        choices: [
+          { id: 'c1', text: 'A', effects: {}, showConditions: { flags: { any: ['wife_unknown_flag'] } } },
+          { id: 'c2', text: 'B', effects: {}, showConditions: { flags: { has: ['忠臣'] } } },
+          { id: 'c3', text: 'C', effects: {}, showConditions: { flags: { notHas: ['某某旧事'] } } }
+        ]
+      }) as unknown as GameEvent
+    ]
+    const leaks = scanChoiceLockout(events).filter(f => f.kind === 'RAW_FLAG_ID')
+    expect(leaks.map(f => f.detail).join('\n')).toContain('wife_unknown_flag')
+    expect(leaks).toHaveLength(1)
+  })
+})
+
+describe('锁门文案说的是人话（第十七轮浏览器实测逮到的那一类）', () => {
+  /** 玩家身上干干净净：所有经历门槛都会把他挡在门外，于是每条理由都要读一遍 */
+  const nobody = makeCharacter({ flags: [] })
+  const ascii = /[A-Za-z_]{4,}/
+
+  it('全池每一个被锁住的选项，理由里一个 ASCII 字都没有', () => {
+    const leaks: string[] = []
+    for (const e of allEvents) {
+      for (const c of e.choices ?? []) {
+        const check = checkChoiceRequirement(c, nobody, makeGameState())
+        if (check.available || !check.reason) continue
+        if (ascii.test(check.reason)) leaks.push(`${e.id}/${c.id}：${check.reason}`)
+      }
+    }
+    expect(leaks, '这些理由会原样印在灰色选项下面').toEqual([])
+  })
+
+  it('被挡在门外时仍然说得出"缺的是哪段前事"', () => {
+    const gated = allEvents
+      .flatMap((e: GameEvent) => (e.choices ?? []).map((c: EventChoice) => ({ e, c })))
+      .filter(x => x.c.showConditions?.flags?.any?.length)
+    const sample = gated.find(
+      x => (x.c.showConditions?.flags?.any ?? []).includes('wife_hurt')
+    )
+    expect(sample, '第十七轮的《门内门外》靠这一支分流，样本还在').toBeTruthy()
+    const check = checkChoiceRequirement(sample!.c, nobody, makeGameState())
+    expect(check.available).toBe(false)
+    expect(check.reason).toContain('因纳妾伤了正妻')
+    expect(check.reason).not.toContain('wife_hurt')
+  })
+
+  it('短语表自己也得是人话，而且指着的经历真有人写得出来', () => {
+    const writable = new Set<string>()
+    for (const e of allEvents) {
+      for (const c of e.choices ?? []) {
+        for (const f of c.effects?.flags?.add ?? []) writable.add(f)
+      }
+    }
+    const bad: string[] = []
+    for (const [flag, label] of Object.entries(FLAG_GATE_LABELS)) {
+      if (ascii.test(label)) bad.push(`${flag}：短语里还有 ASCII ——${label}`)
+      if (label.length > 12) bad.push(`${flag}：短语 ${label.length} 字，锁门文案会挤成一段话 ——${label}`)
+      if (!writable.has(flag)) bad.push(`${flag}：全池没有选项写得出它，这句短语是白写的`)
+    }
+    expect(bad).toEqual([])
   })
 })
