@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { act } from '@testing-library/react'
 import { crisisEventMayShow } from '../../src/hooks/useGameEngine'
 import { BOUNDARY_EVENTS } from '../../src/data/boundaryEvents'
+import type { BoundaryEventCheckParams } from '../../src/types/boundaryEvent'
 import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
 import { simulateRun } from './helpers/simulate'
 
@@ -68,6 +69,66 @@ describe('缺陷 K-2：游戏中途应能触发 crisis 类临界事件', () => {
     await flush(600)
 
     expect(result.current.currentEvent?.id).not.toBe(CRISIS_EVENT_ID)
+  })
+})
+
+/**
+ * 第十八轮：手写党派结局的三条 check 过去**读都不读年代**，于是文本写的是 1644 年甲申之变的
+ * 《东林烈士》，实测在开局第 13 个月就把一局打死了（200 局里 12 局如此，全部出自
+ * `诗文清望` —— 它开局清议 60、又带「党争漩涡」强制卷入东林线，最快踩齐门槛）。
+ * 玩家 1629 年读到「三天后，李自成攻入北京。又四十多天，清军入关」，
+ * 不是难度高，是这句话在讲一件还没发生的事。
+ *
+ * 这一格断言的是**因果的顺序**，不是数值：状态条件全部摆平，只动年代这一个变量。
+ * 阈值结局那套 `pastGrace`（宽限期 + 归零两次才要命）与叙事结局那套
+ * `NARRATIVE_MIN_YEAR / NARRATIVE_MIN_TURN` 早就存在，这三条只是没接进去。
+ */
+function factionParams(turn: number, currentYear: number, over: Partial<BoundaryEventCheckParams> = {}): BoundaryEventCheckParams {
+  return {
+    attributes: { 财帛: 50, 文韬: 80, 理政: 60, 武略: 70, 体质: 60 },
+    gameState: { 圣眷: 50, 中官: 40, 清议: 80, 士绅: 50, 民望: 60, 国势: 40, turn },
+    hidden: { 道德值: 80, 欲望值: 30, 野心值: 30, 机敏值: 50, 忠诚值: 60 },
+    faction: { 东林好感: 90, 阉党好感: 10, 立场: '东林', 党争烈度: 60 },
+    flags: ['东林死忠'],
+    currentYear,
+    ...over
+  }
+}
+
+const M = (id: string) => BOUNDARY_EVENTS.find(r => r.id === id)!.check
+
+describe('第十八轮：党派结局不许讲一件还没发生的事', () => {
+  it('《东林烈士》文本绑定甲申之变，1644 年前必不触发', () => {
+    const check = M('faction_donglin_martyr')
+    // 状态全满足，但还在崇祯early / 宽限期之内 —— 三条都该挡住
+    expect(check(factionParams(24, 1630)), '开局两年就发甲申之变').toBe(false)
+    expect(check(factionParams(120, 1637)), '崇祯十年还没有李自成').toBe(false)
+    expect(check(factionParams(200, 1643)), '1643 年正月京城还没破').toBe(false)
+    // 年代到位才放行
+    expect(check(factionParams(200, 1644))).toBe(true)
+    // 拿不到年代时按"不触发"处理（fail-closed）—— 与 boundaryEventCompiler 对 conditions.year 的处理一致
+    expect(check({ ...factionParams(200, 1644), currentYear: undefined })).toBe(false)
+  })
+
+  it('《权奸末路》写着「温体仁倒台后」，倒台（1637）之前必不触发', () => {
+    const check = M('faction_tyrant_fall')
+    const tyrant = factionParams(200, 1636, {
+      faction: { 东林好感: 10, 阉党好感: 90, 立场: '中间', 党争烈度: 80 },
+      flags: ['叛徒'],
+      hidden: { 道德值: 10, 欲望值: 60, 野心值: 70, 机敏值: 50, 忠诚值: 20 }
+    })
+    expect(check(tyrant), '温体仁还没倒台').toBe(false)
+    expect(check({ ...tyrant, currentYear: 1637 })).toBe(true)
+  })
+
+  it('《党争牺牲品》文本没有年代锚点，但同样要过了叙事结局的时间下限才算"沉浮多年"', () => {
+    const check = M('faction_sacrifice')
+    const caught = {
+      faction: { 东林好感: 20, 阉党好感: 25, 立场: '未定' as const, 党争烈度: 95 }
+    }
+    expect(check(factionParams(30, 1630, caught)), 'turn 30 还在宽限期内').toBe(false)
+    expect(check(factionParams(40, 1630, caught)), '1630 年连国势都还没开始崩').toBe(false)
+    expect(check(factionParams(40, 1635, caught))).toBe(true)
   })
 })
 

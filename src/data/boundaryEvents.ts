@@ -1,7 +1,7 @@
 import { BoundaryEvent, BoundaryEventCheckParams } from '../types/boundaryEvent'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
-import { wrapBatchAsBoundaryEvents } from './boundaryEventCompiler'
+import { wrapBatchAsBoundaryEvents, NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from './boundaryEventCompiler'
 import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
 import { allEndingEvents as mainNarrativeEndings } from './events/ending/endings_all'
@@ -477,6 +477,29 @@ function doomedBy(params: BoundaryEventCheckParams, key: Parameters<typeof isFat
 }
 
 /**
+ * 手写 check 的党派结局专用的时间下限。
+ *
+ * 第十八轮实测（200 局）：《东林烈士》在**平均第 13 个月**就把一局打死，
+ * 而它自己的文本写的是「甲申之变」「李自成攻入北京」「清军入关」—— 全是 1644 年的事。
+ * 玩家 1629 年读到"三天后清军入关"，不是难度高，是这句话在说一件还没发生的事。
+ *
+ * 根因是这三条 check 与同一文件里另外两套规则各写各的：阈值结局有 `pastGrace`，
+ * 编译器给叙事结局有 `NARRATIVE_MIN_YEAR / NARRATIVE_MIN_TURN`，
+ * 而手写的三条什么下限都没有 —— `check` 里读都不读 `currentYear`。
+ * 于是这一层不再重复发明下限，直接复用叙事结局那两个常量，
+ * 再加一条"文本绑定在哪一年，闸门就至少开到哪一年"。
+ */
+function settledIn(params: BoundaryEventCheckParams, minYear: number): boolean {
+  return (params.gameState?.turn ?? 0) >= NARRATIVE_MIN_TURN &&
+    (params.currentYear ?? 0) >= Math.max(NARRATIVE_MIN_YEAR, minYear)
+}
+
+/** 《东林烈士》文本绑定甲申之变（1644）：那年还没到，就不许有人死在它里面 */
+const MARTYR_MIN_YEAR = 1644
+/** 《权奸末路》文本写「温体仁倒台后」—— 温体仁崇祯十年（1637）罢官 */
+const TYRANT_MIN_YEAR = 1637
+
+/**
  * 「哪一维归零收尾于哪个结局」的对照表。
  * 这张表过去只存在于八个 check 各写各的字面量里，而现在它是**规则的一半**：
  * 警告层按维度写 flag，结局按维度读 flag，两侧必须指同一个键。
@@ -609,7 +632,8 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
     check: (params) => {
       const f = params.faction
       const flags = params.flags || []
-      return !!f && f.东林好感 >= 80 && f.阉党好感 <= 20 &&
+      return settledIn(params, MARTYR_MIN_YEAR) && !!f &&
+        f.东林好感 >= 80 && f.阉党好感 <= 20 &&
         (flags.includes('东林死忠') || flags.includes('复社成员')) &&
         (params.gameState?.['清议'] ?? 0) >= 60
     },
@@ -666,7 +690,8 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
     check: (params) => {
       const f = params.faction
       const flags = params.flags || []
-      return !!f && f.阉党好感 >= 70 && f.东林好感 <= 15 &&
+      return settledIn(params, TYRANT_MIN_YEAR) && !!f &&
+        f.阉党好感 >= 70 && f.东林好感 <= 15 &&
         !flags.includes('阉党路线') &&
         flags.includes('叛徒') &&
         (params.hidden?.['道德值'] ?? 50) <= 30
@@ -721,7 +746,7 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
     type: 'ending',
     check: (params) => {
       const f = params.faction
-      return !!f && f.党争烈度 >= 90 &&
+      return settledIn(params, NARRATIVE_MIN_YEAR) && !!f && f.党争烈度 >= 90 &&
         Math.abs(f.东林好感 - f.阉党好感) < 20 &&
         f.东林好感 < 40 && f.阉党好感 < 40
     },

@@ -171,8 +171,11 @@ export function wrapAsBoundaryEvent(
 // 兜底参数：narrative 结局至少满足以下全部条件才可触发
 //  1. 崇祯八年（1635）后（开局至少 7 年，让"名臣/殉国/归隐"等叙事性结局有时间沉淀）
 //  2. 游戏 turn ≥ 36（开局 3 年后，宦海须有"沉浮"才有结局）
-const NARRATIVE_MIN_YEAR = 1635
-const NARRATIVE_MIN_TURN = 36
+// 导出给 boundaryEvents.ts 里手写的 check 复用 —— 同一个"结局要有时间沉淀"的原则，
+// 不许一份数据里两套标准（第十八轮实测：手写党派结局没有任何时间下限，
+// 于是《东林烈士》在开局第 13 个月就把一局打死，而它的文本写的是 1644 年甲申之变）。
+export const NARRATIVE_MIN_YEAR = 1635
+export const NARRATIVE_MIN_TURN = 36
 
 /**
  * 批量把结局事件包装成 BoundaryEvent
