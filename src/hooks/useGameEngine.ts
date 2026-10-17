@@ -1438,29 +1438,36 @@ export function useGameEngine(props: UseGameEngineProps) {
       return
     }
 
-    try {
-      const params = {
-        attributes: attrsForCheck,
-        gameState: stateForCheck,
-        hidden: hiddenForCheck,
-        faction: currentCharacter.faction,
-        flags: currentCharacter.flags,
-        currentYear: currentGameState.currentYear,
-        currentMonth: currentGameState.currentMonth
-      }
-
-      const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
-
-      if (triggeredEvent) {
-        if (triggeredEvent.id === 'bankrupt') {
-          setCurrentEvent(withEndingId(triggeredEvent.event))
-          handleGameOver(withEndingId(triggeredEvent.event))
-          return
+    // 刚答完的那张卡本身就是「史馆请笔」时，跳过这一次判定。
+    // 下面 params.flags 传的是**抉择前**的 character.flags（setCharacter 的更新函数还没跑），
+    // 而这类卡的条件读的正是刚写下去的 `史馆辞笔`（notHas）—— 拿旧值判会当场把同一张卡
+    // 再摆一次，玩家永远走不出这一格。
+    // 没有顺手把 flags 也改成抉择后的值：那会让全部 flag 型结局提前一个月命中，是另一件事。
+    if (!currentEvent?.declinable) {
+      try {
+        const params = {
+          attributes: attrsForCheck,
+          gameState: stateForCheck,
+          hidden: hiddenForCheck,
+          faction: currentCharacter.faction,
+          flags: currentCharacter.flags,
+          currentYear: currentGameState.currentYear,
+          currentMonth: currentGameState.currentMonth
         }
-        setCurrentEvent(triggeredEvent.event)
+
+        const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
+
+        if (triggeredEvent) {
+          if (triggeredEvent.id === 'bankrupt') {
+            setCurrentEvent(withEndingId(triggeredEvent.event))
+            handleGameOver(withEndingId(triggeredEvent.event))
+            return
+          }
+          setCurrentEvent(triggeredEvent.event)
+        }
+      } catch (e) {
+        console.error('handleChoice boundary check error:', e)
       }
-    } catch (e) {
-      console.error('handleChoice boundary check error:', e)
     }
   }, [])
 
@@ -1493,6 +1500,13 @@ export function useGameEngine(props: UseGameEngineProps) {
         if (triggeredEvent.id === 'bankrupt') {
           setCurrentEvent(withEndingId(triggeredEvent.event))
           handleGameOver(withEndingId(triggeredEvent.event))
+          return true
+        }
+        // 「史馆请笔」（§1.4 ⑬）：善终类结局命中时只把卡摆上桌，不替玩家结案。
+        // 收笔与否由玩家在卡上选 —— 点【搁笔】就带着这个身份继续走到甲申之变。
+        // 仍然 return true：这张卡要吃掉本月的普通事件，否则「拒绝收笔」会变成白看一张卡。
+        if (triggeredEvent.event.declinable) {
+          setCurrentEvent(triggeredEvent.event)
           return true
         }
         setCurrentEvent(triggeredEvent.event)

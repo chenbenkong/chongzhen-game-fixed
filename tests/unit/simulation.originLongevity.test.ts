@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { simulateRun, type SimOutcome, type SimPolicy } from './helpers/simulate'
+import { DECLINABLE_ENDING_IDS } from '../../src/data/endingDecline'
 import type { OriginType } from '../../src/types/game'
 
 /**
@@ -29,16 +30,45 @@ import type { OriginType } from '../../src/types/game'
  *    而那一路是纯亏的选项 —— 一百局里没一个人按。
  *    上一轮明确拒绝用"放宽门槛"糊过去（那等于让没发生过的抉择长出后果），
  *    所以这里量的是**开门经历本身有没有被写出来**：写不出来，那三条回响就是白写的文案。
+ *    第十九轮把 ⑬ 修完之后，这一条自己好了（同一批 400 局：38 / 37 / 9 局带上身）——
+ *    因为局终于长到能撞见那三个事件。这反过来印证 ⑪ 的卡点确实是"活不够久"。
+ *
+ * ⑬（第十九轮修掉）善终结局在年窗开放的那个月**替玩家结案**，于是没人活到 1644。
+ *    修法是「史馆请笔」：判定命中只把卡摆上桌，收不收笔由玩家点（`src/data/endingDecline.ts`）。
+ *    本文件的策略组里 steady/warden 都会拒笔，所以修完之后：
+ *      · 以善终结局的局数 = 0/400（修复前 187/400 = 47%，全挤在年窗开放那一年）；
+ *      · 终局年份分布 `1629:148 1630:40 1631:7 1632:3 1634:2 1641:9 1643:6 1644:185`，
+ *        平均局长从上一轮的 71.6~83.1 个月涨到 104.3~107.3，
+ *        平均触达事件从 113.2~126.7 涨到 146.2~151.2（同一批 400 局种子）。
+ *    1644 因此成了最常见的终局年份（46%）—— 这不是坝，是正戏本身在收人：
+ *    甲申国变的年窗是 `1644..1644`（固定日期），国势崩解曲线让幸存者必然踩上 国势≤15。
+ *    所以下面那格"单一年份不许吃掉四成"把 1644 从候选里摘出去，另外补一条
+ *    直接盯住这一轮的量：**想继续玩下去的玩家不该被善终结局收走**。
+ *    愿意收笔的那一面另有用具：`SIM_POLICIES=sealer`（见 helpers/simulate.ts）。
  *
  * 口径与 `simulation.playthrough.test.ts` 完全一致：同一个 `simulateRun`、
  * 同一套策略、同一批种子只换出身。深跑：
- *   SIM_GAMES=40 node node_modules/vitest/vitest.mjs run tests/unit/simulation.originLongevity.test.ts
+ *   SIM_GAMES=50 node node_modules/vitest/vitest.mjs run tests/unit/simulation.originLongevity.test.ts
  */
 
 const ORIGINS: OriginType[] = ['寒门', '缙绅', '没落世家', '诗文清望']
 const SEEDS = Number(process.env.SIM_GAMES ?? 8)
 const POLICIES = (process.env.SIM_POLICIES ?? 'steady,warden').split(',') as SimPolicy[]
 const MAX_MONTHS = Number(process.env.SIM_MONTHS ?? 260)
+
+/**
+ * 甲申国变的年窗是 `1644..1644`（李自成入京是固定日期），所以"终局挤在 1644"
+ * 是正戏本身在收人，与水坝那种"状态型善终在年窗开放当年一口吞掉幸存者"是两回事。
+ * 下面两格因此都要把它单独拿出来看。
+ */
+const JIASHEN_YEAR = 1644
+
+/**
+ * `SIM_POLICIES=sealer` 是第十九轮为 §1.4 ⑮ 加的量具：这一组的玩家**就是**要在请笔卡上收笔，
+ * 所以"善终占比""终局年份不集中""玩进 1644""回响开门"这四条钉在拒笔玩家身上的断言必然全红。
+ * 让它们显式 skip，而不是让人误读成回归。
+ */
+const SEALERS_ONLY = POLICIES.length === 1 && POLICIES[0] === 'sealer'
 
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / (xs.length || 1)
 const fired = (r: SimOutcome) => new Set(r.firedEventIds).size
@@ -75,12 +105,21 @@ beforeAll(async () => {
       [...byEnding].sort((a, b) => b[1].length - a[1].length)
         .map(([k, ms]) => `${k}×${ms.length}(${Math.round(avg(ms))}月)`).join(' ')
   )
-  const damRuns = allRuns.filter(r => r.months >= 84 && r.months <= 96)
-  const damRanks = new Map<string, number>()
-  for (const r of damRuns) damRanks.set(r.finalRank, (damRanks.get(r.finalRank) ?? 0) + 1)
+  const sealed = allRuns.filter(r => DECLINABLE_ENDING_IDS.includes(r.endingId ?? ''))
+  const sealedYears = new Map<number, number>()
+  for (const r of sealed) sealedYears.set(r.finalYear, (sealedYears.get(r.finalYear) ?? 0) + 1)
   console.log(
-    `堵在 1635 上的 ${damRuns.length} 局，终局官阶：` +
-      [...damRanks].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}×${n}`).join(' ')
+    `以善终结局的局数：${sealed.length}/${allRuns.length}` +
+      (sealed.length
+        ? `（落在：${[...sealedYears].sort((a, b) => a[0] - b[0]).map(([y, n]) => `${y}:${n}`).join(' ')}）`
+        : ' —— 这一组的玩家都会拒笔，这正是 ⑬ 修完该有的形状')
+  )
+  const lateRuns = allRuns.filter(r => r.finalYear >= 1644)
+  const lateRanks = new Map<string, number>()
+  for (const r of lateRuns) lateRanks.set(r.finalRank, (lateRanks.get(r.finalRank) ?? 0) + 1)
+  console.log(
+    `活到 1644 的 ${lateRuns.length} 局，终局官阶：` +
+      [...lateRanks].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}×${n}`).join(' ')
   )
   console.log(
     `出身内容量实测（每格 ${SEEDS * POLICIES.length} 局：seed 1..${SEEDS} × ${POLICIES.join('/')}）\n` +
@@ -129,6 +168,9 @@ describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () 
     ).toBeLessThanOrEqual(1.35)
     // 1.35 是第十八轮从实测钉出来的：400 局取样（seed 1..50 × steady/warden × 四出身）
     // 修复后 诗文清望 83.1 / 没落世家 71.6 = 1.16，余量留得不大。
+    // 第十九轮把局长整体拉长之后，同一批 400 局是 107.3 / 104.3 = 1.03 —— 出身差距反而小了
+    // （因为死得早的那批人本来就是被善终窗口提前收走的）。阈值不动：这一格管的是出身平衡，
+    // 不是本轮的正戏可达性，动它只会让下一轮的归因多一个变量。
     // 原来钉的是 1.6 那个猜测值 —— 而 ⑩ 那条"诗文清望特别短"正是在 1.6 之下混过去的。
     // 但要如实记一句：这条阈值在第十八轮修复前也是**过的**（53.3 / 42.8 = 1.25），
     // 因为它量的是出身之间的相对差距，而水坝是"所有幸存者被同一年收走"的绝对量问题 ——
@@ -150,19 +192,41 @@ describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () 
     // 见 §1.4 ⑭：那条差距是真的，但拿随机点选项的玩家来钉 CI 只会把阈值长期钉在噪音上。
   })
 
-  it('「1635 水坝」不许回来：窗口一开的那一年不能成为最常见的死法', () => {
+  it.skipIf(SEALERS_ONLY)('「1635 水坝」不许回来：除 1644 之外，任何一年都不许成为最常见的死法', () => {
     const all = [...byOrigin.values()].flat()
     const byYear = new Map<number, number>()
     for (const r of all) byYear.set(r.finalYear, (byYear.get(r.finalYear) ?? 0) + 1)
-    const [topYear, topCount] = [...byYear].sort((a, b) => b[1] - a[1])[0]
+    // 1644 是**那一年本身**在收人，不是坝：甲申国变的年窗写死 `1644..1644`（李自成入京是固定日期），
+    // 而国势崩解曲线从 1636 起 -1/月、1640 起 -2、1643 起 -3，幸存者到 1644 必然已经 国势≤15。
+    // 坝的特征是"某条**状态型**善终在它年窗开放的那一年把幸存者一口吞掉" ——
+    // 所以把 1644 从"最常见死法"的候选里摘出去，其余任何一年吃掉四成仍然就是坝回来了。
+    const candidates = [...byYear].filter(([y]) => y !== JIASHEN_YEAR)
+    const [topYear, topCount] = candidates.sort((a, b) => b[1] - a[1])[0]
     const share = topCount / all.length
-    console.log(`  终局最集中的年份：${topYear} 年，占 ${(share * 100).toFixed(0)}%（${topCount}/${all.length} 局）`)
+    console.log(
+      `  除 ${JIASHEN_YEAR} 年之外终局最集中的年份：${topYear} 年，占 ${(share * 100).toFixed(0)}%（${topCount}/${all.length} 局）`
+    )
     expect(
       share,
       `${topYear} 年一年吃掉 ${all.length} 局里的 ${topCount} 局 —— ` +
         `这就是"善终结局在窗口开放当年把幸存者全部收走"的水坝特征。` +
         `第十八轮修复前实测：1635 年 187/400 局（47%）`
     ).toBeLessThanOrEqual(0.4)
+  })
+
+  it.skipIf(SEALERS_ONLY)('想继续玩下去的玩家，不该被善终结局收走（§1.4 ⑬ 的直接口径）', () => {
+    const all = [...byOrigin.values()].flat()
+    const sealed = all.filter(r => DECLINABLE_ENDING_IDS.includes(r.endingId ?? ''))
+    const share = sealed.length / all.length
+    console.log(`  以善终结局的局数：${sealed.length}/${all.length}（${(share * 100).toFixed(0)}%）`)
+    expect(
+      share,
+      `${sealed.length} 局在本可以拒笔的时候被结成了善终 —— ` +
+        `引擎又回到"判定命中就替玩家结案"去了。第十八轮实测：187/400（47%），全部落在年窗开放那一年`
+    ).toBeLessThanOrEqual(0.05)
+    // 5% 而不是 0%：请笔卡上除了【收笔】之外的那几条也可能被经历门槛锁住，
+    // 此时模拟按"勉力一试"处理，pool 退回全部选项、只剩盖棺那条可点。
+    // 400 局实测为 0/400，余量留给那种边角而不是留给回归。
   })
 
   it('崇祯朝的正戏（1636 年以后，国势崩解曲线起跑）必须有局真的玩进去', () => {
@@ -175,10 +239,25 @@ describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () 
       `${all.length} 局里只有 ${late.length} 局进入 1636-1644 —— ` +
         `那一段的历史事件池、回响（年窗到 1644）、以及甲申国变/城破殉城/南渡/称臣/东林烈士全部是白写的。` +
         `第十八轮修复前实测为 0/400`
+    ).toBeGreaterThanOrEqual(0.4)
+    // 0.3 → 0.4 是**收紧**：第十八轮量到 200/400（50%），第十九轮「史馆请笔」之后仍是 200/400。
+    // 阈值取实测下面 10 个百分点，够挡住"某条善终结局又提前收人"，又不至于贴脸。
+  })
+
+  it.skipIf(SEALERS_ONLY)('甲申之变这一段，实测里必须成批真的发生过', () => {
+    const all = [...byOrigin.values()].flat()
+    const jiashen = all.filter(r => r.finalYear >= JIASHEN_YEAR)
+    const share = jiashen.length / all.length
+    console.log(`  玩进 ${JIASHEN_YEAR} 年及以后：${jiashen.length}/${all.length} 局（${(share * 100).toFixed(0)}%）`)
+    expect(
+      share,
+      `${all.length} 局里只有 ${jiashen.length} 局走到 ${JIASHEN_YEAR} —— ` +
+        `城破殉城、南渡续祚、称臣纳贡、东林烈士、year_1644 那三条成就又要变回白写的内容。` +
+        `第十九轮「史馆请笔」实测 185/400（46%）；第十八轮修复前 0/400`
     ).toBeGreaterThanOrEqual(0.3)
   })
 
-  it('三条回响的开门经历，实测里得真的被写出来过（§1.4 ⑪）', () => {
+  it.skipIf(SEALERS_ONLY)('三条回响的开门经历，实测里得真的被写出来过（§1.4 ⑪）', () => {
     const all = [...byOrigin.values()].flat()
     const counts = new Map<string, number>()
     for (const need of ['abandoned_liushi', 'xianv_token', 'lixiangjun_respect']) {

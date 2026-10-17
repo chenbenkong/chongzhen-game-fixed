@@ -59,8 +59,9 @@ const SELECTABLE_TYPES = [
 // 这两个池子由 BoundaryEventManager 触发，不参与 type 分层，缺 type 是正常的
 const NON_POOL_POOLS = ['ending', 'triggerable']
 
+// declinable 由 src/data/endingDecline.ts 在运行时给善终结局加上，引擎的结局落点读它（§1.4 ⑬）
 const EVENT_KEYS = ['id', 'title', 'description', 'narrative', 'conditions', 'choices', 'type',
-  'endingConfig', 'isPreEnding', 'linksToEndingId', 'storyline']
+  'endingConfig', 'isPreEnding', 'linksToEndingId', 'storyline', 'declinable']
 const CHOICE_KEYS = ['id', 'text', 'quote', 'description', 'storyline', 'showConditions', 'effects',
   'resultDescription', 'result', 'failEffects', 'failResultDescription', 'failResult',
   'staminaCost', 'staminaRequired', 'staminaBonus']

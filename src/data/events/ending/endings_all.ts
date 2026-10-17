@@ -3,8 +3,14 @@
 // 恢复时间：2026-06-18T18:55:55.643Z
 
 import { GameEvent } from '../../../types/event';
+import { applyShiguanOffers } from '../../endingDecline';
 
-export const allEndingEvents: GameEvent[] = [
+/**
+ * 原始数据。对外一律走下面的 `allEndingEvents` —— 中间那一层 `applyShiguanOffers`
+ * 会把"走完这一生"型的善终转成【史馆请笔】卡片（可拒绝，§1.4 ⑬）。
+ * 绕过 re-export 直接 import 这个 raw 数组会拿到没开拒绝权的结局，所以它不导出。
+ */
+const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   // ending_famous_minister
   // ════════════════════════════════════════════════
@@ -4317,3 +4323,10 @@ export const allEndingEvents: GameEvent[] = [
     },
   },
 ];
+
+/**
+ * 结局池对外唯一入口：26 条原始结局 +「史馆请笔」转换。
+ * `boundaryEvents.ts` 与 `events/ending/index.ts` 都从这里取，所以图鉴、判定、
+ * 体检脚本看到的是同一批对象。
+ */
+export const allEndingEvents: GameEvent[] = applyShiguanOffers(rawEndingEvents)

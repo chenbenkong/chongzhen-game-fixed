@@ -159,6 +159,14 @@ export interface GameEvent {
    * 运行时读的是上面的 `isPreEnding`。
    */
   linksToEndingId?: string
+  /**
+   * 可拒绝的结局（§1.4 ⑬「史馆请笔」）：true = 判定命中时引擎**只把卡摆上桌，不结算**。
+   *
+   * 只有 `src/data/endingDecline.ts` 会给这个标记，也只有 useGameEngine 的三处结局
+   * 落点读它。拒绝的代价由数据自己说：这类结局的 `conditions.flags.notHas` 里带着
+   * `史馆辞笔`，玩家一旦点了【搁笔】就本局不再被请笔。
+   */
+  declinable?: boolean
   /** 所属剧情线 ID（用于事件管理器加权推荐，见 src/data/storylines.ts） */
   storyline?: string
 }

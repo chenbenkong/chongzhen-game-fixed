@@ -26,7 +26,7 @@ import type { EventChoice, GameEvent } from '../../../src/types/event'
  *    一个月一次真实 340ms 的话，一局 200 个月要跑 70 秒，几百局无从谈起。
  */
 
-export type SimPolicy = 'random' | 'first' | 'ambitious' | 'steady' | 'warden'
+export type SimPolicy = 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer'
 
 export interface SimOutcome {
   seed: number
@@ -144,6 +144,36 @@ function weakestThreshold(character: Character, gameState: GameStateValues, choi
   return Math.min(...vals)
 }
 
+/**
+ * 「史馆请笔」卡上那条干净的【搁笔】（src/data/endingDecline.ts）。
+ *
+ * warden / steady 两组都必须优先点它，而不是点【反事实】或【后续】：
+ * 那两条是"另一条活法"的推演，各自带增量（名臣那张要先扣 40 点道德值、加 25 点欲望），
+ * 把它们当成"想继续玩"的原型动作，等于给每一个拒了笔的玩家凭空加一次惩罚 ——
+ * 而我接下来要量的恰恰是"拒了笔能不能走到 1644"。
+ */
+const sealRefusal = (event: GameEvent) => (event.choices || []).find(c => c.id === 'c_decline')
+
+/** warden 的保命启发式：在不收尾的选项里挑"最弱那条死线离归零最远"的一个 */
+function pickSafest(
+  pool: EventChoice[],
+  character: Character,
+  gameState: GameStateValues
+): EventChoice {
+  const safe = pool.filter(c => c.effects?.special?.type !== 'ending')
+  const candidates = safe.length ? safe : pool
+  let best = candidates[0]
+  let bestWeak = -Infinity
+  for (const c of candidates) {
+    const weak = weakestThreshold(character, gameState, c)
+    if (weak > bestWeak) {
+      bestWeak = weak
+      best = c
+    }
+  }
+  return best
+}
+
 function pickChoice(
   event: GameEvent,
   character: Character,
@@ -158,24 +188,27 @@ function pickChoice(
   // 而投骰的失败分支在 EventDisplay 里、不在引擎里，模拟层拿不到。
   // 这是本模拟器唯一的失真处，它只会让进度比真人略快，不会影响"能不能播出来"。
   const pool = open.length ? open : all
+  const refusal = sealRefusal(event)
+  if (policy === 'sealer') {
+    // 「愿意收笔」的玩家：请笔卡一摆出来就点【青史留名】，其余一律按 warden 保命。
+    //
+    // 这一组是第十九轮加的量具：steady/warden 两组都会拒笔，于是善终结局在模拟里
+    // 一次也不发生，"图鉴那十一格还亮不亮、善终之间谁先接走（§1.4 ⑮）"就没法量。
+    // 而它必须建在 warden 上而不是 steady 上 —— 实测过：非结局选项随机挑的话，
+    // 200 局里 148 局死在 1629 年（平均 20 个月），根本走不到年窗开放的那一年。
+    const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
+    if (event.declinable && seal && pool.includes(seal)) return seal
+    return pickSafest(pool, character, gameState)
+  }
   if (policy === 'warden') {
-    const safe = pool.filter(c => c.effects?.special?.type !== 'ending')
-    const candidates = safe.length ? safe : pool
-    let best = candidates[0]
-    let bestWeak = -Infinity
-    for (const c of candidates) {
-      const weak = weakestThreshold(character, gameState, c)
-      if (weak > bestWeak) {
-        bestWeak = weak
-        best = c
-      }
-    }
-    return best
+    if (refusal && pool.includes(refusal)) return refusal
+    return pickSafest(pool, character, gameState)
   }
   if (policy === 'steady') {
     // 「想继续玩下去」的玩家：看见能直接收尾的选项（辞官、赐死、兵败自裁……）就绕开。
     // 没有这一层，模拟出来的局长是"玩家一看到退出就点"的局长，
     // 1630 年以后的那些事件与结局就永远统计不到 —— 那正是我们要量的东西。
+    if (refusal && pool.includes(refusal)) return refusal
     const keepsPlaying = pool.filter(c => c.effects?.special?.type !== 'ending')
     if (keepsPlaying.length) return keepsPlaying[Math.floor(rand() * keepsPlaying.length) % keepsPlaying.length]
     return pool[Math.floor(rand() * pool.length) % pool.length]
