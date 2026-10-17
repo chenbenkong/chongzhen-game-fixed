@@ -65,8 +65,10 @@ const JIASHEN_YEAR = 1644
 
 /**
  * `SIM_POLICIES=sealer` 是第十九轮为 §1.4 ⑮ 加的量具：这一组的玩家**就是**要在请笔卡上收笔，
- * 所以"善终占比""终局年份不集中""玩进 1644""回响开门"这四条钉在拒笔玩家身上的断言必然全红。
- * 让它们显式 skip，而不是让人误读成回归。
+ * 所以"善终占比""终局年份不集中""玩进 1636 以后""玩进 1644""回响开门"这五条
+ * 钉在拒笔玩家身上的断言必然全红。让它们显式 skip，而不是让人误读成回归。
+ * 第二十轮 B 之后这条更成立：收笔组实测 190/200 局停在 1635 年（《退意萌生》一播出来就有人盖章），
+ * 那正是"愿意结案的人不会看到正戏"的定义，不是坝。
  */
 const SEALERS_ONLY = POLICIES.length === 1 && POLICIES[0] === 'sealer'
 
@@ -109,7 +111,7 @@ beforeAll(async () => {
   const sealedYears = new Map<number, number>()
   for (const r of sealed) sealedYears.set(r.finalYear, (sealedYears.get(r.finalYear) ?? 0) + 1)
   console.log(
-    `以善终结局的局数：${sealed.length}/${allRuns.length}` +
+    `以可拒笔的收束型结局结案的局数：${sealed.length}/${allRuns.length}` +
       (sealed.length
         ? `（落在：${[...sealedYears].sort((a, b) => a[0] - b[0]).map(([y, n]) => `${y}:${n}`).join(' ')}）`
         : ' —— 这一组的玩家都会拒笔，这正是 ⑬ 修完该有的形状')
@@ -214,22 +216,24 @@ describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () 
     ).toBeLessThanOrEqual(0.4)
   })
 
-  it.skipIf(SEALERS_ONLY)('想继续玩下去的玩家，不该被善终结局收走（§1.4 ⑬ 的直接口径）', () => {
+  it.skipIf(SEALERS_ONLY)('想继续玩下去的玩家，不该被收束型结局结案（§1.4 ⑬ 的直接口径）', () => {
     const all = [...byOrigin.values()].flat()
     const sealed = all.filter(r => DECLINABLE_ENDING_IDS.includes(r.endingId ?? ''))
     const share = sealed.length / all.length
-    console.log(`  以善终结局的局数：${sealed.length}/${all.length}（${(share * 100).toFixed(0)}%）`)
+    console.log(`  以可拒笔的收束型结局结案：${sealed.length}/${all.length}（${(share * 100).toFixed(0)}%）`)
     expect(
       share,
-      `${sealed.length} 局在本可以拒笔的时候被结成了善终 —— ` +
+      `${sealed.length} 局在本可以拒笔的时候被结成了收束型结局 —— ` +
         `引擎又回到"判定命中就替玩家结案"去了。第十八轮实测：187/400（47%），全部落在年窗开放那一年`
     ).toBeLessThanOrEqual(0.05)
     // 5% 而不是 0%：请笔卡上除了【收笔】之外的那几条也可能被经历门槛锁住，
     // 此时模拟按"勉力一试"处理，pool 退回全部选项、只剩盖棺那条可点。
     // 400 局实测为 0/400，余量留给那种边角而不是留给回归。
+    // 第二十轮 B 把名单从 11 条善终扩到 13 条（补 `殉职任上`/`流亡海外`）：
+    // 口径不变，量的还是"能不能拒"，不是"拒了之后死得多不多"。
   })
 
-  it('崇祯朝的正戏（1636 年以后，国势崩解曲线起跑）必须有局真的玩进去', () => {
+  it.skipIf(SEALERS_ONLY)('崇祯朝的正戏（1636 年以后，国势崩解曲线起跑）必须有局真的玩进去', () => {
     const all = [...byOrigin.values()].flat()
     const late = all.filter(r => r.finalYear >= 1636)
     const share = late.length / all.length

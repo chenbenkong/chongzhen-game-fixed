@@ -4,6 +4,25 @@ import { GameEvent } from '../../../types/event'
 // 路线引导事件（1635-1643）
 // 帮助玩家塑造角色属性，通往不同结局路线
 // ════════════════════════════════════════════════
+//
+// 这一批 21 条原先标的是 `type: 'random'`，第二十轮改成 `transition`。原因是一条实测：
+// 引擎每月的**主槽**按「historical/chain（未看过）→ transition（未看过）→ random」顺序填，
+// 而 random 只在**前两层全空**时才拿得到槽（useGameEngine.ts:1015 `if (results.length === 0)`）。
+// 20 局 × 平均 192 月 = 3850 个月里，主槽归属是 hist/chain 18%、transition 80%、**random 0.5%（19 个月）**。
+// 这条数能重跑：`SIM_PROBE_SLOTS=1 node node_modules/vitest/vitest.mjs run tests/unit/simulation.routeGuide.test.ts`
+// —— 修复后它打的是 random 0 个槽（本轮要消掉的就是这个），把下面 21 个 type 改回 'random' 才复现那 0.5%。
+// 而每月主池（ALL_EVENTS）里标着 `type:'random'` 的恰好只有这 21 条
+// （`boundaryEvents.ts` / `zeroWarningEvents.ts` 里另有两条 random，但它们走边界检查、不占主槽），
+// 于是这一整层结构上抽不出来：12 局取样里 21 条只播得出来 1 条（19 次、最早第 82 月），
+// 400 局取样里播得出来 7 条、且全部挤在第 159 月以后（那是大事件池被抽干的月份），
+// `route_ordinary_life` 一局都没有。见 §1.4 ⑯ 与 §三 第二十轮。
+//
+// 改类型而不是改引擎的抽取顺序，是因为这 21 条**本来就是**一次性的人生路线事件
+// （每条写 `急流勇退`/`著书立说`/`辞官` 这类随身 flag，且都带年窗与状态门槛），
+// 把它们塞进 random 那一层是当年的分类错误；而 random 作为兜底层不该挤掉正戏的排期。
+// 代价：它们现在与 238 条 transition 同池抽签。实测这一改动把 hist/chain 的占比从 18%
+// 挪走不到 1 个百分点（见 tests/unit/simulation.routeGuide.test.ts 的口径），
+// 换来的是 21 条路线事件真的会出现在一局里。
 
 export const eventsRouteGuide: GameEvent[] = [
 
@@ -14,7 +33,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'eastern_forest',
     title: '直言进谏',
     description: '朝堂之上，你面临一个进言的机会。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '内阁首辅', title: '温体仁' },
       quote: '某公，你这道奏疏……是在指桑骂槐吗？',
@@ -120,7 +139,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'border_war',
     title: '投笔从戎',
     description: '边关告急，你面临一个改变命运的选择。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '兵部侍郎', title: '旧友' },
       quote: '某公，辽东告急，满朝文武无人敢去。你……愿意去吗？',
@@ -229,7 +248,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'hermit',
     title: '心灰意冷',
     description: '你看透了官场的黑暗，开始思考人生的意义。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '老友', title: '同年进士' },
       quote: '某兄，你最近怎么了？整天闷闷不乐的。',
@@ -346,7 +365,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'corrupt',
     title: '权钱交易',
     description: '一个赚钱的机会摆在你面前。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '盐商', title: '大商人' },
       quote: '大人，这点小意思，不成敬意。只要大人在盐引上行个方便……',
@@ -466,7 +485,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'power',
     title: '攀附权贵',
     description: '一个升官的机会，但需要你付出代价。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '司礼监太监', title: '王公公' },
       quote: '某大人，咱家听说您最近在谋一个差事？咱家可以帮忙……但咱家也需要您帮忙。',
@@ -592,7 +611,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'merchant',
     title: '弃官从商',
     description: '你发现了一个赚钱的机会。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '商人', title: '徽商代表' },
       quote: '某大人，您在朝中为官，可知这盐引生意一本万利？',
@@ -698,7 +717,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'medical',
     title: '悬壶之念',
     description: '一场疫病让你萌生习医之心。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '老郎中', title: '城南医馆' },
       quote: '大人若真心想救这一方百姓，老朽愿倾囊相授。只是学医苦，且要耐得住寂寞。',
@@ -805,7 +824,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'hermit',
     title: '辞官之念',
     description: '官场沉浮数十载，你开始想：是不是该换一种活法？',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '同年进士', title: '致仕老友' },
       quote: '某兄，五十而知天命。你我这一辈子，到底图的是什么？',
@@ -916,7 +935,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'eastern_forest',
     title: '清议之争',
     description: '朝堂之上，一位权臣的倒行逆施已经到了不可容忍的地步。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '同科进士', title: '都察院同僚' },
       quote: '某公，温体仁/杨嗣昌/陈新甲……满朝文武噤若寒蝉，难道我等清流，就任由他们胡作非为吗？',
@@ -1033,7 +1052,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'border_war',
     title: '请缨边关',
     description: '辽东告急，满朝文武无人敢去——除了你。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '兵部尚书', title: '朝会' },
       quote: '某公，你当真愿去？辽东那地方……去的，十个里能回来三个，就算祖宗保佑了。',
@@ -1158,7 +1177,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'merchant',
     title: '海外之念',
     description: '大明将倾，有人看到风险，有人看到机会——南洋便是其中之一。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '闽商', title: '泉州海商' },
       quote: '大人，与其坐等国破家亡，不如趁早把家眷和银子送到南洋去。巴达维亚、马六甲、吕宋……哪一处不是华人新天地？',
@@ -1271,7 +1290,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'power',
     title: '铤而走险',
     description: '朝廷负你，你负天下——这条路一旦踏上，就再无回头。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '亲兵', title: '深夜' },
       quote: '大人，兄弟们已经商量好了。只要您一句话，我们就反了。',
@@ -1393,7 +1412,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'merchant',
     title: '亦官亦商',
     description: '权与钱，从来都是孪生兄弟。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '晋商', title: '八大皇商之一' },
       quote: '大人，盐、铁、丝、棉，哪一行不是一本万利？您有官身、有门路，只要您点头，咱们一起干。',
@@ -1509,7 +1528,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'power',
     title: '入阁之路',
     description: '从七品知县到内阁大学士，每一步都是刀尖上跳舞。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '吏部尚书', title: '天官' },
       quote: '某公，皇上对你青睐有加。内阁正缺一位大学士——你，可愿担此重任？',
@@ -1643,7 +1662,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'power',
     title: '党争漩涡',
     description: '朝堂之上，党同伐异——今日你弹劾他人，明日他人弹劾你。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '同党', title: '东林/阉党同僚' },
       quote: '某公，对面那位某某，可是要置你于死地的人啊！你若不先下手，他必先下手。',
@@ -1763,7 +1782,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'family',
     title: '家业之念',
     description: '官场沉浮多年，你开始想：为这个家族，我能留下什么？',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '族中长老', title: '族长' },
       quote: '某公，你为官多年，族人皆引以为荣。但祖宗的基业、子弟的前程、族中的孤寡……这些事，也该有人操心了。',
@@ -1880,7 +1899,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'ordinary',
     title: '积劳之念',
     description: '你已年过六旬，但案头的公文还堆得像山一样。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '属官', title: '你的幕僚' },
       quote: '老大人，您歇一歇吧。这些事，下官们能做。',
@@ -1999,7 +2018,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'ordinary',
     title: '平庸之念',
     description: '你什么都没做错，但你也什么都没做对。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '同僚', title: '同科进士' },
       quote: '某公，做官这么多年，你最大的成就是什么？',
@@ -2122,7 +2141,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'mystery',
     title: '乱世浮沉',
     description: '大幕落下，你没有死，也没有降——你只是消失了。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '亲随', title: '你的长随' },
       quote: '大人，您往哪里去？小的跟着您。',
@@ -2236,7 +2255,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'ordinary',
     title: '退意萌生',
     description: '朝堂上你已看透；该为自己活一次了。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '夫人', title: '你的妻子' },
       quote: '老爷，您为朝廷操劳半生，也该为自己、为这个家想想了。',
@@ -2354,7 +2373,7 @@ export const eventsRouteGuide: GameEvent[] = [
     storyline: 'ordinary',
     title: '清白之念',
     description: '在权力顶峰时急流勇退，需要比做大官更大的勇气。',
-    type: 'random',
+    type: 'transition',
     narrative: {
       speaker: { name: '吏部尚书', title: '天官' },
       quote: '某公，皇上属意你入阁。这是你这辈子最大的机会。',
