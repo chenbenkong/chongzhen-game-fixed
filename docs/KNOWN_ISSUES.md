@@ -376,6 +376,14 @@ flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名
 `SIM_POLICIES=sealer node node_modules/vitest/vitest.mjs run tests/unit/simulation.originLongevity.test.ts`
 一条命令就能重跑这张表。
 
+**第二十轮之后这张表的状态（同一命令重跑即得）**：那五格里最大的一格 **致仕善终 从 ×0 变成 ×178/200**
+（平均 90 月结案），因为 ⑯ 查明的抽取层饥饿修掉了 —— `route_honorable_retirement`/`route_clean_retire`/
+`route_grand_scholar` 这批门票事件现在能在自己年窗开放那一年播出来（12 局取样里各 12 次）。
+`悬壶济世` 的上游供给同一轮变好（`route_medical_healer` 从"400 局 35 次、最早 159 月"变成"12 局 12 次、最早 121 月"），
+但这一格本身本轮没量过，别当成已修。**剩下三格照旧**：`清流骨鲠` 还是优先级/门槛重叠（没动），
+`平凡终老` 还是卡在 `route_ordinary_life` 的道德/体质双上限，`遁入空门`/`归隐田园` 还是缺一个
+不需要失宠、且在 1644 之前的门票写手（⑯ 第 4 条）。
+
 **⑯ 那条"乞休/致仕"支线播得太晚、太少，其中一条 400 局 0 次（第十九轮实测 → 第二十轮查明并修掉，见 §三 第二十轮）。**
 `src/data/events/transition/route_guide.ts` 里能写下致仕族经历的七条事件，
 400 局（seed 1..50 × steady/warden × 四出身，`maxMonths=260`）实测播出次数与最早的月份：
