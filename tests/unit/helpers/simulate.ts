@@ -67,6 +67,15 @@ export interface SimOutcome {
   /** 终局时角色身上的 flag 全集 —— 「死于归零必然先见过警告」这条不变量读它 */
   finalFlags: string[]
   /**
+   * 终局时的党派四项（东林／阉党好感、立场、党争烈度）。
+   *
+   * 第二十一轮加它，是因为可达性矩阵能证明"门票发得出来、门槛够得着"，
+   * 却证明不了"玩家真刷得到那个数"。`党争烈度` 只有一个来源
+   * （五张门票 flag 在 `useGameEngine` 的 faction 段里各推一把），
+   * 上界算法给的 100 是不考虑事件竞争的天花板；实测值才是真话。
+   */
+  finalFaction: { 东林好感: number; 阉党好感: number; 立场: string; 党争烈度: number } | null
+  /**
    * 本局所有已选选项**声明**的增量之和（属性/态度/隐藏三组一起加，未乘难度与出身系数）。
    * 与 `actualDelta` 对照用来把「这维掉了」归因到两种完全不同的原因：
    *   声明就是一片负 → 内容在扣，去看数据；
@@ -302,6 +311,7 @@ export async function simulateRun(opts: {
   let endEventId: string | null = null
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
+  let finalFaction: SimOutcome['finalFaction'] = null
   const declaredDelta: Record<string, number> = {}
   const actualDelta: Record<string, number> = {}
   let startThresholds: Record<string, number> = {}
@@ -363,6 +373,9 @@ export async function simulateRun(opts: {
     finalRank = hook.result.current.character.rank
     finalThresholds = thresholdSnapshot(hook.result.current.character, hook.result.current.gameState)
     finalFlags = [...(hook.result.current.character.flags || [])]
+    finalFaction = hook.result.current.character.faction
+      ? { ...hook.result.current.character.faction }
+      : null
     for (const [k, v] of Object.entries(finalThresholds)) {
       actualDelta[k] = Math.round(((v ?? 0) - (startThresholds[k] ?? 0)) * 100) / 100
     }
@@ -408,6 +421,7 @@ export async function simulateRun(opts: {
     endEventId,
     finalThresholds,
     finalFlags,
+    finalFaction,
     declaredDelta,
     actualDelta,
     error

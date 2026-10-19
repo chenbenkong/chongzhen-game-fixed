@@ -28,6 +28,7 @@ import { aftermathEchoEvents } from './aftermath'
  *   读 `婉拒清流`      → echo_faction_003 两不相涉   写 不系一党 / 晚归清流 / 求外避察
  *   读 `名师指点|清流举荐` → echo_faction_004 座师之门 写 门生故吏 / 座师之门 / 私祭不党 / 门生祭酒
  *   读 `参与清洗阉党|阉党关系` → echo_faction_005 清洗的账 写 逆案自承 / 逆案脱身 / 两头取利
+ *   读 `东林死忠|叛徒|两面三刀` → echo_faction_007 同僚的考语 写 （只写既有词）晚归清流 / 不系一党 / 求外避察
  *   读 `abandoned_liushi|regret_forever` → echo_emotion_001 如烟嫁期 写 如烟已嫁 / 旧盟重寻 / 再负一回
  *   读 `xianv_token`   → echo_emotion_002 玉佩之约   写 侠女之盟 / 借刀之人 / 侠女自去 / 藏人于外
  *   读 `protect_xialing|xialing_exposed|藏人于外` → echo_emotion_003 东厂的那本册子 写 守口至终 / 卖人求安 / 一刻钟之恩 / 萧灵血案
