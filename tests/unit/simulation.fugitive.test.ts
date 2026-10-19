@@ -64,40 +64,41 @@ const gateHeldAt = (r: SimOutcome, i: number) => !!fugitive && fugitive.check(bu
 /**
  * 门关着的时候，差的是哪一条 —— 逐键算，但**门槛的数值全部从注册表那份 `conditions` 读**，
  * 本文件不抄任何一个数（抄了就等于第二个求值器，正是第二轮之后一直在消灭的那种东西）。
+ * `key` 是"哪一条门、越界到哪一侧"（同一个月里读数会变，归组只能靠它），`detail` 带上那个月的读数。
  */
-const closedBy = (r: SimOutcome, i: number): string[] => {
+type Blocker = { key: string; detail: string }
+const closedBy = (r: SimOutcome, i: number): Blocker[] => {
   const c = fugitive?.event.conditions
-  if (!c) return ['（这一格没有 conditions）']
+  if (!c) return [{ key: '（这一格没有 conditions）', detail: '（这一格没有 conditions）' }]
   const d = r.trace[i].derived
-  const out: string[] = []
+  const out: Blocker[] = []
   const ranges = (src: Record<string, number> | undefined, cond: Record<string, { min?: number; max?: number }> | undefined, label: string) => {
     for (const [k, rg] of Object.entries(cond || {})) {
       const v = src?.[k] ?? 0
-      if (rg.min !== undefined && v < rg.min) out.push(`${label}.${k} ${v}<${rg.min}`)
-      if (rg.max !== undefined && v > rg.max) out.push(`${label}.${k} ${v}>${rg.max}`)
+      if (rg.min !== undefined && v < rg.min) out.push({ key: `${label}.${k}<${rg.min}`, detail: `${label}.${k} ${v}<${rg.min}` })
+      if (rg.max !== undefined && v > rg.max) out.push({ key: `${label}.${k}>${rg.max}`, detail: `${label}.${k} ${v}>${rg.max}` })
     }
   }
-  if (c.year && (d.year < (c.year.min ?? 0) || d.year > (c.year.max ?? 9999))) out.push(`年 ${d.year} 不在窗`)
+  if (c.year && (d.year < (c.year.min ?? 0) || d.year > (c.year.max ?? 9999)))
+    out.push({ key: `年不在窗`, detail: `年 ${d.year} 不在窗` })
   ranges(d.attributes, c.attributes as any, '属性')
   ranges(d.hidden, c.hidden as any, '隐藏')
   ranges(d.states, c.gameState as any, '州府')
   const fl = c.flags as { any?: string[]; has?: string[]; notHas?: string[] } | undefined
-  if (fl?.any?.length && !fl.any.some(f => d.flags.includes(f))) out.push(`票一张没有(${d.flags.length} 张身上)`)
-  for (const f of fl?.has || []) if (!d.flags.includes(f)) out.push(`缺票 ${f}`)
-  for (const f of fl?.notHas || []) if (d.flags.includes(f)) out.push(`被否决 ${f}`)
+  if (fl?.any?.length && !fl.any.some(f => d.flags.includes(f)))
+    out.push({ key: `票一张没有`, detail: `票一张没有(${d.flags.length} 张身上)` })
+  for (const f of fl?.has || []) if (!d.flags.includes(f)) out.push({ key: `缺票 ${f}`, detail: `缺票 ${f}` })
+  for (const f of fl?.notHas || []) if (d.flags.includes(f)) out.push({ key: `被否决 ${f}`, detail: `被否决 ${f}` })
   return out
 }
-/** 门关着的那些月份里，最常出现的那几条差池（把具体读数抹掉才分得清"哪一条"） */
+/** 门关着的那些月份里，最常出现的那几条差池（按"哪一条门"归组，读数不进组键） */
 const topBlockers = (r: SimOutcome, from = 0) => {
   const tally = new Map<string, number>()
   let closed = 0
   r.trace.forEach((_, i) => {
     if (i < from || gateHeldAt(r, i)) return
     closed++
-    for (const k of closedBy(r, i)) {
-      const key = k.replace(/[\d.]+(?![^\s]*\))/g, '·')
-      tally.set(key, (tally.get(key) ?? 0) + 1)
-    }
+    for (const { key } of closedBy(r, i)) tally.set(key, (tally.get(key) ?? 0) + 1)
   })
   return { closed, list: [...tally].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => `${k}×${v}`) }
 }
@@ -214,6 +215,15 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
           `门开 ${r.trace.filter((_, i) => gateHeldAt(r, i)).length} 月 → ${r.endingTitle ?? '（未结案）'}\n` +
           `      年窗开过之后还关着 ${blocked.closed} 个月，差的是：${blocked.list.join(' · ') || '（没有一个月是关着的）'}`
       )
+      // 下一轮要找的是"圣眷在年窗里怎么爬回去的"，那需要逐月读数而不是归组计数（SIM_DEBUG=1 才打）
+      if (process.env.SIM_DEBUG === '1') {
+        const rows: string[] = []
+        for (let i = openAt; i < r.trace.length && rows.length < 8; i++) {
+          if (gateHeldAt(r, i)) continue
+          rows.push(`        第${r.trace[i].turn}月(${r.trace[i].derived.year}) 差：${closedBy(r, i).map(b => b.detail).join(' / ')}`)
+        }
+        console.log(rows.join('\n'))
+      }
     }
     expect(
       sealed(FUGITIVE),
