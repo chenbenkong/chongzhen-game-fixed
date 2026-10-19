@@ -8,6 +8,7 @@
     "install:browser": "playwright install chromium",
     "test": "node smoke.mjs",
     "test:layout": "node layout.mjs",
+    "test:choices": "node choices-visibility.mjs",
     "test:crash": "node crash-hunt.mjs",
     "test:fuzz": "node save-fuzz.mjs",
     "test:mem": "node mem-check.mjs",

@@ -79,7 +79,8 @@
   overscroll-behavior: contain;
 }
 
-/* 中间列：把高度透传给事件面板 */
+/* 中间列：把高度透传给事件面板。
+   min-height:0 是这条链能不能收缩的开关，别改回 auto —— 见文件末尾第廿九轮的实测数字。 */
 .main-content {
   display: flex;
   flex-direction: column;
@@ -211,17 +212,27 @@
   opacity: 0.6;
 }
 
-.main-content {
-  min-height: auto;
-  /* 允许 1fr 轨道被压缩，避免长文本/宽表格撑破布局 */
-  min-width: 0;
-}
+/* ------------------------------------------------------------
+   这里原来有一条 `.main-content { min-height: auto }`
+   （注释写的是"允许 1fr 轨道被压缩"—— 压缩轨道要的是 min-width，
+    min-height:auto 恰好是它的反面，而且把上面第 83 行那条的 min-height:0 覆盖掉了）。
+   它在宽屏三栏下会裁掉事件选项，第二十九轮实测（Playwright，视口内直接量几何）：
 
-@media (max-width: 768px) {
-  .main-content {
-    min-height: auto;
-  }
-}
+     1280×600 事件「寒窗苦读」3 张选项卡
+       .game-main  clientHeight=500  scrollHeight=678  overflow:hidden  → 裁掉 178px
+       .main-content 高 678（= 内容 min-content 高，被 auto 顶住，缩不回 500）
+       .event-display 高 678，scrollHeight 也 678 → 面板内滚动条根本不出现
+       第 3 张卡的 top=673 > 500 → 看不见、点不到
+     1280×800 事件「家书催银」同样裁掉 99px；1440×900 内容刚好放得下，所以看不出来。
+
+   于是玩家看到的是"只显示前两个选项，第三个被挡住，向下滚动什么也没有"：
+   整页滚不动（.game-screen 在 ≥1025px 锁 height:100dvh），面板又不自认溢出，
+   多出来的一截由 .game-main{overflow:hidden} 静默裁掉。
+
+   现在这条规则整体删掉，只留上面那一条 min-height:0：面板吃满列高并在内部滚动。
+   ≤1024px 是单列堆叠（.main-content 为 display:block、.game-main 恢复 overflow:visible、
+   整页滚动），min-height 在那里不参与计算，所以也不需要"窄屏再恢复 auto"的补丁。
+   ------------------------------------------------------------ */
 
 /* 弹窗遮罩层 */
 .modal-overlay {

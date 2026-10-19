@@ -96,6 +96,19 @@
 > `checkBoundary` 拿到的是上个月的 ref —— 同一份反推存档在 act 外 1635 年正月**当月结案**、
 > 在 act 内不结案，所以"门开在 T 月、结案在 T+1 月"是仪器的一拍，不是游戏行为。
 > 摘要见 §三「第二十八轮」。
+>
+> **第廿九轮 · 界面（2026-10-20）**：玩家报「事件只显示两个选项，第三个被挡住，下滑也没有内容」。
+> 用真实浏览器抄几何量出肇事者：`GameScreen.css` 文件末尾一条**无条件** `.main-content{min-height:auto}`
+> 把第 83 行的 `min-height:0` 覆盖掉，中间列缩不回列高，多出的 178px 由 `.game-main{overflow:hidden}`
+> **静默**裁掉，面板自认 `scrollHeight==clientHeight`、连滚动条都不出现
+> （1440×900 内容刚好放得下，所以大屏一直没人报）。修完它，同一台量具又逮到第二处同类缺陷：
+> `.result-section` 的内层滚动盒把结算页挤成 **7px**，「继 续」被叙事区盖住、点不到。
+> 两层钉子：`tests/choices-visibility.mjs` 量真浏览器几何（本地），`layout.heightChain.test.ts` 在 CI 里
+> 直接守那两条 CSS 成因（CI 不装浏览器）。顺手按用户告知升级两个模型 id（`agnes-2.5-flash` /
+> `agnes-image-2.5-flash`）并把写死版本号的界面标签去掉。量具自己造的 60 条假失败全部记账，无一条是游戏的错；
+> 更值得记的是它还漏报过一次（`scrollIntoView` 会替玩家去滚 `overflow:hidden` 的容器，把钉在视口外的三张卡
+> 判成"全部可达"）——判据因此改成"只有玩家滚得动的容器才算数"，见 §四 第 6 条。
+> 摘要见 §三「第二十九轮」。
 
 ---
 
@@ -742,7 +755,118 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **379 例**，分 **45 个文件**，全部在 `tests/unit/`（另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+回归测试共 **384 例**，分 **46 个文件**，全部在 `tests/unit/`（另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+
+### 第二十九轮（2026-10-20）：「选项只显示两个、下滑也没有内容」—— 三层高度锁各自为政，中间列被一条无条件 `min-height:auto` 顶穿
+
+玩家报的是一句界面话：事件卡只显示前两个选项，第三个被挡住，向下滚动也没有内容（截图是灰色事件《生祠与香火》）。
+本轮把"到底是谁把选项裁掉的"量了出来 —— 结论是**没有任何一层写错**，是三层各自正确的高度策略叠在一起把内容夹死了，
+而真正的肇事者是一条把前面规则覆盖掉的无条件声明。
+
+**① 先量：真实浏览器抄几何，而不是看图。** 新 e2e 断言 `tests/choices-visibility.mjs`
+（headless chromium，5 档视口 × 2 档根字号；`cd tests && npm run test:choices`）。判据是**逐屏不变量**，
+不绑任何事件 id（绑了就会随版本漂移）：只要屏幕上出现选项卡或结算页，每一个都必须
+「`scrollIntoView` 之后完整落在视口内 + 落在**每一个** `overflow-y≠visible` 祖先的 client 盒内 +
+中心点 `elementFromPoint` 命中它自己」。再叠一档 `:root{font-size:165%}`，
+把任意事件都撑成超高内容，保证"溢出"这条分支每档视口都被走到。修复前读数：
+
+```
+1280×600  事件「寒窗苦读」3 张卡
+          .game-main      clientHeight=500  scrollHeight=678  overflow:hidden  → 裁掉 178px
+          .main-content   高 678（min-content 高，缩不回 500）
+          .event-display  高 678，scrollHeight 也 678 → 面板内滚动条根本不出现
+          第 3 张卡 top=673 → 在盒外，看不见也点不到
+1280×800  事件「家书催银」3 张卡：同样裁掉 99px，第 3 张在外
+1440×900  事件「寒窗苦读」3 张卡：内容刚好放得下 → 桌面大屏一直没人报的原因
+```
+
+**② 肇事者是一条无条件的 `.main-content { min-height: auto }`。** `GameScreen.css` 第 83 行那条
+（`.main-content{display:flex; flex-direction:column; min-height:0}`）是对的，文件末尾却又写了一条
+`min-height: auto`，注释还写着"允许 1fr 轨道被压缩" —— 压缩轨道要的是 `min-width`，
+`min-height:auto` 恰好是它的反面。中间列于是被顶到内容高（678），超出 `.game-main` 的那 178px
+由 `.game-main{overflow:hidden}` **静默**裁掉；面板自认 `scrollHeight==clientHeight`，滚动条不出现；
+整页又被 `≥1025px` 的 `.game-screen{height:100dvh; overflow:hidden}` 锁死。
+三条路同时堵死，正好就是玩家那三句话：只露两个、第三个被挡、下滑没有内容。
+删掉那条（连带它那个只为"窄屏恢复 auto"存在的 768px 媒体查询补丁：窄屏本来就是
+`display:block` + 整页滚动，`min-height` 不参与计算）。
+
+**③ 同族的自相矛盾顺手清掉。** `EventDisplay.css` 的 `.event-display` 先写 `min-height:auto`
+再写 `min-height:0`（后者生效），注释却断言"min-height:auto 保留 —— 事件内容比视口高时由本面板内部滚动"。
+读代码的人照注释走会得出反的结论，而这条注释正是②那个覆盖没被发现的掩护。
+
+**④ 修完②，同一台量具立刻逮到第二个缺陷：结算页被挤成 7px。** 1280×800 + 根字号 165%：
+
+```
+.event-display     clientHeight=533 · scrollHeight=614 · overflow-y:auto（②修好后面板确实会滚了）
+.event-header      82
+.narrative-section 412（min-height:auto 把它顶到内容高）
+.result-section      7 ← 内容 531（.selected-choice 84 + .settlement-area 377 + .result-actions 53）
+「继 续」按钮 top=1068，中心点被 .narrative-section 盖住 → 结算读不到、按钮点不到
+```
+
+`.result-section` 自带 `max-height: min(520px, 100dvh-180px)` + `overflow-y:auto`，
+那是"整页顶高"年代为了不把底部操作栏推出屏幕加的**内层滚动**；面板自己能滚之后，
+它就成了第二个抢剩余高度的滚动盒，而 `.narrative-section` 的 `min-height:auto` 先把它自己钉在 412px，
+留给结算区的只剩 7px。改成 `flex: 0 0 auto` 且不设上限（两处窄屏 `max-height` 媒体查询一并删掉），
+高度交回外层面板。
+
+**⑤ 量具先报了 60 条假失败。** 第一版在 768×1024 两档字号上报了 56 条 ✗，读数像真缺陷
+（`top=-222`、`中心点被 nothing 盖住`、`被 .html 裁切 client -1217..-193`）。真凶是
+`src/index.css` 的全局 `scroll-behavior: smooth`：`scrollIntoView()` 变成动画，紧接着抄到的是飞行途中的坐标。
+修法是显式 `behavior:'instant'` + 等两帧再抄；同族的第一个坑是页面级滚动一次只能容纳一个滚动位置，
+所以判据必须逐张卡各自滚到位再量。第二批 4 条修完上面两条才冒出来，机制不同但同样不是游戏的错：
+1024×768 @165% 报 `被 .html 裁切（该容器 client -437..331）`，可那两张卡的 `top/bottom` 明明都在视口里 ——
+`≤1024px` 走的是整页滚动那一档，而根滚动器一滚，它自己的 `rect.top` 就跟着变负，
+拿它的 client 盒去框卡片，框的是一段已平移到视口外的坐标。现在祖先链走到 `documentElement`/`body` 直接跳过，
+"在不在可视区"只由第 1 条判据负责。这几种都记在 §四 第 5 条。**这 60 条里 0 条是游戏的错。**
+
+**⑥ 更要紧的是量具还报过一次假通过。** 做 A/B 时把两份 CSS 换回修复前那一版，第一版量具照样打印
+`✓ short-1280x600 @165% 3 张选项卡全部可达`。查出来是 **`scrollIntoView()` 会替玩家去滚 `overflow:hidden`
+的容器**：程序改 `scrollTop` 改得动，玩家的滚轮碰不到 —— 量具替玩家推开了那扇锁上的门。
+同一屏逐层抄表（1280×600 @165%「家书催银」，修复前）：
+
+```
+文档          scrollHeight=600 clientHeight=600 → 整页滚不动（.game-screen 高 600 · overflow:hidden）
+.game-main    clientHeight=335 scrollHeight=949 → 静默裁掉 614px（gridTemplateRows=948.672px，轨道被内容顶高）
+.main-content min-height:auto → 高 949，缩不回列高 335
+.event-display 高 949，scrollHeight 也 949      → 面板自认没溢出，滚动条压根不出现
+三张卡 top = 713 / 849 / 948（视口只有 600 高）
+```
+
+判据从此写成"**可达必须是玩家可达**"：不再用 `scrollIntoView`，改成沿祖先链只给
+`overflow-y:auto|scroll` 的容器（和根滚动器）设 `scrollTop`；再加一条不看滚动位置的结构判据 ——
+卡片到根这条链上只要出现 `overflow:hidden 且 scrollHeight>clientHeight` 就直接报"静默裁掉 Npx"。
+换完量具再跑修复前那版 CSS，当场一片 ✗，其中一条是
+`容器 .game-main 用 overflow:hidden 静默裁掉 502px（内容 837 / 可见 335 · 玩家滚不动）`。
+祖先盒那条判据现在只报**最内侧**一个容器——外层是跟着一起失败的，逐层都报会把清单冲成一堆重复读数。
+（假失败好认，假通过会把修好的量具当成"已经够了"放走；已记进 §四 第 6 条。）
+
+**⑦ 两层钉子。** 几何只有真实浏览器量得出来（jsdom 不算 flexbox），所以：
+`tests/choices-visibility.mjs` 管几何（本地跑，CI 不装浏览器）；
+新增 `tests/unit/layout.heightChain.test.ts`（5 例，CI 里跑）管**成因** ——
+用一个小花括号扫描器读两份 CSS，断言链上 `.main-content` / `.event-display` 的 `min-height`
+只有媒体查询能改、基础规则必须写 `0`，`.game-main` 仍是 `min-height:0 + overflow:hidden`，
+且 `.result-section` 不许再出现 `overflow-y` 或 `max-height`。
+把②或④改回去，CI 当场红 —— 本轮把两份 CSS 还原成修复前那版实测：`无条件 min-height…expected 'auto' to be '0'`
+和 `结算区必须跟着外层面板一起滚…expected 'auto' to be undefined` 各报一条，点名的正是肇事的那两行声明。
+不用等玩家再报一次"选项看不见"。
+修复后复跑全矩阵（1440×900 / 1280×800 / 1280×600 / 1024×768 / 768×1024 五档视口 × 100% 与 165% 两档根字号，
+共 10 组，每组跑两步抉择 + 一次结算页）：**0 条 ✗**，面板都在自己内部滚 ——
+同一屏同一档（1280×600 @165%「家书催银」）修前是"内容 949 摊在 335 高的列里裁掉 614px"，
+修后是 `面板 clientH=333 · scrollH=947 · overflowY:auto`，也就是⑥那组数字换了归属：一竖同上变成面板内可滚 947px。
+
+**⑧ 本轮 ship 的改动**：`GameScreen.css`（删无条件 `min-height:auto` 与它的窄屏补丁）、
+`EventDisplay.css`（删 `.event-display` 的矛盾声明、`.result-section` 不再当嵌套滚动盒）、
+一个新 e2e 断言文件 + `tests/package.json` 与根 `package.json` 各一条 `test:choices`、一个新单测文件、`tests/probe-*.mjs` 用完即删。
+**事件数据、格子门槛、引擎逻辑一个字没动。**
+
+**⑨ 同一批推送里另一件与布局无关的事**：按用户告知的模型升级，把 `aiService.ts` 的
+`MODEL` 从 `agnes-2.0-flash` 改成 `agnes-2.5-flash`、`imageService.ts` 从 `agnes-image-2.1-flash`
+改成 `agnes-image-2.5-flash`，并把 `AIAdvisor.tsx` 里那行写死版本号的标签
+（「Agnes 2.0 Flash API Key」）改成不带版本的「Agnes API Key（谋士对谈 · 丹青插图共用）」，
+免得下次再升模型时界面说谎。两处 API 端点、密钥读取顺序（`localStorage` 优先、`VITE_AI_API_KEY` 兜底）
+都没动。**没能验证的一条**：`chat_template_kwargs.enable_thinking` 这个私有参数在 2.5 上是否仍是
+关掉思考的正确开关，本地没有可用密钥、也不该拿它去试计费接口，只做了"参数原样透传"的静态检查。
 
 ### 第二十八轮（2026-10-19）：⑲ 的"逃成活却饿死在路上"量下来是三句假话，真该修的是那台发钱机器
 
@@ -2876,6 +3000,34 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
    更新函数里排的，而 React 要等 act 这一轮结束才执行更新函数 ——
    只跑一轮时第二级定时器还没排上，用例会**空过**。必须
    「跑定时器 → 让 React flush → 再跑」交替若干轮。
+5. **e2e 量几何：`scroll-behavior: smooth` 会把 `scrollIntoView` 变成动画，抄到飞行途中的坐标**。
+   `src/index.css` 全局写了 `scroll-behavior: smooth`，`tests/choices-visibility.mjs` 第一版
+   直接 `scrollIntoView()` 后立刻读 `getBoundingClientRect()`，在 768×1024 两档字号上
+   一口气报了 **56** 条 ✗，读数长得像真缺陷（`top=-222`、`中心点被 nothing 盖住`、
+   `被 .html 裁切 client -1217..-193`）—— 全是滚动还没落定。
+   两条修法一起上：`scrollIntoView({ block:'center', behavior:'instant' })` 显式盖掉 CSS 的 smooth，
+   并且等两帧（双 `requestAnimationFrame`）再抄表。
+   同一族的第二个坑：**页面级滚动一次只能容纳一个滚动位置**，所以判据必须逐张卡各自滚到位再量，
+   不能拿一次滚动位置去要求"所有卡同时都在盒内"。
+   修好这两条后又冒出第三种假失败，机制不一样但同源：1024×768 @165% 报
+   `被 .html 裁切（该容器 client -437..331）`，可那两张卡的 `top/bottom` 明明都在视口里。
+   根子是**根滚动器不该参与"祖先盒"比对**——`≤1024px` 走整页滚动那一档，`html` 一滚
+   它自己的 `rect.top` 就跟着变负，拿它的 client 盒去框卡片，框的是一段已经平移出视口的坐标。
+   现在祖先链走到 `documentElement` / `body` 直接跳过，卡片在不在可视区由第 1 条判据负责。
+   （教训同 §1.4 ⑳：先怀疑仪器，再怀疑游戏 —— 这两批 ✗ 里 0 条是游戏的错。）
+6. **`scrollIntoView()` 会替玩家去滚 `overflow:hidden` 的容器 —— 它造的是假通过，比假失败危险**。
+   同一个 `tests/choices-visibility.mjs`，拿修复前的 CSS 跑，第一版量具打印的是
+   `✓ … 3 张选项卡全部可达`：`scrollIntoView` 直接把 `.game-main`（`overflow:hidden`、可见 335px 却装着
+   949px）的 `scrollTop` 改了过去，卡片于是"进了视口"。可玩家的滚轮碰不到那个盒子，整页又被
+   `.game-screen{height:100dvh;overflow:hidden}` 锁住（`document.scrollHeight==clientHeight==600`），
+   三张卡实打实钉在 top=713/849/948。
+   改法：不用 `scrollIntoView`，自己沿祖先链滚 —— 只滚 `overflow-y:auto|scroll` 的容器和根滚动器；
+   再补一条**与滚动位置无关**的结构判据：卡片到根这条链上只要出现
+   `overflow:hidden` 且 `scrollHeight>clientHeight`，就是静默裁切，直接把裁掉的像素数报出来。
+   另：祖先盒判据只报最内侧那一个容器（外层跟着一起失败，逐层报会把清单冲成重复读数）；
+   根滚动器不参与祖先盒比对（它一滚自己 `rect.top` 就变负）。
+   （**流程上的教训**：新写的量具必须拿"修复前"的代码跑一遍，看它会不会红。
+   只看"修好之后全绿"是不够的 —— 量具漏报缺陷时，那份绿和修好了长得一模一样。）
 
 ---
 
