@@ -28,6 +28,7 @@ import type { EventChoice, GameEvent } from '../../../src/types/event'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
+  | 'bandit' | 'vanish'
 
 export interface SimOutcome {
   seed: number
@@ -76,6 +77,25 @@ export interface SimOutcome {
    * 上界算法给的 100 是不考虑事件竞争的天花板；实测值才是真话。
    */
   finalFaction: { 东林好感: number; 阉党好感: number; 立场: string; 党争烈度: number } | null
+  /**
+   * 终局时**不在八条归零死线里、却被某些格子与支线当门读**的三维：国势／武略／野心值。
+   *
+   * 第二十四轮加它：《落草为寇》要 武略≥45 ∧ 野心≥60 ∧ 国势≤30，《不知所踪》要 国势≤15，
+   * 而 `finalThresholds` 只有八条死线 —— 用它的数归因"这一格为什么开不了"，
+   * 三条门里有两条根本量不到，量到的 0 分不清是门槛够不着还是策略没朝它走。
+   * `欲望值` 是同一批"读了没人量"的维度：`checkDemotion` 的「贪墨被查」
+   * （财帛>70 ∧ 欲望>75 ∧ 道德<30，severity 3，直接革职）读的正是它。
+   */
+  finalGates: Record<string, number>
+  /**
+   * 终局卡片上「为什么会走到这一步」的那一句（革职／贬官那条判据的原文）。
+   *
+   * 第二十四轮加它：`endingId` 只说《罢黜归田》，不说踩了哪条判据。而 `checkDemotion`
+   * 只有 severity≥3 才革职 —— 「道德败坏」（道德≤0 且已收过归零警告）和「贪墨被查」
+   * 那两条，跟「圣眷<10」那种只会降级的判据完全不同一类。分不清是哪条，就分不清
+   * 「画像自己把道德养到 0」和「格子真的坐在考功悬崖下面」。
+   */
+  endReason: string | null
   /**
    * 本局所有已选选项**声明**的增量之和（属性/态度/隐藏三组一起加，未乘难度与出身系数）。
    * 与 `actualDelta` 对照用来把「这维掉了」归因到两种完全不同的原因：
@@ -210,6 +230,38 @@ interface RetireProfile {
    * 那一组的玩家就永远攒不够它自己那一格的第三道门。
    */
   boost?: Record<string, number>
+  /**
+   * 隐藏属性／州府态增量的**带符号**权重。
+   * 默认 `{ 道德值: 3, 清议: 2, 圣眷: -1.5 }`（求退那三副画像的口径）。
+   * 落草那条路正好相反 —— 它要 道德值≤20，把道德往上推的评分永远走不到那一格。
+   */
+  weights?: Record<string, number>
+  /**
+   * 允许哪几条死线**低于 25**。默认只有 圣眷 放到 20，其余七条各留 25。
+   * 第二十四轮要量的那几格全都住在低位里：《落草为寇》要 道德值≤20、
+   * 《亡命江湖》要 道德值≤30、《不知所踪》要 圣眷≤10 ∧ 清议≤20 ——
+   * 而那三条同时也是归零判死的维度，所以画像必须能压到 8/12 这一档，
+   * 又不能压到 0。留 25 的量具永远看不见它们，跟 warden 救圣眷是同一类盲区。
+   */
+  floors?: Record<string, number>
+  /** 想把自己**按到某个数以下**的维度：还在这个数之上、而这个选项会往下压 → +6 */
+  under?: Record<string, number>
+  /** 想把自己**顶到某个数以上**的维度：还在这个数之下、而这个选项会往上抬 → +6 */
+  over?: Record<string, number>
+  /**
+   * 危险线：选项做完之后**低于**这个数就 −12。
+   *
+   * 第二十四轮加的，因为那三格住的那片低位**不是真空** —— `checkDemotion()`
+   * （`src/hooks/useGameEngine.ts:355` 起）在那些线后面摆着一整台考功机器：
+   *   圣眷<10 → 「帝心尽失」severity 2；圣眷<30 ∧ 理政<40 → 「办事不力」；
+   *   民望<20 ∧ 圣眷<40 → 「言辞失当」。
+   * 贬官不立刻要命，但一路贬到底就是《罢黜归田》—— 实测第一版 bandit/vanish 两副画像
+   * 把 圣眷 放到 floors 允许的最低（12／6），40 局全部在 12~21 个月被革职，
+   * 一把门都没摸着。画像必须知道"低到哪儿就踩线了"，否则量到的 0 是画像自杀，不是格子坏了。
+   */
+  keepAbove?: Record<string, number>
+  /** 危险线：选项做完之后**高于**这个数就 −12（野心值>70 ∧ 圣眷<40 是「结党营私」severity 2） */
+  keepBelow?: Record<string, number>
 }
 
 /** 想往空门／归隐那两格走的玩家，会去捡的门票 */
@@ -246,11 +298,10 @@ const HERMIT: RetireProfile = {
   favorBand: 45
 }
 
-/** 读某一格自己写的门票（`any`）与互斥面（`notHas`）—— 不在这里手抄一遍 */
-const tileFlagPool = (id: string, key: 'any' | 'notHas'): string[] => {
+/** 读某一格自己写的门票（`any`／`has`）与互斥面（`notHas`）—— 不在这里手抄一遍 */
+const tileFlagPool = (id: string, key: 'any' | 'notHas' | 'has'): string[] => {
   const tile = (allEndingEvents as any[]).find(e => e.id === id)
-  const flags = tile?.conditions?.flags
-  return key === 'any' ? (flags?.any ?? []) : (flags?.notHas ?? [])
+  return (tile?.conditions?.flags ?? {})[key] ?? []
 }
 
 /**
@@ -273,15 +324,91 @@ const STREAM: RetireProfile = {
   boost: { 文韬: 3 }
 }
 
-/** 策略 → 画像；三副共用同一个 `pickHermit` */
+/**
+ * 想落草为寇的那副画像（第二十四轮）—— 它和前面三副**方向相反**。
+ *
+ * 《落草为寇》要 武略≥45 ∧ 野心值≥60 ∧ **道德值≤20** ∧ 圣眷≤20 ∧ 国势≤30，
+ * 而它的门票产地《铤而走险》要 武略≥35 ∧ 野心值≥50 ∧ **道德值≤40** ∧ 圣眷≤40。
+ * 前面三副画像的评分里都写着 `+3 × 道德值`（求退的人当然道德高），
+ * 于是那 40 局里 道德≤40 只有 1 局 —— 这不是走不到，是**量具一路把它往反方向推**。
+ * `routeGuide.test.ts` 那句"剩下 5 条播不出来是要失宠，warden 看不见"只说对了一半：
+ * 失宠之外还要**失德**。
+ *
+ * 道德值/清议 同时也是归零判死的维度，所以 `floors` 让它们压到 8 就停 ——
+ * 压到 0 的那一局不算走到那一格，算死在门口。
+ *
+ * `weights` 里那两条负系数是给「贪墨被查」留的活路。第一版画像不管 财帛 与 欲望值
+ * （它们既不是死线也不是门票），实测 40 局**全部**栽在这条 severity 3 的即时革职上
+ * （财帛>70 ∧ 欲望>75 ∧ 道德<30），局长 avg=37 —— 一把 +财帛 的选项照单全收，
+ * 到终局时 财帛 钉在 100、欲望 钉在 100。而《落草为寇》要的正是 道德≤20：
+ * 一个既贪财又好色 yet 失德的人，在 1636 年那道门开之前就已被吏部题本革职。
+ * 光靠 `keepBelow` 拦不住 —— 池子里每一条都超线时它给每个选项扣同一个数，等于没扣，
+ * 所以要把惩罚挂在**增量**上（选得比别的选项更贪，就少排）。
+ *
+ * `floors.圣眷` 放到 8 而不是 12：【举兵】自带 圣眷−30，而《铤而走险》的门是 圣眷≤40，
+ * 也就是说这一票只在 圣眷 30–40 那十点缝里"选得起"。而 圣眷<10 那条「帝心尽失」
+ * 只是 severity 2 的**降级**（官阶降到底之后 `isRealDemotion` 恒假，等于空转），
+ * 真正要命的是归零 —— 把 floor 卡在 12 会让画像永远拒掉【举兵】，
+ * 量出来的 0 就成了量具的毛病。
+ */
+const BANDIT: RetireProfile = {
+  targets: new Set(['ending_bandit_king']),
+  tickets: new Set(tileFlagPool('ending_bandit_king', 'any')),
+  avoid: new Set(tileFlagPool('ending_bandit_king', 'notHas')),
+  favorBand: 20,
+  weights: { 圣眷: -1, 财帛: -0.6, 欲望值: -1, 道德值: -0.8 },
+  boost: { 武略: 3 },
+  floors: { 圣眷: 5, 道德值: 6, 清议: 8, 民望: 8 },
+  under: { 道德值: 20 },
+  over: { 武略: 45, 野心值: 60 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 8 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
+}
+
+/**
+ * 想"人没了"的那副画像：《不知所踪》要 国势≤15 ∧ 圣眷≤10 ∧ 清议≤20 ∧ 年≥1642，
+ * 门票是 下落不明 + 隐姓埋名 **两张都要**（`has`，不是 `any`），唯一的产地是《乱世浮沉》；
+ * 《亡命江湖》松一档（道德≤30 ∧ 圣眷≤15 ∧ 三张票任一）。两格合在一副画像里量，
+ * 因为它们的互斥面几乎相同，而门票产地是同一个 `route_unknown_fate`。
+ *
+ * `圣眷` 的 floor 与 `BANDIT` 同一个理由：格子的门要 ≤10／≤15，而 圣眷<10 只是
+ * severity 2 的降级（官阶见底的后续判定恒假），把 floor 卡在 11 等于画像自己不去够那条门。
+ *
+ * 财帛／欲望值 那两条负系数与 `BANDIT` 同一个理由：这一组第一版 20/20 局死在「贪墨被查」，
+ * 而那两维既不是它的门票也不是死线，不扣就是白捡。
+ */
+const VANISH: RetireProfile = {
+  targets: new Set(['ending_unknown_fate', 'ending_fugitive']),
+  tickets: new Set([
+    ...tileFlagPool('ending_unknown_fate', 'has'),
+    ...tileFlagPool('ending_fugitive', 'any')
+  ]),
+  avoid: new Set([
+    ...tileFlagPool('ending_unknown_fate', 'notHas'),
+    ...tileFlagPool('ending_fugitive', 'notHas')
+  ]),
+  favorBand: 15,
+  weights: { 圣眷: -1, 清议: -2, 财帛: -0.6, 欲望值: -1 },
+  floors: { 圣眷: 8, 清议: 8, 道德值: 8 },
+  under: { 圣眷: 12, 清议: 20, 道德值: 30 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 8 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
+}
+
+/** 策略 → 画像；各副共用同一个 `pickHermit` */
 const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   monk: MONK,
   hermit: HERMIT,
-  stream: STREAM
+  stream: STREAM,
+  bandit: BANDIT,
+  vanish: VANISH
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
 const FAVOR = 2
+
+/** `postValues()` 返回数组的下标 → 维度名（画像的 `floors` 按名字改） */
+const DEADLINES = ['财帛', '体质', '圣眷', '中官', '清议', '士绅', '民望', '道德值'] as const
 
 /**
  * 「求退」策略：一个**就是想出家 / 想归隐**的玩家会怎么点。
@@ -299,6 +426,12 @@ const FAVOR = 2
  * 第一版就是这么写的，24 局平均只活 57 个月，全数死在 中官／财帛 归零上 ——
  * 维度在两次抉择之间还会每月自己往下滑，选项给的那点余量挡不住。
  * 现在是：圣眷留 20，其余七条各留 25，一条都够不着时退回纯保命。
+ *
+ * 第二十四轮把这副评分**借给反方向的画像**（`bandit`／`vanish`）：落草与失踪那三格读的
+ * 是 道德值≤20／≤30 与 清议≤20，正好是求退画像一路往上推的那两维。所以方向做成了
+ * `weights`／`under`／`over`／`floors` 四个可选字段，**不给就用原来那套** ——
+ *  monk／hermit／stream 三副的实测数（遁入空门×7、归隐田园×12、清流骨鲠 开卡 8）
+ * 是靠默认分支量出来的，改评分口径等于把那三轮的结论一起改掉。
  */
 function pickHermit(
   pool: EventChoice[],
@@ -308,9 +441,11 @@ function pickHermit(
 ): EventChoice {
   const nonEnding = pool.filter(c => c.effects?.special?.type !== 'ending')
   const candidates = nonEnding.length ? nonEnding : pool
+  const floorOf = (i: number) =>
+    profile.floors?.[DEADLINES[i]] ?? (i === FAVOR ? 20 : 25)
   const sustainable = candidates.filter(c => {
     const v = postValues(character, gameState, c)
-    return v.every((x, i) => x >= (i === FAVOR ? 20 : 25))
+    return v.every((x, i) => x >= floorOf(i))
   })
   const bounded = sustainable.length ? sustainable : [pickSafest(candidates, character, gameState)]
   let best = bounded[0]
@@ -320,8 +455,12 @@ function pickHermit(
     const g = e.gameState || {}
     const h = e.hidden || {}
     const 圣眷后 = postValues(character, gameState, c)[FAVOR]
+    /** 这一副画像往哪个方向走：默认是"求退"（道德往上、圣眷往下） */
+    const weights = profile.weights ?? { 道德值: 3, 清议: 2, 圣眷: -1.5 }
+    const deltaOf = (k: string): number => h[k] ?? g[k] ?? (e.attributes ?? {})[k] ?? 0
     // 圣眷是"越低越像要退"，但低进死线就没意义了：只在还在窗口里时给它加分。
-    let score = 3 * (h.道德值 || 0) + 2 * (g.清议 || 0) - 1.5 * (g.圣眷 || 0)
+    let score = 0
+    for (const [k, w] of Object.entries(weights)) score += w * (deltaOf(k) || 0)
     if (圣眷后 <= profile.favorBand) score += 10
     if (圣眷后 <= 35 && profile.favorBand === 45) score += 10
     for (const f of (e.flags?.add || []) as string[]) {
@@ -332,9 +471,29 @@ function pickHermit(
     for (const [k, w] of Object.entries(profile.boost || {})) {
       score += w * (((e.attributes as any) || {})[k] || 0)
     }
-    // 这两格的状态门都读道德与清议，够不到就先补着
-    if (h.道德值 > 0 && character.hidden.道德值 < 65) score += 5
-    if (g.清议 > 0 && gameState.清议 < 55) score += 5
+    const curOf = (k: string): number =>
+      (character.hidden as any)[k] ?? (gameState as any)[k] ?? (character.attributes as any)[k] ?? 0
+    if (profile.under || profile.over) {
+      // 按格子自己声明的那副"低位窗口"走：已经够了就不再加分，免得一路压到归零。
+      for (const [k, bound] of Object.entries(profile.under ?? {})) {
+        if (deltaOf(k) < 0 && curOf(k) > bound) score += 6
+      }
+      for (const [k, bound] of Object.entries(profile.over ?? {})) {
+        if (deltaOf(k) > 0 && curOf(k) < bound) score += 6
+      }
+    } else {
+      // 求退那三副的默认补钉：那两格的状态门都读道德与清议，够不到就先补着。
+      // （第二十二/二十三轮的实测数是这套评分量出来的，写死了就别动。）
+      if (h.道德值 > 0 && character.hidden.道德值 < 65) score += 5
+      if (g.清议 > 0 && gameState.清议 < 55) score += 5
+    }
+    // 考功机器踩线：低到/高过那条线就躲开（详见 RetireProfile.keepAbove 的注释）
+    for (const [k, bound] of Object.entries(profile.keepAbove ?? {})) {
+      if (curOf(k) + deltaOf(k) < bound) score -= 12
+    }
+    for (const [k, bound] of Object.entries(profile.keepBelow ?? {})) {
+      if (curOf(k) + deltaOf(k) > bound) score -= 12
+    }
     if (score > bestScore) {
       bestScore = score
       best = c
@@ -482,6 +641,8 @@ export async function simulateRun(opts: {
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
   let finalFaction: SimOutcome['finalFaction'] = null
+  let finalGates: Record<string, number> = {}
+  let endReason: string | null = null
   const declaredDelta: Record<string, number> = {}
   const actualDelta: Record<string, number> = {}
   let startThresholds: Record<string, number> = {}
@@ -546,6 +707,12 @@ export async function simulateRun(opts: {
     finalFaction = hook.result.current.character.faction
       ? { ...hook.result.current.character.faction }
       : null
+    finalGates = {
+      国势: hook.result.current.gameState.国势,
+      武略: hook.result.current.character.attributes.武略,
+      野心值: hook.result.current.character.hidden.野心值,
+      欲望值: hook.result.current.character.hidden.欲望值
+    }
     for (const [k, v] of Object.entries(finalThresholds)) {
       actualDelta[k] = Math.round(((v ?? 0) - (startThresholds[k] ?? 0)) * 100) / 100
     }
@@ -565,6 +732,10 @@ export async function simulateRun(opts: {
     if (endingTile) {
       endingId = endingTile
       endingTitle = ENDING_TITLES.get(endingTile) ?? null
+    }
+    if (endingTile === 'ending_demotion') {
+      const bg = hook.result.current.currentEvent?.narrative?.background
+      endReason = typeof bg === 'string' ? bg.split('\n')[0].trim() || null : null
     }
     outcomeMonths = months
   } catch (e) {
@@ -592,6 +763,8 @@ export async function simulateRun(opts: {
     finalThresholds,
     finalFlags,
     finalFaction,
+    finalGates,
+    endReason,
     declaredDelta,
     actualDelta,
     error

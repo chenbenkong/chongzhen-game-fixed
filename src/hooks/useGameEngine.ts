@@ -10,6 +10,11 @@ import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
 import { isZeroWarningRegistryId, zeroWarnFlag } from '../data/zeroWarningEvents'
+import {
+  CORRUPTION_WARNING_FLAG,
+  isCorruptionWarningRegistryId,
+  isCorruptExposed
+} from '../data/demotionWarningEvents'
 import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
@@ -132,9 +137,11 @@ function isCoolingDown(
  * crisis 类临界事件能否在这一月登场。挂载路径与 `checkBoundary` 共用，避免两处判定漂移。
  *
  * 三层，顺序有意义：
- * 1. **归零警告必到**，不吃概率门也不吃冷却。它是"判死前的最后一次通知"，漏发一次，
- *    这一维就停在「归零但没警告」的状态上，而八条死线都要求先见过警告才收尾 ——
- *    于是既不判死也不给救，整局悬空。
+ * 1. **警告必到**，不吃概率门也不吃冷却：八条归零警告（`归零警告·X`）与第二十四轮补上的
+ *    「革职预警·贪墨」都走这一条。它们是"判死／革职前的最后一次通知"，漏发一次，
+ *    那一层就停在「已归零／已暴露但没警告」的状态上，而八条死线与那条 severity 3
+ *    都要求先见过警告才收尾 —— 于是既不判死也不给救，整局悬空。
+ *    不吃冷却是安全的：这批 check 自己带 `!flags.includes(警告)`，一生只可能命中一次。
  * 2. 冷却：crisis 的条件判的是**状态**（`0 < 体质 < 20`）而不是历史，只要玩家一直病着
  *    就恒真。第十四轮之前这条路径完全不设冷却，于是同一个「重病缠身」能在三个月里
  *    发作两遍（`engine.cooldown.test.ts` 的 seed=8 实测）。
@@ -151,7 +158,7 @@ export function crisisEventMayShow(
   turn: number,
   lastTurnById: Map<string, number>
 ): boolean {
-  if (isZeroWarningRegistryId(ruleId)) return true
+  if (isZeroWarningRegistryId(ruleId) || isCorruptionWarningRegistryId(ruleId)) return true
   if (isCoolingDown(event.id, event.type, turn, lastTurnById)) return false
   return Math.random() < CRISIS_EVENT_PROBABILITY
 }
@@ -383,7 +390,18 @@ function checkDemotion(
       message: '政绩平庸，碌碌无为，不堪其任'
     },
     {
-      condition: character.hidden.欲望值 > 75 && character.attributes.财帛 > 70 && character.hidden.道德值 < 30,
+      // severity 3 = 当场革职，屏幕上一句提示都没有。第十九轮给「道德败坏」补过前置
+      // （它现在要求先收过「归零警告·道德值」），这一条漏在外面。第二十四轮为
+      // 《落草为寇》《亡命江湖》造的画像 40 局里 34 局死在这里，局长平均 37 个月 ——
+      // 那两格要 道德≤20／≤30，而这条判据读的合取正好被"往失德那边走、一路捡钱一路纵欲"
+      // 的人撞满。合取本身不改（贪而失德照样要丢官），只是第一次撞线先由
+      // 「风闻入告」那张卡当面说一次（`src/data/demotionWarningEvents.ts`）。
+      condition:
+        isCorruptExposed({
+          财帛: character.attributes.财帛,
+          欲望值: character.hidden.欲望值,
+          道德值: character.hidden.道德值
+        }) && !!character.flags?.includes(CORRUPTION_WARNING_FLAG),
       reason: '贪墨被查',
       severity: 3,
       message: '贪墨受贿，中饱私囊，东窗事发'

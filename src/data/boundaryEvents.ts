@@ -3,6 +3,7 @@ import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
 import { wrapBatchAsBoundaryEvents, NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from './boundaryEventCompiler'
 import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
+import { corruptionWarningEvents } from './demotionWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
 import { allEndingEvents as mainNarrativeEndings } from './events/ending/endings_all'
 import { debaucheryEndingEvents } from './events/ending/debauchery'
@@ -795,7 +796,10 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
   },
 
   // 八条「归零警告」crisis 事件：上面那八条 check 要求先见过这一面，见 zeroWarningEvents.ts
-  ...zeroWarningEvents
+  ...zeroWarningEvents,
+
+  // 「革职预警·贪墨」：severity 3 的即时革职也要先当面说一次，见 demotionWarningEvents.ts
+  ...corruptionWarningEvents
 ]
 
 boundaryEventManager.registerBatch(BOUNDARY_EVENTS)
