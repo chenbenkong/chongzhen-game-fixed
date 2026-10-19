@@ -5,6 +5,7 @@ import { checkChoiceRequirement } from '../../../src/utils/choiceRequirements'
 import { allEndingEvents } from '../../../src/data/events/ending'
 import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
+import { FUGITIVE_FLAG, CORRUPTION_WARNING_EVENT_ID, FUGITIVE_CHOICE_ID } from '../../../src/data/demotionWarningEvents'
 import type { Character, GameStateValues, OriginType } from '../../../src/types/game'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
 import type { DerivedState } from '../../../scripts/audit-ending-reachability'
@@ -29,7 +30,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
-  | 'bandit' | 'vanish'
+  | 'bandit' | 'vanish' | 'fugitive'
 
 export interface SimOutcome {
   seed: number
@@ -66,6 +67,11 @@ export interface SimOutcome {
    * 两边喂同一个注册表，才许拿"矩阵说能走到"和"跑局说走不到"互相对账。
    */
   trace: MonthTrace[]
+  /**
+   * 逐条**抉择**抄下「这一格里点得动的下坡有几条、玩家点的那条给了多少道德」。
+   * 只有 `opts.logChoices` 为真时非空 —— 见 `ChoiceLog` 的用途说明。
+   */
+  choiceLog: ChoiceLog[]
   /** 终局时算出 NaN / Infinity 的字段，正常应当恒空 */
   badNumbers: string[]
   finalYear: number
@@ -200,6 +206,19 @@ function weakestThreshold(character: Character, gameState: GameStateValues, choi
  */
 const sealRefusal = (event: GameEvent) => (event.choices || []).find(c => c.id === 'c_decline')
 
+/**
+ * 「风闻入告」卡上那条唯一的退路（【连夜束装，弃官南还】写 `潜逃`）。
+ *
+ * 只交给**开了 `fleeOnWarning` 的画像**用，并且**不给它比分数**：
+ * 这张警告一辈子只发一次，而下一次撞线直接革职 —— 先选"散财杜门"活下来的人，
+ * 几个月后一定再撞回去，死法与从没看过这张卡完全一样（第二十七轮实测：
+ * 让画像按分数自选，40 局里 31 局《罢黜归田》，局长平均 36 月，够不到 1635 的年窗）。
+ */
+const fleeChoice = (event: GameEvent) =>
+  event.id === CORRUPTION_WARNING_EVENT_ID
+    ? (event.choices || []).find(c => c.id === FUGITIVE_CHOICE_ID)
+    : null
+
 /** warden 的保命启发式：在不收尾的选项里挑"最弱那条死线离归零最远"的一个 */
 function pickSafest(
   pool: EventChoice[],
@@ -275,6 +294,14 @@ interface RetireProfile {
   keepAbove?: Record<string, number>
   /** 危险线：选项做完之后**高于**这个数就 −12（野心值>70 ∧ 圣眷<40 是「结党营私」severity 2） */
   keepBelow?: Record<string, number>
+  /**
+   * 「风闻入告」一开口就走，不比分数 —— 只有把 `潜逃` 当**唯一**票源的画像才该开这一项。
+   * 为什么单独立一项而不写进 `tickets`：`vanish` 的 `tickets` 里也有 潜逃
+   * （它是从《亡命江湖》的 `any` 读来的），但它那一格的门根本用不上这张票，
+   * 而第廿四轮的 不知所踪 读数就是现在这副评分量出来的 —— 给它加上这条，
+   * 等于把别人三轮的结论一起改掉。见 `fleeChoice`。
+   */
+  fleeOnWarning?: boolean
 }
 
 /** 想往空门／归隐那两格走的玩家，会去捡的门票 */
@@ -389,6 +416,18 @@ const BANDIT: RetireProfile = {
  *
  * 财帛／欲望值 那两条负系数与 `BANDIT` 同一个理由：这一组第一版 20/20 局死在「贪墨被查」，
  * 而那两维既不是它的门票也不是死线，不扣就是白捡。
+ *
+ * **第二十七轮补一句：同一对系数把 `ending_fugitive` 那半的量程废掉了。**
+ * 这一副的 `targets` 里同时装着《不知所踪》和《亡命江湖》，而后者要 道德≤30。
+ * 年窗内零门下坡 159 条（109 个事件）里，最深的那一批（−50／−40／−30／−25）全是灰色支线：
+ * 起兵、亵渎佛前、以次要挟、强占、分赃、笑纳重礼 —— 它们顺路发的正是 财帛 与 欲望值；
+ * 给那两维打负分，等于把这一格唯一走得通的那批下坡整批扣分。
+ * 实测（`ChoiceLog` 临时量具，seed6425/vanish 带票那一局）：年窗内 102 次抉择里 77 次点得动下坡，
+ * 实点 42 次，净增量只有 −48，道德 区间 10..100 —— 下坡点了，却被"守身如玉"的那只手抬回天花板。
+ * （同一批里 seed6431 那局现在票在第 31 月就拿到、却活不到 1635 就死于《倾家荡产》，
+ * 它在更早那一版未装闸的树上读到的是 226/167/100 —— 那三个数不再可复现，故不写在这里。）
+ * 要量 亡命江湖 请用 `fugitive`；这一副继续按原口径量 不知所踪，
+ * 否则第廿四轮那批读数（`routeGuide` 系列）要跟着一起改。
  */
 const VANISH: RetireProfile = {
   targets: new Set(['ending_unknown_fate', 'ending_fugitive']),
@@ -408,13 +447,58 @@ const VANISH: RetireProfile = {
   keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
 }
 
+/**
+ * 一心想「亡命江湖」的那副画像（第二十七轮）。
+ *
+ * 加它的原因写在 `VANISH.weights` 的那两条负系数上 —— 它们与这一格的门**互相抵消**。
+ * 第二十七轮先量的是静态供给：年窗 1635–1650 里有 449 条发得出 道德 负增量的选项，
+ * 其中 159 条一条门都不带（合计 −1761），"下坡不够"这一种解释当场作废。
+ * 再量发到与实点（`ChoiceLog`）：seed6425 年窗内 102 次抉择，77 次点得动下坡，
+ * 实点 42 次 —— 也就是说**下坡发到了、也点得动**。可那一局的 道德 仍一路爬到 100。
+ * 归因只可能剩一处：`vanish` 给 财帛 −0.6、欲望值 −1，而那 159 条零门下坡里最陡的一批
+ * （−50／−40／−30／−25）**全是**顺路发银子发欲望的灰色分支（起兵、亵渎佛前、以次要挟、强占、分赃、笑纳重礼）。
+ * 一个把 道德≤30 写成自己的门、却给"买酒的钱"打负分的量具，
+ * 是在用同一把尺子既要点下坡又要把点下坡的那只手剁掉 —— 与第廿四轮记 BANDIT 那句
+ * "这不是走不到，是量具一路把它往反方向推"是同一件事，只不过这次推的方向相反。
+ *
+ * 所以这一格需要一副**自洽**的画像：把 道德 往下压（负权重），财帛／欲望值 **不设惩罚**。
+ * 不惩罚不是纵容 —— 亡命途中「贪墨被查」再也革不掉他的职（`checkDemotion` 对 潜逃
+ * 直接 `return { demoted: false }`），而 财帛/欲望 本身既不是这一格的门也不是归零死线。
+ * 反过来说，弃官南还之前他**必须**贪：`潜逃` 唯一的产地是「风闻入告」，
+ * 那张警告卡按 `isCorruptExposed`（财帛>70 ∧ 欲望>75 ∧ 道德<30）才开口。
+ * 一条既不给钱又不给欲望的画像，连门票都领不到。
+ *
+ * `tickets` 只写 `潜逃` 一张：另两张（隐姓埋名／下落不明）由《乱世浮沉》**成对**写下，
+ * 而那一成对同时是《不知所踪》(p117) 的门票 —— 第廿六轮实测"门开着但不带 潜逃 的月份"
+ * 2 个，两个都被《不知所踪》接走。想要这一格就得只要这一张票，不能"三张任一"照单全收。
+ *
+ * `floors.财帛` 与 `weights.财帛` 是第二十七轮量出来的两处量具毛病，读数都在下面：
+ * 默认 floor 25 会把唯一的票源整批过滤掉（第一版 40 局里 36 局《罢黜归田》、门开 0 月），
+ * 因为【弃官南还】自带 财帛−70 而它只在 财帛>70 时发得出来。放到 18 之后带票 37/40；
+ * 再往回退到 6 并把 财帛 的权重抬到 0.4，结案一样是 8 局，只是死法换成 病逝×6 纵欲×4，
+ * 所以留的是**贵一点的那版**：它把这一格真正难受的地方（见下面 倾家荡产×17）量出来了，
+ * 而不是用一副不破产的画像把它盖住。
+ */
+const FUGITIVE: RetireProfile = {
+  targets: new Set(['ending_fugitive']),
+  tickets: new Set([FUGITIVE_FLAG]),
+  avoid: new Set(tileFlagPool('ending_fugitive', 'notHas')),
+  favorBand: 15,
+  weights: { 道德值: -1.5, 圣眷: -1, 财帛: 0.15, 欲望值: 0.4 },
+  boost: { 体质: 1 },
+  floors: { 圣眷: 8, 清议: 8, 道德值: 8, 财帛: 18 },
+  under: { 道德值: 30, 圣眷: 15 },
+  fleeOnWarning: true
+}
+
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
 const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   monk: MONK,
   hermit: HERMIT,
   stream: STREAM,
   bandit: BANDIT,
-  vanish: VANISH
+  vanish: VANISH,
+  fugitive: FUGITIVE
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
@@ -549,6 +633,10 @@ function pickChoice(
       return seal
     }
     if (refusal && pool.includes(refusal)) return refusal
+    if (profile.fleeOnWarning) {
+      const flee = fleeChoice(event)
+      if (flee && pool.includes(flee)) return flee
+    }
     return pickHermit(pool, character, gameState, profile)
   }
   if (policy === 'warden') {
@@ -630,6 +718,29 @@ export interface MonthTrace {
   derived: DerivedState
 }
 
+/**
+ * 一条**抉择**的"下坡供给 vs 实际走下去多少"。
+ *
+ * 第二十七轮加它，是因为静态清单答不了 ⑱ 那个问题。全库年窗 1635–1650 里
+ * 有 159 条零门槛的 道德值 负增量选项（合计 −1761），静态上根本没有"下坡不够"这回事；
+ * 而实测却是带 潜逃 的局一路 道德>30。两者之间只差一层：**那些下坡有没有被发到这个人手上、
+ * 发到了有没有被点**。这一条把"发了 / 点了"分开抄下来，才许把"结构性够不着"
+ * 和"密度不够"这两种结论分开下 —— 这两种结论的修法完全不同。
+ */
+export interface ChoiceLog {
+  turn: number
+  year: number
+  eventId: string
+  /** 点下这一条**之前**的 道德值 */
+  moralBefore: number
+  /** 玩家选中那条的 道德值 增量（没写就算 0） */
+  takenMoral: number
+  /** 当时**点得动**的选项里最陡的一条负增量（无负增量则 0） */
+  openMoralMin: number
+  /** 当时点得动的负增量选项一共几条 */
+  openNegCount: number
+}
+
 const NO_FACTION = { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
 
 function derivedOf(character: Character, gameState: GameStateValues): DerivedState {
@@ -668,8 +779,10 @@ export async function simulateRun(opts: {
   origin?: OriginType
   /** 逐月抄一份边界入参（见 `SimOutcome.trace`）。默认关：其余 41 个测试文件都不需要它。 */
   traceMonths?: boolean
+  /** 逐条抉择抄一份下坡供给（见 `ChoiceLog`）。默认关，理由同上。 */
+  logChoices?: boolean
 }): Promise<SimOutcome> {
-  const { seed, policy = 'random', maxMonths = 260, origin = '寒门', traceMonths = false } = opts
+  const { seed, policy = 'random', maxMonths = 260, origin = '寒门', traceMonths = false, logChoices = false } = opts
   const rand = mulberry32(seed)
   const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => rand())
   vi.useFakeTimers()
@@ -694,6 +807,7 @@ export async function simulateRun(opts: {
   let finalGates: Record<string, number> = {}
   let endReason: string | null = null
   const traceRows: MonthTrace[] = []
+  const choiceLog: ChoiceLog[] = []
   let lastTraceTurn = -1
   const declaredDelta: Record<string, number> = {}
   const actualDelta: Record<string, number> = {}
@@ -717,6 +831,22 @@ export async function simulateRun(opts: {
           rand
         )
         if (choice) {
+          if (logChoices) {
+            const hook_ = hook.result.current
+            const openChoices = (event.choices ?? []).filter(
+              c => checkChoiceRequirement(c, hook_.character, hook_.gameState).available
+            )
+            const deltas = openChoices.map(c => c.effects?.hidden?.道德值 ?? 0)
+            choiceLog.push({
+              turn: hook_.gameState.turn,
+              year: hook_.gameState.currentYear,
+              eventId: event.id,
+              moralBefore: hook_.character.hidden.道德值,
+              takenMoral: choice.effects?.hidden?.道德值 ?? 0,
+              openMoralMin: Math.min(0, ...deltas),
+              openNegCount: deltas.filter(d => d < 0).length
+            })
+          }
           accumulateDeclared(declaredDelta, choice)
           await act(async () => {
             hook.result.current.handleChoice(choice, { skipResignConfirm: true })
@@ -813,6 +943,7 @@ export async function simulateRun(opts: {
     firedEventIds: fired,
     firedTurns,
     trace: traceRows,
+    choiceLog,
     badNumbers,
     finalYear,
     finalRank,

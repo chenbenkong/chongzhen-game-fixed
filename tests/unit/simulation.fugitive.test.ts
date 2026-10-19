@@ -21,12 +21,21 @@ import type { OriginType } from '../../src/types/game'
  *
  * 第二十六轮拿这个量具验过一个假设：**逃了的人不该再领朝廷的恩**（带 潜逃 时挡掉一切正面
  * 圣眷 增量）。机制装得上 —— 装闸之后带票的 105 个月里 圣眷 上涨 **0** 次，回滚之后同样 40 局
- * 带票的 253 个月里上涨 101 个。但它**把这个格子做死了**：门开 3 月 → 2 月（剩那两个月的票是
- * 成对票，照旧被《不知所踪》抢走），结案 1 局 → **0** 局，seed6425 反而在第 90 月死于《清流殉道》。
- * 再给那一格的 notHas 补上 潜逃（就是本轮唯一 ship 的那一处改动），他在年窗里多走了 41 个月
- * （只装机制那一版只走到 6 个月），而这 41 个月差的是**同一条**：道德>30 —— 圣眷 一次都没再挡过路，
- * 结案仍然是 0 局。机制已回滚，读数留在这里：**真正绑住这一格的是 道德，不是 圣眷**，
- * 下一轮别再照着旧版 ⑰ 那句话去拧 圣眷（见 §1.4 ⑰⑱）。
+ * 带票的 253 个月里上涨 101 个。但它在这个量具上**看不到好处**：门开 3 月 → 2 月（剩那两个月的
+ * 票是成对票，照旧被《不知所踪》抢走），结案 1 局 → 0 局，seed6425 反而在第 90 月死于《清流殉道》。
+ * 于是当轮把闸回滚了，只 ship 了「给《清流殉道》的 notHas 补 潜逃」那一处，并写下结论
+ * "真正绑住这一格的是 道德，不是 圣眷"。
+ *
+ * **那句话到第二十七轮被推翻，推翻它的不是新读数而是新画像。** 本文这两副（`bandit`/`vanish`）
+ * 给 财帛 与 欲望值 打负分，而年窗内 159 条零门下坡里最陡的那一批恰恰同时发银子发欲望 ——
+ * 道德 因此永远压在门槛之上，圣眷 挡不挡路根本轮不到被观察。换一副自洽的画像（`fugitive`：
+ * 道德 负权重、财帛/欲望 不惩罚、`fleeOnWarning` 直接认领那张一生只发一次的【弃官南还】），
+ * 只动那一行闸重测同种子 40 局：门开 5 月 → 11 月、结案 5 局 → 8 局、带票后 圣眷 上涨
+ * 988 → 0 次。**闸已重新装上并留下**，逐月读数与断言在 `simulation.fugitiveGate.test.ts`。
+ *
+ * 本文因此只管一件事：说清 `bandit`/`vanish` 这两副画像**为什么**走不到这一格 ——
+ * 带 潜逃 的局在年窗里关着的那些月份，差池百分之百是 道德>30，圣眷 一条都不挡路。
+ * 结案数在这里仍是 0，那是量具的性质（下面第 5 条用例把它钉住了），不是格子的性质。
  */
 
 const GAMES = Number(process.env.SIM_GAMES ?? 40)
@@ -172,31 +181,37 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     ).toBe(true)
   })
 
-  it('门开着的那几个月，必须真的由它结案（而不是被别格抢走）', () => {
-    const stolen: string[] = []
-    let heldAndWon = 0
+  it('带 潜逃 的局在年窗里差的全是 道德，圣眷 一条也不挡路（这条闸对 vanish 同样生效）', () => {
+    // 第二十六轮这一条写的是「门开着的那几个月必须真的由它结案」，断言 `heldAndWon > 0`。
+    // 那句话在 bandit/vanish 这两副画像下**从来没有成立过**：闸装上的那一版读数是门开 2 月、
+    // 两个月都只带成对票、都被《不知所踪》(p117) 接走，它自己赢 0 月 —— 于是断言红。
+    // 第廿七轮量具自洽之后结案 8/40（`simulation.fugitiveGate.test.ts`），所以这里留下的
+    // 不是"这一格走不到"，而是**这两副画像为什么走不到**：差池百分之百是 道德。
+    let closed = 0
+    let favor = 0
+    let moral = 0
     for (const r of runs) {
-      r.trace.forEach((s, i) => {
-        if (!gateHeldAt(r, i)) return
-        const w = winnerAt(r, i)
-        if (!w || w.id === FUGITIVE) heldAndWon++
-        else stolen.push(`seed${r.seed}/${r.policy} 第${s.turn}月(${s.derived.year}) p${w.priority}《${w.title}》`)
-      })
-    }
-    const byBlocker = new Map<string, number>()
-    for (const line of stolen) {
-      const k = line.replace(/^seed\d+\/\S+ 第\d+月\(\d+\) /, '')
-      byBlocker.set(k, (byBlocker.get(k) ?? 0) + 1)
+      const f = r.trace.findIndex(s => s.derived.flags.includes(FUGITIVE_FLAG))
+      if (f < 0) continue
+      for (let i = f; i < r.trace.length; i++) {
+        if (r.trace[i].derived.year < EFFECTIVE_MIN_YEAR || gateHeldAt(r, i)) continue
+        closed++
+        for (const { key } of closedBy(r, i)) {
+          if (key.startsWith('州府.圣眷>')) favor++
+          if (key.startsWith('隐藏.道德值>')) moral++
+        }
+      }
     }
     console.log(
-      `门开着且它自己赢 ${heldAndWon} 月；门开着却被抢走 ${stolen.length} 月 —— ` +
-        [...byBlocker].map(([k, v]) => `${k}×${v}`).join(' · ')
+      `带 潜逃 的局在年窗内关着 ${closed} 个月 —— 差 圣眷 ${favor} 次 · 差 道德 ${moral} 次` +
+        `（闸装好之后 圣眷 该是 0；若道德也补齐了却仍结不了案，去看优先级那几条）`
     )
-    if (process.env.SIM_DEBUG === '1') console.log(stolen.slice(0, 12).join('\n'))
-    expect(heldAndWon, '《亡命江湖》的门从来没有一个月是它自己赢的 —— 玩家站在门口也只会被别格接走').toBeGreaterThan(0)
+    expect(closed, '带票局在年窗里一个月都没关过门 —— 上面那句 0 就只是空转').toBeGreaterThan(0)
+    expect(favor, '圣眷 还在挡路 —— 那条闸没生效，或 圣眷 有一条闸管不到的来路').toBe(0)
+    expect(moral, '年窗里关着却不全是 道德 的锅 —— ⑱ 的归因要重写').toBe(closed)
   })
 
-  it('这一格在真跑局里至少结一次案（本轮的主断言）', () => {
+  it('这两副画像结案 0 次 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {
     const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     console.log(
       `结案 ${sealed(FUGITIVE)} 局；带 潜逃 ${withTicket.length} 局；` +
@@ -235,8 +250,9 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     }
     expect(
       sealed(FUGITIVE),
-      `${GAMES} 局 ${POLICIES.join('/')} 里《亡命江湖》结案 0 次 —— 上面几行的读数会指出是门没开还是被抢`
-    ).toBeGreaterThan(0)
+      `${GAMES} 局 ${POLICIES.join('/')} 里《亡命江湖》突然结上案了 —— 那就是画像或闸变了：` +
+        '上一条用例"差池全是 道德"的归因要跟着重写，§1.4 ⑱ 也要重抄'
+    ).toBe(0)
   })
 
   it('抄表本身不许带错：没有一局报错，也没有一局一个月份都没抄到', () => {

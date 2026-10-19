@@ -1238,10 +1238,22 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     let newStateVals = { ...currentGameState }
     if (choice.effects.gameState) {
+      const isFugitive = !!currentCharacter.flags?.includes(FUGITIVE_FLAG)
       for (const [key, value] of Object.entries(choice.effects.gameState)) {
         const mappedKey = STATE_MAP[key] || key
         const stateKey = mappedKey as keyof GameStateValues
         if (stateKey === 'currentYear' || stateKey === 'currentMonth' || stateKey === 'turn') continue
+        // 印信已经留在案上的人不再领朝廷的恩。
+        // 第二十六轮第一次装这条时量出来的是"机制成立、格子做死"（结案 1→0），于是回滚。
+        // 那句话到第二十七轮才被推翻 —— 错在量具不在闸：旧画像（`vanish`）给 财帛/欲望 打负分，
+        // 而年窗内 159 条零门下坡里最陡的那一批恰恰同时发钱发欲望，道德 永远压在门槛之上，
+        // 圣眷 挡不挡路根本看不见。换掉画像（`fugitive`）之后只动这一行重测，同种子 40 局：
+        // 门开 5 月 → 11 月，结案 5 局 → 8 局，带票之后 圣眷 上涨 988（共 2471 月）→ 0（共 2279 月），
+        // 逃后年窗内关门的差池从 圣眷>15×353 换成 道德>30×240 · 体质<25×129 —— 闸把 圣眷 这一整条
+        // 拿掉了，剩下两条是这一格自己声明的代价（弃官南还自带 财帛−70），不该由引擎代消。
+        // 控制组 `vanish` 的结案两版都是 4，第廿四轮那批读数没有被动到。
+        // 逐月读数与断言见 `tests/unit/simulation.fugitiveGate.test.ts`。
+        if (isFugitive && stateKey === '圣眷' && value > 0) continue
         const currentVal = (newStateVals[stateKey] as number) || 0
         const adjustedStateValue = applyOriginStateModifier(currentCharacter.origin, mappedKey, value)
         newStateVals[stateKey] = Math.max(0, Math.min(100, currentVal + adjustedStateValue))

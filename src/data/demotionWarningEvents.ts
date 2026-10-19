@@ -60,6 +60,18 @@ export const CORRUPTION_WARNING_FLAG = '革职预警·贪墨'
  */
 export const FUGITIVE_FLAG = '潜逃'
 
+/**
+ * 写下 `FUGITIVE_FLAG` 的那一条选项的 id ——「风闻入告」卡上唯一的退路。
+ *
+ * 导出来只给一处用：自动跑局模拟里那副一心亡命的画像（`tests/unit/helpers/simulate.ts`
+ * 的 `fugitive`）必须在警告卡开口的**那一个月**就走。这张警告一辈子只发一次
+ * （检查里写着"带过 革职预警·贪墨 就 return false"），而「贪墨被查」的革职要求
+ * 票已写上 —— 也就是说第二次撞线没有第二次机会。画像若在这一格上按分数去比，
+ * 它会先选"散财杜门"活着，几个月后再撞回去，死法与"从没看过这张卡"一模一样。
+ * 这个 id 写在数据侧而不是画像侧，理由与上面那个常量同一句：别在两边各抄一遍字面量。
+ */
+export const FUGITIVE_CHOICE_ID = 'c4'
+
 /** 注册 id 与事件 id：事件 id 必须以 `boundary_` 开头，见 `checkBoundary` 顶上那道守卫 */
 export const CORRUPTION_WARNING_REGISTRY_ID = 'warn_corruption'
 export const CORRUPTION_WARNING_EVENT_ID = 'boundary_warn_corruption'
