@@ -288,7 +288,7 @@ export default function AIAdvisor({ isOpen, onClose, gameContext }: AIAdvisorPro
 
         {showSettings && (
           <div className="ai-settings">
-            <div className="ai-settings-label">Agnes 2.0 Flash API Key</div>
+            <div className="ai-settings-label">Agnes API Key（谋士对谈 · 丹青插图共用）</div>
             <div className="ai-settings-input-row">
               <input
                 type="password"

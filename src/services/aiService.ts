@@ -1,10 +1,10 @@
 /**
- * Agnes 2.0 Flash AI 服务
+ * Agnes 2.5 Flash AI 服务
  * 为「崇祯·宦海浮沉模拟器」提供谋士对谈能力
  */
 
 const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions'
-const MODEL = 'agnes-2.0-flash'
+const MODEL = 'agnes-2.5-flash'
 
 /** 从环境变量或 localStorage 获取 API Key */
 export function getApiKey(): string {

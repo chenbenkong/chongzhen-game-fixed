@@ -1,10 +1,10 @@
 /**
- * Agnes Image 2.1 Flash 图像生成服务
+ * Agnes Image 2.5 Flash 图像生成服务
  * 为「崇祯·宦海浮沉模拟器」提供 AI 场景插图能力
  */
 
 const API_URL = 'https://apihub.agnes-ai.com/v1/images/generations'
-const MODEL = 'agnes-image-2.1-flash'
+const MODEL = 'agnes-image-2.5-flash'
 // 长耗时操作：图像生成通常 30-120s
 const TIMEOUT_MS = 120_000
 
