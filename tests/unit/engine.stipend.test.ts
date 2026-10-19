@@ -7,7 +7,8 @@ import {
   makeSaveData,
   renderGameEngine
 } from './helpers/gameEngine'
-import { RANKS, annualStipend } from '../../src/hooks/useGameEngine'
+import { RANKS, FUGITIVE_ANNUAL_INCOME, annualIncomeFor, annualStipend } from '../../src/hooks/useGameEngine'
+import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
 
 /**
  * 第十二轮：岁俸 + 归零警告的概率门豁免。
@@ -124,6 +125,81 @@ describe('岁俸：引擎里第一次有了进项', () => {
 
     expect(result.current.gameState.currentYear).toBe(1629)
     expect(result.current.character.attributes.财帛).toBe(100)
+
+    randomSpy.mockRestore()
+  })
+})
+
+describe('弃官南还的人不再领原职的俸（第二十八轮）', () => {
+  /**
+   * 这一处是第廿五轮那处豁免的**另一半**：那一年让 `checkDemotion` 对 潜逃 直接 return，
+   * 于是"办他"的那台机器停了，可"给他发钱"的那台还在按 `rank` 每年正月照发 ——
+   * 印信留在案上、隐姓埋名的人，史馆里年年写着「新岁任职正三品·大理寺卿，照例支领俸银」。
+   *
+   * 五档同种子 40 局的读数抄在 `useGameEngine.ts` 的 `FUGITIVE_ANNUAL_INCOME` 注释里（一进程一档），
+   * 结论是**换成与官职无关的一笔**而不是切断：切断会把《亡命江湖》的结案从 8 局打到 3 局
+   * （负结果，不 ship），而 八两/岁 这一档读到 结案 8 → 10、门开 11 → 14 月、
+   * 倾家荡产 17 → 16、活到 1635 22 → 26 局、控制组 `vanish` 结案 4 → 4。
+   * 逐局读数钉在 `simulation.fugitiveIncome.test.ts`。
+   */
+  it('纯函数一侧：逃与不逃是两条分支，且南还那笔与品级无关', () => {
+    for (const rank of RANKS) {
+      expect(annualIncomeFor(rank.name, false), `${rank.name} 在任仍按品级领俸`).toBe(rank.level)
+      expect(
+        annualIncomeFor(rank.name, true),
+        `${rank.name} 的人已经弃官，进项不该还跟着品级走`
+      ).toBe(FUGITIVE_ANNUAL_INCOME)
+    }
+    // 白身（不在 RANKS 里）在任拿 0；但 潜逃 那笔是祖产·幕馆，与官职无关
+    expect(annualIncomeFor('白身', false)).toBe(0)
+    expect(annualIncomeFor('白身', true)).toBe(FUGITIVE_ANNUAL_INCOME)
+    expect(FUGITIVE_ANNUAL_INCOME, '八两 这个数是 A/B 里挑出来的，改它=重做那三档读数').toBe(8)
+  })
+
+  it('同一份存档只差一条 潜逃 flag：正月的进项与史馆措辞都必须换', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const draw = (flags: string[]) => {
+      const save = makeCleanSave({}, 12)
+      save.character.flags = flags
+      return renderGameEngine({ loadSaveData: save })
+    }
+    const staying = draw([])
+    const fleeing = draw([FUGITIVE_FLAG])
+    await flush()
+
+    const rank = staying.result.current.character.rank
+    expect(fleeing.result.current.character.rank, '两版必须同一个起点，否则下面的差额读不出东西').toBe(rank)
+    expect(staying.result.current.character.attributes.财帛).toBe(50)
+    expect(fleeing.result.current.character.attributes.财帛).toBe(50)
+
+    await act(async () => {
+      staying.result.current.handleNextMonth()
+    })
+    await act(async () => {
+      fleeing.result.current.handleNextMonth()
+    })
+    await flush(600)
+
+    expect(staying.result.current.gameState.currentYear).toBe(1629)
+    expect(fleeing.result.current.gameState.currentYear).toBe(1629)
+    const level = annualStipend(rank)
+    expect(level, '在任那一版没跨到年、或这一级根本没俸银 —— 反空转失败').toBeGreaterThan(0)
+    expect(
+      staying.result.current.character.attributes.财帛,
+      `在任的应当拿品级俸 ${level}`
+    ).toBe(50 + level)
+    expect(
+      fleeing.result.current.character.attributes.财帛,
+      '带 潜逃 的还在按原职领俸 —— 这台发钱的机器没跟着停'
+    ).toBe(50 + FUGITIVE_ANNUAL_INCOME)
+
+    // 措辞也要跟着换：史馆里不该再出现"任职某某"
+    const stayRec = staying.result.current.lifeRecords.filter(r => r.title === '支领岁俸')
+    const fleeRec = fleeing.result.current.lifeRecords.filter(r => r.title === '祖产·幕馆')
+    expect(stayRec).toHaveLength(1)
+    expect(fleeRec, '南还那一版没留下进项记录 —— 数值变了而史馆里查不到，正是第十一轮记过的暗账').toHaveLength(1)
+    expect(fleeing.result.current.lifeRecords.some(r => r.description.includes(`任职${rank}`)), '史馆还在按在任措辞写他的新岁').toBe(false)
+    expect(fleeRec[0].attributesChange?.财帛).toBe(FUGITIVE_ANNUAL_INCOME)
 
     randomSpy.mockRestore()
   })

@@ -4,6 +4,7 @@ import { crisisEventMayShow } from '../../src/hooks/useGameEngine'
 import { BOUNDARY_EVENTS } from '../../src/data/boundaryEvents'
 import type { BoundaryEventCheckParams } from '../../src/types/boundaryEvent'
 import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
+import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
 import { simulateRun } from './helpers/simulate'
 
 /**
@@ -129,6 +130,116 @@ describe('第十八轮：党派结局不许讲一件还没发生的事', () => {
     expect(check(factionParams(30, 1630, caught)), 'turn 30 还在宽限期内').toBe(false)
     expect(check(factionParams(40, 1630, caught)), '1630 年连国势都还没开始崩').toBe(false)
     expect(check(factionParams(40, 1635, caught))).toBe(true)
+  })
+})
+
+/**
+ * 第二十八轮：年窗打开的那一个月，引擎必须当月接住。
+ *
+ * 起因是整局模拟器里读到的两局（seed 6405、6429）：它们的人在第 84 个月（=1635 年正月，
+ * 也就是《亡命江湖》年窗的**头一个月**）门已经开了，抄表按那个月的入参把所有 ending 排一遍，
+ * 赢的正是 p127《亡命江湖》自己，不是 p1《倾家荡产》—— 局却结在了破产上。
+ * 两种解释要分清：要么引擎在跨年月漏判（真 bug，且会吞掉每一个"卡在窗口边界上"的人），
+ * 要么差在量具的时序（假 bug）。
+ *
+ * 这里用反推存档直接喂引擎，绕开跑局循环：`1634-12 → 推进一月 → 1635-1`，当月就结案。
+ * 于是漏判解释被排除，⑳ 记的是量具那一侧。下面第二条是反向守卫 —— 别把这条修成"窗外也放行"。
+ */
+describe('第二十八轮：年窗首月的边界判定用的是今年的时钟', () => {
+  /** 《亡命江湖》的四条门都满足，只差年代：p127 要 1635≤年≤1650 · 体质≥25 · 道德≤30 · 圣眷≤15 */
+  const makeFugitiveSave = (year: number, month: number, turn: number) =>
+    makeSaveData({
+      character: makeCharacter({
+        rank: '正七品·知县',
+        degree: '进士',
+        attributes: { 财帛: 50, 文韬: 50, 理政: 50, 武略: 50, 体质: 60 },
+        hidden: { 道德值: 20, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
+        flags: [FUGITIVE_FLAG]
+      }),
+      gameState: makeGameState({ currentYear: year, currentMonth: month, turn, 圣眷: 10 })
+    })
+
+  it('站在 1635-1 的门口的这一步，当月就结案 —— 不许拖到下个月', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const { result } = renderGameEngine({ loadSaveData: makeFugitiveSave(1634, 12, 83) })
+    await flush()
+    expect(result.current.gameState.currentYear).toBe(1634)
+
+    await act(async () => {
+      result.current.handleNextMonth()
+    })
+    await flush(600)
+
+    expect(result.current.gameState.currentYear, '这一步没跨到 1635 —— 上面那句结案就无从判起').toBe(1635)
+    expect(result.current.isGameOver, '已经跨进年窗头一个月，引擎却没接住这一格').toBe(true)
+    expect(result.current.currentEvent?.id).toBe('ending_fugitive')
+    randomSpy.mockRestore()
+  })
+
+  it('差一个月还在窗外时不许放行 —— 这条钉子不是"无条件结案"', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const { result } = renderGameEngine({ loadSaveData: makeFugitiveSave(1634, 11, 82) })
+    await flush()
+
+    await act(async () => {
+      result.current.handleNextMonth()
+    })
+    await flush(600)
+
+    expect(result.current.gameState.currentYear).toBe(1634)
+    expect(result.current.isGameOver, '1634 年就把《亡命江湖》结了 —— 年窗这道门形同没有').toBe(false)
+    randomSpy.mockRestore()
+  })
+
+  /**
+   * 上面两条排除了"引擎漏判"，这一条把另一支解释钉成读数：**跑局模拟器晚一个月**。
+   *
+   * `helpers/simulate.ts` 的月度推进写的是
+   * `await act(async () => { handleNextMonth(); await vi.advanceTimersByTimeAsync(340) })` ——
+   * 引擎里那 300ms 定时器在 act **之内**落地，此时 `characterRef` / `gameStateRef` 还停在上一轮
+   * flush 的值（`useGameEngine.ts:865-867` 那批 useEffect 同步 ref），于是 `checkBoundary()` 拿
+   * 的是**上个月**的状态。下面这两段用的是同一份档案、同一个跨年月，只换定时器跑在 act 里还是 act 外：
+   * 里面不结案、外面结案。
+   *
+   * 所以整局模拟里读到的"门开在 T 月、结案在 T+1 月"、以及"seed 6405/6429 门开着却死在破产"，
+   * 都是这一拍的偏置，不是游戏行为。**别去改跑局器**：改了这一拍，第十一轮到第二十七轮之间
+   * 所有以月为单位的基线（结案数、门开月数、遮蔽读数）要全部重抄。钉在这里的作用只有一个：
+   * 哪天有人动了推进时序，这两句断言会当场报错，提醒他基线该重抄了。
+   */
+  it('同一个跨年月：定时器跑在 act 内不结案，跑在 act 外结案 —— 差的是量具的一拍', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    vi.useFakeTimers()
+    try {
+      const inside = renderGameEngine({ loadSaveData: makeFugitiveSave(1634, 12, 83) })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      await act(async () => {
+        inside.result.current.handleNextMonth()
+        await vi.advanceTimersByTimeAsync(340)
+      })
+      expect(inside.result.current.gameState.currentYear).toBe(1635)
+      expect(
+        inside.result.current.isGameOver,
+        '跑局器推进月份的时序改了 —— checkBoundary 不再晚一拍，第 11~27 轮所有按月读数要重抄'
+      ).toBe(false)
+
+      const outside = renderGameEngine({ loadSaveData: makeFugitiveSave(1634, 12, 83) })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      await act(async () => {
+        outside.result.current.handleNextMonth()
+      })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600)
+      })
+      expect(outside.result.current.isGameOver, '同一份档案在 act 外也不结案 —— 那引擎真漏判了').toBe(true)
+      expect(outside.result.current.currentEvent?.id).toBe('ending_fugitive')
+    } finally {
+      vi.useRealTimers()
+      randomSpy.mockRestore()
+    }
   })
 })
 

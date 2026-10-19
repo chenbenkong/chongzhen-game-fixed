@@ -72,6 +72,43 @@ export function annualStipend(rankName: string): number {
   return RANKS.find(r => r.name === rankName)?.level ?? 0
 }
 
+/**
+ * 弃官南还之后的一岁进项：不再按原职领俸，改领一笔与官职无关的祖产·幕馆钱。
+ *
+ * 第二十八轮为什么要动这一行。第二十五轮让 潜逃 的人不再进考功名册（`checkDemotion` 直接 return），
+ * 印信留在案上的人从此不被朝廷开除 —— 顺手也把他原来的**工资**留住了：岁俸只看 `rank`，
+ * 于是"连夜束装、隐姓埋名"的人每年正月照领原职俸银，史馆里写着「新岁任职正三品·大理寺卿」。
+ * 这是同一处漏网：第廿五轮关掉了那台**办他**的机器，却没关掉那台**给他发钱**的机器。
+ *
+ * 同一轮顺手量了《亡命江湖》的"逃成活却饿死在路上"（⑲）：40 局里 16 局死于倾家荡产，
+ * 它们在年窗内共 26 个月，这一格的门只开过 2 个月，其余全被 道德>30 挡着 ——
+ * 抢走他的不是钱。所以"给等待期补一条进项"根本不该当修法用；这一行的理由是**身份自洽**，不是救结案。
+ * 那 2 个月另查过：按当月入参逐格判一遍，赢的是这一格自己而不是 p1《倾家荡产》，
+ * 优先级撞格的解释不成立，差在跑局模拟器的月度时序（见 `tests/unit/engine.boundary.test.ts` 的第二十八轮）。
+ * 同种子 40 局实测（逐局读数钉在 `tests/unit/simulation.fugitiveIncome.test.ts`；
+ * **一个进程只跑一档** —— 四档连跑在同一份文件里时，第二档之后读到的是上一批局留下的引擎状态，
+ * 同是"八两"档连跑读 破产 17 / 活到窗口 25，独占进程读 16 / 26）：
+ *
+ *   现状（领原职俸）      结案 8 · 门开 11 月 · 倾家荡产 17 · 活到 1635 22 局 · vanish 控制组 4
+ *   一刀切断              结案 3 · 门开 6 月  · 倾家荡产 15 · 活到 1635 17 局 · vanish 控制组 4
+ *   六两/岁               结案 9 · 门开 11 月 · 倾家荡产 17 · 活到 1635 22 局 · vanish 控制组 4
+ *   八两/岁（本行）       结案 10 · 门开 14 月 · 倾家荡产 16 · 活到 1635 26 局 · vanish 控制组 4
+ *   十四两/岁             结案 10 · 破产 10，但 vanish 控制组从 4 变 5 —— 撞坏第廿四轮的棘轮，不取
+ *
+ * 取 八两 不取别的：切断档把结案从 8 局打到 3 局，那是把第廿五轮刚修好的那一格又做死大半，
+ * 负结果不能 ship（第廿六轮已经上过一回"照着坏读数回滚"的当）；十四两档破产最少，
+ * 却动到了控制组 `vanish` 的第廿四轮读数。八两这一档两头都干净：结案 8 → 10、门开 11 → 14 月、
+ * 破产 17 → 16、活到年窗 22 → 26 局，控制组一个字没动。八两 这个数落在上面那条注释的刻度上
+ * （七品知县 6 两/岁）：一个弃官的人靠祖产过活，比在任时略薄、但饿不死 ——
+ * 钱仍然是压力源，不是背景噪声。
+ */
+export const FUGITIVE_ANNUAL_INCOME = 8
+
+/** 正月该发多少：见 `annualStipend` 与 `FUGITIVE_ANNUAL_INCOME` 上面那两段。 */
+export function annualIncomeFor(rankName: string, isFugitive: boolean): number {
+  return isFugitive ? FUGITIVE_ANNUAL_INCOME : annualStipend(rankName)
+}
+
 // 开局年份：天启八年，主角入仕。游戏时钟只往前走，所以任何把条件写在
 // 「currentYear < GAME_START_YEAR」区间里的事件在**任何存档里都永不触发**。
 // 以前这个字面量在引擎里散着写了 5 遍（三处初始化 + 一处生平小结 + 一处守卫），
@@ -1649,16 +1686,20 @@ export function useGameEngine(props: UseGameEngineProps) {
     setGameState(newState)
 
     // ── 副作用部分：每次调用只执行一次 ────────────────────────────────
-    const stipend = newYearTicks > 0 ? annualStipend(characterRef.current.rank) : 0
+    const isFleeing = !!characterRef.current.flags?.includes(FUGITIVE_FLAG)
+    const stipend = newYearTicks > 0 ? annualIncomeFor(characterRef.current.rank, isFleeing) : 0
     if (stipend > 0) {
       // 俸银要留痕。第十一轮的教训就是"归零无声"——数值变了而屏幕上什么都没有，
       // 玩家只能事后猜。进项同样不该是暗账：史馆《生平》里要能查到哪一年领了多少。
+      // 南还那年不能写成"任职某某照例支领" —— 印信已经留在案上了（见 annualIncomeFor）。
       addLifeRecord({
         year: newState.currentYear,
         month: 1,
         type: 'choice',
-        title: '支领岁俸',
-        description: `新岁任职${characterRef.current.rank}，照例支领俸银${stipend}两。`,
+        title: isFleeing ? '祖产·幕馆' : '支领岁俸',
+        description: isFleeing
+          ? `新岁寓居他乡，卖祖产、幕馆束脩得${stipend}两，不足以养家，仅免断炊。`
+          : `新岁任职${characterRef.current.rank}，照例支领俸银${stipend}两。`,
         attributesChange: { 财帛: stipend }
       })
     }

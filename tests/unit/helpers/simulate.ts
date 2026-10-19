@@ -739,6 +739,15 @@ export interface ChoiceLog {
   openMoralMin: number
   /** 当时点得动的负增量选项一共几条 */
   openNegCount: number
+  /**
+   * 玩家选中那条的 财帛 增量（没写就算 0）。
+   * 第二十八轮加它：⑲ 说"逃成活的人饿死在路上"，要分清这一身 财帛 是被**谁**抽干的
+   * —— 是年窗前那四十个月根本没有进项，还是"把 道德 压下坡的那只手"顺手就在花钱。
+   * 后一种读的是画像，不是格子（第廿七轮的同一课）。
+   */
+  takenWealth: number
+  /** 当时**点得动**的选项里最肥的一条正增量（无正增量则 0） */
+  openWealthMax: number
 }
 
 const NO_FACTION = { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
@@ -837,6 +846,7 @@ export async function simulateRun(opts: {
               c => checkChoiceRequirement(c, hook_.character, hook_.gameState).available
             )
             const deltas = openChoices.map(c => c.effects?.hidden?.道德值 ?? 0)
+            const wealthDeltas = openChoices.map(c => c.effects?.attributes?.财帛 ?? 0)
             choiceLog.push({
               turn: hook_.gameState.turn,
               year: hook_.gameState.currentYear,
@@ -844,7 +854,9 @@ export async function simulateRun(opts: {
               moralBefore: hook_.character.hidden.道德值,
               takenMoral: choice.effects?.hidden?.道德值 ?? 0,
               openMoralMin: Math.min(0, ...deltas),
-              openNegCount: deltas.filter(d => d < 0).length
+              openNegCount: deltas.filter(d => d < 0).length,
+              takenWealth: choice.effects?.attributes?.财帛 ?? 0,
+              openWealthMax: Math.max(0, ...wealthDeltas)
             })
           }
           accumulateDeclared(declaredDelta, choice)
