@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { factionCeiling, scanEndingReachability } from '../../scripts/audit-ending-reachability'
+import {
+  buildParams,
+  factionCeiling,
+  scanEndingReachability,
+  type DerivedState
+} from '../../scripts/audit-ending-reachability'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { ENDING_TILE_IDS } from '../../src/data/endingRegistry'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
+import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
 
 /**
@@ -177,5 +183,56 @@ describe('党争数值上界：门槛不许高过玩法能给的东西', () => {
 
     const none = factionCeiling([] as any)
     expect(none.烈度上限).toBe(30)
+  })
+})
+
+/**
+ * 「弃官南还」这个人设，在结局文本里必须一路自洽（第二十六轮）。
+ *
+ * 上一轮给《诏狱冤死》的 notHas 补了 `潜逃`，理由一句话：那一格写的是"锦衣卫围住府邸、
+ * 夫人在厢房"，围的是一个还在家里的人。本轮实测发现同一类漏洞还漏在《清流殉道》上 ——
+ * 它的背景写"那一夜，温体仁的党羽假传圣旨，**把你从家中拖出**"、"三天后，你瘐死狱中"，
+ * 家人还在侧门看着草席抬出来。印信留在案上、连姓名都没人知道的人，狱里没有他的名字。
+ *
+ * 这条**不是量出来的修复**：本轮那 40 局的逐月抄表里，两个带 `潜逃` 的人都没有一个月同时
+ * 踩中《清流殉道》的数值门（要 道德≥70 而这一格的门要 道德≤30），所以 结案/终局分布 一格没变。
+ * 它挡的是"下一轮有人去拧 圣眷 或 道德 之后"的那种走法 —— 见 §1.4 ⑰：把 圣眷 压在窗内之后，
+ * seed6425 年窗里 圣眷 已 ≤25 而 道德 还 ≥70，第 90 月正是被这一格(p126) 抢走，
+ * 而 p126 排在《亡命江湖》p127 前面。所以这里用**反推存档**直接问注册表，不靠样本碰运气。
+ */
+describe('带 潜逃 的人不许被"从家中拖出"那一类结局收走', () => {
+  /** 《清流殉道》的数值门原样喂满：年 1638 · 文韬 70 · 体质 60 · 道德 80 · 清议 70 · 圣眷 20 · 票 复社成员 */
+  const martyrArchive: DerivedState = {
+    attributes: { 财帛: 50, 文韬: 70, 理政: 50, 武略: 50, 体质: 60 },
+    hidden: { 道德值: 80, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
+    states: { 圣眷: 20, 中官: 50, 清议: 70, 士绅: 50, 民望: 50, 国势: 75 },
+    turn: 120,
+    year: 1638,
+    month: 1,
+    flags: ['复社成员'],
+    faction: { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
+  }
+  const winner = (flags: string[]) => {
+    const w = boundaryEventManager.checkByType(
+      buildParams({ ...martyrArchive, flags }),
+      'ending'
+    )
+    return w ? `${w.event.id}(p${w.priority})` : '（无人命中）'
+  }
+
+  it('先把这份存档钉住：不带 潜逃 时它确实命中《清流殉道》', () => {
+    // 反空转 —— 少了这一条，下面那条"带票就不许命中"可以靠一份根本不命中任何格的存档绿掉
+    expect(winner(martyrArchive.flags)).toBe('ending_scholar_martyr(p126)')
+  })
+
+  it('带上 潜逃 之后，注册表不再把这一格判给他', () => {
+    expect(winner([...martyrArchive.flags, FUGITIVE_FLAG])).not.toContain('ending_scholar_martyr')
+  })
+
+  it('同一张票也仍在《诏狱冤死》的否决名单里（上一轮那条不许掉）', () => {
+    const notHas = (id: string) =>
+      allEndingEvents.find(e => e.id === id)?.conditions?.flags?.notHas ?? []
+    expect(notHas('ending_scholar_martyr')).toContain(FUGITIVE_FLAG)
+    expect(notHas('ending_zhaoyu_prison')).toContain(FUGITIVE_FLAG)
   })
 })

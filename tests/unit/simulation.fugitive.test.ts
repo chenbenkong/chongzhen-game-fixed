@@ -2,11 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { simulateRun, type SimOutcome } from './helpers/simulate'
 import { buildParams } from '../../scripts/audit-ending-reachability'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
+import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
 import type { BoundaryEvent } from '../../src/types/boundaryEvent'
 import type { OriginType } from '../../src/types/game'
 
 /**
- * 《亡命江湖》那一格，玩家在真跑局里到底站不站得进去（第二十五轮）。
+ * 《亡命江湖》那一格，玩家在真跑局里到底站不站得进去（第二十五轮起）。
  *
  * 第二十四轮把这一格的**票源**修好了（「风闻入告」多一条【连夜束装，弃官南还】写 `潜逃`），
  * 但当时明确没敢钉结案，理由是"它的 圣眷≤15 与 圣眷 归零那条 p3 同轴"。那句话是**推断**，
@@ -15,12 +16,17 @@ import type { OriginType } from '../../src/types/game'
  * 开着的话再问一次「这个月结的是哪一格」。判定一行都不重写。
  *
  * 为什么终局快照不够用：`finalThresholds` 只有结案那一刻的值。
- * 门若在第 80 月开过三个月、第 96 月又关上，读数上只会显示"结案 0"，
+ * 门若在某一年开过三个月、下一年又关上，读数上只会显示"结案 0"，
  * 分不清是**门从没开过**、**开着却被别格抢走**，还是**开过但那一局没活到抄表**。
  *
- * 三个门槛各自的原样（从注册表读，不手抄）：
- *   年窗 1630–1650 ∧ 体质≥25 ∧ 道德≤30 ∧ 圣眷≤15 ∧ 任一票（隐姓埋名／下落不明／潜逃）
- *   外加一票否决 notHas（殉国／出家／归隐／藏匿民间／拥兵自重／落草为寇／…）
+ * 第二十六轮拿这个量具验过一个假设：**逃了的人不该再领朝廷的恩**（带 潜逃 时挡掉一切正面
+ * 圣眷 增量）。机制装得上 —— 装闸之后带票的 105 个月里 圣眷 上涨 **0** 次，回滚之后同样 40 局
+ * 带票的 253 个月里上涨 101 个。但它**把这个格子做死了**：门开 3 月 → 2 月（剩那两个月的票是
+ * 成对票，照旧被《不知所踪》抢走），结案 1 局 → **0** 局，seed6425 反而在第 90 月死于《清流殉道》。
+ * 再给那一格的 notHas 补上 潜逃（就是本轮唯一 ship 的那一处改动），他在年窗里多走了 41 个月
+ * （只装机制那一版只走到 6 个月），而这 41 个月差的是**同一条**：道德>30 —— 圣眷 一次都没再挡过路，
+ * 结案仍然是 0 局。机制已回滚，读数留在这里：**真正绑住这一格的是 道德，不是 圣眷**，
+ * 下一轮别再照着旧版 ⑰ 那句话去拧 圣眷（见 §1.4 ⑰⑱）。
  */
 
 const GAMES = Number(process.env.SIM_GAMES ?? 40)
@@ -29,7 +35,7 @@ const POLICIES = (process.env.SIM_POLICIES ?? 'bandit,vanish').split(',') as Sim
 const ORIGINS: OriginType[] = ['缙绅', '寒门', '没落世家', '诗文清望']
 
 const FUGITIVE = 'ending_fugitive'
-const TICKETS = ['隐姓埋名', '下落不明', '潜逃']
+const TICKETS = ['隐姓埋名', '下落不明', FUGITIVE_FLAG]
 
 const runs: SimOutcome[] = []
 
@@ -57,7 +63,9 @@ const fugitive = entryOf(FUGITIVE)
 /**
  * 年窗**真正生效**的下界 —— 从注册表读，不是数据里写的那个数。
  * 两者可以不一样：`wrapBatchAsBoundaryEvents` 会把所有叙事结局的 `year.min`
- * 一律抬到 `NARRATIVE_MIN_YEAR`，所以数据里写 1630 的格子，实际要到 1635 才开门。
+ * 一律抬到 `NARRATIVE_MIN_YEAR`（1635），所以数据里写得更早也没用。
+ * 第二十五轮正是被这一点骗过（那次 1635→1630 是空转），于是把这类装饰性声明
+ * 全部改成生效值，并由 `audit.endingReachability.test.ts` 两条用例钉住不许再写。
  */
 const EFFECTIVE_MIN_YEAR = fugitive?.event.conditions?.year?.min ?? 0
 const gateHeldAt = (r: SimOutcome, i: number) => !!fugitive && fugitive.check(buildParams(r.trace[i].derived))
@@ -135,7 +143,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     const byTicket = (want: (flags: string[]) => boolean) =>
       runs.filter(r => r.trace.some(s => want(s.derived.flags))).length
     console.log(
-      `带 潜逃 ${byTicket(f => f.includes('潜逃'))} 局 · ` +
+      `带 潜逃 ${byTicket(f => f.includes(FUGITIVE_FLAG))} 局 · ` +
         `带成对票 ${byTicket(f => f.includes('隐姓埋名') && f.includes('下落不明'))} 局 · ` +
         `只带单张成对票 ${byTicket(f => (f.includes('隐姓埋名') || f.includes('下落不明')) && !(f.includes('隐姓埋名') && f.includes('下落不明')))} 局`
     )
@@ -146,7 +154,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     const pairOnlyOpen = runs.flatMap(r =>
       r.trace
         .map((s, i) => ({ s, i, r }))
-        .filter(x => gateHeldAt(x.r, x.i) && !x.s.derived.flags.includes('潜逃'))
+        .filter(x => gateHeldAt(x.r, x.i) && !x.s.derived.flags.includes(FUGITIVE_FLAG))
     )
     const winners = new Map<string, number>()
     for (const x of pairOnlyOpen) {
@@ -189,7 +197,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
   })
 
   it('这一格在真跑局里至少结一次案（本轮的主断言）', () => {
-    const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes('潜逃')))
+    const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     console.log(
       `结案 ${sealed(FUGITIVE)} 局；带 潜逃 ${withTicket.length} 局；` +
         `终局分布 ${[...new Set(runs.map(r => r.endingTitle ?? '（未结案）'))]
@@ -197,7 +205,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
           .join(' · ')}`
     )
     for (const r of withTicket) {
-      const f = r.trace.findIndex(s => s.derived.flags.includes('潜逃'))
+      const f = r.trace.findIndex(s => s.derived.flags.includes(FUGITIVE_FLAG))
       const got = r.trace.slice(f)
       // 拿到票的那个月和年窗真正开的那个月不是同一个月 —— 编译器把每一格的年窗一律兜到
       // `NARRATIVE_MIN_YEAR`（见 `wrapBatchAsBoundaryEvents`），数据里写得更早也没用。
