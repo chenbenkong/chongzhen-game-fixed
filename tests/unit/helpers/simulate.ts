@@ -27,7 +27,7 @@ import type { EventChoice, GameEvent } from '../../../src/types/event'
  */
 
 export type SimPolicy =
-  | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk'
+  | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
 
 export interface SimOutcome {
   seed: number
@@ -204,6 +204,12 @@ interface RetireProfile {
   avoid: Set<string>
   /** 圣眷窗口：`<=45` 是 归隐田园 的门，`<=35` 是 遁入空门 的门 */
   favorBand: number
+  /**
+   * 这一格的状态门读的**属性**（不在八条归零死线里，pickSafest 管不到）。
+   * 清流骨鲠 要 文韬≥75，而 文韬 既不是死线也不在评分里 —— 不给这一项加分，
+   * 那一组的玩家就永远攒不够它自己那一格的第三道门。
+   */
+  boost?: Record<string, number>
 }
 
 /** 想往空门／归隐那两格走的玩家，会去捡的门票 */
@@ -238,6 +244,40 @@ const HERMIT: RetireProfile = {
   tickets: HERMIT_TICKETS,
   avoid: HERMIT_AVOID,
   favorBand: 45
+}
+
+/** 读某一格自己写的门票（`any`）与互斥面（`notHas`）—— 不在这里手抄一遍 */
+const tileFlagPool = (id: string, key: 'any' | 'notHas'): string[] => {
+  const tile = (allEndingEvents as any[]).find(e => e.id === id)
+  const flags = tile?.conditions?.flags
+  return key === 'any' ? (flags?.any ?? []) : (flags?.notHas ?? [])
+}
+
+/**
+ * 想走《清流骨鲠》那一格言官路的画像。
+ *
+ * 门票与互斥面都从那一格自己读。第二十三轮之前它的 `any` 里躺着两张**全库无人写**的票
+ * （清议派、廷杖），画像去检它们检不到 —— 那批幽灵票本轮已全部换成写得出来的经历
+ * （东林党人、廷杖受刑），细节见 `audit.endingTicketWriters`。
+ *
+ * `favorBand: 40` 是刻意留的重叠：《名臣垂范》(priority 100) 要 圣眷≥35，
+ * 把圣眷压到 40 上下正好让它**仍然可能命中** —— 这一副画像要量的不是"躲开名臣"，
+ * 而是第二十二轮那道逐格闸门能不能让一个拒过名臣笔的人，下一个月被清流请笔。
+ * 真躲开名臣的做法写在下面 `boost` 之外的一条：弹劾御本来自带 圣眷−15。
+ */
+const STREAM: RetireProfile = {
+  targets: new Set(['ending_pure_stream']),
+  tickets: new Set(tileFlagPool('ending_pure_stream', 'any')),
+  avoid: new Set([...tileFlagPool('ending_pure_stream', 'notHas'), ...HERMIT_AVOID]),
+  favorBand: 40,
+  boost: { 文韬: 3 }
+}
+
+/** 策略 → 画像；三副共用同一个 `pickHermit` */
+const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
+  monk: MONK,
+  hermit: HERMIT,
+  stream: STREAM
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
@@ -288,6 +328,10 @@ function pickHermit(
       if (profile.tickets.has(f)) score += 40
       if (profile.avoid.has(f)) score -= 60
     }
+    // 画像自己声明的属性追求（文韬之类）—— 它们不在八条死线上，上面那套保命分管不到
+    for (const [k, w] of Object.entries(profile.boost || {})) {
+      score += w * (((e.attributes as any) || {})[k] || 0)
+    }
     // 这两格的状态门都读道德与清议，够不到就先补着
     if (h.道德值 > 0 && character.hidden.道德值 < 65) score += 5
     if (g.清议 > 0 && gameState.清议 < 55) score += 5
@@ -325,9 +369,9 @@ function pickChoice(
     if (event.declinable && seal && pool.includes(seal)) return seal
     return pickSafest(pool, character, gameState)
   }
-  if (policy === 'hermit' || policy === 'monk') {
+  const profile = PROFILES[policy]
+  if (profile) {
     // 只想收自己那几格的笔；别的请笔照 warden 的规矩拒掉。
-    const profile = policy === 'monk' ? MONK : HERMIT
     const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
     if (event.declinable && profile.targets.has(endingTileOf(event.id) ?? '') && seal && pool.includes(seal)) {
       return seal

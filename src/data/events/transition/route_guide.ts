@@ -1358,7 +1358,7 @@ export const eventsRouteGuide: GameEvent[] = [
           attributes: { 武略: 5, 体质: 5 },
           hidden: { 野心值: 10,},
           gameState: { 圣眷: -20, 清议: -10 },
-          flags: { add: ['落草为寇', '拥兵自重'] }
+          flags: { add: ['落草为寇', '啸聚山林', '拥兵自重'] }
         },
         resultDescription: '你占山为王，暂不与朝廷正面冲突。',
         result: {
