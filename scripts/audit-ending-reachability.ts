@@ -36,7 +36,7 @@ import { scanFlagReachability } from './audit-flag-reachability'
  */
 
 /** 与 `useGameEngine.ts` 的 checkBoundary / 挂载路径同构的 params（那两处各写了一遍，这里取并集） */
-function buildParams(s: DerivedState): BoundaryEventCheckParams {
+export function buildParams(s: DerivedState): BoundaryEventCheckParams {
   return {
     attributes: { ...s.attributes },
     gameState: {
@@ -63,7 +63,14 @@ const BASE_STATES = ['圣眷', '中官', '清议', '士绅', '民望', '国势']
 /** 游戏的时间跨度：turn 0 = 1628-01，甲申之变 = 1644-03（turn 193），此后没有月份可推进 */
 const LAST_YEAR = 1644
 
-type DerivedState = {
+/**
+ * 反推出来的那份存档的形状 —— 也就是边界注册表**唯一看得见的世界**。
+ *
+ * 第二十五轮把它导出：`tests/unit/simulation.fugitive.test.ts` 要拿逐月的真实存档
+ * 去问同一个注册表"这个月结的是哪一格"，两边必须用同一个 params 构造器，
+ * 否则矩阵说"能走到"、跑局说"走不到"，永远各说各话。
+ */
+export type DerivedState = {
   attributes: Record<string, number>
   hidden: Record<string, number>
   states: Record<string, number>

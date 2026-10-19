@@ -7,6 +7,7 @@ import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
 import type { Character, GameStateValues, OriginType } from '../../../src/types/game'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
+import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 /**
  * 整局模拟：驱动**真的** `useGameEngine`，一路从 1628 年玩到游戏结束。
@@ -53,6 +54,18 @@ export interface SimOutcome {
   firedTurns: number[]
   /** 这一局里真正播出来的事件 id（按播放顺序） */
   firedEventIds: string[]
+  /**
+   * 逐月抄下的**边界入参**（只有 `opts.traceMonths` 为真时非空）。
+   *
+   * 第二十五轮加它，是为了回答一个终局快照答不了的问题：
+   * 「这一格到底是**从来没开过门**，还是**开着门却被别格抢走**」，
+   * 而《亡命江湖》那格的门是 `圣眷≤15 ∧ 道德≤30 ∧ 体质≥25 ∧ 任一票`，
+   * `finalThresholds` 只有终局那一刻的值 —— 门在第 80 月开过三个月、第 96 月又关上，
+   * 终局读数完全看不出这件事，只看得到"结案 0"。
+   * 抄的是 `DerivedState`（可达性矩阵那一套入参），不是我自己发明的维度子集 ——
+   * 两边喂同一个注册表，才许拿"矩阵说能走到"和"跑局说走不到"互相对账。
+   */
+  trace: MonthTrace[]
   /** 终局时算出 NaN / Infinity 的字段，正常应当恒空 */
   badNumbers: string[]
   finalYear: number
@@ -605,6 +618,41 @@ function thresholdSnapshot(character: Character, gameState: GameStateValues): Re
 }
 
 /**
+ * 逐月抄一份**边界注册表看得见的那个世界**。
+ *
+ * 字段照 `DerivedState` 抄，不自己发明子集：可达性矩阵用 `buildParams` 喂注册表，
+ * 这条轨迹也用同一个 `buildParams` —— 两边问的是同一个问题，才允许互相对账。
+ * `faction` 缺省那份与 `audit-ending-reachability.ts` 的 `neutral()` 同值，
+ * 否则"没有党籍"在两边会被读成两种数。
+ */
+export interface MonthTrace {
+  turn: number
+  derived: DerivedState
+}
+
+const NO_FACTION = { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
+
+function derivedOf(character: Character, gameState: GameStateValues): DerivedState {
+  return {
+    attributes: { ...(character.attributes as unknown as Record<string, number>) },
+    hidden: { ...(character.hidden as unknown as Record<string, number>) },
+    states: {
+      圣眷: gameState.圣眷,
+      中官: gameState.中官,
+      清议: gameState.清议,
+      士绅: gameState.士绅,
+      民望: gameState.民望,
+      国势: gameState.国势
+    },
+    turn: gameState.turn,
+    year: gameState.currentYear,
+    month: gameState.currentMonth,
+    flags: [...(character.flags || [])],
+    faction: { ...(character.faction ?? NO_FACTION) }
+  }
+}
+
+/**
  * 跑一局。`maxMonths` 默认 260（1628 起算约等于玩到 1649 年，早已越过甲申之变）。
  * 到点还没结束就返回 ended=false —— 那本身就是一个结论，不是失败。
  *
@@ -618,8 +666,10 @@ export async function simulateRun(opts: {
   policy?: SimPolicy
   maxMonths?: number
   origin?: OriginType
+  /** 逐月抄一份边界入参（见 `SimOutcome.trace`）。默认关：其余 41 个测试文件都不需要它。 */
+  traceMonths?: boolean
 }): Promise<SimOutcome> {
-  const { seed, policy = 'random', maxMonths = 260, origin = '寒门' } = opts
+  const { seed, policy = 'random', maxMonths = 260, origin = '寒门', traceMonths = false } = opts
   const rand = mulberry32(seed)
   const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => rand())
   vi.useFakeTimers()
@@ -643,6 +693,8 @@ export async function simulateRun(opts: {
   let finalFaction: SimOutcome['finalFaction'] = null
   let finalGates: Record<string, number> = {}
   let endReason: string | null = null
+  const traceRows: MonthTrace[] = []
+  let lastTraceTurn = -1
   const declaredDelta: Record<string, number> = {}
   const actualDelta: Record<string, number> = {}
   let startThresholds: Record<string, number> = {}
@@ -697,6 +749,10 @@ export async function simulateRun(opts: {
         }
       }
       months = hook.result.current.gameState.turn
+      if (traceMonths && months !== lastTraceTurn) {
+        lastTraceTurn = months
+        traceRows.push({ turn: months, derived: derivedOf(hook.result.current.character, hook.result.current.gameState) })
+      }
     }
 
     ended = hook.result.current.isGameOver
@@ -756,6 +812,7 @@ export async function simulateRun(opts: {
     endingTitle,
     firedEventIds: fired,
     firedTurns,
+    trace: traceRows,
     badNumbers,
     finalYear,
     finalRank,

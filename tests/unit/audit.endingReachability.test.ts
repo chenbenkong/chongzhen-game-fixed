@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { factionCeiling, scanEndingReachability } from '../../scripts/audit-ending-reachability'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { ENDING_TILE_IDS } from '../../src/data/endingRegistry'
+import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
+import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
 
 /**
  * 结局可达性矩阵（第二十一轮）。
@@ -67,6 +69,48 @@ describe('结局可达性矩阵：图鉴每一格都得真能走到', () => {
   it('年窗不许自相矛盾，也不许开到游戏终点之后', () => {
     const bad = report.tiles.filter(t => t.kind === 'window-conflict')
     expect(bad.map(t => `${t.id}: ${t.notes[t.notes.length - 1]}`)).toEqual([])
+  })
+
+  it('数据里写的年窗/月数下限，必须等于注册表里真正生效的那一个', () => {
+    // 第二十五轮的教训，做成棘轮：《亡命江湖》上一轮把 year.min 从 1635 改到 1630，
+    // 理由（"票源最早 1629 年发得出来"）成立，改动却**一点没生效** ——
+    // `wrapBatchAsBoundaryEvents` 对每一格都做 `minYear = Math.max(兜底, 声明值)`，
+    // 低于兜底的声明被静默抬上去。于是数据里那个数成了装饰：读它的人以为门早开五年，
+    // 而这一格真正卡住的地方在别处（朝廷机器仍在按在任官员办一个已经把印信留在案上的人）。
+    // 这条用例不许"改回去"：要么删掉低于兜底的声明（等于承认兜底），要么把兜底本身降下来。
+    const registered = Object.values(boundaryEventManager.getAll()).filter(e => e.type === 'ending')
+    const byId = new Map(registered.map(r => [r.event.id, r]))
+    const decorative: string[] = []
+    for (const tile of allEndingEvents) {
+      const entry = byId.get(tile.id)
+      if (!entry) continue // 引擎驱动的格子（《罢黜归田》）不进注册表，没有"生效值"可对
+      const declaredYear = tile.conditions?.year?.min
+      const declaredTurn = tile.conditions?.turn?.min
+      if (declaredYear !== undefined && declaredYear !== entry.event.conditions?.year?.min) {
+        decorative.push(
+          `${tile.id}《${tile.title}》声明年窗 ≥${declaredYear}，实际生效 ${entry.event.conditions?.year?.min}` +
+            `（兜底 NARRATIVE_MIN_YEAR=${NARRATIVE_MIN_YEAR}）`
+        )
+      }
+      if (declaredTurn !== undefined && declaredTurn !== entry.event.conditions?.turn?.min) {
+        decorative.push(
+          `${tile.id}《${tile.title}》声明 ≥${declaredTurn} 月，实际生效 ${entry.event.conditions?.turn?.min} 月` +
+            `（兜底 NARRATIVE_MIN_TURN=${NARRATIVE_MIN_TURN}）`
+        )
+      }
+    }
+    expect(
+      decorative,
+      '这些格子的年窗/月数写的是永远不会生效的数字。要么照实写生效值，要么改兜底常量本身 —— ' +
+        '不许留着"看起来改了其实没改"的声明'
+    ).toEqual([])
+  })
+
+  it('低于兜底的年窗声明，一条都不许存在（对账用的反向表述）', () => {
+    const under = allEndingEvents
+      .filter(t => (t.conditions?.year?.min ?? Infinity) < NARRATIVE_MIN_YEAR)
+      .map(t => `${t.id}《${t.title}》min=${t.conditions?.year?.min}`)
+    expect(under, `这些格子声明的年窗低于 ${NARRATIVE_MIN_YEAR}，会被编译器静默抬上去`).toEqual([])
   })
 
   it('手写 check 的那十四格仍由驱动表提供存档（防止驱动表漏格）', () => {

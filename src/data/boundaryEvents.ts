@@ -3,7 +3,7 @@ import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
 import { wrapBatchAsBoundaryEvents, NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from './boundaryEventCompiler'
 import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
-import { corruptionWarningEvents } from './demotionWarningEvents'
+import { corruptionWarningEvents, FUGITIVE_FLAG } from './demotionWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
 import { allEndingEvents as mainNarrativeEndings } from './events/ending/endings_all'
 import { debaucheryEndingEvents } from './events/ending/debauchery'
@@ -537,7 +537,18 @@ export const BOUNDARY_EVENTS: BoundaryEvent[] = [
     id: 'emperor_hate',
     priority: 3,
     type: 'ending',
-    check: (params) => doomedBy(params, '圣眷'),
+    /**
+     * `潜逃` 在身上时不触发 —— 这一格的文本是"锦衣卫已经围住了整个府邸，夫人被控制在厢房"，
+     * 围的是一个**还在任上、还在自己家里**的官。
+     *
+     * 第二十五轮逐月抄表量到的同轴：《亡命江湖》(p127) 要 圣眷≤15，而 圣眷 归零就撞这一条(p3)，
+     * p3 又压在所有格子最上面。实测 seed6431 弃官南还（票在第 31 月）之后一路掉到 圣眷最低 0
+     * （同期 道德最低 15 · 体质 58 · 门开 0 个月 → 就是死在这条上）：那一格的**数值**门槛全中，
+     * 年窗却要等到 1635 才开，于是人在门口之前就没了 —— 数值不缺，缺的是活着走到窗口。
+     * 放开这一格不是饶他不死，是让他有机会活到自己那一格的门口；
+     * 八条归零死线本身一条没绕，此后国势崩解、甲申国变那些不要官身的死线照样要他命。
+     */
+    check: (params) => doomedBy(params, '圣眷') && !params.flags?.includes(FUGITIVE_FLAG),
     event: ENDING_EMPEROR_HATE
   },
   {

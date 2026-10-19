@@ -12,6 +12,7 @@ import '../data/boundaryEvents'
 import { isZeroWarningRegistryId, zeroWarnFlag } from '../data/zeroWarningEvents'
 import {
   CORRUPTION_WARNING_FLAG,
+  FUGITIVE_FLAG,
   isCorruptionWarningRegistryId,
   isCorruptExposed
 } from '../data/demotionWarningEvents'
@@ -355,6 +356,21 @@ function checkDemotion(
   newIdentity?: IdentityType;
 } {
   if ((gameState?.turn ?? 0) < DEMOTION_GRACE_TURNS) return { demoted: false }
+
+  /**
+   * 已经弃职亡命的人不进考功名册。
+   *
+   * 第二十五轮逐月抄表量出来的：《亡命江湖》那一格的两个 潜逃 玩家，数值门槛全都满足过
+   * （圣眷最低 8／0，道德最低 22／15，体质 85／58），却在年窗打开之前先后被这台机器和
+   * `龙颜震怒`(p3) 收走。根因不是数值，是**身份**：
+   * 选了【连夜束装，弃官南还】、印信留在案上的人，游戏还在按在任官员考他，
+   * 吏部题本就是革职。那张 潜逃 票于是只是履历上的一行字，逃与不逃一个死法。
+   *
+   * 这里不让考功机器继续办他，等于让"逃"真的算一次逃：之后国势崩解、党争、
+   * 甲申国变那些**不依赖官身**的死线照样要他的命（八条归零死线一条没绕），
+   * 唯一停下来的是"以官员身份被开除"这件事本身。
+   */
+  if (character.flags?.includes(FUGITIVE_FLAG)) return { demoted: false }
 
   const currentRankData = RANKS.find(r => r.name === character.rank)
   const currentRankBaseScore = currentRankData?.minScore ?? 500
