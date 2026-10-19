@@ -39,7 +39,11 @@ const ActionBarImpl = function ActionBar({
 
   // 文案随状态走：玩家一眼就知道点下去会发生什么
   // 有待办 → 推进的是"下一件事"；无待办 → 才是"进下月"
-  const advanceLabel = canProceed && pendingCount > 0 ? '下 一 件' : '进 下 月'
+  //
+  // 标签里**不许重复徽标那个字**：`.btn-icon` 是可见文本，不是隐藏图标。
+  // 这里写成「进 下 月」时玩家看到的是「进进下月」（存档按钮同一病灶「存存档」），
+  // 由 `tests/unit/actionBar.labels.test.tsx` 守住这条规矩。
+  const advanceLabel = canProceed && pendingCount > 0 ? '下 一 件' : '下 月'
 
   return (
     <div className="action-bar">
@@ -107,7 +111,7 @@ const ActionBarImpl = function ActionBar({
         )}
         <button className="action-btn secondary" onClick={onSave}>
           <span className="btn-icon">存</span>
-          <span>存 档</span>
+          <span>档</span>
         </button>
       </div>
     </div>

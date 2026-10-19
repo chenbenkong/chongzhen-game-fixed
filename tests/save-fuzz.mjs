@@ -128,7 +128,9 @@ for (const [label, payload] of CASES) {
   if (await page.locator('.game-screen').count()) {
     const before = errs.length
     await page.evaluate(() => {
-      const b = [...document.querySelectorAll('button')].find(x => /存\s*存\s*档/.test(x.textContent || ''))
+      // 精确匹配：底栏存按钮是「徽标 存 + 标签 档」两段文本，曾经渲染成「存存档」，
+      // 那时这里写的是 /存\s*存\s*档/；现在按整句文本认，避免再次跟着错别字走。
+      const b = [...document.querySelectorAll('button')].find(x => (x.textContent || '').trim() === '存档')
       if (b) b.click()
     })
     await page.waitForTimeout(500)
