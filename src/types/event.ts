@@ -164,7 +164,9 @@ export interface GameEvent {
    *
    * 只有 `src/data/endingDecline.ts` 会给这个标记，也只有 useGameEngine 的三处结局
    * 落点读它。拒绝的代价由数据自己说：这类结局的 `conditions.flags.notHas` 里带着
-   * `史馆辞笔`，玩家一旦点了【搁笔】就本局不再被请笔。
+   * 属于**自己那一格**的 `搁笔·<格名>`，玩家点了【搁笔】就本局不再被这一格请笔 ——
+   * 但别格照旧会来（第二十二轮：公共闸门会把"选哪一格"交还给优先级数字）。
+   * 同时写下的 `史馆辞笔` 是履历，不是闸门，它由 echo_shiguan_001 正面读。
    */
   declinable?: boolean
   /** 所属剧情线 ID（用于事件管理器加权推荐，见 src/data/storylines.ts） */

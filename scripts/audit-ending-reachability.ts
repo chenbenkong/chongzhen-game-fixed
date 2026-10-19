@@ -11,6 +11,7 @@ import { THRESHOLD_ENDING_BY_KEY } from '../src/data/boundaryEvents'
 import { DEMOTION_ENDING_ID } from '../src/data/events/ending/endingsDemotion'
 import { ZERO_THRESHOLDS, zeroWarnFlag, type ZeroKey } from '../src/data/zeroWarningEvents'
 import type { BoundaryEventCheckParams } from '../src/types/boundaryEvent'
+import type { FactionState } from '../src/types/game'
 import type { GameEvent } from '../src/types/event'
 import { scanFlagReachability } from './audit-flag-reachability'
 
@@ -70,7 +71,7 @@ type DerivedState = {
   year: number
   month: number
   flags: string[]
-  faction: { 东林好感: number; 阉党好感: number; 立场: string; 党争烈度: number }
+  faction: FactionState
 }
 
 function neutral(): DerivedState {
@@ -402,7 +403,11 @@ export function scanEndingReachability(): EndingReachabilityReport {
   const tiles: TileVerdict[] = allEndingEvents.map(tile => {
     const entry = byId.get(tile.id) ?? null
     const derived = derive(tile, writable)
-    const drive = DRIVERS[tile.id]
+    // `DRIVERS` 是稀疏表：绝大多数格子靠数据自己的条件反推，只有手写 check / custom
+    // 那十四格需要本文件递一份存档。`Record<string, fn>` 的索引类型里没有 undefined
+    // （本仓库没开 noUncheckedIndexedAccess），运行时却真的是 undefined，所以这里断言一次，
+    // 让下面两处 `drive ?` / `!drive` 判的是同一件事。
+    const drive = DRIVERS[tile.id] as ((base: DerivedState) => DerivedState) | undefined
     const state = drive ? drive(derived.state) : derived.state
     const notes = drive ? [...derived.notes, '门槛是手写 check / custom，由本文件的驱动表提供存档'] : derived.notes
     const base = {

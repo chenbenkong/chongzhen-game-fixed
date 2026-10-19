@@ -56,17 +56,17 @@ describe('结局可达性矩阵：图鉴每一格都得真能走到', () => {
 
   it('每一条门票 flag 都有写手（含驱动表手填的那些）', () => {
     const noWriter = report.tiles.filter(t => t.kind === 'no-writer')
-    expect(noWriter.map(t => `${t.id}: ${t.notes.at(-1)}`)).toEqual([])
+    expect(noWriter.map(t => `${t.id}: ${t.notes[t.notes.length - 1]}`)).toEqual([])
   })
 
   it('条件里不许出现边界 params 不带的键（`?? 0` 之后 min 恒假）', () => {
     const dead = report.tiles.filter(t => t.kind === 'dead-key')
-    expect(dead.map(t => `${t.id}: ${t.notes.at(-1)}`)).toEqual([])
+    expect(dead.map(t => `${t.id}: ${t.notes[t.notes.length - 1]}`)).toEqual([])
   })
 
   it('年窗不许自相矛盾，也不许开到游戏终点之后', () => {
     const bad = report.tiles.filter(t => t.kind === 'window-conflict')
-    expect(bad.map(t => `${t.id}: ${t.notes.at(-1)}`)).toEqual([])
+    expect(bad.map(t => `${t.id}: ${t.notes[t.notes.length - 1]}`)).toEqual([])
   })
 
   it('手写 check 的那十四格仍由驱动表提供存档（防止驱动表漏格）', () => {

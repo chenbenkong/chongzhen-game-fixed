@@ -26,7 +26,8 @@ import type { EventChoice, GameEvent } from '../../../src/types/event'
  *    一个月一次真实 340ms 的话，一局 200 个月要跑 70 秒，几百局无从谈起。
  */
 
-export type SimPolicy = 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer'
+export type SimPolicy =
+  | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk'
 
 export interface SimOutcome {
   seed: number
@@ -135,12 +136,12 @@ function scoreChoice(choice: EventChoice): number {
  * 财帛/体质/圣眷/中官/清议/士绅/民望/道德值 任一为 0 就立刻收尾。
  * 一个想把游戏玩下去的玩家，做的就是这个判断。
  */
-function weakestThreshold(character: Character, gameState: GameStateValues, choice: EventChoice): number {
+function postValues(character: Character, gameState: GameStateValues, choice: EventChoice): number[] {
   const e = (choice.effects || {}) as any
   const a = e.attributes || {}
   const g = e.gameState || {}
   const h = e.hidden || {}
-  const vals = [
+  return [
     character.attributes.财帛 + (a.财帛 || 0),
     character.attributes.体质 + (a.体质 || 0),
     gameState.圣眷 + (g.圣眷 || 0),
@@ -150,7 +151,10 @@ function weakestThreshold(character: Character, gameState: GameStateValues, choi
     gameState.民望 + (g.民望 || 0),
     character.hidden.道德值 + (h.道德值 || 0)
   ]
-  return Math.min(...vals)
+}
+
+function weakestThreshold(character: Character, gameState: GameStateValues, choice: EventChoice): number {
+  return Math.min(...postValues(character, gameState, choice))
 }
 
 /**
@@ -183,6 +187,118 @@ function pickSafest(
   return best
 }
 
+/**
+ * 「求退」这一类策略的画像：想收哪格笔、捡哪些门票、躲哪些票。
+ *
+ * 分成两副画像是被实测教出来的：`hermit` 一组 40 局里《归隐田园》亮过 6 回，
+ * 而《遁入空门》的请笔卡**一次也没开过** —— 原因就写在同一批局里：
+ * 那一格的 `notHas` 里有 `归隐`，而合并画像的玩家把两张票一起捡了。
+ * 一个已经剃度的人不会同时归隐田园，这不是 bug，是互斥；要量那一格就得有一副**只要空门**的画像。
+ */
+interface RetireProfile {
+  /** 只想收这几格的笔，其余请笔一律拒 */
+  targets: Set<string>
+  /** 会主动去捡的票 */
+  tickets: Set<string>
+  /** 会主动躲开的票（躲不开只是扣分，不是硬筛 —— 有些事件三条路都带着它） */
+  avoid: Set<string>
+  /** 圣眷窗口：`<=45` 是 归隐田园 的门，`<=35` 是 遁入空门 的门 */
+  favorBand: number
+}
+
+/** 想往空门／归隐那两格走的玩家，会去捡的门票 */
+const HERMIT_TICKETS = new Set([
+  '看破红尘', '脱俗', '出家', '和尚',
+  '归隐', '辞官', '讲学', '告病归田', '急流勇退', '主动致仕', '与世无争'
+])
+/**
+ * 求退的人躲着走的票：《诏狱冤死》(ending_zhaoyu_prison) 的 `any` 只有这两张。
+ *
+ * 从前这一组 24 局里 13 局死在那一格上 —— 不是它想去，是它的**状态**正好撞进去：
+ * 诏狱冤死 要 圣眷≤15 ∧ 带过 袁党/清算袁党，而"求退"的玩家一辈子都把圣眷放在低位，
+ * 只要早年沾过袁案就随时会被收走。换成真玩家的说法：想出家的人不该在袁崇焕案里站队。
+ */
+const HERMIT_AVOID = new Set(['袁党', '清算袁党'])
+
+/** 只想剃度的那副画像：门票是 遁入空门 的 `any`，躲的是它的 `notHas` */
+const MONK: RetireProfile = {
+  targets: new Set(['ending_monk_nirvana']),
+  tickets: new Set(['看破红尘', '脱俗', '出家', '和尚']),
+  avoid: new Set([
+    ...HERMIT_AVOID,
+    // 《遁入空门》自己的互斥面：这些票一上身，那一格就永久关死
+    '归隐', '归隐山林', '藏匿民间', '组织义军', '拥兵自重', '落草为寇',
+    '贰臣', '南渡长江', '效忠南明', '投降清朝', '投降大顺', '殉国', '殉国报君', '谪戍边疆'
+  ]),
+  favorBand: 35
+}
+/** 想辞官回乡的那副画像 */
+const HERMIT: RetireProfile = {
+  targets: new Set(['ending_monk_nirvana', 'ending_hermit_taoist']),
+  tickets: HERMIT_TICKETS,
+  avoid: HERMIT_AVOID,
+  favorBand: 45
+}
+
+/** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
+const FAVOR = 2
+
+/**
+ * 「求退」策略：一个**就是想出家 / 想归隐**的玩家会怎么点。
+ *
+ * 为什么要有这一组。可达性矩阵只说得出"门后有把手"，既有策略里没有一种朝
+ * 那两格走 —— 它们的判据是"活下去"或"收益最大"，而 遁入空门 要的是
+ * **圣眷≤35 ∧ 道德≥65**、归隐田园 要的是 **圣眷≤45 ∧ 清议≥55 ∧ 道德≥70**：
+ * 前者要主动把圣眷放掉，后者还得同时攒住清议。让 warden 去量它，量到的永远是 ×0，
+ * 而 ×0 既可能是"走不到"也可能是"没人朝它走"（§1.4 ⑮ 那句话）。
+ *
+ * 所以这一组把圣眷**放着不管**（但绝不许归零 —— 圣眷=0 是即死死线），
+ * 把道德与清议往上推，看见门票就捡，别的请笔一律拒。
+ *
+ * 口径上有一处必须留神："八条都不许掉到 8"这种**选项级**余量量不出东西。
+ * 第一版就是这么写的，24 局平均只活 57 个月，全数死在 中官／财帛 归零上 ——
+ * 维度在两次抉择之间还会每月自己往下滑，选项给的那点余量挡不住。
+ * 现在是：圣眷留 20，其余七条各留 25，一条都够不着时退回纯保命。
+ */
+function pickHermit(
+  pool: EventChoice[],
+  character: Character,
+  gameState: GameStateValues,
+  profile: RetireProfile
+): EventChoice {
+  const nonEnding = pool.filter(c => c.effects?.special?.type !== 'ending')
+  const candidates = nonEnding.length ? nonEnding : pool
+  const sustainable = candidates.filter(c => {
+    const v = postValues(character, gameState, c)
+    return v.every((x, i) => x >= (i === FAVOR ? 20 : 25))
+  })
+  const bounded = sustainable.length ? sustainable : [pickSafest(candidates, character, gameState)]
+  let best = bounded[0]
+  let bestScore = -Infinity
+  for (const c of bounded) {
+    const e = (c.effects || {}) as any
+    const g = e.gameState || {}
+    const h = e.hidden || {}
+    const 圣眷后 = postValues(character, gameState, c)[FAVOR]
+    // 圣眷是"越低越像要退"，但低进死线就没意义了：只在还在窗口里时给它加分。
+    let score = 3 * (h.道德值 || 0) + 2 * (g.清议 || 0) - 1.5 * (g.圣眷 || 0)
+    if (圣眷后 <= profile.favorBand) score += 10
+    if (圣眷后 <= 35 && profile.favorBand === 45) score += 10
+    for (const f of (e.flags?.add || []) as string[]) {
+      if (profile.tickets.has(f)) score += 40
+      if (profile.avoid.has(f)) score -= 60
+    }
+    // 这两格的状态门都读道德与清议，够不到就先补着
+    if (h.道德值 > 0 && character.hidden.道德值 < 65) score += 5
+    if (g.清议 > 0 && gameState.清议 < 55) score += 5
+    if (score > bestScore) {
+      bestScore = score
+      best = c
+    }
+  }
+  return best
+}
+
 function pickChoice(
   event: GameEvent,
   character: Character,
@@ -208,6 +324,16 @@ function pickChoice(
     const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
     if (event.declinable && seal && pool.includes(seal)) return seal
     return pickSafest(pool, character, gameState)
+  }
+  if (policy === 'hermit' || policy === 'monk') {
+    // 只想收自己那几格的笔；别的请笔照 warden 的规矩拒掉。
+    const profile = policy === 'monk' ? MONK : HERMIT
+    const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
+    if (event.declinable && profile.targets.has(endingTileOf(event.id) ?? '') && seal && pool.includes(seal)) {
+      return seal
+    }
+    if (refusal && pool.includes(refusal)) return refusal
+    return pickHermit(pool, character, gameState, profile)
   }
   if (policy === 'warden') {
     if (refusal && pool.includes(refusal)) return refusal

@@ -20,14 +20,23 @@
  * 所以这一层只做一件事：**把收笔与否的决定权还给玩家**。
  *   · 判定命中善终 → 引擎不再直接收尾，而是把那张结局卡摆上桌（卡本文案本来就是史官口吻）；
  *   · 玩家点【青史留名】那一条 → 照旧结算，结局 id 进历史、进图鉴、进成就；
- *   · 玩家点【搁笔】/【反事实】/【后续】 → 游戏继续，并写下 `史馆辞笔`；
- *     这个 flag 由每条善终的 `conditions.flags.notHas` 读，于是**拒绝一次，本局不再被善终请笔**
- *     —— 说"我还没完"的人，就该一直走到 1644。
+ *   · 玩家点【搁笔】/【反事实】/【后续】 → 游戏继续，并写下 `史馆辞笔` 与
+ *     这一格自己的闸门 `搁笔·<格名>`；
+ *     闸门由这一格的 `conditions.flags.notHas` 读，于是**拒过哪一格就只关那一格**。
+ *
+ * 第二十二轮把"公共闸门"改成"逐格闸门"，因为实测到公共闸门把这一层的意义反掉了：
+ * 《遁入空门》的取样里，10 局带上门票、7 局四道状态门全过（圣眷≤35 ∧ 道德≥65 ∧
+ * 体质≥10 ∧ 年≥1635），**0 局开过卡** —— 每一局都因为在 1638 年拒过《归隐田园》或
+ * 《殉职任上》而随身带着 `史馆辞笔`，而这一条是全部十三格的公共 notHas。
+ * 后果是"想出家的人"这辈子只要对任意一张请笔卡说过一次"我还没完"，空门就永久关死。
+ * 而 ⑬ 要治的正是"游戏替玩家结案"：只许接受**第一张**撞上的收束，等于把决定权
+ * 从玩家手里换回给优先级数字（`ending_monk_nirvana` 排 p114，永远在 p109 之后）。
+ * `史馆辞笔` 本身留着 —— 它是"拒过笔"这段经历，由 `echo_shiguan_001` 正面读它。
  *
  * 三条口径上的注意：
- *   1. `史馆辞笔` 写在数据里（选项 effects）也读在数据里（条件 notHas），
- *      所以 `audit-flag-reachability.ts` 看得见它的读者，它不会变成新的白存经历。
- *   2. 除【收笔】之外的**每一条**选项都注入这个 flag —— 少一条，那条选项就会在
+ *   1. 两类 flag 都写在数据里（选项 effects）也读在数据里（条件 notHas / 回响 has），
+ *      所以 `audit-flag-reachability.ts` 看得见它们的读者，不会变成新的白存经历。
+ *   2. 除【收笔】之外的**每一条**选项都注入这一格的闸门 —— 少一条，那条选项就会在
  *      下个月把同一张卡片重新摆上桌（第十八轮的坝换成第十九轮的墙）。
  *   3. 名单收的是"**由玩家自己走出来的收束**"：十一条善终，加上第二十轮补的两条路线型收束
  *      （`殉职任上` / `流亡海外` —— 门票是玩家自己选的 flag，触发靠的是恒真的状态判定）。
@@ -35,11 +44,23 @@
  */
 import type { EventChoice, GameEvent } from '../types/event'
 
-/** 拒绝收笔之后随身带上的经历；同时是全部善终结局的公共 notHas 门槛 */
+/**
+ * 拒绝收笔之后随身带上的经历。第二十二轮起它**不再是闸门**，只是一段履历：
+ * 由 `echo_shiguan_001` 正面读（史官记得你拒过笔）。闸门在下面的逐格 flag 上。
+ */
 export const SHIGUAN_DECLINE_FLAG = '史馆辞笔'
 
 /** 追加的那条【搁笔】选项的 id */
 const DECLINE_CHOICE_ID = 'c_decline'
+
+/**
+ * 一格一道的拒笔闸：`搁笔·遁入空门` 只关《遁入空门》。
+ *
+ * 用格名而不是结局 id，因为这串字只活在门槛与存档里，从不印到屏幕上
+ * （`flagBiography` 的规则是"没登记的经历一律不显示"）；让它读起来像人话，
+ * 排查门槛时省一次查表。
+ */
+export const declineGateOf = (title: string) => `搁笔·${title}`
 
 /**
  * 每条收束型结局的【搁笔】文案：选项文字 / 一句说明 / 结算标题 / 结算正文。
@@ -200,14 +221,15 @@ const isSealChoice = (c: EventChoice) => c.effects?.special?.type === 'ending'
 
 const has = (list: string[] | undefined, f: string) => (list || []).includes(f)
 
-function withDeclineFlag(c: EventChoice): EventChoice {
+function withDeclineFlag(c: EventChoice, gate: string): EventChoice {
   const add = c.effects?.flags?.add || []
-  if (has(add, SHIGUAN_DECLINE_FLAG)) return c
+  const missing = [SHIGUAN_DECLINE_FLAG, gate].filter(f => !has(add, f))
+  if (!missing.length) return c
   return {
     ...c,
     effects: {
       ...c.effects,
-      flags: { ...c.effects?.flags, add: [...add, SHIGUAN_DECLINE_FLAG] }
+      flags: { ...c.effects?.flags, add: [...add, ...missing] }
     }
   }
 }
@@ -215,21 +237,23 @@ function withDeclineFlag(c: EventChoice): EventChoice {
 /**
  * 把一条善终结局改成"请笔卡片"：
  *  1. `declinable` —— 只给引擎看：判定命中时**不许**直接 handleGameOver；
- *  2. `conditions.flags.notHas += 史馆辞笔` —— 拒绝过就不再来；
- *  3. 每条非收笔选项都写上这个 flag；
+ *  2. `conditions.flags.notHas += 搁笔·<这一格>` —— 拒过这一格，这一格不再来；
+ *     别格照旧会来（第二十二轮：公共闸门等于把"选哪一格"重新交还给优先级数字）；
+ *  3. 每条非收笔选项都写上这一格的闸门，外加 `史馆辞笔` 这段履历；
  *  4. 追加一条干净的【搁笔】选项（零数值代价 —— 拒绝收笔不该再额外罚人，
  *     而原有的【反事实】/【后续】是带增量的，见第 3 条）。
  */
 function asOffer(e: GameEvent): GameEvent {
   const copy = DECLINE_COPY[e.id]
+  const gate = declineGateOf(e.title)
   const condFlags = e.conditions?.flags
   const notHas = condFlags?.notHas || []
-  const choices = (e.choices || []).map(c => (isSealChoice(c) ? c : withDeclineFlag(c)))
+  const choices = (e.choices || []).map(c => (isSealChoice(c) ? c : withDeclineFlag(c, gate)))
   const declineChoice: EventChoice = {
     id: DECLINE_CHOICE_ID,
     text: copy.text,
     description: copy.description,
-    effects: { flags: { add: [SHIGUAN_DECLINE_FLAG] } },
+    effects: { flags: { add: [SHIGUAN_DECLINE_FLAG, gate] } },
     resultDescription: '你把史官的笔搁回了案上 —— 传未成，人还在宦海里。',
     result: {
       title: copy.title,
@@ -244,7 +268,7 @@ function asOffer(e: GameEvent): GameEvent {
       ...e.conditions,
       flags: {
         ...condFlags,
-        notHas: has(notHas, SHIGUAN_DECLINE_FLAG) ? notHas : [...notHas, SHIGUAN_DECLINE_FLAG]
+        notHas: has(notHas, gate) ? notHas : [...notHas, gate]
       }
     },
     choices: [...choices, declineChoice]

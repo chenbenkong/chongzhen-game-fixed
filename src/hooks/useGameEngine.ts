@@ -1440,7 +1440,7 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     // 刚答完的那张卡本身就是「史馆请笔」时，跳过这一次判定。
     // 下面 params.flags 传的是**抉择前**的 character.flags（setCharacter 的更新函数还没跑），
-    // 而这类卡的条件读的正是刚写下去的 `史馆辞笔`（notHas）—— 拿旧值判会当场把同一张卡
+    // 而这类卡的条件读的正是刚写下去的 `搁笔·<格名>`（notHas）—— 拿旧值判会当场把同一张卡
     // 再摆一次，玩家永远走不出这一格。
     // 没有顺手把 flags 也改成抉择后的值：那会让全部 flag 型结局提前一个月命中，是另一件事。
     if (!currentEvent?.declinable) {

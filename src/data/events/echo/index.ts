@@ -48,6 +48,7 @@ import { aftermathEchoEvents } from './aftermath'
  *   读 恩义付之 / 改漕之案 / 三日之信                                → echo_emotion_007 李家的旧账
  *   读 lixiangjun_disappointed / lixiangjun_poem / 桃花扇底 / 还扇之义 /
  *       ruan_dacheng_enemy                                           → echo_emotion_008 扇价
+ *   读 史馆辞笔（拒过一次请笔）                                       → echo_shiguan_001 史馆又来
  *
  * 其中 `藏人于外`、`萧灵血案`、`不孝之名`、`夺情起复`、`阉党核心` 这几条是**池内自接**：
  * 上一环写，下一环读，这样新产出的 flag 不会立刻变成新的白存。
