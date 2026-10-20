@@ -22,47 +22,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-
-interface CssRule {
-  selector: string
-  decls: Map<string, string>
-  inMedia: string | null
-}
-
-/** 极小的花括号扫描器：只取我们要的（选择器 → 声明），并记住每条规则在不在 @media 里 */
-function parseCss(src: string, inMedia: string | null = null): CssRule[] {
-  const s = src.replace(/\/\*[\s\S]*?\*\//g, '')
-  const rules: CssRule[] = []
-  let i = 0
-  while (i < s.length) {
-    const open = s.indexOf('{', i)
-    if (open < 0) break
-    const selector = s.slice(i, open).trim()
-    let depth = 1
-    let j = open + 1
-    while (j < s.length && depth > 0) {
-      if (s[j] === '{') depth++
-      else if (s[j] === '}') depth--
-      j++
-    }
-    const body = s.slice(open + 1, j - 1)
-    if (selector.startsWith('@')) {
-      rules.push(...parseCss(body, selector))
-    } else {
-      const decls = new Map<string, string>()
-      for (const part of body.split(';')) {
-        const idx = part.indexOf(':')
-        if (idx < 0) continue
-        const prop = part.slice(0, idx).trim()
-        if (!prop) continue
-        decls.set(prop, part.slice(idx + 1).trim()) // 同名后者覆盖前者，与层叠一致
-      }
-      rules.push({ selector, decls, inMedia })
-    }
-    i = j
-  }
-  return rules
-}
+import { parseCss, type CssRule } from './helpers/cssRules'
 
 const at = (rel: string) => fileURLToPath(new URL(rel, import.meta.url))
 const gameScreen = parseCss(readFileSync(at('../../src/components/GameScreen.css'), 'utf8'))

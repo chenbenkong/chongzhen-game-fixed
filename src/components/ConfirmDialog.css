@@ -14,6 +14,12 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+  /* 第三十轮：与 .tutorial-overlay 同一族缺陷，实测到临界态 ——
+     1280×600 + 根字号 200% 下灌入辞官确认框的原句（ResignConfirmDialog.tsx 的 message+detail+warning，共 103 字），
+     面板长到 604px > 视口 600px（顶边 -2），「取消/确认」距视口底只剩 19px，
+     而这层 overflow:visible、body overflow:hidden，没有任何玩家滚得动的祖先。
+     文案再长一点就是"按钮点不着"。遮罩自己滚，作为面板之外的第二道保险。 */
+  overflow-y: auto;
   animation: cd-overlay-fade-in 0.15s ease-out;
 }
 
@@ -36,6 +42,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* 面板没有上限时，确认文案越长越高，直到顶穿遮罩（同一族的成因）。
+     封顶在"视口 - 遮罩内边距(20×2)"，超出部分交给 .cd-body 自己滚 —— 
+     标题与「取消/确认」都钉住，只有正文滚，玩家不会滚着滚着把按钮滚没了。 */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  min-height: 0;
   animation: cd-panel-slide-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
   color: #c9b896;
@@ -111,6 +123,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* 面板封顶后，超长文案由这一段自己消化（min-height:0 是 flex 子项能收缩的前提） */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .cd-message {

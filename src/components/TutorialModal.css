@@ -10,6 +10,11 @@
   justify-content: center;
   z-index: 2000;
   padding: 20px;
+  /* 第三十轮实测 1280×600 + 根字号 165%：面板按内容长到 706px（视口只有 600），
+     flex 居中把它往上下两头顶出去 —— 「关闭 ×」落到 top=-41、「跳过教程」落到 bottom=616，
+     而遮罩和根上都没有玩家滚得动的容器，教程既关不掉也跳不过。
+     遮罩自己滚：面板缩到视口高之后，顶边才不是"滚不上去"的死区。 */
+  overflow-y: auto;
 }
 
 .tutorial-modal {
@@ -21,6 +26,14 @@
   width: 100%;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  /* 同一处成因的第二半：没有高度上限时它按内容长，矮视口下必然顶出遮罩。
+     封顶在"视口 - 遮罩内边距(20×2)"；dvh 处理移动端地址栏，vh 给不支持的浏览器兜底。
+     min-height:0 是被 flex 居中压缩的前提，缺了它前面两条都白写。 */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  min-height: 0;
+  /* 长内容（第 5 步「仕途」实测最长）由面板自己滚，不再顶穿遮罩 */
+  overflow-y: auto;
 }
 
 .tutorial-close {

@@ -19,6 +19,7 @@
     "test:e2e": "npm --prefix tests run test",
     "test:layout": "npm --prefix tests run test:layout",
     "test:choices": "npm --prefix tests run test:choices",
+    "test:modals": "npm --prefix tests run test:modals",
     "test:crash": "npm --prefix tests run test:crash",
     "test:fuzz": "npm --prefix tests run test:fuzz",
     "test:mem": "npm --prefix tests run test:mem",

@@ -19,6 +19,12 @@ npm run typecheck:test     # 连 src 一起做类型检查
 | `harness.test.ts` | 基座自检。**这个文件挂了，下面所有结论都不可信** |
 | `engine.*.test.ts` | 针对具体缺陷的回归测试 |
 | `eventDisplay.*.test.tsx` | 组件级测试 |
+| `layout.*.test.ts` | **CSS 源码层**守卫（`helpers/cssRules.ts` 直接扫选择器与声明）。 |
+
+CI 里没有浏览器、jsdom 也不算 flex 盒，所以布局缺陷分两层钉：
+真实几何由 `tests/choices-visibility.mjs` 与 `tests/modals-reachability.mjs` 在本地量，
+CI 只守**成因**（哪条声明必须存在、哪条不许无条件覆盖）。新增一个全屏遮罩时必须往
+`layout.modalScroll.test.ts` 的 `ROWS` 登记它的范式，否则那条"遮罩都要在册"的元约束会直接红。
 
 ## 两个环境坑（已在 setup.ts 中处理，不必重复踩）
 
