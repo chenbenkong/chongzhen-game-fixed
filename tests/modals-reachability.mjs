@@ -21,6 +21,15 @@
 //   · 每屏都带 expectSel 校验"弹窗真的打开了"：没打开时元素数会退回上一页的数，
 //     读数看着全绿其实是把主界面又抄了一遍（本轮就在 1280×600 @165% 见过一次）。
 //
+// 第三十三轮补：把最后一条 `unmeasured`（骰子弹窗）量出来。踩到的新坑是**入口**而不是几何：
+// 「勉力一试」只长在条件不足的锁定卡上，而开局首屏播哪个事件是随机的（实测首屏是
+// 「族中求托」「请医」这类无门槛事件，出身固定「缙绅」也一样）—— 所以不能拿"第一个事件"
+// 当确定性入口，必须逐件清待办、必要时进下月地走过去（实测第 3~4 件必撞到，如「辽东军情」
+// 「春闱开考」，8 步是余量）。量出来的正是第三十轮那个缺陷的第二例：
+// 1280×600 @200% 下面板 984px 顶穿 600px 视口，「投 掷」在 top=693、骰子在 bottom=608，
+// 遮罩与根都不滚 —— 玩家开着弹窗一个按钮都点不到。同一次运行里它还连锁污染了下游两屏
+// （`✗ [成就弹窗] 这一屏没打开：…当前最上面那层是 dice-modal-overlay`），照 §四 8 认得出来。
+//
 // 用法：先起 dev server 或 preview，再 `node modals-reachability.mjs`
 // 环境变量：VPS=档位名逗号分隔  SIZES=根字号逗号分隔  BASE_URL
 import { chromium } from 'playwright'
@@ -229,20 +238,64 @@ for (const [w, h] of VPS) {
     }
     await page.locator('.setup-screen .confirm-btn').first().click()
     await page.waitForTimeout(800)
-    await page.locator('.origin-card button, .origin-card').first().click().catch(() => {})
+    // 出身固定选「缙绅」：第一张卡是寒门（文韬 65），过得了 1628 正月 historical_001 的
+    // c1 门槛（文韬≥60 且出身∈{寒门,诗文清望}），「勉力一试」就永远不出现 ——
+    // 骰子弹窗因此一直没有任何几何读数（§1.4 ㉑）。缙绅文韬只有 30，同一道门就卡住。
+    // 但**首屏仍然不保证是它**：首月播哪条事件是随机的，所以入口还得靠下面那段走局去撞。
+    const gentry = page.locator('.origin-card', { hasText: '缙绅' }).first()
+    if (await gentry.count()) await gentry.click().catch(() => {})
+    else await page.locator('.origin-card button, .origin-card').first().click().catch(() => {})
     await page.waitForTimeout(1700)
     await sweep(page, '主界面', '.game-screen')
 
-    const card = page.locator('.choices-list .choice-card[aria-disabled="false"]').first()
-    if (await card.count()) {
-      await card.click({ force: true }).catch(() => {})
-      await page.waitForTimeout(400)
-      if (await page.locator('.dice-modal-overlay').count()) await sweep(page, '骰子弹窗', '.dice-modal-overlay')
-      await page.waitForTimeout(700)
+    // 「勉力一试」只在**条件不足的锁定卡**上出现，而开局首屏播哪个事件是随机的
+    // （实测：首屏多半是「族中求托」「请医」这类无门槛事件）。所以这里逐件清待办、
+    // 必要时进下月，最多走 8 步撞一个带门槛的事件出来；走不到就显式报"读数无效"。
+    let settlementSwept = false
+    const sweepSettlement = async () => {
+      if (settlementSwept) return
       await sweep(page, '结算页', '.settlement-title')
-      await page.locator('.result-actions .continue-btn').first().click().catch(() => {})
-      await page.waitForTimeout(700)
+      settlementSwept = true
     }
+    let diceFound = false
+    for (let step = 0; step < 8 && !diceFound; step++) {
+      const attempt = page.locator('.dice-attempt-btn').first()
+      if (await attempt.count()) {
+        await attempt.click({ force: true }).catch(() => {})
+        await page.waitForTimeout(700)
+        await sweep(page, '骰子弹窗·投掷前', '.dice-modal-overlay')
+        // 投一次让「结果文案」那一行长出来再量（投完引擎在第二个定时器里自动关框并结算）
+        await page.locator('.dice-confirm-btn').first().click({ force: true }).catch(() => {})
+        await page.waitForTimeout(1400)
+        await sweep(page, '骰子弹窗·投掷后', '.dice-modal-overlay')
+        await page.waitForTimeout(2000)
+        diceFound = true
+        break
+      }
+      if (await page.locator('.game-screen--ended, .death-ending-overlay').count()) {
+        console.log(`  ✗ [骰子弹窗] 走局第 ${step + 1} 步中途结束 —— 读数无效`)
+        fails++
+        break
+      }
+      const card = page.locator('.choices-list .choice-card[aria-disabled="false"]').first()
+      if (await card.count()) {
+        await card.click({ force: true }).catch(() => {})
+        await page.waitForTimeout(900)
+        await sweepSettlement()
+        await page.locator('.result-actions .continue-btn').first().click().catch(() => {})
+        await page.waitForTimeout(800)
+        continue
+      }
+      const next = page.locator('.action-bar button', { hasText: /进\s*下\s*月|下\s*一\s*件/ }).first()
+      if (await next.count()) { await next.click({ force: true }).catch(() => {}); await page.waitForTimeout(1400) }
+    }
+    if (!diceFound) {
+      console.log('  ✗ [骰子弹窗] 走了 8 步没撞出「勉力一试」—— 读数无效')
+      fails++
+    }
+    await sweepSettlement()
+    await page.locator('.result-actions .continue-btn').first().click().catch(() => {})
+    await page.waitForTimeout(700)
 
     // 成就
     await page.locator('.action-btn:has-text("成就")').first().click({ force: true }).catch(() => {})

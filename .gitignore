@@ -37,6 +37,8 @@ vite-*.txt
 # --- Root-level screenshots (dev by-products) ---
 # Only the repo root; committed assets live under src/assets/ and stay tracked.
 /*.png
+# tests/verify-ux.mjs writes its final shot here.
+screenshots/
 
 # --- Dev scratch / temp directories ---
 /tmp/

@@ -17,7 +17,9 @@
  *
  * 两条棘轮：
  *   · 新写一个全屏遮罩却没在这里登记 → 红（fullScreenOverlays 扫 src/components/*.css）；
- *   · `unmeasured`（够不到、没法实测的屏，例如要撞「条件不足」才开的骰子弹窗）只许减少不许增加。
+ *   · `unmeasured`（够不到、没法实测的屏）只许减少不许增加 —— 第三十三轮把最后一条
+ *     （要撞「条件不足」才开的骰子弹窗）量掉了，上限于是收到 0：以后再有这种屏，
+ *     必须先给它造一个走得通的入口，而不是登记一句"没法测"就放过。
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
@@ -36,7 +38,7 @@ type Pattern =
   | 'overlay-scrolls' // 遮罩自己滚，内容从顶部起排
   | 'capped-child' // 唯一会长的子项 max-height:100%
   | 'no-controls' // 这层上没有可交互控件（点遮罩即关的提示条）
-  | 'unmeasured' // 常规玩法够不到、本轮没法实测（骰子弹窗，要撞「条件不足」）
+  | 'unmeasured' // 常规玩法够不到、没法实测（第三十三轮起清单为空，出现即红）
 
 interface Row {
   file: string
@@ -58,8 +60,9 @@ const ROWS: Row[] = [
   },
   {
     file: 'EventDisplay.css', overlay: '.dice-modal-overlay', panel: '.dice-modal',
-    pattern: 'unmeasured', note: '骰子弹窗：面板无上限、遮罩不滚，同族结构；但 25 个月的自动跑局没撞出' +
-      '「条件不足」选项（要 aria-disabled 的锁定卡才会开这个框），本轮没能实测。见 §1.4 ㉑'
+    innerScroll: '.dice-modal-content',
+    pattern: 'inner-scroll', note: '骰子弹窗：第三十三轮量到（200% 字号下面板 984px 顶穿 600px 视口，' +
+      '「投 掷」在 top=693 玩家点不着）。入口靠 tests/modals-reachability.mjs 逐件清待办撞锁定卡'
   },
   {
     file: 'SaveSlotsModal.css', overlay: '.save-slots-overlay', panel: '.save-slots-modal', innerScroll: '.save-slots-list',
@@ -164,9 +167,9 @@ describe('第三十轮：每个全屏遮罩都得让玩家滚得到它的控件'
     for (const r of ROWS) expect(found, `登记表里这条已经在源文本里找不到了：${desc(r)}`).toContain(`${r.overlay} @${r.file}`)
   })
 
-  it('够不到、没实测的屏只许减少（棘轮 ≤ 1）', () => {
+  it('够不到、没实测的屏只许减少（棘轮 = 0，第三十三轮起全部屏都有几何读数）', () => {
     const unmeasured = ROWS.filter(r => r.pattern === 'unmeasured')
-    expect(unmeasured.length, '未实测清单：' + unmeasured.map(desc).join(' / ')).toBeLessThanOrEqual(1)
+    expect(unmeasured.length, '未实测清单：' + unmeasured.map(desc).join(' / ')).toBeLessThanOrEqual(0)
   })
 
   for (const row of ROWS) {

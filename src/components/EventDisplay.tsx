@@ -349,7 +349,19 @@ function EventDisplay({
     diceModalRef.current = diceModal
   }, [diceModal])
 
-
+  /**
+   * 投掷结果一出现就把它滚进视野。
+   *
+   * 165% 以上字号 + 矮视口时面板装不下整段（1280×600@165% 实测结果行落在滚动盒之下、
+   * 1280×600@200% 连骰子都在折叠外），玩家点了「投 掷」却看不见成败，只会以为没反应。
+   * 这和"打开时不许自动滚"不冲突：那一步是弹窗替玩家做的，这一步是玩家自己按出来的。
+   */
+  const diceResultRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (diceModal.success === null) return
+    // 可选调用：jsdom 不实现 scrollIntoView，测试里这一枪必须跳过而不是抛
+    diceResultRef.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [diceModal.success])
 
   // 判断是否为死亡结局选项
   const checkDeathEnding = useCallback((choice: EventChoice): {
@@ -642,7 +654,14 @@ function EventDisplay({
     handleOverlayClick: handleDiceOverlayClick
   } = useModal({
     open: diceModal.show,
-    onClose: closeDiceModal
+    onClose: closeDiceModal,
+    // 初始焦点停在面板本身，而不是"框里第一个可聚焦元素"（那是 .dice-area，排在整段
+    // 难度说明之下）。第三十三轮把弹窗改成"只让中间一段滚"之后，focus() 的默认行为会把
+    // 滚动区一路拉到骰子（1280×600 + 200% 字号实测 scrollTop=421），弹窗一打开就把
+    // 「难度 / 需投出 三 或以上」滚出视野 —— 而那恰恰是玩家决定要不要投之前唯一要读的话。
+    // 停在面板上时读屏念 aria-labelledby 的标题，Tab 一下才进骰子（那时是玩家自己要过去，
+    // 浏览器按需滚动）；「投 掷」在钉住的页脚里，鼠标玩家从一开始就点得到。
+    initialFocus: 'dialog'
   })
 
   // 锁定原因 aria-describedby 的 id 前缀（useId 保证实例唯一）
@@ -749,7 +768,7 @@ function EventDisplay({
           )}
           
           {diceModal.success !== null && (
-            <div className={`dice-result-text ${diceModal.success ? 'success' : 'fail'}`}>
+            <div ref={diceResultRef} className={`dice-result-text ${diceModal.success ? 'success' : 'fail'}`}>
               {diceModal.success ? '天命所归——成功' : '力有不逮——失败'}
             </div>
           )}

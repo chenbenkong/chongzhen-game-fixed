@@ -903,6 +903,13 @@
   z-index: 1000;
   animation: fadeIn 0.3s ease;
   padding: 20px;
+  /* 第三十三轮实测：骰子弹窗和第三十轮的教程弹窗是同一处缺陷的第二例 ——
+     1280×600 + 根字号 200% 下面板长到 984px，flex 居中把它往上下顶出去，
+     「投 掷」落到 top=693、骰子到 bottom=608，而遮罩与根都不滚：
+     玩家开着弹窗一个按钮都点不到，只能干瞪眼把它关掉。
+     单独这一行救不了它 —— flex 居中的遮罩一旦内容比视口高，顶边是滚不上去的死区，
+     必须配下面那条面板高度上限一起用（第卅轮教程弹窗同一处、同一修法）。 */
+  overflow-y: auto;
 }
 
 @media (max-width: 480px) {
@@ -918,10 +925,26 @@
   border-radius: 4px;
   padding: 32px 40px;
   min-width: 300px;
-  max-width: 360px;
+  /* 20rem = 默认根字号(18px)下的 360px，写法换成 rem 是为了跟着 html 那把全局排版尺一起放：
+     200% 字号时它还停在 360px，一行只塞得下 11 个汉字，标题「勉 力 一 试」折成两行、
+     每行说明各折两行，中间那段因此 654px 高（同档改完实测 470px）——
+     看着是高度问题，一半其实是宽度问题。 */
+  max-width: 20rem;
   width: 100%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   animation: modalSlideIn 0.3s ease;
+  /* 成因的另一半：没有高度上限时它按内容长（200% 字号实测 984px），矮视口必然顶穿遮罩。
+     封顶在"视口 - 遮罩内边距(20×2)"，dvh 管移动端地址栏、vh 给不支持的浏览器兜底；
+     min-height:0 是被 flex 居中压缩的前提，缺了它前面两条都白写。
+     超出部分不在面板自己这里滚（那是同族第一例修完留下的形态：投掷结果一出来就把
+     标题滚出视野），而是纵向排成 header / content / footer 三段，只让中间那段滚 ——
+     「勉 力 一 试」和「投 掷 / 关 闭」永远钉在视口里。 */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 @media (max-width: 480px) {
@@ -930,6 +953,9 @@
     min-width: auto;
     max-width: 100%;
     border-radius: 8px 8px 0 0;
+    /* 这档遮罩内边距只有 10px，上限跟着收 */
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
   }
 }
 
@@ -941,6 +967,8 @@
 .dice-modal-header {
   text-align: center;
   margin-bottom: 24px;
+  /* 三段式里的第一段：不参与滚动，也不许被中间那段压缩 */
+  flex-shrink: 0;
 }
 
 .dice-modal-header h3 {
@@ -967,6 +995,11 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  /* 唯一会长高的一段：投掷前后文案不同（结果行、提示行进出），超出部分在这里自己消化。
+     min-height:0 是 flex 子项能被压到剩余高度以下的前提。 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .dice-info-simple {
@@ -1086,6 +1119,8 @@
   margin-top: 20px;
   display: flex;
   justify-content: center;
+  /* 玩家的出口（投掷 / 关闭）：钉在面板底部，不随中间那段滚走 */
+  flex-shrink: 0;
 }
 
 .dice-confirm-btn {

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useId, useRef, type KeyboardEvent as ReactKeybo
  *   3. 真正的 Tab 焦点陷阱（在对话框内循环，首尾回绕）
  *   4. 焦点恢复：打开时记住 document.activeElement，关闭时还原，并把焦点移入对话框
  *   5. body 滚动锁：用计数而非直接重置 style.overflow，支持嵌套/并发模态框
- *   6. 可选 initialFocusRef 指定初始焦点
+ *   6. 可选 initialFocusRef / initialFocus:'dialog' 指定初始焦点
  *   7. 点击遮罩守卫：仅当 e.target === e.currentTarget 时才关闭
  *      （React 合成事件沿 React 树冒泡，子组件 portal 出去也仍会冒泡上来，故必须做 target 守卫）
  */
@@ -70,8 +70,17 @@ export interface UseModalOptions {
   onClose: () => void
   /** 对话框标题元素的 id，用于 aria-labelledby（推荐传入 hook 返回的 titleId） */
   labelledBy?: string
-  /** 打开时优先聚焦的元素；缺省则聚焦对话框内第一个可聚焦元素 */
+  /** 打开时优先聚焦的元素；缺省则按 initialFocus 的策略 */
   initialFocusRef?: RefObject<HTMLElement>
+  /**
+   * 没给 initialFocusRef 时的初始焦点策略，默认 `'first'`（框里第一个可聚焦元素）。
+   *
+   * `'dialog'` 是给"打开要先读一段话"的框用的：第一个可聚焦元素排在正文之下时，
+   * `focus()` 的默认行为会把正文滚出滚动区（第三十三轮的骰子弹窗实测 scrollTop=421，
+   * 难度说明一打开就看不见）。停在面板上则正文从头显示，读屏也会念 aria-labelledby
+   * 的标题；Tab 陷阱本来就处理"焦点停在对话框容器上"这种情况（首尾回绕）。
+   */
+  initialFocus?: 'first' | 'dialog'
   /** 是否接管 ESC（默认 true）。需要自定义 ESC 行为时可关闭，自行处理 onKeyDown */
   closeOnEsc?: boolean
   /** 点击遮罩（e.target === e.currentTarget）时是否关闭，默认 true */
@@ -103,6 +112,7 @@ export function useModal({
   onClose,
   labelledBy,
   initialFocusRef,
+  initialFocus = 'first',
   closeOnEsc = true,
   closeOnOverlayClick = true
 }: UseModalOptions): UseModalResult {
@@ -120,6 +130,15 @@ export function useModal({
   const focusDialog = useCallback(() => {
     const dialog = dialogRef.current
     if (!dialog) return
+    const focusContainer = () => {
+      // 没有任何可聚焦子元素时，聚焦对话框自身兜底
+      if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1')
+      dialog.focus()
+    }
+    if (initialFocus === 'dialog') {
+      focusContainer()
+      return
+    }
     const initial = initialFocusRef?.current
     if (initial && dialog.contains(initial)) {
       initial.focus()
@@ -129,11 +148,9 @@ export function useModal({
     if (tabbables.length > 0) {
       tabbables[0].focus()
     } else {
-      // 没有任何可聚焦子元素时，聚焦对话框自身兜底
-      if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1')
-      dialog.focus()
+      focusContainer()
     }
-  }, [initialFocusRef])
+  }, [initialFocus, initialFocusRef])
 
   // 打开/关闭生命周期：只依赖 open，避免调用方回调引用变化时反复抢焦点/反复还原
   useEffect(() => {
