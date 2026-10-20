@@ -19,6 +19,19 @@ interface LifeReviewProps {
   onRestart: () => void
 }
 
+/**
+ * 时间线一屏最多列几条。
+ *
+ * 关键条目（`keyEvents`）本来就只取最近 10 条，但没有关键条目的一生恰恰走的是另一条路：
+ * 直接渲染整份 `lifeRecords`。481 条履历的局实测铺出 481 行、面板内 7230 个节点
+ * （全页 7734，而主界面才 349 个），每一行还各带一枚 Icon ——
+ * 那已经不是"回顾"，是把整份流水一次性糊在对话框里。
+ *
+ * 默认只抄最近的，其余折叠。收起来的是这一生的记录，不是可以随便丢的数据，
+ * 所以留一条"全部展开"：玩家自己要看的时候，还是看得全。
+ */
+const TIMELINE_WINDOW = 60
+
 export default function LifeReview({
   isOpen,
   lifeRecords,
@@ -30,6 +43,7 @@ export default function LifeReview({
   onRestart
 }: LifeReviewProps) {
   const [activeTab, setActiveTab] = useState<'timeline' | 'memoirs' | 'summary' | 'achievements' | 'epitaph'>('timeline')
+  const [timelineAll, setTimelineAll] = useState(false)
 
   // 全屏覆盖层（盖在仍在运行的游戏之上）：需要完整对话框语义 + ESC + Tab 焦点陷阱
   // + 焦点还原 + 滚动锁，否则键盘用户会 Tab 到底下看不见的游戏界面。
@@ -69,10 +83,27 @@ export default function LifeReview({
 
   const renderTimeline = () => {
     // 优先使用 keyEvents，如果没有则使用 lifeRecords
-    const records = lifeSummary.keyEvents?.length > 0 ? lifeSummary.keyEvents : lifeRecords
-    
+    const source = lifeSummary.keyEvents?.length > 0 ? lifeSummary.keyEvents : lifeRecords
+    const overWindow = source.length > TIMELINE_WINDOW
+    const records = overWindow && !timelineAll ? source.slice(-TIMELINE_WINDOW) : source
+    const hidden = source.length - records.length
+
     return (
       <div className="life-review-timeline compact">
+        {overWindow && (
+          <p className="timeline-window-note">
+            {hidden > 0 ? (
+              <>
+                流水太长，只抄最近 {TIMELINE_WINDOW} 条；此前 {hidden} 条未列出。
+                <button type="button" className="timeline-window-expand" onClick={() => setTimelineAll(true)}>
+                  全部展开
+                </button>
+              </>
+            ) : (
+              `已展开全部 ${source.length} 条。`
+            )}
+          </p>
+        )}
         {records.map((record) => (
           <div key={record.id} className={`timeline-row ${getRecordColor(record.type)}`}>
             <div className="timeline-date-badge">

@@ -208,6 +208,27 @@
   }
 }
 
+/* 时间线是网格布局，这句"只抄了最近若干条"要横跨整行，否则它只是多出来的一列 */
+.timeline-window-note {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+/* 展开用的是文字按钮：它属于上面那句提示，不该长得像卡片里的一颗实体按钮 */
+.timeline-window-expand {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  margin-left: 6px;
+  font: inherit;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .timeline-row {
   display: flex;
   align-items: center;
