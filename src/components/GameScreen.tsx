@@ -157,6 +157,7 @@ function GameScreen(props: GameScreenProps) {
     currentEventId: currentEvent?.id,
     currentEventTitle: currentEvent?.title,
     currentEventDescription: currentEvent?.description,
+    currentEventBackground: currentEvent?.narrative?.background,
     currentChoices: currentEvent?.choices?.map(c => c.text)
   }), [character, gameState.currentYear, gameState.currentMonth, currentEvent])
 

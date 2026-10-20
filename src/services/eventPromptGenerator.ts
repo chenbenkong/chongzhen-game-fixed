@@ -19,6 +19,8 @@ export interface EventPromptContext {
   month: number
   currentEventTitle: string
   currentEventDescription: string
+  /** 事件正文（narrative.background）。description 往往只有一句摘要，正文才含具体人事 */
+  currentEventBackground?: string
 }
 
 interface SceneTemplate {
@@ -82,14 +84,12 @@ function getTimeOfDay(_month: number): string {
   return pick(['晨光初照', '日光正午', '午后斜阳', '黄昏时分', '夜幕降临', '月上柳梢', '夜深人静', '黎明将至'])
 }
 
-/** 描述摘要：截取前 60 字关键情节，剔除多余换行 */
+/** 描述摘要：截取前 100 字关键情节，剔除多余换行 */
 function getDescSnippet(desc: string): string {
   if (!desc) return ''
-  // 取第一句或前 60 字
   const clean = desc.replace(/\s+/g, ' ').trim()
-  if (clean.length <= 60) return clean
-  // 在标点处截断
-  const cut = clean.slice(0, 60)
+  if (clean.length <= 100) return clean
+  const cut = clean.slice(0, 100)
   const lastPunc = Math.max(cut.lastIndexOf('，'), cut.lastIndexOf('。'), cut.lastIndexOf('；'))
   if (lastPunc > 30) return clean.slice(0, lastPunc + 1)
   return cut + '…'
@@ -102,6 +102,11 @@ function buildContext(input: EventPromptContext): BuiltContext {
   const courtesy = input.playerCourtesyName ? `（字${input.playerCourtesyName}）` : ''
   const rank = input.rank || '臣子'
   const playerDesc = `${input.playerName}${courtesy}，${rank}`
+  const title = input.currentEventTitle || '明末士子'
+  // 正文优先：description 常常只是「新朝气象，机遇与风险并存」这类一句摘要，
+  // 具体人事（谁被罢职、谁在密谋）只写在 narrative.background 里。
+  const body = input.currentEventBackground || input.currentEventDescription || ''
+  const snippet = getDescSnippet(body)
   return {
     era: `明崇祯${input.year}年${input.month}月（${season}${timeOfDay}）`,
     season,
@@ -110,8 +115,8 @@ function buildContext(input: EventPromptContext): BuiltContext {
     playerName: input.playerName,
     hometown: input.hometown || '',
     rank,
-    title: input.currentEventTitle || '明末士子',
-    descSnippet: getDescSnippet(input.currentEventDescription),
+    title,
+    descSnippet: snippet,
     details: '',
     light: '',
     action: '',
@@ -189,9 +194,9 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['执笏肃立', '跪伏殿中', '立于班列', '趋前数步', '退居殿角'],
     templates: [
-      (c) => `${c.era}，紫禁城内${pick(['太和殿', '文华殿', '乾清宫', '武英殿'])}。${c.playerDesc}${c.posture}，${c.action}，神情${c.mood}。崇祯帝${pick(['高坐龙椅', '端坐御座', '凭几沉思'])}${pick(['，眉宇间隐现忧色', '，目光如炬扫视群臣', '，手持朱笔批阅奏章']) }。${c.surround}，${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}之景。${c.viewPoint}。${c.playerDesc}于${pick(['丹墀之下', '御道之侧', '群臣班列'])}${c.posture}，${c.action}，面容${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。紫禁城${pick(['午门', '端门', '太和门'])}广场上，文武百官正鱼贯而入，${c.playerDesc}${pick(['位列其中', '位居前列', '立于班末'])}。${c.light}，${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，紫禁城内${pick(['太和殿', '文华殿', '乾清宫', '武英殿'])}。${c.playerDesc}${c.posture}，${c.action}，神情${c.mood}。崇祯帝${pick(['高坐龙椅', '端坐御座', '凭几沉思'])}${pick(['，眉宇间隐现忧色', '，目光如炬扫视群臣', '，手持朱笔批阅奏章']) }。${c.surround}，${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}于${pick(['丹墀之下', '御道之侧', '群臣班列'])}${c.posture}，${c.action}，面容${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，紫禁城${pick(['午门', '端门', '太和门'])}广场上，文武百官正鱼贯而入，${c.playerDesc}${pick(['位列其中', '位居前列', '立于班末'])}。${c.light}，${c.details}。`,
     ],
   },
 
@@ -257,9 +262,9 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['立马横刀', '屹立城头', '帐中端坐', '跨马前行', '半跪查看地图'],
     templates: [
-      (c) => `${c.era}，${pick(['辽东', '西北边关', '山海关', '居庸关', '黄河渡口', '潼关'])}${pick(['城头', '要塞', '烽火台', '军帐'])}。${c.playerDesc}身着${pick(['山文甲', '鱼鳞甲', '罩甲', '棉甲'])}${c.posture}，${c.action}，神情${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，眉宇间${c.mood}。${c.surround}，远处${pick(['喊杀声震天', '狼烟四起', '战鼓隆隆', '号角呜咽'])}。${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，明军与${pick(['流寇', '建州女真', '蒙古骑兵', '叛军'])}激战正酣。${c.playerDesc}${c.posture}，${c.action}，刀锋上犹带血迹。${c.light}，${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['辽东', '西北边关', '山海关', '居庸关', '黄河渡口', '潼关'])}${pick(['城头', '要塞', '烽火台', '军帐'])}。${c.playerDesc}身着${pick(['山文甲', '鱼鳞甲', '罩甲', '棉甲'])}${c.posture}，${c.action}，神情${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，眉宇间${c.mood}。${c.surround}，远处${pick(['喊杀声震天', '狼烟四起', '战鼓隆隆', '号角呜咽'])}。${c.details}。`,
+      (c) => `${c.era}，明军与${pick(['流寇', '建州女真', '蒙古骑兵', '叛军'])}激战正酣。${c.playerDesc}${c.posture}，${c.action}，刀锋上犹带血迹。${c.light}，${c.details}。`,
     ],
   },
 
@@ -323,9 +328,9 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['信步漫游', '驻足而观', '坐于茶肆', '立于桥头', '缓辔而行'],
     templates: [
-      (c) => `${c.era}，${c.hometown || pick(['江南', '金陵', '苏州', '杭州', '扬州'])}${pick(['城内', '府衙前', '集市', '街巷'])}。${c.playerDesc}${pick(['微服出行', '便服简从']) }，${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}深入${pick(['里巷', '村野', '集镇', '码头'])}${c.posture}，所见${pick(['民生凋敝', '市井繁华', '灾民遍野', '物阜民丰'])}。${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，乡间${pick(['小镇', '渡口', '田畴', '祠堂前'])}。${c.playerDesc}${c.posture}，正与${pick(['乡绅', '里长', '老农', '商贩'])}${pick(['攀谈', '对坐', '拱手']) }。${c.light}，${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${c.hometown || pick(['江南', '金陵', '苏州', '杭州', '扬州'])}${pick(['城内', '府衙前', '集市', '街巷'])}。${c.playerDesc}${pick(['微服出行', '便服简从']) }，${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}深入${pick(['里巷', '村野', '集镇', '码头'])}${c.posture}，所见${pick(['民生凋敝', '市井繁华', '灾民遍野', '物阜民丰'])}。${c.details}。`,
+      (c) => `${c.era}，乡间${pick(['小镇', '渡口', '田畴', '祠堂前'])}。${c.playerDesc}${c.posture}，正与${pick(['乡绅', '里长', '老农', '商贩'])}${pick(['攀谈', '对坐', '拱手']) }。${c.light}，${c.details}。`,
     ],
   },
 
@@ -389,8 +394,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['凭栏而立', '坐于船头', '独立桥头', '漫步于巷', '盘坐于亭'],
     templates: [
-      (c) => `${c.era}，${pick(['秦淮河畔', '西湖断桥', '苏州阊门', '扬州瘦西湖', '金陵秦淮', '江南水乡'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${pick(['乘画舫', '着青衫', '执油纸伞'])}${c.posture}，${c.action}，远处${pick(['丝竹之声隐隐传来', '渔火点点', '烟波浩渺', '画舫林立'])}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['秦淮河畔', '西湖断桥', '苏州阊门', '扬州瘦西湖', '金陵秦淮', '江南水乡'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${pick(['乘画舫', '着青衫', '执油纸伞'])}${c.posture}，${c.action}，远处${pick(['丝竹之声隐隐传来', '渔火点点', '烟波浩渺', '画舫林立'])}。${c.details}。`,
     ],
   },
 
@@ -454,8 +459,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['跪于殿中', '垂首侍立', '坐于绣墩', '恭立阶下', '缓步而出'],
     templates: [
-      (c) => `${c.era}，紫禁城内廷${pick(['乾清宫', '坤宁宫', '养心殿', '交泰殿', '长春宫', '储秀宫'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${pick(['穿内廷便道', '经长廊', '过月华门'])}${c.posture}，${c.action}，与${c.surround}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，紫禁城内廷${pick(['乾清宫', '坤宁宫', '养心殿', '交泰殿', '长春宫', '储秀宫'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${pick(['穿内廷便道', '经长廊', '过月华门'])}${c.posture}，${c.action}，与${c.surround}。${c.details}。`,
     ],
   },
 
@@ -519,8 +524,79 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['坐于书案后', '拈须而立', '凭窗远眺', '盘坐于蒲团', '负手踱步'],
     templates: [
-      (c) => `${c.era}，${pick(['江南园林', '京师书斋', '名士山庄', '书院精舍', '西园雅集'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，与${c.surround}，${pick(['谈笑风生', '辩论激烈', '各抒己见', '击节叹赏'])}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['江南园林', '京师书斋', '名士山庄', '书院精舍', '西园雅集'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，与${c.surround}，${pick(['谈笑风生', '辩论激烈', '各抒己见', '击节叹赏'])}。${c.details}。`,
+    ],
+  },
+
+  // ===== 6b. 宅邸家事 =====
+  // 族人求托、亲戚登门、家中纠纷 —— 这些事件没有战场与朝堂，旧的场景库只能误判。
+  {
+    name: '宅邸家事',
+    keywords: ['族', '亲', '家', '堂兄', '族叔', '登门', '求托', '说情', '求情', '内宅', '府邸', '宗族', '亲戚', '长辈', '妻', '母', '父', '兄', '弟', '姐', '妹', '侄', '婚', '嫁', '娶', '家宴', '家事', '门第'],
+    weight: 9,
+    details: [
+      '案上摊着族中来信',
+      '屏风后传来压低的说话声',
+      '廊下灯笼被风吹得摇晃',
+      '茶盏已凉，无人去动',
+      '庭院里站着等候的仆从',
+      '墙上挂着祖先画像',
+      '案头堆着田契与账册',
+      '门外停着一顶青布小轿',
+      '炭盆里的火将熄',
+      '窗纸透出昏黄灯光',
+      '几案上摆着未动的酒菜',
+      '帘外雨声淅沥',
+    ],
+    lights: [
+      '午后阳光斜照进厅堂',
+      '烛火在风中摇曳',
+      '黄昏的余晖落在门槛上',
+      '阴天光线晦暗',
+      '檐下灯笼投下暖光',
+      '窗棂透进清冷月色',
+    ],
+    actions: [
+      '拱手行礼',
+      '低声恳谈',
+      '端坐主位',
+      '来回踱步',
+      '垂首听训',
+      '递上书信',
+      '举杯敬酒',
+      '沉默不语',
+    ],
+    moods: [
+      '左右为难',
+      '面沉如水',
+      '言辞恳切',
+      '心存疑虑',
+      '隐忍不发',
+      '心怀愧疚',
+      '不动声色',
+    ],
+    surround: [
+      '族中长辈围坐堂中',
+      '老仆垂手侍立',
+      '内眷在屏风后静听',
+      '晚辈立于廊下',
+      '管家捧着账册',
+      '亲族面面相觑',
+      '邻里在门外张望',
+    ],
+    viewPoints: [
+      '厅堂正中取景',
+      '主客对坐的侧面构图',
+      '从屏风后向外望去',
+      '门槛内外的分隔构图',
+      '近景捕捉两人神色',
+    ],
+    postures: ['端坐主位', '拱手立于堂中', '侧身坐在客位', '立于门槛处', '俯身倾听'],
+    templates: [
+      (c) => `${c.era}，${pick(['府邸正厅', '家宅堂屋', '内院花厅', '书房'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.surround}，${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}与${c.surround}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${pick(['青砖影壁', '垂花门', '厅堂'])}前，${c.playerDesc}${c.posture}，${c.action}。${c.surround}，${c.details}，${c.light}。`,
     ],
   },
 
@@ -584,8 +660,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['坐于案后', '负手踱步', '掩于屏风后', '侧卧榻上', '立于窗前'],
     templates: [
-      (c) => `${c.era}，${pick(['夜深', '子时', '三更', '四更'])}。${pick(['书斋', '密室', '内院', '偏厅'])}内，${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}与${c.surround}，${pick(['低声商议', '密约共事', '暗中筹谋', '歃血为盟'])}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['夜深', '子时', '三更', '四更'])}。${pick(['书斋', '密室', '内院', '偏厅'])}内，${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}与${c.surround}，${pick(['低声商议', '密约共事', '暗中筹谋', '歃血为盟'])}。${c.details}。`,
     ],
   },
 
@@ -649,8 +725,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['跪于灵前', '躬身祭拜', '肃立一侧', '伏地痛哭', '扶杖而立'],
     templates: [
-      (c) => `${c.era}，${pick(['灵堂', '宗祠', '墓前', '城郊送别处'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，${c.surround}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['灵堂', '宗祠', '墓前', '城郊送别处'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，${c.surround}。${c.details}。`,
     ],
   },
 
@@ -714,8 +790,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['立于田垄', '策马巡视', '蹲于饥民旁', '负手远望', '跪于荒郊'],
     templates: [
-      (c) => `${c.era}，${pick(['黄河决口', '连年大旱', '瘟疫横行', '蝗灾肆虐', '赤地千里'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${c.posture}，所见${c.surround}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['黄河决口', '连年大旱', '瘟疫横行', '蝗灾肆虐', '赤地千里'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${c.posture}，所见${c.surround}。${c.details}。`,
     ],
   },
 
@@ -779,8 +855,8 @@ const SCENE_LIBRARY: SceneTemplate[] = [
     ],
     postures: ['端坐上席', '拱手而立', '行至堂前', '立于门侧', '陪坐一侧'],
     templates: [
-      (c) => `${c.era}，${pick(['府邸', '官邸', '酒楼', '戏台'])}${pick(['喜堂', '正厅', '庭院'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。${c.descSnippet}`,
-      (c) => `${c.era}，${c.title}。${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，${c.surround}。${c.details}。${c.descSnippet}`,
+      (c) => `${c.era}，${pick(['府邸', '官邸', '酒楼', '戏台'])}${pick(['喜堂', '正厅', '庭院'])}。${c.playerDesc}${c.posture}，${c.action}，${c.mood}。${c.light}，${c.details}。`,
+      (c) => `${c.era}，${c.viewPoint}。${c.playerDesc}${c.posture}，${c.action}，${c.surround}。${c.details}。`,
     ],
   },
 ]
@@ -791,22 +867,25 @@ const SCENE_LIBRARY: SceneTemplate[] = [
 export function generateEventPrompt(input: EventPromptContext): { prompt: string; sceneName: string } {
   const ctx = buildContext(input)
   const title = input.currentEventTitle || ''
-  const desc = input.currentEventDescription || ''
-  const haystack = title + ' ' + desc
+  const desc = input.currentEventBackground || input.currentEventDescription || ''
 
-  // 1) 识别场景大类（按关键词命中）
-  const matched: { scene: SceneTemplate; hits: number }[] = []
+  // 1) 识别场景大类：多字关键词比单字更可信，标题命中再乘 3。
+  //    旧版按"命中个数"算，一个「充军」里的『军』就能把家事事件判成战场边关。
+  const matched: { scene: SceneTemplate; score: number }[] = []
   for (const scene of SCENE_LIBRARY) {
-    let hits = 0
+    let score = 0
     for (const kw of scene.keywords) {
-      if (haystack.includes(kw)) hits++
+      const w = Math.max(1, kw.length)
+      if (title.includes(kw)) score += w * 3
+      else if (desc.includes(kw)) score += w
     }
-    if (hits > 0) matched.push({ scene, hits })
+    // 单字命中（如「军」）说明不了问题，至少要有 3 分才参与竞争
+    if (score >= 3) matched.push({ scene, score })
   }
 
-  // 2) 选场景：按 hits 排序，同分按 weight 排序
+  // 2) 选场景：按得分排序，同分按 weight 排序
   matched.sort((a, b) => {
-    if (b.hits !== a.hits) return b.hits - a.hits
+    if (b.score !== a.score) return b.score - a.score
     return (b.scene.weight || 0) - (a.scene.weight || 0)
   })
 
@@ -831,12 +910,16 @@ export function generateEventPrompt(input: EventPromptContext): { prompt: string
   const template = pick(chosen.templates)
   const prompt = template(ctx)
 
-  // 5) 加后缀风格词
-  const final = `${prompt}，${pick([
-    '中国工笔重彩与水墨写意结合',
-    '电影级古风写实风格',
-    '明代院体画与写实油画结合',
-  ])}，${pick(['柔美自然光', '戏剧化光影', '暖色调光', '冷暖对比光'])}，高视觉密度，4K 超清细节`
+  // 5) 事件本身的信息统一追加一次（标题 + 正文摘要），再补风格词。
+  //    模板只负责画面构成；事件内容不依赖随机模板是否恰好写了标题。
+  const eventClause = ctx.descSnippet ? `事件「${ctx.title}」：${ctx.descSnippet}` : ''
+  const parts = [
+    prompt,
+    eventClause,
+    pick(['中国工笔重彩与水墨写意结合', '电影级古风写实风格', '明代院体画与写实油画结合']),
+    pick(['柔美自然光', '戏剧化光影', '暖色调光', '冷暖对比光']),
+  ].map(s => s.replace(/[，。；、\s]+$/, '')).filter(Boolean)
+  const final = `${parts.join('，')}，高视觉密度，4K 超清细节`
 
   return { prompt: final, sceneName: chosen.name }
 }
@@ -844,7 +927,7 @@ export function generateEventPrompt(input: EventPromptContext): { prompt: string
 /** 智能推断（关键词未命中时） */
 function inferScene(input: EventPromptContext): SceneTemplate | null {
   const t = input.currentEventTitle
-  const d = input.currentEventDescription
+  const d = input.currentEventBackground || input.currentEventDescription
   const text = t + d
 
   // 推断规则

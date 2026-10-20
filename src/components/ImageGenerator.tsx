@@ -34,6 +34,7 @@ interface ImageGeneratorProps {
     currentEventId?: string
     currentEventTitle?: string
     currentEventDescription?: string
+    currentEventBackground?: string
     currentChoices?: string[]
   }
 }
@@ -248,6 +249,7 @@ export default function ImageGenerator({ isOpen, onClose, context }: ImageGenera
         month: context.month,
         currentEventTitle: context.currentEventTitle || '',
         currentEventDescription: context.currentEventDescription || '',
+        currentEventBackground: context.currentEventBackground || '',
       })
       return {
         prompt,
@@ -265,8 +267,9 @@ export default function ImageGenerator({ isOpen, onClose, context }: ImageGenera
   }, [context])
 
   const fillTemplate = useCallback((kind: 'event' | 'portrait' | 'court' | 'street') => {
-    const { prompt: p } = buildQuickPrompt(kind)
+    const { prompt: p, sceneName: sn } = buildQuickPrompt(kind)
     setPrompt(p)
+    setSceneName(sn || '')
     setError('')
   }, [buildQuickPrompt])
 
