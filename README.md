@@ -200,7 +200,7 @@ chongzhen-game/
 │   │   ├── SaveSlotsModal / SaveNotification           # 存档
 │   │   ├── AchievementPanel / AchievementUnlock        # 成就
 │   │   ├── EndingCodex / GameOverScreen / DeathEnding / LifeReview
-│   │   ├── AIAdvisor / ImageGenerator / EventImages     # AI 功能（懒加载）
+│   │   ├── AIAdvisor / ImageGenerator                  # AI 功能（懒加载）
 │   │   ├── BGM / BGMContext / DiceAnimation / Icon
 │   │   └── TutorialModal / CheatMode / ErrorBoundary / ConfirmDialog ...
 │   ├── data/

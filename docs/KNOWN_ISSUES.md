@@ -118,10 +118,22 @@
 > 帮助弹窗用「面板自滚」（`.tutorial-overlay{overflow-y:auto}` + `.tutorial-modal` 上限 `calc(100dvh - 40px)`），
 > 辞官/焚档确认框用「内层滚」（`.cd-body{flex:1 1 auto;min-height:0;overflow-y:auto}`），
 > 后者是**灌入辞官确认框的原句（103 字）**量出来的：200% 字号下面板 604px 撑进 600px 视口，同样谁都不滚。
-> 两层钉子同第廿九轮：`tests/modals-reachability.mjs`（14 个全屏遮罩 × 逐元素，本地）+
+> 两层钉子同第廿九轮：`tests/modals-reachability.mjs`（13 个全屏遮罩 × 逐元素，本地；第三十轮量的是 14 个，
+> 第三十一轮随 `EventImages` 删除 `.ei-viewer-overlay`）+
 > `tests/unit/layout.modalScroll.test.ts`（CI 里按"范式"守 13 行成因，含 1 行 `unmeasured` 白名单棘轮）。
 > 修复前后各跑一遍同一台量具：修复前 CI 2 红 / 浏览器 22 屏报不可达，修复后 15 档全绿。
 > 摘要见 §三「第三十轮」，没量到的骰子弹窗记 ㉑。
+>
+> **第三十一轮 · 界面（2026-10-20）**：玩家指出事件面板上方那整行「事件插图 (0) · 绘丹青此景 ·
+> 尚无此景丹青 · 立即作丹青 →」不该占着选项的位置 —— 「不要放在选择上面占一行，放在策谋士旁边，用按键显示」。
+> 入口搬到底栏，读作「绘 丹青」，紧挨「策 谋士」；事件面板不再渲染 `EventImages`，组件与 CSS 一并删除 ——
+> 它内联的画廊能力早被丹青面板的「画册」页覆盖（看图 / 删除 / 清空），删除确认仍在 `ImageGenerator.tsx:401`。
+> 第三十轮登记的 14 个全屏遮罩因此少了一个（`.ei-viewer-overlay`），现存 13 个；
+> `unmeasured` 棘轮随之从 ≤2 收紧到 **≤1**（只剩骰子弹窗）。
+> 两层钉子：`tests/unit/actionBar.labels.test.tsx` 钉住「丹青紧挨谋士、读作绘丹青」，
+> `tests/verify-ux.mjs` 把原来"丹青不许出现在底栏"的反向断言翻成「底栏有入口 + 紧挨谋士 + 事件面板无整行」。
+> 真浏览器 1440×900 与 1280×600@200% 两档实测：按钮整块在视口内、中心命中自身、底栏七键无重叠不溢出、
+> 点开弹「绘丹青画卷」。摘要见 §三「第三十一轮」。
 
 ---
 
@@ -666,7 +678,7 @@ flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名
 它此刻的样式是 `max-width:440px` + 无 `max-height` 上限 —— 与第三十轮修掉的那两处同一类风险，
 只是没人能说出它到底会不会顶穿。
 **判：不猜、不按想象改。**`layout.modalScroll.test.ts` 的 `ROWS` 给它开了 `unmeasured` 白名单
-（该类行上限断言为 ≤2，改动一处就红），量具 `modals-reachability.mjs` 则把它列为可选屏：
+（该类行上限断言为 ≤1，改动一处就红；第三十轮是 ≤2，第三十一轮删除 EventImages 后只剩骰子弹窗一行），量具 `modals-reachability.mjs` 则把它列为可选屏：
 一旦哪天跑局能稳定撞出「条件不足」，去掉这一行、按 `strict` 或 `panel-scrolls` 重钉。
 要补的触发条件：让某个 `check` 在玩家当前属性下不可用（`hasRequirement` 失败那条分支），
 不是靠多滚几个月。
@@ -782,11 +794,55 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 回归测试共 **401 例**，分 **47 个文件**，全部在 `tests/unit/`（另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
 
+### 第三十一轮（2026-10-20）：丹青入口从事件面板的整行搬到底栏「谋士」旁 —— 给选项让位，并与画册去重
+
+玩家贴了一张事件面板截图：选项卡上方横着一整行「事件插图（0）· 绘丹青此景 · 尚无此景丹青 · 立即作丹青 →」，
+原话是**「这个丹青的功能，不要放在选择上面占一行，放在策谋士旁边，用按键显示」**。
+这不是审美问题：事件面板在矮视口 + 大字号下本来就紧（第廿九轮修的就是它被静默裁掉），
+这一行无论有没有图都常驻渲染（空态还带一个「立即作丹青 →」按钮），正好压在玩家要点的选项卡上方。
+
+**① 原来那一整块是重复能力。** `EventImages` 自己读写 `getImagesByEvent` / `deleteImage`，
+做的是「缩略图 + 点开看大图 + 删除」；而 `ImageGenerator`（丹青面板）早已带一个完整的「画册」页：
+同一份存档、同一个查看器（`.ig-viewer-overlay`）、删除还要过一次 `useConfirm`（`ImageGenerator.tsx:401`）。
+所以搬入口不是砍功能，是把两个入口合成一个：**生成与画册都在丹青面板里，底栏只留一个门**。
+
+**② 改法。**
+* `ActionBar` 新增 `onOpenImageGenerator`，在「策 谋士」**前面**渲染 `.image-generator-btn`：
+  徽标「绘」+ 标签「丹青」。徽标与标签不重复同一个字（第二十轮补丁的规矩），整键读作「绘丹青」。
+* `GameScreen` 把 `openImageGenerator` 接到 `ActionBar`，不再传给 `EventDisplay`；
+  `EventDisplay` 删掉 `EventImages` 的 import、prop 与 JSX 块；`EventImages.tsx` / `.css` 一并删除。
+* `layout.modalScroll.test.ts` 的 `ROWS` 随之从 14 行减到 13 行（少的是 `.ei-viewer-overlay`），
+  大图查看能力仍在 `ImageGenerator` 的 `.ig-viewer-overlay`（登记为 `drawer`）。
+  既然 `unmeasured` 只剩骰子弹窗一行，棘轮从 **≤2 收紧到 ≤1**。
+
+**③ 两层钉子（沿用第廿九/三十轮的套路）。**
+* `tests/unit/actionBar.labels.test.tsx`：底栏的 `renderBar` 现在带回 `className`，
+  新用例断言 `.image-generator-btn` 存在、与 `.ai-advisor-btn` **相邻**（下标差 1）、读作「绘丹青」。
+  这条钉在 CI 里，改顺序或改文案都会红。
+* `tests/verify-ux.mjs`：原脚本有一条**反向**断言（底栏不许出现丹青，防止旧入口复活），本轮翻面：
+  底栏必须有 `.image-generator-btn`、必须紧挨 `.ai-advisor-btn`，同时事件面板里不许再有 `.event-images`
+  或「事件插图 / 尚无此景丹青」这类整块。
+* 真浏览器临时探针（1440×900 @100% 与 1280×600 @200%）：两档都是
+  底栏 `[进 下月, 返 主菜单, 功 成就, 问 帮助, 绘 丹青, 策 谋士, 存 档]`，丹青整块落在视口内
+  （1440 档 `top 838..868 / left 1141..1225`；1280@200% 档 `478.5..526.5 / 871.8..996.4`），
+  中心 `elementFromPoint` 命中自身，七键无重叠、`scrollWidth == clientWidth`（1398 / 1238），
+  事件面板里 `.event-images` 与丹青文案均为 0；点下去 `.ig-overlay` 打开、标题「绘丹青画卷」，
+  右侧抽屉面板（540×视口高）整块在视口内。
+* 永久量具也补了一屏：`modals-reachability.mjs` 在存档弹窗之后点 `.image-generator-btn`、
+  断言 `.ig-overlay` 真的打开并逐元素扫描（只开面板，不需要 API Key）。
+  15 档（5 视口 × 3 字号）重跑 **0 条 ✗**；1440×900 @100% 一屏抄到 16 个可交互元素全部点得着。
+
+**④ 本轮量具自己造过一次假失败。** 探针第一版用 `!!overlay.offsetParent` 判"弹窗打开了"，
+而 `.ig-overlay` 是 `position:fixed` —— 按规范 fixed 元素的 `offsetParent` 恒为 `null`，
+于是两档都报「点丹青后 .ig-overlay 没打开」，可同一段读数里标题、面板 rect 已经全读到了。
+改成 `getClientRects().length > 0` + `display/visibility/opacity` 后全绿。记进 §四 第 13 条。
+
 ### 第三十轮（2026-10-20）：把"玩家点得着"从选项卡扩到**每一个可交互元素** —— 帮助弹窗的关闭 × 与跳过教程一起顶出视口
 
 第廿九轮修的是"事件选项被裁"，那台量具只盯 `.choice-card`。本轮先问一个更狠的问题：
 **遮罩里的关闭 ×、跳过教程、确认/取消，玩家点不着怎么办？**选项点不着还能等下一个事件，
 弹窗点不着就是死路 —— 教程关不掉、档存不了、辞官退不出去。于是把判据原样扩到 14 个全屏遮罩
+（第三十一轮删掉 `EventImages` 的内联查看器后现存 13 个）
 与每一屏的全部可交互元素，再按抄到的数修。
 
 **① 量具：`tests/modals-reachability.mjs`（`npm run test:modals`，本地 headless chromium）。**
@@ -832,12 +888,13 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 修复后同一档：面板 20..580 `maxH=560px`、正文 `clientH=377/scrollH=459 overflowY=auto`、按钮距视口底 21px。
 
 **④ 两层钉子（与第廿九轮同一套路：CI 不装浏览器，几何只能在本地量）。**
-* `tests/modals-reachability.mjs`：14 个遮罩逐元素可达性，含灌入辞官确认框原句（103 字）那一屏。
-* `tests/unit/layout.modalScroll.test.ts`（17 例）：在 CI 里守**成因**。`ROWS` 每行登记
+* `tests/modals-reachability.mjs`：14 个遮罩逐元素可达性（第三十一轮删掉 `.ei-viewer-overlay` 后现存 13 个，
+  且新开「丹青面板」一屏），含灌入辞官确认框原句（103 字）那一屏。
+* `tests/unit/layout.modalScroll.test.ts`（16 例）：在 CI 里守**成因**。`ROWS` 每行登记
   `(文件, 遮罩, 面板, 内层滚选择器, 范式, 备注)`，范式取 `strict`/`panel-scrolls`/`inner-scroll`/
   `drawer`/`overlay-scrolls`/`capped-child`/`no-controls` 之一；再加两条元约束：
   扫描到的全屏遮罩必须出现在 `ROWS` 里、`ROWS` 里不许有已消失的遮罩（防"改了就删行"），
-  `unmeasured` 行 ≤2（骰子弹窗那一行的白名单棘轮，见 §1.4 ㉑）。
+  `unmeasured` 行 ≤1（骰子弹窗那一行的白名单棘轮，见 §1.4 ㉑；第三十轮是 ≤2，第三十一轮收紧）。
   解析用的花括号扫描器从第廿九轮那份 `layout.heightChain.test.ts` 里抽成
   `tests/unit/helpers/cssRules.ts`（同名声明后者覆盖前者，与层叠一致；`inMedia` 记录规则在不在 `@media` 里），
   两个测试共用。**A/B 已验**：`git checkout --` 回修复前的两份 CSS，CI 层 2 红
@@ -2959,7 +3016,7 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
 | 结局图鉴「查看详情」点了没反应 | portal 到 `document.body` 后仍用 `absolute` + `z-index: 10`，被本体 1100 压在后面 | `EndingCodex.css`（`fixed` / 1200） |
 | 谋士对话每次流式刷新都强拉回底部 | `AIAdvisor` 的滚动监听 effect 依赖里没有 `isOpen`：组件关闭时 `return null`、容器不在 DOM，effect 第一行就 return，此后**永不再执行** | `AIAdvisor.tsx` |
 | 帮助翻到第 8 页、关掉、再打开还停在第 8 页 | 教程组件常驻挂载，`isOpen` 只切渲染分支不卸载 → `currentStep` 跨开关保留 | `TutorialModal.tsx`（开→关→开时换 key 复位） |
-| 一键永久删除玩家生成的丹青，无确认、无撤销 | 组件早就引入了 `useConfirm` 并渲染了 dialog，只是从来没调用 `confirm` | `EventImages.tsx` |
+| 一键永久删除玩家生成的丹青，无确认、无撤销 | 组件早就引入了 `useConfirm` 并渲染了 dialog，只是从来没调用 `confirm`（原 `EventImages.tsx` 第三十一轮删除，同一套确认现在在 `ImageGenerator.tsx` 的画册页） | `ImageGenerator.tsx` |
 | 从标题屏读自动存档后，存档槽弹窗仍盖在游戏画面上 | `handleLoadAutosave` 少了 `setIsSaveSlotsOpen(false)`（`handleSelectSaveSlot` 有） | `App.tsx` |
 | 首屏 46 个 JS 分片全部预取 | 见第一节 1.1，本轮把分片数降到 23（体积未变，省掉 23 次请求往返） | `vite.config.js` |
 
@@ -3145,7 +3202,8 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
    带 `dir_path` 的 Bash 里相对路径是相对 `dir_path` 解析的，脚本放 `work/tests/` 就要 `dir_path=work/tests`。
 10. **量不到的东西要显式登记，不能按想象修**（第三十轮）。骰子弹窗只在"条件不足"那条分支出现，
     25 个月的自动跑局一次都没撞出来 → 它没有几何读数。`ROWS` 给它一个 `unmeasured` 范式，
-    并用「`unmeasured` 行数 ≤2」的棘轮钉住，防止以后有人嫌它麻烦直接补一行"看着像"的范式。
+    并用「`unmeasured` 行数 ≤1」的棘轮钉住（第三十轮是 ≤2，第三十一轮删除 EventImages 后收紧），
+    防止以后有人嫌它麻烦直接补一行"看着像"的范式。
 11. **同一个窗口里边改 CSS 边跑全矩阵 = 抄到改到一半的数**（第三十轮）。
     vite dev server 的 HMR 会在扫描过程中替换样式；A/B 必须严格串行，
     且换完 CSS 后要等下一轮 `goto` 才开测（同一进程里已加载的页面不保证已换）。
@@ -3155,6 +3213,17 @@ flag 可达性另有一查（`npm run audit:flags`）：400 事件里 0 个因�
     在第一条 `page.goto` 就整体抛错退出 1 —— 日志里只有一行 `name: 'Error'`，
     容易被误读成"布局又坏了"。跑之前先确认端口，或者显式给 `BASE_URL`。
     （顺带：preview 是**构建产物**，改完 `src/**/*.css` 必须先 `vite build` 才测得到。）
+13. **`position:fixed` 的遮罩没有 `offsetParent`，不能用它判"弹窗打开了"**（第三十一轮）。
+    探针点完「绘丹青」后 `.ig-overlay` 明明已经挂上（标题「绘丹青画卷」、面板 rect 都读得到），
+    但 `!!overlay.offsetParent` 是 `false` —— fixed 元素的 `offsetParent` 按规范恒为 `null`。
+    两档视口因此都报「点丹青后没打开」，2 条假失败。判可见用
+    `getClientRects().length > 0` + `display/visibility/opacity`，或直接量面板 rect 更稳。
+    同族的还有 portal 到 `body` 的遮罩：不要用"它是不是 `body` 的直接子节点"当判据。
+14. **删掉一个组件时，测试里会留下三类"反向断言"，不清理就是假钉子**（第三十一轮）。
+    删 `EventImages` 时同时要处理：`layout.modalScroll.test.ts` 的 `ROWS` 行（不删 → 元断言报
+    "登记表里这条在源文本里找不到了"）、`verify-ux.mjs` 里"底栏不许有丹青"的旧断言（不翻 → 新入口
+    被当成缺陷）、以及 `unmeasured` 棘轮（少一行就该收紧一格，而不是把空位留着）。
+    习惯动作：`grep -rn <组件名> src tests docs`，并把"只许减少"的棘轮跟着实际数量往下压。
 
 
 ---

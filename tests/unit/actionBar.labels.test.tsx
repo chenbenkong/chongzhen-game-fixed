@@ -24,7 +24,7 @@ function renderBar(overrides: Partial<ComponentProps<typeof ActionBar>> = {}) {
   )
   const buttons = [...view.container.querySelectorAll<HTMLElement>('.action-bar .action-btn')].map(btn => {
     const badge = btn.querySelector('.btn-icon')?.textContent?.trim() ?? ''
-    return { badge, text: (btn.textContent ?? '').replace(/\s+/g, '') }
+    return { badge, text: (btn.textContent ?? '').replace(/\s+/g, ''), cls: btn.className }
   })
   view.unmount()
   return buttons
@@ -35,7 +35,8 @@ describe('ActionBar · 徽标与标签拼出来的字', () => {
     for (const state of [
       { canProceed: true },
       { canProceed: true, pendingCount: 2 },
-      { canProceed: false }
+      { canProceed: false },
+      { canProceed: true, onOpenAIAdvisor: vi.fn(), onOpenImageGenerator: vi.fn() }
     ]) {
       for (const btn of renderBar(state)) {
         expect(btn.text.startsWith(btn.badge.repeat(2)), `${btn.text}（徽标「${btn.badge}」重复）`).toBe(false)
@@ -51,5 +52,14 @@ describe('ActionBar · 徽标与标签拼出来的字', () => {
   it('存按钮读作「存档」', () => {
     const save = renderBar().find(btn => btn.badge === '存')
     expect(save?.text).toBe('存档')
+  })
+
+  it('丹青按钮紧挨「谋士」，读作「绘丹青」', () => {
+    const btns = renderBar({ onOpenAIAdvisor: vi.fn(), onOpenImageGenerator: vi.fn() })
+    const image = btns.findIndex(b => b.cls.includes('image-generator-btn'))
+    const advisor = btns.findIndex(b => b.cls.includes('ai-advisor-btn'))
+    expect(image, '底栏没有丹青按钮').toBeGreaterThanOrEqual(0)
+    expect(Math.abs(image - advisor), '丹青必须与谋士相邻').toBe(1)
+    expect(btns[image].text).toBe('绘丹青')
   })
 })

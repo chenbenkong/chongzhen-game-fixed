@@ -10,7 +10,7 @@ mkdirSync('screenshots', { recursive: true })
  *  2. 未做抉择时禁用，且提示文案不说"点继 续"（此刻那个按钮不存在）
  *  3. 数字键 1–9 能选选项
  *  4. Space 能推进
- *  5. 底栏不再有重复的「丹青」入口
+ *  5. 丹青入口在底栏、紧挨「谋士」；事件面板不再为它占一整行
  *  6. 输入框里按数字不会误选（取名屏）
  *  7. 全程无死锁
  */
@@ -104,7 +104,13 @@ const S = () => page.evaluate(() => {
     choices: choiceEls.length,
     indexBadges: [...document.querySelectorAll('.choice-index')].map(e => e.textContent.trim()),
     dice: dice.length,
-    hasDanqingInBar: !!document.querySelector('.action-bar [class*=image], .action-bar .ai-advisor-btn ~ [title*=丹青]'),
+    hasDanqingInBar: !!document.querySelector('.action-bar .image-generator-btn'),
+    danqingNextToAdvisor: (() => {
+      const btns = [...document.querySelectorAll('.action-bar .action-btn')]
+      const i = btns.findIndex(b => b.classList.contains('image-generator-btn'))
+      const j = btns.findIndex(b => b.classList.contains('ai-advisor-btn'))
+      return i >= 0 && j >= 0 && Math.abs(i - j) === 1
+    })(),
     barTexts: [...document.querySelectorAll('.action-bar button')].map(x => (x.textContent || '').trim().replace(/\s+/g, '')),
     inEventDanqing: [...document.querySelectorAll('.event-display button')].filter(x => /丹青|此景/.test(x.textContent || '')).length,
     ended: !!document.querySelector('.game-screen--ended'),
@@ -119,8 +125,9 @@ const S = () => page.evaluate(() => {
   check('未抉择时「进下月」禁用', s.nextDisabled === true, `label=${s.nextLabel}`)
   check('未抉择时提示不说"点继 续"', !!s.hint && !/继\s*续/.test(s.hint), `hint="${s.hint}"`)
   check('未抉择时面板内确实没有「继 续」按钮', !s.hasContinue)
-  check('底栏不再有重复的「丹青」入口', !s.barTexts.some(t => t.includes('丹青')), `底栏=${s.barTexts.join(',')}`)
-  check('事件面板内仍有「丹青」入口', s.inEventDanqing > 0, `count=${s.inEventDanqing}`)
+  check('底栏有「丹青」入口', s.hasDanqingInBar, `底栏=${s.barTexts.join(',')}`)
+  check('丹青按钮紧挨「谋士」', s.danqingNextToAdvisor)
+  check('事件面板不再有整行「事件插图」', s.inEventDanqing === 0, `count=${s.inEventDanqing}`)
   check('回合旁显示待办数', !!s.pendingChip, s.pendingChip || '')
   check('选项带 1..N 序号徽标', s.indexBadges.join(',') === s.choices + '' ? false : s.indexBadges.length > 0, s.indexBadges.join(','))
 }

@@ -290,6 +290,13 @@ for (const [w, h] of VPS) {
     await page.locator('.save-slots-overlay .close-btn').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(500)
 
+    // 丹青（第三十一轮起入口在底栏、紧挨「谋士」；只开面板，不需要 API Key）
+    await page.locator('.image-generator-btn').first().click({ force: true }).catch(() => {})
+    await page.waitForTimeout(900)
+    await sweep(page, '丹青面板', '.ig-overlay')
+    await page.locator('.ig-header-btn').first().click({ force: true }).catch(() => {})
+    await page.waitForTimeout(500)
+
     // 谋士
     await page.locator('.ai-advisor-btn').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(900)

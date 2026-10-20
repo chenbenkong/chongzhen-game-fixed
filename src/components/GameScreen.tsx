@@ -368,7 +368,6 @@ function GameScreen(props: GameScreenProps) {
               onUndo={handleUndo}
               onGameOver={handleGameOver}
               onDeathEnding={handleDeathEnding}
-              onGenerateImageForEvent={openImageGenerator}
               canUndo={undoHistory.length > 0}
               isProcessing={isProcessing}
               pendingCount={pendingEvents.length}
@@ -402,6 +401,7 @@ function GameScreen(props: GameScreenProps) {
           onOpenAchievements={openAchievementPanel}
           onOpenHelp={openHelp}
           onOpenAIAdvisor={openAIAdvisor}
+          onOpenImageGenerator={openImageGenerator}
           onReturnToMenu={handleReturnToMenu}
           turn={gameState.turn}
           pendingCount={pendingEvents.length}

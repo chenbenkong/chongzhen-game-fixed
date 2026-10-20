@@ -8,6 +8,7 @@ interface ActionBarProps {
   onOpenAchievements?: () => void
   onOpenHelp?: () => void
   onOpenAIAdvisor?: () => void
+  onOpenImageGenerator?: () => void
   onReturnToMenu?: () => void
   turn: number
   canProceed: boolean
@@ -29,6 +30,7 @@ const ActionBarImpl = function ActionBar({
   onOpenAchievements,
   onOpenHelp,
   onOpenAIAdvisor,
+  onOpenImageGenerator,
   onReturnToMenu,
   turn,
   canProceed,
@@ -95,9 +97,17 @@ const ActionBarImpl = function ActionBar({
           <span className="btn-icon">问</span>
           <span>帮助</span>
         </button>
-        {/* 「丹青」入口已从底栏移除：事件面板里本来就有「丹青此景 / 立即作丹青」，
-            而且它天然就该贴着当前事件出现（要知道给哪张图配图），
-            放在全局底栏既重复又误导。AI 插图仍可从事件面板进入。 */}
+        {onOpenImageGenerator && (
+          <button
+            className="action-btn secondary image-generator-btn"
+            onClick={onOpenImageGenerator}
+            title="为该事件作丹青（AI 生成插图）"
+            aria-label="丹青画卷"
+          >
+            <span className="btn-icon">绘</span>
+            <span>丹青</span>
+          </button>
+        )}
         {onOpenAIAdvisor && (
           <button
             className="action-btn secondary ai-advisor-btn"

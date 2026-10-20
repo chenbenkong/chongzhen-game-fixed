@@ -10,14 +10,14 @@
  *   修好之后同一处：面板 rect 20..580（视口 600）、clientH=556、scrollH=700~911、
  *   overflowY:auto —— 内容还是那么长，但归属变成"面板内部可滚"。
  *
- * 同一族成因在仓库里另有 13 个遮罩：面板封顶（vh）+ 面板自己滚或内部滚动区，
+ * 同一族成因在仓库里另有 12 个遮罩：面板封顶（vh）+ 面板自己滚或内部滚动区，
  * 三者至少要有一个，否则就是同一个 bug 的另一种写法。这里按文件把每个遮罩**分类登记**，
  * 每类各有源文本判据（见 check）；几何本身由真浏览器那份钉子负责
  * （`tests/modals-reachability.mjs`，jsdom 不算 flexbox，本文件不是几何测试）。
  *
  * 两条棘轮：
  *   · 新写一个全屏遮罩却没在这里登记 → 红（fullScreenOverlays 扫 src/components/*.css）；
- *   · `unmeasured`（够不到、没法实测的屏，例如要 API Key 的丹青查看器）只许减少不许增加。
+ *   · `unmeasured`（够不到、没法实测的屏，例如要撞「条件不足」才开的骰子弹窗）只许减少不许增加。
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
@@ -36,7 +36,7 @@ type Pattern =
   | 'overlay-scrolls' // 遮罩自己滚，内容从顶部起排
   | 'capped-child' // 唯一会长的子项 max-height:100%
   | 'no-controls' // 这层上没有可交互控件（点遮罩即关的提示条）
-  | 'unmeasured' // 常规玩法够不到、本轮没法实测（丹青/事件插图查看器，要 API Key）
+  | 'unmeasured' // 常规玩法够不到、本轮没法实测（骰子弹窗，要撞「条件不足」）
 
 interface Row {
   file: string
@@ -96,10 +96,6 @@ const ROWS: Row[] = [
   {
     file: 'LifeReview.css', overlay: '.life-review-overlay', panel: '.life-review-content',
     pattern: 'overlay-scrolls', note: '这一生回顾：遮罩自己滚，内容区也滚'
-  },
-  {
-    file: 'EventImages.css', overlay: '.ei-viewer-overlay', panel: '.ei-viewer-image',
-    pattern: 'capped-child', note: '事件插图查看器：图片 max-height:100%，关闭键钉在遮罩上'
   },
   {
     file: 'SaveNotification.css', overlay: '.save-notification-overlay', panel: null,
@@ -168,9 +164,9 @@ describe('第三十轮：每个全屏遮罩都得让玩家滚得到它的控件'
     for (const r of ROWS) expect(found, `登记表里这条已经在源文本里找不到了：${desc(r)}`).toContain(`${r.overlay} @${r.file}`)
   })
 
-  it('够不到、没实测的屏只许减少（棘轮 ≤ 2）', () => {
+  it('够不到、没实测的屏只许减少（棘轮 ≤ 1）', () => {
     const unmeasured = ROWS.filter(r => r.pattern === 'unmeasured')
-    expect(unmeasured.length, '未实测清单：' + unmeasured.map(desc).join(' / ')).toBeLessThanOrEqual(2)
+    expect(unmeasured.length, '未实测清单：' + unmeasured.map(desc).join(' / ')).toBeLessThanOrEqual(1)
   })
 
   for (const row of ROWS) {

@@ -10,7 +10,6 @@ import { getStoryline } from '../data/storylines'
 import { useModal } from '../hooks/useModal'
 import DiceAnimation from './DiceAnimation'
 import Icon from './Icon'
-import EventImages from './EventImages'
 import './EventDisplay.css'
 
 interface EventDisplayProps {
@@ -43,7 +42,6 @@ interface EventDisplayProps {
   showResult?: boolean
   selectedChoiceId?: string | null
   onBackToChoices?: () => void
-  onGenerateImageForEvent?: (eventId: string, eventTitle: string) => void
   onDeathEnding?: (ending: {
     type: 'martyrdom' | 'suicide' | 'killed' | 'execution'
     title: string
@@ -243,7 +241,6 @@ function EventDisplay({
   showResult: externalShowResult,
   selectedChoiceId: externalSelectedChoiceId,
   onBackToChoices,
-  onGenerateImageForEvent,
   onDeathEnding
 }: EventDisplayProps) {
   // 无事件时自动触发继续（进入下月），避免显示空界面
@@ -866,15 +863,6 @@ function EventDisplay({
           {narrative?.situation || '你决定——'}
         </div>
       </div>
-
-      {/* 事件插图存档区（玩家可在此为该事件作丹青） */}
-      {event?.id && !showResult && (
-        <EventImages
-          eventId={event.id}
-          eventTitle={event.title}
-          onGenerateClick={onGenerateImageForEvent ? () => onGenerateImageForEvent(event.id, event.title) : undefined}
-        />
-      )}
 
       {!showResult ? (
         /* 选项列表 */
