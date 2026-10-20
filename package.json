@@ -36,6 +36,7 @@
     "audit:tags": "vite-node scripts/audit-tag-effects.ts",
     "audit:chrono": "vite-node scripts/audit-anachronism.ts",
     "audit:gating": "vite-node scripts/audit-repeatable-gating.ts",
+    "audit:branch": "vite-node scripts/audit-branch.ts",
     "audit:lockout": "vite-node scripts/audit-choice-lockout.ts",
     "audit:afford": "vite-node scripts/audit-affordability.ts",
     "audit:events": "vite-node scripts/audit-events.ts",

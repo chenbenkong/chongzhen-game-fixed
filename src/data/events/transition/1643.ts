@@ -31,8 +31,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏献策】"当上疏献策，主张整军平寇"',
-        description: '撰写奏疏，主张整军平寇，收复中原',
+        text: '【上整军平寇疏】上疏请整军平寇、收复中原',
+        description: '疏递上去，皇上留中，只朱批了“知道了”。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -65,8 +65,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【安分守己】"当安分守己，做好本职"',
-        description: '不主动表现，安分守己做好本职工作',
+        text: '【只办本职】朝会散后回衙门，把本衙门的钱粮册子核完',
+        description: '李自成的事轮不到你管，你把册子核到最后一页。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 3 },
@@ -92,8 +92,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【攀附权贵】"当攀附权贵，趁乱谋利"',
-        description: '利用朝局动荡之机，攀附朝中权贵，谋取私利',
+        text: '【递帖新贵】赶在年前给朝中几位新贵递了门生帖',
+        description: '新贵们收了帖，答应替你留意南下的差事。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 }, 欲望值: { min: 30 } },
@@ -130,8 +130,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，积蓄力量"',
-        description: '闭门谢客，反思过去一年的得失，积蓄力量',
+        text: '【闭门记年】闭门把这十六年的事按年记成一本私册',
+        description: '写到崇祯十六年，你不知道该不该写下去。',
         effects: {
           attributes: { 体质: 4, 文韬: 2 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -465,8 +465,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不轻易表态"',
-        description: '对张献忠入川保持沉默，不轻易表态',
+        text: '【不主救援】四川告急，朝中议援，你没有表态',
+        description: '四川的急报一封接一封，你的案头越来越厚。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -523,8 +523,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力助耕】"当全力助耕，救民于水火"',
-        description: '拿出自己的积蓄，购买种子和耕牛，帮助百姓恢复春耕',
+        text: '【募民垦荒】招流民垦荒，给种给粮',
+        description: '荒地开了三千亩，你的家底也空了。',
         showConditions: {
           attributes: { 财帛: { min: 20 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 50 } }
@@ -1129,8 +1129,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不参与争论"',
-        description: '对孙传庭出关之事保持沉默，不参与争论',
+        text: '【不催不阻】孙督师出关前遣人来问，你说不敢妄议',
+        description: '大军出关那天，你站在城头看了一整天。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },

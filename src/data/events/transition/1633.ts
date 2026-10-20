@@ -29,8 +29,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏建言】"当上疏建言，为中兴献策"',
-        description: '撰写奏疏，为朝廷中兴大业建言献策',
+        text: '【上中兴疏】把中兴之策写成十条条陈',
+        description: '条陈递上去，皇上批了“知道了”，没有下文。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -63,8 +63,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【安分守己】"当安分守己，做好本职"',
-        description: '不主动表现，安分守己做好本职工作',
+        text: '【只办本职】朝会散后回衙门，把六年的钱粮总册核完',
+        description: '你没在朝会上说话，考成里也没人挑得出错。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 3 },
@@ -90,8 +90,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【攀附权贵】"当攀附权贵，趁乱谋利"',
-        description: '利用朝局动荡之机，攀附权贵，谋取私利',
+        text: '【拜温体仁】赶在年前给温体仁递了门生帖',
+        description: '温体仁收了帖，让你“好好当差”。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 }, 欲望值: { min: 30 } },
@@ -128,8 +128,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，积蓄力量"',
-        description: '闭门谢客，反思过去一年的得失，积蓄力量',
+        text: '【读《会典》】闭门把《大明会典》里钱粮的几卷读完',
+        description: '读到一条旧例，你才发现今年的加派早就违了祖制。',
         effects: {
           attributes: { 体质: 4, 文韬: 2 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -359,8 +359,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力助耕】"当全力助耕，救民于水火"',
-        description: '拿出自己的积蓄，购买种子和耕牛，帮助百姓恢复春耕',
+        text: '【买牛散种】把耕牛和种子买回来，分给无力的农户',
+        description: '牛铃重新响起来，你的积蓄见了底。',
         showConditions: {
           attributes: { 财帛: { min: 30 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
@@ -1130,8 +1130,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不参与争论"',
-        description: '对剿抚之争保持沉默，不参与争论',
+        text: '【不表剿抚】朝会上问到你的意见，你只说“请皇上圣裁”',
+        description: '散朝后，主剿主抚两边都没再找你。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -5, 清议: -3 },
@@ -1345,8 +1345,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【酌情减免】"当酌情减免，以安民心"',
-        description: '根据各地收成情况，酌情减免灾区赋税',
+        text: '【按灾免赋】按县勘灾，重灾免七成，轻灾免三成',
+        description: '免赋的册子报上去，户部说“不合例”，你照发。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1383,8 +1383,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【足额征收】"皇命难违，当足额征收"',
-        description: '严格执行朝廷命令，足额征收赋税',
+        text: '【足额征收】不收减免，按额足征',
+        description: '收上来的粮堆满仓，你在仓门口站了很久。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1417,8 +1417,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【中饱私囊】"当中饱私囊，借征税谋利"',
-        description: '利用征税之机，加征苛捐杂税，中饱私囊',
+        text: '【购粮转卖】用官价买灾民的粮，转手卖给粮商',
+        description: '一石赚四钱，你买了三千石。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1452,8 +1452,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，等待时机"',
-        description: '不急于征收，拖延观望，等待更好的时机',
+        text: '【等朝廷定夺】把征收停下，等朝廷定夺',
+        description: '朝廷的旨意还没到，秋粮已经发霉了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8,
@@ -1683,8 +1683,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【坚守正道】"当坚守正道，不与奸佞为伍"',
-        description: '拒绝温体仁的拉拢，坚守正道',
+        text: '【不递门帖】温府三次来讨门帖，你三次推说未备',
+        description: '门帖没递，你的升迁也停了。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1786,8 +1786,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不站队不表态"',
-        description: '对朝中暗流保持中立，不站队不表态',
+        text: '【只谈公事】温体仁的人来试探，你只谈公事',
+        description: '公事谈完，来人笑着走了，再没来过。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -1844,8 +1844,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【展示政绩】"当展示政绩，争取升迁"',
-        description: '详细展示自己这一年的政绩，争取升迁',
+        text: '【摊开考成册】把山西赈粮的实发数目一县一县对给考功司',
+        description: '每一笔都有州县印，考功司翻了三遍，没挑出毛病。',
         showConditions: {
           attributes: { 理政: { min: 60 } },
           origin: ['寒门', '诗文清望']
@@ -1879,8 +1879,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，不求有功但求无过"',
-        description: '不求有功但求无过，韬光养晦',
+        text: '【只报循例】考成册上不写新功，只写“在任无过”',
+        description: '温体仁的人翻了两遍，没找到能下嘴的地方。',
         effects: {
           attributes: { 体质: 5 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1910,8 +1910,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【结交权贵】"当结交权贵，为来年铺路"',
-        description: '利用年终之机，结交权贵，为来年铺路',
+        text: '【递年敬】给温体仁府上送一份不署名的年敬',
+        description: '银子递进去，门房只回了一句“老爷知道了”。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 } },
@@ -1948,8 +1948,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【反思总结】"当反思总结，规划来年"',
-        description: '反思这一年的得失，规划来年的发展',
+        text: '【重读旧疏】把这一年经手的奏疏摊在灯下重看',
+        description: '看到第三遍，才发现盐政那一折里，自己替人背了话。',
         effects: {
           attributes: { 文韬: 4, 理政: 3 },
           gameState: { 清议: 8 },

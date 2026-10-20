@@ -29,8 +29,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏献策】"当上疏献策，为平定流寇建言"',
-        description: '撰写奏疏，为平定流寇、安定民生建言献策',
+        text: '【陈平寇策】上疏陈平定流寇之策',
+        description: '疏里你写“流寇如野草，割而复生”，皇上没有回。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -63,8 +63,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【安分守己】"当安分守己，做好本职"',
-        description: '不主动表现，安分守己做好本职工作',
+        text: '【只办本职】朝会散后回衙门，把本衙门的钱粮核完',
+        description: '洪承畴在陕西打仗，你在衙门里核账。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 3 },
@@ -90,8 +90,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【攀附权贵】"当攀附权贵，趁乱谋利"',
-        description: '利用朝局动荡之机，攀附权贵，谋取私利',
+        text: '【兵部值房】散朝后留住兵部几位新贵，在值房里攀谈',
+        description: '新贵们收了炭敬，答应替你留意军功的保举。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 }, 欲望值: { min: 30 } },
@@ -128,8 +128,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，积蓄力量"',
-        description: '闭门谢客，反思过去一年的得失，积蓄力量',
+        text: '【读兵书】闭门把《纪效新书》重读一遍',
+        description: '读到练兵的章节，你想起了自己那支从未上过阵的乡勇。',
         effects: {
           attributes: { 体质: 4, 文韬: 2 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -260,8 +260,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱敛财】"当趁乱敛财，借军需之名中饱私囊"',
-        description: '利用围剿流寇之机，虚报军需，中饱私囊',
+        text: '【浮报军粮】把湖广剿寇的军粮多报了三成',
+        description: '银子进了你的私账，前线的兵还在等粮。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -299,8 +299,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不轻易表态"',
-        description: '对流寇南侵保持沉默，不轻易表态',
+        text: '【照常点卯】湖广的告急塘报压在案头，你照常上朝',
+        description: '塘报压了七天，你只在上面批了“知道了”。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -355,8 +355,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力赈灾】"当全力赈灾，救民于水火"',
-        description: '拿出自己的积蓄，全力赈灾，帮助百姓度过春耕',
+        text: '【垫银买种】把北方数省的种子买回来，先发给农户',
+        description: '种子下了地，你的俸银也见了底。',
         showConditions: {
           attributes: { 理政: { min: 50 }, 财帛: { min: 20 } },
           hidden: { 道德值: { min: 50 } },
@@ -429,8 +429,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报赈灾】"当虚报赈灾，中饱私囊"',
-        description: '利用赈灾之机，虚报赈灾款项，中饱私囊',
+        text: '【多造名册】把春耕赈济的名册多造两千户',
+        description: '多出来的粮，转手卖给了粮商。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -639,8 +639,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不参与争论"',
-        description: '对招安之争保持沉默，不参与任何争论',
+        text: '【不接招安议】陈奇瑜的幕僚来问，你说此事归督师管',
+        description: '幕僚走了，招安照样定了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -863,8 +863,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力赈灾】"当全力赈灾，救民于水火"',
-        description: '不惜一切代价，全力赈灾，拯救灾民',
+        text: '【雇船运粮】把粮装上船，沿江一路散发',
+        description: '船到安庆时，岸上已经有人饿死。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1106,8 +1106,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【落井下石】"当落井下石，借机铲除异己"',
-        description: '利用流寇再起之机，罗织罪名，打击政敌',
+        text: '【借抚案构陷】把招安失败的罪名引到政敌头上',
+        description: '政敌下了狱，你的位置空了出来。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -1360,8 +1360,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【酌情减免】"当酌情减免，以安民心"',
-        description: '根据各地实际情况，酌情减免部分赋税',
+        text: '【分等减免】按灾情分三等减免，造册上报',
+        description: '册子造得细，户部挑不出毛病，皇上还是批了“再议”。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1398,8 +1398,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【强制征收】"皇命难违，当强制征收"',
-        description: '严格执行朝廷命令，强制征收赋税',
+        text: '【不分成灾】不分丰歉，按原额催征',
+        description: '南方的粮运到北方，运费比粮价还贵。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1434,8 +1434,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【中饱私囊】"当中饱私囊，借征税谋利"',
-        description: '利用征税之机，加征苛捐杂税，中饱私囊',
+        text: '【加收解运脚价】在正税外多收一笔“解运脚价”',
+        description: '脚价收了两千两，实际运费花了八百。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1471,8 +1471,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，等待时机"',
-        description: '不急于征收，拖延观望，等待更好的时机',
+        text: '【做两本账】把丰年的账和灾年的账分开造，先拖着',
+        description: '两本账做得干净，你自己都差点忘了哪本是真的。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8,
@@ -1535,8 +1535,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【坚守正道】"当坚守正道，不与奸佞为伍"',
-        description: '拒绝温体仁的拉拢，坚守正道',
+        text: '【闭门谢客】温府的人来，你只让门房回一句“不在”',
+        description: '“不在”传回温府，你的名字被划了一道。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1639,8 +1639,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不站队不表态"',
-        description: '对朝中暗流保持中立，不站队不表态',
+        text: '【起身倒茶】同僚在值房骂温体仁，你起身去倒茶',
+        description: '茶倒回来，话题已经换了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -1870,8 +1870,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【展示政绩】"当展示政绩，争取升迁"',
-        description: '详细展示自己这一年的政绩，争取升迁',
+        text: '【列赈务考成】把南方洪涝的赈济数目列在考成首项',
+        description: '赈粮发下去八万石，你手里有每一县的签收。',
         showConditions: {
           attributes: { 理政: { min: 60 } },
           origin: ['寒门', '诗文清望']
@@ -1905,8 +1905,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，不求有功但求无过"',
-        description: '不求有功但求无过，韬光养晦',
+        text: '【只报本职】考成册只写本衙门，流寇与辽东一概不碰',
+        description: '这一年的考语，是“谨守本分”四个字。',
         effects: {
           attributes: { 体质: 5 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1936,8 +1936,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【结交权贵】"当结交权贵，为来年铺路"',
-        description: '利用年终之机，结交权贵，为来年铺路',
+        text: '【赶在年前拜访阁臣】朝中人事将变，你赶在年前拜访了两位阁臣',
+        description: '两位阁臣都收了帖，只有一位回了话。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 } },
@@ -1974,8 +1974,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【反思总结】"当反思总结，规划来年"',
-        description: '反思这一年的得失，规划来年的发展',
+        text: '【算一笔赈账】把南方赈粮的账和户部的拨数对一遍',
+        description: '对完账，你发现有两万石粮食没有下落。',
         effects: {
           attributes: { 文韬: 4, 理政: 2 },
           gameState: { 清议: 8 },

@@ -29,8 +29,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏献策】"当上疏献策，为平定流寇建言"',
-        description: '撰写奏疏，为平定流寇、安定民生建言献策',
+        text: '【陈剿局】把十年剿局的得失写成条陈递上去',
+        description: '条陈递上去，杨嗣昌的幕僚来抄了一份。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -63,8 +63,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【安分守己】"当安分守己，做好本职"',
-        description: '不主动表现，安分守己做好本职工作',
+        text: '【随班而已】朝会上只随班行礼，回衙门核钱粮',
+        description: '十年了，你学会在朝会上不说话。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 3 },
@@ -90,8 +90,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【攀附权贵】"当攀附权贵，趁乱谋利"',
-        description: '利用朝局动荡之机，攀附杨嗣昌等新贵，谋取私利',
+        text: '【递贺帖】杨嗣昌新贵，你赶在年前递了贺帖',
+        description: '贺帖递进去，回帖上写着“同寅”两个字。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 }, 欲望值: { min: 30 } },
@@ -128,8 +128,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，积蓄力量"',
-        description: '闭门谢客，反思过去一年的得失，积蓄力量',
+        text: '【闭门算账】闭门把这十年经手的钱粮账算一遍',
+        description: '算完你才发现，自己经手的银子没有一笔是干净的。',
         showConditions: {
           origin: ['寒门', '没落世家']
         },
@@ -347,8 +347,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力助耕】"当全力助耕，救民于水火"',
-        description: '拿出自己的积蓄，购买种子和耕牛，帮助百姓恢复春耕',
+        text: '【垫银助耕】替农户垫上种子钱，秋后再还',
+        description: '秋后还回来的，不到一半。',
         showConditions: {
           attributes: { 财帛: { min: 20 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
@@ -843,8 +843,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力赈灾】"当全力赈灾，救民于水火"',
-        description: '不惜一切代价，全力赈灾，拯救灾民',
+        text: '【沿江设粥】在沿江每个渡口设一处粥棚',
+        description: '粥棚设到第七处，你的积蓄见了底。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } }
@@ -1079,8 +1079,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【落井下石】"当落井下石，借机铲除异己"',
-        description: '利用张献忠诈降之机，罗织罪名，打击政敌',
+        text: '【借降案株连】把张献忠诈降的旧账算到政敌身上',
+        description: '旧账翻出来，政敌百口莫辩。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } }
         },
@@ -1329,8 +1329,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【酌情减免】"当酌情减免，以安民心"',
-        description: '根据各地实际情况，酌情减免部分赋税',
+        text: '【免灾区、请停剿饷】上疏请免灾区赋税，并请暂停剿饷',
+        description: '疏被留中，杨嗣昌的门客来问你“是不是疯了”。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } }
@@ -1366,8 +1366,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【强制征收】"皇命难违，当强制征收"',
-        description: '严格执行朝廷命令，强制征收赋税',
+        text: '【照剿饷催】剿饷二百八十万，按亩摊下去',
+        description: '你算过，每亩多摊七分，一户农家要多交四钱。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 12,清议: -8,
@@ -1399,8 +1399,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【中饱私囊】"当中饱私囊，借征税谋利"',
-        description: '利用征税之机，加征苛捐杂税，中饱私囊',
+        text: '【包揽解饷】把解饷的差事包给粮商，从中抽头',
+        description: '粮商给你送了一张银票，你收得很顺手。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -1435,8 +1435,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，等待时机"',
-        description: '不急于征收，拖延观望，等待更好的时机',
+        text: '【等杨嗣昌倒】把催征拖着，等杨嗣昌失势再说',
+        description: '你等了一年，杨嗣昌没倒，皇上的旨意先到了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8,
@@ -1761,8 +1761,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不站队不表态"',
-        description: '对朝堂争论保持中立，不站队不表态',
+        text: '【不置一词】朝会上两派吵到散朝，你始终没开口',
+        description: '散朝后，两边都来问你，你只说“各有各的道理”。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -1817,8 +1817,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【展示政绩】"当展示政绩，争取升迁"',
-        description: '详细展示自己这一年的政绩，争取升迁',
+        text: '【陈四正六隅之弊】把河南十面网里的空当写成条陈',
+        description: '你指出三处兵力接不上，杨嗣昌的幕僚连夜来抄。',
         showConditions: {
           attributes: { 理政: { min: 60 } }
         },
@@ -1851,8 +1851,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，不求有功但求无过"',
-        description: '不求有功但求无过，韬光养晦',
+        text: '【不写剿局】考成册只报本衙门钱粮，剿务一概不碰',
+        description: '剿局一年三变，写进去就是给自己留把柄。',
         effects: {
           attributes: { 体质: 5 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1882,8 +1882,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【结交权贵】"当结交权贵，为来年铺路"',
-        description: '利用年终之机，结交权贵，为来年铺路',
+        text: '【贺杨入阁】备一份厚礼，贺杨嗣昌入阁',
+        description: '礼单递进去，第三天你就收到了杨府的回帖。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 } }
@@ -1919,8 +1919,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【反思总结】"当反思总结，规划来年"',
-        description: '反思这一年的得失，规划来年的发展',
+        text: '【算剿饷总账】把这十年剿饷的出入摊开算一遍',
+        description: '算到最后一页，你发现亏空比奏报里多了三成。',
         effects: {
           attributes: { 文韬: 4, 理政: 2 },
           gameState: { 清议: 8 },

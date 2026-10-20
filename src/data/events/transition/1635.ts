@@ -29,8 +29,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏献策】"当上疏献策，为平寇建言"',
-        description: '撰写奏疏，为平定流寇建言献策，提出剿抚并用之策',
+        text: '【上剿抚疏】冒死上疏，再提剿抚并用',
+        description: '皇上把折子摔在地上，却也没治你的罪。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -63,8 +63,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【安分守己】"当安分守己，做好本职"',
-        description: '不主动表现，安分守己做好本职工作',
+        text: '【不议剿抚】朝会上只随班行礼，剿抚一字不议',
+        description: '散朝时，你听见有人在背后说“此人老成”。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 3 },
@@ -90,8 +90,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【攀附权贵】"当攀附权贵，趁乱谋利"',
-        description: '利用朝局动荡之机，攀附权贵，谋取私利',
+        text: '【值房攀谈】散朝后留住几位新贵，在值房里攀谈',
+        description: '新贵们收下你的炭敬，答应替你留意。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 }, 欲望值: { min: 30 } },
@@ -128,8 +128,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，积蓄力量"',
-        description: '闭门谢客，反思过去一年的得失，积蓄力量',
+        text: '【闭门思剿】闭门把车厢峡招安前后的塘报读一遍',
+        description: '读完你才明白，招安不是败在书上，是败在粮上。',
         effects: {
           attributes: { 体质: 4, 文韬: 2 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -260,8 +260,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱敛财】"当趁乱敛财，借军需之名中饱私囊"',
-        description: '利用凤阳告急之机，虚报军需，中饱私囊',
+        text: '【克扣援饷】把救援凤阳的粮饷截下一笔',
+        description: '凤阳的急报一天三封，你的银箱一天比一天沉。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -299,8 +299,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不轻易表态"',
-        description: '对凤阳告急保持沉默，不轻易表态',
+        text: '【不置一词】朝会上议凤阳，你始终没开口',
+        description: '凤阳的皇陵烧了，你的名字没出现在任何一边。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -425,8 +425,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【落井下石】"当落井下石，借机铲除异己"',
-        description: '利用凤阳失守之机，罗织罪名，打击政敌',
+        text: '【借陵案发难】把凤阳失守的罪责写成弹章，递上去',
+        description: '弹章递上去，三位大臣被革了职。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -518,8 +518,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力赈灾】"当全力赈灾，救民于水火"',
-        description: '拿出自己的积蓄，全力赈灾，帮助百姓度过春耕',
+        text: '【散种安民】把种子和口粮一并发到中原的村子里',
+        description: '田里重新有了人烟，你的积蓄没了。',
         showConditions: {
           attributes: { 理政: { min: 50 }, 财帛: { min: 20 } },
           hidden: { 道德值: { min: 50 } },
@@ -592,8 +592,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报赈灾】"当虚报赈灾，中饱私囊"',
-        description: '利用赈灾之机，虚报赈灾款项，中饱私囊',
+        text: '【以霉充良】把霉变的种子掺进赈灾种里发下去',
+        description: '种子下了地，出苗的不到一半。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -855,8 +855,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力赈灾】"当全力赈灾，救民于水火"',
-        description: '不惜一切代价，全力赈灾，拯救灾民',
+        text: '【掘井散粮】一边雇人掘井，一边把粮发下去',
+        description: '井出水那天，你的存粮只剩下三石。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1141,8 +1141,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不轻易表态"',
-        description: '对卢象升剿匪保持沉默，不轻易表态',
+        text: '【批“再议”】卢象升请饷的折子转来，你批了“再议”',
+        description: '卢象升连赢几阵，你的“再议”还没议完。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -1355,8 +1355,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【酌情减免】"当酌情减免，以安民心"',
-        description: '根据各地实际情况，酌情减免部分赋税',
+        text: '【免凤阳三县】把凤阳遭兵的三县赋税全免',
+        description: '三县的县令联名给你送了万民伞，你没收。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } }
@@ -1392,8 +1392,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【强制征收】"皇命难违，当强制征收"',
-        description: '严格执行朝廷命令，强制征收赋税',
+        text: '【一文不免】凤阳的赋税照额催，一文不许少',
+        description: '有百姓跪在衙门口，你从后门进出。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 12,清议: -8,
@@ -1423,8 +1423,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【中饱私囊】"当中饱私囊，借征税谋利"',
-        description: '利用征税之机，加征苛捐杂税，中饱私囊',
+        text: '【截留赈银】把凤阳的赈银报成“已发”，截下一半',
+        description: '账做平了，你夜里常梦见凤阳的皇陵。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -1459,8 +1459,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，等待时机"',
-        description: '不急于征收，拖延观望，等待更好的时机',
+        text: '【拖过九月】把征收的期限拖到九月之后',
+        description: '期限拖过去，皇上把你记在了“怠玩”的名册上。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8,
@@ -1629,8 +1629,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不轻易表态"',
-        description: '对流寇分化之事保持沉默，不轻易表态',
+        text: '【抄存了事】流寇分化的消息传来，你只让下属抄一份存档',
+        description: '存档还没归类，各部的方略已经定了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -1787,8 +1787,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不站队不表态"',
-        description: '对朝中暗流保持中立，不站队不表态',
+        text: '【只答粮饷】有人拿温、卢之争问你，你只答粮饷数目',
+        description: '粮饷的数目没人爱听，你也就清静了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -1845,8 +1845,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【展示政绩】"当展示政绩，争取升迁"',
-        description: '详细展示自己这一年的政绩，争取升迁',
+        text: '【附凤阳赈册】把凤阳流民的赈济名册附在考成册后',
+        description: '名册上有七千多个名字，考功司翻到半夜。',
         showConditions: {
           attributes: { 理政: { min: 60 } }
         },
@@ -1879,8 +1879,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，不求有功但求无过"',
-        description: '不求有功但求无过，韬光养晦',
+        text: '【不碰皇陵】考成册只写本衙门钱粮，凤阳一字不提',
+        description: '皇陵的事谁碰谁沾血，你把册子压在了最底下。',
         effects: {
           attributes: { 体质: 5 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1910,8 +1910,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【结交权贵】"当结交权贵，为来年铺路"',
-        description: '利用年终之机，结交权贵，为来年铺路',
+        text: '【探温府口风】借送年敬问一句皇陵一案的走向',
+        description: '温体仁收了礼，只回了四个字：“静观其变。”',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 40 } }
@@ -1947,8 +1947,8 @@ export const events1635: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【反思总结】"当反思总结，规划来年"',
-        description: '反思这一年的得失，规划来年的发展',
+        text: '【重读凤阳塘报】闭门把凤阳失守前后的塘报重读一遍',
+        description: '读完你才发现，皇陵被毁那七天，朝廷没有一份像样的军报。',
         effects: {
           attributes: { 文韬: 4, 理政: 2 },
           gameState: { 清议: 8 },
