@@ -71,7 +71,7 @@ console.log(`堆占用基线（进游戏后）：${base} MB\n`)
 console.log('弹窗开关 12 轮，每轮开/关 5 个面板：')
 const series = []
 for (let round = 0; round < 12; round++) {
-  for (const rx of ['骰|谋士', '问\\s*帮助', '功\\s*成就', '经\\s*周易', '存\\s*存\\s*档']) {
+  for (const rx of ['骰|谋士', '功\\s*成就', '经\\s*周易', '存\\s*存\\s*档']) {
     await page.evaluate(r => {
       const b = [...document.querySelectorAll('button')].find(x => new RegExp(r).test(x.textContent || ''))
       if (b) b.click()
@@ -80,6 +80,11 @@ for (let round = 0; round < 12; round++) {
     await page.keyboard.press('Escape')
     await page.waitForTimeout(140)
   }
+  // 帮助按钮已从底栏隐藏（第三十一轮补丁），H 仍要能开关这个弹窗
+  await page.keyboard.press('h')
+  await page.waitForTimeout(140)
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(140)
   const h = await heapMB()
   series.push(h)
   console.log(`  轮 ${String(round + 1).padStart(2)}: ${h} MB`)

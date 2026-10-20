@@ -62,4 +62,10 @@ describe('ActionBar · 徽标与标签拼出来的字', () => {
     expect(Math.abs(image - advisor), '丹青必须与谋士相邻').toBe(1)
     expect(btns[image].text).toBe('绘丹青')
   })
+
+  it('底栏不再渲染「帮助」按钮（帮助仍走 H 快捷键）', () => {
+    const btns = renderBar({ onOpenAchievements: vi.fn(), onOpenAIAdvisor: vi.fn(), onOpenImageGenerator: vi.fn() })
+    expect(btns.some(b => b.text.includes('帮助')), `底栏仍有：${btns.map(b => b.text).join(',')}`).toBe(false)
+    expect(btns.some(b => b.badge === '问')).toBe(false)
+  })
 })

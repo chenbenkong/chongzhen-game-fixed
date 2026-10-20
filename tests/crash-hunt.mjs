@@ -125,7 +125,7 @@ await page.waitForTimeout(400)
 await health('after-overlap')
 
 // ---- 场景 3：反复开关每个弹窗 ----
-for (const rx of ['骰|谋士', '问\\s*帮助', '功\\s*成就', '存\\s*存\\s*档', '经\\s*周易']) {
+for (const rx of ['骰|谋士', '功\\s*成就', '存\\s*存\\s*档', '经\\s*周易']) {
   await clickByText(rx, 1, 250)
   await page.keyboard.press('Escape')
   await page.waitForTimeout(250)
@@ -133,6 +133,11 @@ for (const rx of ['骰|谋士', '问\\s*帮助', '功\\s*成就', '存\\s*存\\s
   await page.keyboard.press('Escape')
   await page.waitForTimeout(250)
 }
+// 帮助按钮已从底栏隐藏（第三十一轮补丁），H 仍要能开关这个弹窗
+await page.keyboard.press('h')
+await page.waitForTimeout(250)
+await page.keyboard.press('Escape')
+await page.waitForTimeout(250)
 await health('after-modals')
 
 // ---- 场景 4：存档 / 读档往返 ----

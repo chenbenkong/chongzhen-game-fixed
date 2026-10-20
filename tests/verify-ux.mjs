@@ -13,6 +13,7 @@ mkdirSync('screenshots', { recursive: true })
  *  5. 丹青入口在底栏、紧挨「谋士」；事件面板不再为它占一整行
  *  6. 输入框里按数字不会误选（取名屏）
  *  7. 全程无死锁
+ *  8. 底栏不再有「帮助」按钮（帮助改走 H 快捷键）
  */
 const BASE = process.argv[2] || 'http://localhost:4173/'
 const b = await chromium.launch({ headless: true })
@@ -127,6 +128,7 @@ const S = () => page.evaluate(() => {
   check('未抉择时面板内确实没有「继 续」按钮', !s.hasContinue)
   check('底栏有「丹青」入口', s.hasDanqingInBar, `底栏=${s.barTexts.join(',')}`)
   check('丹青按钮紧挨「谋士」', s.danqingNextToAdvisor)
+  check('底栏不再有「帮助」按钮', !s.barTexts.some(t => t.includes('帮助')), `底栏=${s.barTexts.join(',')}`)
   check('事件面板不再有整行「事件插图」', s.inEventDanqing === 0, `count=${s.inEventDanqing}`)
   check('回合旁显示待办数', !!s.pendingChip, s.pendingChip || '')
   check('选项带 1..N 序号徽标', s.indexBadges.join(',') === s.choices + '' ? false : s.indexBadges.length > 0, s.indexBadges.join(','))

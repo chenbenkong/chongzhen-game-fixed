@@ -6,7 +6,6 @@ interface ActionBarProps {
   onNextMonth: () => void
   onSave: () => void
   onOpenAchievements?: () => void
-  onOpenHelp?: () => void
   onOpenAIAdvisor?: () => void
   onOpenImageGenerator?: () => void
   onReturnToMenu?: () => void
@@ -28,7 +27,6 @@ const ActionBarImpl = function ActionBar({
   onNextMonth,
   onSave,
   onOpenAchievements,
-  onOpenHelp,
   onOpenAIAdvisor,
   onOpenImageGenerator,
   onReturnToMenu,
@@ -92,10 +90,6 @@ const ActionBarImpl = function ActionBar({
         <button className="action-btn secondary" onClick={onOpenAchievements}>
           <span className="btn-icon">功</span>
           <span>成就</span>
-        </button>
-        <button className="action-btn secondary" onClick={onOpenHelp}>
-          <span className="btn-icon">问</span>
-          <span>帮助</span>
         </button>
         {onOpenImageGenerator && (
           <button

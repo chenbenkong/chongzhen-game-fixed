@@ -251,11 +251,15 @@ for (const [w, h] of VPS) {
     await page.locator('.close-button').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(500)
 
-    // 帮助：九步逐条量（第 5 步「剧情线路」正文最长，706→911px 都靠它撑出缺陷）
-    await page.locator('.action-btn:has-text("帮助")').first().click({ force: true }).catch(() => {})
+    // 帮助：按钮已在第三十一轮补丁从底栏隐藏，改按 H 打开；九步逐条量
+    await page.keyboard.press('h')
     await page.waitForTimeout(900)
+    if (!(await page.locator('.tutorial-overlay').count())) {
+      console.log('  ✗ [帮助] 按 H 没能打开教程 —— 读数无效')
+      fails++
+    }
     for (let step = 0; step < 12; step++) {
-      if (!(await page.locator('.tutorial-overlay').count())) break
+      if (!(await page.locator('.tutorial-overlay').count())) break // 九步走完自动关闭，属正常
       const title = (await page.locator('.tutorial-title').first().textContent().catch(() => '') || '').trim()
       await sweep(page, `帮助·${title || '第 ' + (step + 1) + ' 步'}`, '.tutorial-overlay')
       const next = page.locator('.tutorial-btn.primary').first()

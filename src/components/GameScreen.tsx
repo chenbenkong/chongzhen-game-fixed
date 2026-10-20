@@ -399,7 +399,6 @@ function GameScreen(props: GameScreenProps) {
           onNextMonth={handleAdvance}
           onSave={handleSave}
           onOpenAchievements={openAchievementPanel}
-          onOpenHelp={openHelp}
           onOpenAIAdvisor={openAIAdvisor}
           onOpenImageGenerator={openImageGenerator}
           onReturnToMenu={handleReturnToMenu}
