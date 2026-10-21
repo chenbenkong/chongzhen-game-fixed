@@ -174,14 +174,19 @@ describe(`潜逃者不再领朝廷的恩（${GAMES} 局 × 两副画像）`, () 
     expect(sealed, `${GAMES} 局里《亡命江湖》结案 0 次 —— 上面那行分布会指出人死在哪一格`).toBeGreaterThan(0)
   })
 
-  it('控制组：`vanish` 的结案数不因这条闸而变（第廿六轮读的是 4）', () => {
+  it('控制组：`vanish` 的结案数（第卅九轮重抄为 2；第廿六轮那版是 4）', () => {
     const sealed = van.filter(r => r.endingId === FUGITIVE).length
     const v = favorRises(van)
     console.log(
       `vanish：带票 ${van.filter(r => r.trace.some(t => t.derived.flags.includes(FUGITIVE_FLAG))).length}/${GAMES} · ` +
         `结案 ${sealed} · 逃后 圣眷 上涨 ${v.after}/${v.afterMonths} 月`
     )
-    expect(sealed, 'vanish 组的结案数动了 —— 第廿四轮那批读数要连带重算').toBe(4)
+    // 第卅九轮新增「内廷门路」之后，这条危机在 months 里多消耗了一次概率门随机数，
+    // 同一批种子的随机流整体挪了一拍：这批 vanish 局从 4 局结案变成 2 局。
+    // 变的是**样本**，不是这条闸 —— `fugitive` 组在同一构建上仍是 12 局结案、
+    // 年窗内 圣眷 挡路 0 次（见上面两条）。控制组的价值是"同一版上量出来的旁证"，
+    // 所以这里按本版重抄，而不是为了保住旧数去动闸或动种子。
+    expect(sealed, 'vanish 组的结案数又动了 —— 先确认是内容改动的随机流偏移，还是这条闸被改坏').toBe(2)
     expect(v.after, 'vanish 组也带得上 潜逃，闸对它同样生效').toBe(0)
   })
 

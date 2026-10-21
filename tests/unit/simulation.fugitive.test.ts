@@ -181,34 +181,23 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     ).toBe(true)
   })
 
-  it('带 潜逃 的局在年窗里差的全是 道德，圣眷 一条也不挡路（这条闸对 vanish 同样生效）', () => {
-    // 第二十六轮这一条写的是「门开着的那几个月必须真的由它结案」，断言 `heldAndWon > 0`。
-    // 那句话在 bandit/vanish 这两副画像下**从来没有成立过**：闸装上的那一版读数是门开 2 月、
-    // 两个月都只带成对票、都被《不知所踪》(p117) 接走，它自己赢 0 月 —— 于是断言红。
-    // 第廿七轮量具自洽之后结案 8/40（`simulation.fugitiveGate.test.ts`），所以这里留下的
-    // 不是"这一格走不到"，而是**这两副画像为什么走不到**：差池百分之百是 道德。
-    let closed = 0
-    let favor = 0
-    let moral = 0
-    for (const r of runs) {
-      const f = r.trace.findIndex(s => s.derived.flags.includes(FUGITIVE_FLAG))
-      if (f < 0) continue
-      for (let i = f; i < r.trace.length; i++) {
-        if (r.trace[i].derived.year < EFFECTIVE_MIN_YEAR || gateHeldAt(r, i)) continue
-        closed++
-        for (const { key } of closedBy(r, i)) {
-          if (key.startsWith('州府.圣眷>')) favor++
-          if (key.startsWith('隐藏.道德值>')) moral++
-        }
-      }
-    }
+  it('这两副画像里已经没有"带票活进年窗"的局 —— 这一格改用 fugitive 画像量（第卅九轮实测）', () => {
+    // 第廿七轮这一条读的是「带 潜逃 的局在年窗里关着的月份，差的全是 道德」。
+    // 第卅九轮新增「内廷门路」之后，这条危机在月份里多消耗一次概率门随机数，
+    // 同一批种子的随机流整体挪了一拍：本组唯一的带票局 seed6425 现在死在 1634 年
+    // （《倾家荡产》），差一年进不了年窗 —— 旧断言 `closed > 0` 已经没有样本可量。
+    //
+    // 不再拿一句空转的 0 冒充读数：这一格的正经量具是
+    // `simulation.fugitiveGate.test.ts` 的 `fugitive` 画像（带票 37/40、门开 19 月、
+    // 年窗内 圣眷 挡路 0 次、结案 12 局）。这里只钉住"本组样本到哪里为止"，
+    // 哪天又有带票局活进年窗，这条会红，提醒把归因重抄一遍。
+    const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
+    const inWindow = withTicket.filter(r => r.trace.some(s => s.derived.year >= EFFECTIVE_MIN_YEAR))
     console.log(
-      `带 潜逃 的局在年窗内关着 ${closed} 个月 —— 差 圣眷 ${favor} 次 · 差 道德 ${moral} 次` +
-        `（闸装好之后 圣眷 该是 0；若道德也补齐了却仍结不了案，去看优先级那几条）`
+      `带 潜逃 ${withTicket.length} 局（${withTicket.map(r => `seed${r.seed}/${r.policy}`).join(' · ') || '无'}）· ` +
+        `活进年窗 ${inWindow.length} 局`
     )
-    expect(closed, '带票局在年窗里一个月都没关过门 —— 上面那句 0 就只是空转').toBeGreaterThan(0)
-    expect(favor, '圣眷 还在挡路 —— 那条闸没生效，或 圣眷 有一条闸管不到的来路').toBe(0)
-    expect(moral, '年窗里关着却不全是 道德 的锅 —— ⑱ 的归因要重写').toBe(closed)
+    expect(inWindow.length, '又有带票局活进年窗了 —— 用上面的逐月数据把 道德/圣眷 归因重抄一遍').toBe(0)
   })
 
   it('这两副画像结案 0 次 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {

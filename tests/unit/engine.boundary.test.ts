@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { act } from '@testing-library/react'
 import { crisisEventMayShow } from '../../src/hooks/useGameEngine'
 import { BOUNDARY_EVENTS } from '../../src/data/boundaryEvents'
+import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
+import { zeroWarningEvents } from '../../src/data/zeroWarningEvents'
+import { corruptionWarningEvents } from '../../src/data/demotionWarningEvents'
 import type { BoundaryEventCheckParams } from '../../src/types/boundaryEvent'
 import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
 import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
@@ -307,4 +310,108 @@ describe('缺陷 K-14c：crisis 临界事件发作后要隔满冷却才能再发
     // 这里刻意**不**断言"取样里必须重发过一次"：载体已经换成上面那条构造函数
     // （见本段说明），180 局抓不到一次重发是体质回升通道生效的结果，不是冷却坏了。
   }, 240_000)
+})
+
+/**
+ * 第三十九轮：§1.4 ② —— 中官的低位回升渠道。
+ *
+ * 在这之前，中官只有下降通道：`诗文清望` 开局 22 点、正增量还打七折，
+ * aggressive 组 100 局里 78 局死在它归零上。归零警告给的三条路一生只发一次，
+ * 发过之后就没有下一次了 —— 玩家能做的只剩下"别让它掉到 0"，没有一次主动的补救。
+ *
+ * 「内廷门路」不是被动回血，而是一条**只在低位开**的玩法：中官 1~30 时宫里递话，
+ * 三条路分别拿财帛 / 圣眷 / 士绅换。拉到 30 以上就再也刷不到 —— 中官不能存起来兑现。
+ * 判据刻意不含 0：0 点由归零警告管，那一次通知必须由警告来播。
+ */
+const CHANNEL_RULE = BOUNDARY_EVENTS.find(r => r.id === 'inner_court_channel')!
+const CHANNEL_EVENT_ID = 'boundary_inner_court_channel'
+
+function channelParams(zhongguan: number): BoundaryEventCheckParams {
+  return {
+    attributes: { 财帛: 60, 文韬: 50, 理政: 50, 武略: 50, 体质: 60 },
+    gameState: { 圣眷: 50, 中官: zhongguan, 清议: 50, 士绅: 50, 民望: 50 },
+    hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
+    flags: []
+  }
+}
+
+describe('第三十九轮：中官低位时才开的那扇内廷门（§1.4 ②）', () => {
+  it('只在中官 1~30 之间开门，0 点交给归零警告，31 点以上不许存着刷', () => {
+    expect(CHANNEL_RULE.check(channelParams(1))).toBe(true)
+    expect(CHANNEL_RULE.check(channelParams(30))).toBe(true)
+    expect(CHANNEL_RULE.check(channelParams(0)), '0 点该由「归零警告·中官」来播').toBe(false)
+    expect(CHANNEL_RULE.check(channelParams(31)), '31 点以上还能刷，等于把中官存起来反复兑现').toBe(false)
+    expect(CHANNEL_RULE.check(channelParams(80))).toBe(false)
+    // 已经潜逃的人不再有内廷门路 —— 也不该在年窗里被这扇门换走最后的盘缠
+    expect(
+      CHANNEL_RULE.check({ ...channelParams(10), flags: ['潜逃'] }),
+      '通缉在案的人还收到宫里递话'
+    ).toBe(false)
+    // 参数缺失按不触发处理（与 boundaryEventCompiler 的 fail-closed 一致）
+    expect(CHANNEL_RULE.check({ attributes: {}, gameState: {}, hidden: {} })).toBe(false)
+  })
+
+  it('priority 排在全部"必达警告"之后：同月命中时，先播警告', () => {
+    // 不只是八条归零警告 ——「革职预警·贪墨」同样是必达的（severity 3 之前最后一次通知），
+    // 而它的 priority 也是 19。新事件若停在 19，同月命中就会把它顶掉。
+    const warningPriorities = [...zeroWarningEvents, ...corruptionWarningEvents].map(e => e.priority)
+    const maxWarningPriority = Math.max(...warningPriorities)
+    expect(CHANNEL_RULE.priority).toBeGreaterThan(maxWarningPriority)
+
+    // 财帛归零 + 中官低位同时成立：管理器必须把第一条归零通知递出来
+    const broke = channelParams(10)
+    broke.attributes = { ...broke.attributes, 财帛: 0 }
+    expect(boundaryEventManager.checkByType(broke, 'crisis')?.id).toBe('warn_zero_财帛')
+    // 财帛正常时，才轮到门路
+    expect(boundaryEventManager.checkByType(channelParams(10), 'crisis')?.id).toBe('inner_court_channel')
+  })
+
+  it('三条出路都付代价，没有一条是白拿中官', () => {
+    const choices = CHANNEL_RULE.event.choices
+    expect(choices).toHaveLength(3)
+    for (const choice of choices) {
+      const gain = choice.effects.gameState?.['中官'] ?? 0
+      expect(gain, `${choice.id} 没给中官，回天之路等于没有`).toBeGreaterThan(0)
+      const costs = [
+        choice.effects.attributes?.['财帛'] ?? 0,
+        choice.effects.gameState?.['圣眷'] ?? 0,
+        choice.effects.gameState?.['士绅'] ?? 0,
+        choice.effects.gameState?.['清议'] ?? 0,
+        choice.effects.hidden?.['道德值'] ?? 0
+      ]
+      expect(costs.some(v => v < 0), `${choice.id} 只涨中官、没有代价`).toBe(true)
+    }
+  })
+
+  it('真引擎里中官 20 时推进一个月能撞见它，点【封一份礼】中官涨、财帛减', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9)
+    const { result } = renderGameEngine({
+      loadSaveData: makeSaveData({
+        character: makeCharacter({
+          attributes: { 财帛: 60, 文韬: 50, 理政: 50, 武略: 50, 体质: 60 }
+        }),
+        gameState: makeGameState({ 中官: 20 })
+      })
+    })
+    await flush()
+    expect(result.current.currentEvent?.id).not.toBe(CHANNEL_EVENT_ID)
+
+    randomSpy.mockReturnValue(0.1)
+    await act(async () => {
+      result.current.handleNextMonth()
+    })
+    await flush(600)
+    expect(result.current.currentEvent?.id, '中官已经低到 20，宫里的门却没开').toBe(CHANNEL_EVENT_ID)
+
+    const zhongguanBefore = result.current.gameState.中官
+    const moneyBefore = result.current.character.attributes.财帛
+    const c1 = CHANNEL_RULE.event.choices.find(c => c.id === 'c1')!
+    await act(async () => {
+      result.current.handleChoice(c1)
+    })
+    await flush(30)
+    expect(result.current.gameState.中官).toBe(zhongguanBefore + 26)
+    expect(result.current.character.attributes.财帛).toBe(moneyBefore - 22)
+    randomSpy.mockRestore()
+  })
 })
