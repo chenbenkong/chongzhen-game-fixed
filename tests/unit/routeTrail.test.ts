@@ -7,7 +7,7 @@ import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../../src/data/boundaryEvents'
 import { NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
 import { ZERO_THRESHOLDS, zeroWarnFlag } from '../../src/data/zeroWarningEvents'
-import type { Attributes } from '../../src/types/game'
+import type { Attributes, Character, GameStateValues } from '../../src/types/game'
 
 const endingById = new Map(allEndingEvents.map(e => [e.id, e]))
 const registeredEndings = () =>
@@ -142,6 +142,144 @@ describe('命途判定', () => {
     expect(ordinary.ready).toBe(true)
     expect(ordinary.statusLabel).toBe('条件已足')
   })
+})
+
+describe('缺口解释', () => {
+  const destOf = (
+    trail: ReturnType<typeof buildRouteTrail>,
+    familyKey: string,
+    endingId: string
+  ) => trail.routes.find(r => r.key === familyKey)!.destinations.find(d => d.endingId === endingId)!
+
+  it('可补的数值缺口写成还差多少，而不是一句尚缺条件', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({ flags: ['随军出征'] }),
+      makeGameState({ currentYear: 1640, turn: 60 })
+    )
+    const general = destOf(trail, 'border', 'ending_border_general')
+    expect(general.statusLabel).toBe('尚缺条件')
+    expect(general.gaps).toEqual(['武略 50/70'])
+    expect(general.blockedBy).toEqual([])
+    expect(general.detail).toBe('还缺：武略 50/70')
+  })
+
+  it('上界不足写清"需≤"，不把太高也说成还差', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({
+        flags: ['随军出征'],
+        attributes: { ...makeCharacter().attributes, 体质: 80 } as Attributes
+      }),
+      makeGameState({ currentYear: 1638, turn: 60, 国势: 50 })
+    )
+    const battle = destOf(trail, 'border', 'ending_died_battlefield')
+    expect(battle.gaps).toEqual(['体质 80（需≤8）'])
+    expect(battle.detail).toBe('还缺：体质 80（需≤8）')
+  })
+
+  it('互斥经历不是缺口，是已经断掉的路', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({ flags: ['随军出征', '出家'] }),
+      makeGameState({ currentYear: 1640, turn: 60 })
+    )
+    const general = destOf(trail, 'border', 'ending_border_general')
+    expect(general.blockedBy).toEqual(['出家'])
+    expect(general.statusLabel).toBe('经历相冲')
+    expect(general.detail).toBe('相冲：出家；还缺：武略 50/70')
+  })
+
+  it('自己辞过的笔单独说，语气不是还差一点', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({
+        flags: ['归隐', '搁笔·归隐田园'],
+        hidden: { 道德值: 80, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 }
+      }),
+      makeGameState({ currentYear: 1640, turn: 60, 清议: 60, 圣眷: 40 })
+    )
+    const hermit = destOf(trail, 'hermit', 'ending_hermit_taoist')
+    expect(hermit.blockedBy).toEqual(['搁笔·归隐田园'])
+    expect(hermit.statusLabel).toBe('已搁笔')
+    expect(hermit.detail).toBe('已搁笔：归隐田园')
+  })
+
+  it('门还没开，但路已经断了，也要提前说', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({ flags: ['随军出征', '出家'] }),
+      makeGameState({ currentYear: 1635, turn: 60 })
+    )
+    const general = destOf(trail, 'border', 'ending_border_general')
+    expect(general.status).toBe('before')
+    expect(general.statusLabel).toBe('经历相冲')
+    expect(general.detail).toBe('相冲：出家')
+  })
+
+  it('年窗已过就不再拿门槛和互斥烦人', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({ flags: ['随军出征', '出家'] }),
+      makeGameState({ currentYear: 1651, turn: 276 })
+    )
+    const general = destOf(trail, 'border', 'ending_border_general')
+    expect(general.status).toBe('passed')
+    expect(general.statusLabel).toBe('年窗已过')
+    expect(general.detail).toBe('')
+  })
+
+  it('条件已足时不留第二行', () => {
+    const trail = buildRouteTrail(
+      makeCharacter({ flags: ['与世无争'] }),
+      makeGameState({ currentYear: 1636, turn: 60 })
+    )
+    const ordinary = destOf(trail, 'homestead', 'ending_ordinary_life')
+    expect(ordinary.ready).toBe(true)
+    expect(ordinary.detail).toBe('')
+  })
+
+  it('实跑：开放窗未足必有第二行，已搁笔与相冲都真的出现过', async () => {
+    const counts = { open: 0, declined: 0, conflicted: 0 }
+    for (const policy of ['hermit', 'bandit', 'ordinary'] as const) {
+      for (const origin of ['寒门', '诗文清望'] as const) {
+        const run = await simulateRun({
+          seed: 9000,
+          policy,
+          origin,
+          maxMonths: 260,
+          traceMonths: true
+        })
+        for (const row of run.trace) {
+          const d = row.derived
+          const trail = buildRouteTrail(
+            {
+              attributes: { ...d.attributes },
+              hidden: { ...d.hidden },
+              flags: [...d.flags],
+              faction: { ...d.faction }
+            } as unknown as Character,
+            {
+              ...d.states,
+              turn: d.turn,
+              currentYear: d.year,
+              currentMonth: d.month
+            } as unknown as GameStateValues
+          )
+          for (const route of trail.routes) {
+            for (const dest of route.destinations) {
+              if (dest.ready || dest.status !== 'open') continue
+              counts.open++
+              if (dest.blockedBy.some(x => x.startsWith('搁笔·'))) counts.declined++
+              if (dest.blockedBy.some(x => !x.startsWith('搁笔·'))) counts.conflicted++
+              expect(
+                dest.gaps.length + dest.blockedBy.length,
+                `${dest.endingId} 开放窗里没解释`
+              ).toBeGreaterThan(0)
+              expect(dest.detail, `${dest.endingId} 第二行为空`).not.toBe('')
+            }
+          }
+        }
+      }
+    }
+    expect(counts.open).toBeGreaterThan(0)
+    expect(counts.declined).toBeGreaterThan(0)
+    expect(counts.conflicted).toBeGreaterThan(0)
+  }, 600_000)
 })
 
 describe('此刻史笔', () => {

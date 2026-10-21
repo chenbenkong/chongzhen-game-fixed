@@ -39,11 +39,16 @@ function RoutePanel({ character, gameState }: RoutePanelProps) {
 
               <ul className="route-dests">
                 {route.destinations.slice(0, 2).map(dest => (
-                  <li className={`route-dest ${dest.ready ? 'is-ready' : ''}`} key={dest.endingId}>
+                  <li
+                    className={`route-dest ${dest.ready ? 'is-ready' : ''} ${dest.blockedBy.length > 0 ? 'is-blocked' : ''}`}
+                    key={dest.endingId}
+                    title={dest.detail || undefined}
+                  >
                     <span className="route-dest-title">《{dest.title}》</span>
                     <span className={`route-dest-status is-${dest.status}`}>
                       {dest.statusLabel}
                     </span>
+                    {dest.detail && <span className="route-dest-detail">{dest.detail}</span>}
                   </li>
                 ))}
               </ul>

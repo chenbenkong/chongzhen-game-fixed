@@ -50,6 +50,31 @@ describe('RoutePanel', () => {
     expect(screen.getByText('《倾家荡产》')).toBeTruthy()
   })
 
+  it('落点第二行把重复的互斥经历写清楚', () => {
+    render(
+      <RoutePanel
+        character={makeCharacter({ flags: ['随军出征', '出家'] })}
+        gameState={makeGameState({ currentYear: 1640, turn: 60 })}
+      />
+    )
+    expect(screen.getAllByText('经历相冲').length).toBeGreaterThan(0)
+    expect(screen.getByText('相冲：出家；还缺：武略 50/70')).toBeTruthy()
+  })
+
+  it('玩家自己搁了笔，第二行直说是他辞的', () => {
+    render(
+      <RoutePanel
+        character={makeCharacter({
+          flags: ['归隐', '搁笔·归隐田园'],
+          hidden: { 道德值: 80, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 }
+        })}
+        gameState={makeGameState({ currentYear: 1640, turn: 60, 清议: 60, 圣眷: 40 })}
+      />
+    )
+    expect(screen.getByText('已搁笔')).toBeTruthy()
+    expect(screen.getByText('已搁笔：归隐田园')).toBeTruthy()
+  })
+
   it('此刻史笔与路线落点同时出现时，不再写"尚无定局"', () => {
     render(
       <RoutePanel

@@ -19,6 +19,7 @@
 
 import { Character, GameStateValues } from '../types/game'
 import { BoundaryEventCheckParams } from '../types/boundaryEvent'
+import { EventConditions } from '../types/event'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../data/boundaryEventCompiler'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../data/boundaryEvents'
@@ -332,6 +333,12 @@ export interface RouteDestinationView {
   statusLabel: string
   /** 此刻走注册表 check 是否成立；与引擎判定同一口径 */
   ready: boolean
+  /** 年窗已开时还缺的硬条件（数值 / 门票），人话；训练期或年窗未开时为空 */
+  gaps: string[]
+  /** 身上带着与本格互斥的经历；以「搁笔·」开头的是玩家自己辞过的笔 */
+  blockedBy: string[]
+  /** 面板第二行：为什么还没落笔。空串表示此刻没什么可解释的 */
+  detail: string
 }
 
 export interface ActiveRoute {
@@ -405,6 +412,97 @@ function matchesTickets(spec: RouteDestinationSpec, held: Set<string>): string[]
     return spec.tickets.every(t => held.has(t)) ? [...spec.tickets] : []
   }
   return spec.tickets.filter(t => held.has(t))
+}
+
+interface UnmetExplanation {
+  gaps: string[]
+  blockedBy: string[]
+  /** 条件里有 custom / random：不是数值或门票能解释的 */
+  opaque: boolean
+}
+
+function scanRanges(
+  obj: Record<string, { min?: number; max?: number } | undefined> | undefined,
+  src: Record<string, number> | undefined,
+  gaps: string[]
+): void {
+  if (!obj) return
+  for (const key of Object.keys(obj)) {
+    const range = obj[key]
+    if (!range) continue
+    const val = src?.[key] ?? 0
+    const shown = Math.round(val)
+    if (range.min !== undefined && val < range.min) gaps.push(`${key} ${shown}/${range.min}`)
+    if (range.max !== undefined && val > range.max) gaps.push(`${key} ${shown}（需≤${range.max}）`)
+  }
+}
+
+/**
+ * 把"还差什么"翻译成人话。只读注册表里的条件，不另建一套门槛：
+ * 年窗由 statusLabel 说（年代没到不能算"缺条件"），这里只列开放窗后仍挡路的东西。
+ * `notHas` / `none` 单独归为"相冲" —— 它们不是还能补的缺口，是已经断掉的路。
+ */
+function explainUnmet(
+  conditions: EventConditions | undefined,
+  params: BoundaryEventCheckParams
+): UnmetExplanation {
+  const gaps: string[] = []
+  const blockedBy: string[] = []
+  let opaque = false
+  if (!conditions) return { gaps, blockedBy, opaque }
+
+  scanRanges(conditions.attributes, params.attributes, gaps)
+  scanRanges(conditions.hidden, params.hidden, gaps)
+  scanRanges(conditions.gameState, params.gameState, gaps)
+
+  const flags = params.flags || []
+  const f = conditions.flags
+  if (f) {
+    for (const x of f.has || []) if (!flags.includes(x)) gaps.push(`还缺「${x}」`)
+    for (const x of f.all || []) if (!flags.includes(x)) gaps.push(`还缺「${x}」`)
+    const anyList = f.any || f.some
+    if (anyList && anyList.length > 0 && !anyList.some(x => flags.includes(x))) {
+      gaps.push(`还缺其一：${anyList.slice(0, 2).join(' / ')}${anyList.length > 2 ? ' 等' : ''}`)
+    }
+    for (const x of f.notHas || []) if (flags.includes(x)) blockedBy.push(x)
+    for (const x of f.none || []) if (flags.includes(x)) blockedBy.push(x)
+  }
+
+  if (conditions.month) {
+    const cur = params.currentMonth
+    if (typeof cur !== 'number') {
+      gaps.push('月份未明')
+    } else {
+      if (conditions.month.min !== undefined && cur < conditions.month.min) gaps.push(`${conditions.month.min} 月后`)
+      if (conditions.month.max !== undefined && cur > conditions.month.max) gaps.push('月份已过')
+    }
+  }
+
+  if (conditions.custom || typeof conditions.random === 'number') opaque = true
+  return { gaps, blockedBy, opaque }
+}
+
+function buildDetail(status: RouteStatus, ready: boolean, ex: UnmetExplanation): string {
+  // 年窗已过就只剩"这一页翻过去了"，再列门槛没有意义
+  if (ready || status === 'passed') return ''
+  // 互斥经历与年窗无关：门就算还没开，这条路也已经被自己走死了，得提前说
+  if (status !== 'open' && ex.blockedBy.length === 0) return ''
+
+  const parts: string[] = []
+  const declined = ex.blockedBy.filter(x => x.startsWith('搁笔·'))
+  const conflicted = ex.blockedBy.filter(x => !x.startsWith('搁笔·'))
+  if (declined.length > 0) {
+    const names = declined.map(x => x.replace(/^搁笔·/, '')).slice(0, 2)
+    parts.push(`已搁笔：${names.join('、')}${declined.length > 2 ? ' 等' : ''}`)
+  }
+  if (conflicted.length > 0) {
+    parts.push(`相冲：${conflicted.slice(0, 2).join('、')}${conflicted.length > 2 ? ' 等' : ''}`)
+  }
+  if (status === 'open' && ex.gaps.length > 0) {
+    parts.push(`还缺：${ex.gaps.slice(0, 2).join(' · ')}${ex.gaps.length > 2 ? ' 等' : ''}`)
+  }
+  if (parts.length === 0) parts.push(ex.opaque ? '另有隐情' : '条件未明')
+  return parts.join('；')
 }
 
 const DANGER_COPY: Record<ZeroKey, { endingTitle: string; warnAt: number }> = {
@@ -485,13 +583,26 @@ export function buildRouteTrail(character: Character, gameState: GameStateValues
       const status = windowStatus(spec.window, gameState.turn, gameState.currentYear)
       const boundary = registry.get(spec.endingId)
       const ready = boundary ? boundary.check(params) : false
+      const explanation = explainUnmet(boundary?.event.conditions, params)
+      const declined = explanation.blockedBy.some(x => x.startsWith('搁笔·'))
       destinations.push({
         endingId: spec.endingId,
         title: spec.title,
         matchedTickets: matched,
         status,
-        statusLabel: ready ? '条件已足' : statusLabel(status, spec.window, gameState.turn),
-        ready
+        statusLabel: ready
+          ? '条件已足'
+          : status === 'passed'
+            ? '年窗已过'
+            : declined
+              ? '已搁笔'
+              : explanation.blockedBy.length > 0
+                ? '经历相冲'
+                : statusLabel(status, spec.window, gameState.turn),
+        ready,
+        gaps: explanation.gaps,
+        blockedBy: explanation.blockedBy,
+        detail: buildDetail(status, ready, explanation)
       })
     }
 

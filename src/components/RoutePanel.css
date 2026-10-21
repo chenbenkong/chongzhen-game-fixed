@@ -110,11 +110,29 @@
 .route-dest {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 6px;
+  gap: 0 6px;
   padding: 1px 0;
   font-size: 0.74rem;
   line-height: 1.5;
+}
+
+/* 第二行：为什么还没落笔。年窗未开时只留互斥经历，年窗已过则不显示 */
+.route-dest-detail {
+  flex-basis: 100%;
+  font-size: 0.64rem;
+  line-height: 1.4;
+  color: #7a6a4a;
+  padding-bottom: 2px;
+}
+
+.route-dest.is-blocked .route-dest-detail {
+  color: #a06a4a;
+}
+
+.route-dest.is-blocked .route-dest-status {
+  color: #a06a4a;
 }
 
 .route-dest-title {
