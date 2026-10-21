@@ -5,6 +5,7 @@ import { GameEvent, EventChoice } from '../types/event'
 import { Character, GameStateValues } from '../types/game'
 import { ATTR_DISPLAY_MAP, STATE_DISPLAY_MAP } from '../utils/constants'
 import { checkChoiceRequirement, type ChoiceCheckResult } from '../utils/choiceRequirements'
+import { findRouteClosures } from '../utils/routeTrail'
 import { motionDelay } from '../utils/motion'
 import { getStoryline } from '../data/storylines'
 import { useModal } from '../hooks/useModal'
@@ -417,6 +418,12 @@ function EventDisplay({
     }
     
     return checks
+  }, [event, character, gameState])
+
+  // 结局卡本身就是"你的一生到此为止"，再提示"这会断掉某条路"没有意义。
+  const routeClosures = useMemo(() => {
+    if (!event || event.type === 'ending') return new Map<string, string[]>()
+    return findRouteClosures(event.choices, character, gameState)
   }, [event, character, gameState])
 
   useEffect(() => {
@@ -900,6 +907,13 @@ function EventDisplay({
 
               // 锁定原因用 aria-describedby 暴露；id 由 useId() 派生，避免实例/选项间冲突
               const lockReasonId = `${choiceIdPrefix}-${choice.id}-lock-reason`
+              const closures = routeClosures.get(choice.id)
+              const showClosures = !!closures?.length && (check.available || canAttemptDice)
+              const closureId = `${choiceIdPrefix}-${choice.id}-route-closure`
+              const describedBy = [
+                !check.available ? lockReasonId : null,
+                showClosures ? closureId : null
+              ].filter(Boolean).join(' ') || undefined
 
               return (
                 <div key={`${choice.id}-${idx}`} className="choice-card-wrapper">
@@ -908,7 +922,7 @@ function EventDisplay({
                     onClick={() => handleSelectChoice(choice)}
                     aria-disabled={isProcessing || !check.available}
                     aria-label={!check.available ? choice.text : undefined}
-                    aria-describedby={!check.available ? lockReasonId : undefined}
+                    aria-describedby={describedBy}
                   >
                     <div className="choice-content">
                       {/* 序号徽标：既是 1–9 快捷键的可见提示，也让"点第几个"
@@ -928,6 +942,12 @@ function EventDisplay({
                       </div>
                       {choice.description && (
                         <div className="choice-description">{choice.description}</div>
+                      )}
+                      {showClosures && (
+                        <div className="choice-route-closure" id={closureId}>
+                          此择将断了：{closures!.slice(0, 2).join('、')}
+                          {closures!.length > 2 ? ` 等 ${closures!.length} 条` : ''}
+                        </div>
                       )}
                     </div>
 

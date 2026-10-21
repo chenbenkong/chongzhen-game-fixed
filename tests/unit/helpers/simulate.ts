@@ -784,6 +784,8 @@ export interface ChoiceLog {
   turn: number
   year: number
   eventId: string
+  /** 玩家实际点下的选项 id */
+  choiceId: string
   /** 点下这一条**之前**的 道德值 */
   moralBefore: number
   /** 玩家选中那条的 道德值 增量（没写就算 0） */
@@ -801,6 +803,14 @@ export interface ChoiceLog {
   takenWealth: number
   /** 当时**点得动**的选项里最肥的一条正增量（无正增量则 0） */
   openWealthMax: number
+  /**
+   * 点下这一条前后的 flag 快照。
+   * 第四十三轮加它：用来把选项卡片上的「此择将断了」与真实后果逐条对账 ——
+   * 提醒说会断的必须真的断，没提醒的也不许悄悄断。只做加法/移除，不含引擎侧
+   * 自己写上的归零警告与党派 flag，这与 UI 侧只看 `effects.flags` 的口径一致。
+   */
+  flagsBefore: string[]
+  flagsAfter: string[]
 }
 
 const NO_FACTION = { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
@@ -904,12 +914,20 @@ export async function simulateRun(opts: {
               turn: hook_.gameState.turn,
               year: hook_.gameState.currentYear,
               eventId: event.id,
+              choiceId: choice.id,
               moralBefore: hook_.character.hidden.道德值,
               takenMoral: choice.effects?.hidden?.道德值 ?? 0,
               openMoralMin: Math.min(0, ...deltas),
               openNegCount: deltas.filter(d => d < 0).length,
               takenWealth: choice.effects?.attributes?.财帛 ?? 0,
-              openWealthMax: Math.max(0, ...wealthDeltas)
+              openWealthMax: Math.max(0, ...wealthDeltas),
+              flagsBefore: [...(hook_.character.flags || [])],
+              flagsAfter: (() => {
+                const next = new Set(hook_.character.flags || [])
+                for (const f of choice.effects?.flags?.add ?? []) next.add(f)
+                for (const f of choice.effects?.flags?.remove ?? []) next.delete(f)
+                return [...next]
+              })()
             })
           }
           accumulateDeclared(declaredDelta, choice)

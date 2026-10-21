@@ -613,6 +613,15 @@
   margin-top: 2px;
 }
 
+/* 选项级断途提醒：只在这一条会永久关掉玩家正在追的落点时才出现 */
+.choice-route-closure {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  color: #8a4a32;
+}
+
 .choice-lock-reason {
   font-size: 0.8rem;
   color: #6b3030;

@@ -684,8 +684,20 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
   })
 
-  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(null)
-  const [pendingEvents, setPendingEvents] = useState<GameEvent[]>([])
+  // 读档挂载时，首帧就必须已经带着存档里的事件与待办队列。
+  //
+  // 读档本身在 useEffect 里，而 effect 的执行顺序是**子组件先、父组件后**：
+  // EventDisplay 有一条「没有事件就自动 onContinue」的守卫，首帧若为 null，
+  // 它会在读档 effect 跑之前就调 handleContinue → handleNextMonth，300ms 后
+  // 把刚恢复的事件换成下个月的事件、并把新一批 id 写进历史（存档也随之被覆盖）。
+  // 实测生产包：点「继续游戏」100ms 时还是「己巳之变」，400ms 变成「崇祯帝临朝」。
+  // eventHistory 早已按同一模式从存档初始化，这里补齐事件与待办队列。
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(
+    () => loadSaveData?.currentEvent ?? null
+  )
+  const [pendingEvents, setPendingEvents] = useState<GameEvent[]>(
+    () => loadSaveData?.pendingEvents ?? []
+  )
   const [isProcessing, setIsProcessing] = useState(false)
   const [eventHistory, setEventHistory] = useState<string[]>(() => loadSaveData ? loadSaveData.eventHistory : [])
   // 悔棋快照。字段必须覆盖一次抉择改动的**全部**东西 ——

@@ -19,7 +19,7 @@
 
 import { Character, GameStateValues } from '../types/game'
 import { BoundaryEventCheckParams } from '../types/boundaryEvent'
-import { EventConditions } from '../types/event'
+import { EventChoice, EventConditions } from '../types/event'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../data/boundaryEventCompiler'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../data/boundaryEvents'
@@ -557,6 +557,97 @@ function collectDangers(character: Character, gameState: GameStateValues): Dange
 }
 
 /**
+ * 落点闸门里**还能被后续事件摘掉**的 flag。
+ *
+ * 数据里只有三条：赈灾敛财／军需牟利／皮岛敛财，各自对应一场「事发」危机，
+ * 玩家可以在那里退赃销案。其余的 notHas 全库没有任何 remove，写上去就是永久关门。
+ * 这三个字不是随手抄的：`routeTrail.test.ts` 会扫描全部事件，把这份名单与真实数据对账。
+ */
+export const REVERSIBLE_ROUTE_BLOCKERS = new Set(['赈灾敛财', '军需牟利', '皮岛敛财'])
+
+function endingRegistry() {
+  return new Map(
+    Object.values(boundaryEventManager.getAll())
+      .filter(b => b.type === 'ending')
+      .map(b => [b.event.id, b])
+  )
+}
+
+/**
+ * 「此择将断了」—— 点下去之前就能看见的关门提醒（第四十三轮）。
+ *
+ * 生产口径 108 局（排除结局卡本身）：8610 月 / 21814 次抉择里，54 次选项真的
+ * 关掉了玩家正在追的命途，占 0.25%；命中 41 局（38.0%），单局最多 2 次，
+ * 每次只断一个落点。其中 36 次发生在年窗开启前 —— 玩家要等几年才看见
+ * 「经历相冲」，那时已经改不回来了。按落点：清流殉道 41、流亡海外 8、诏狱冤死 5。
+ *
+ * 门票丢失在 108 局里一次也没撞上（皮岛清算本身没被跑到），但那是真实存在的
+ * 关门路径：退赃拿走「皮岛敛财」，面板上的「海盗之王」就会消失。静态测试
+ * 扫描全库 remove，把「摘票必须提醒」也钉住了。
+ *
+ * 关门有两种，都收在这里：
+ *   1. 选项中了一个不可撤销的闸门（notHas / none）；
+ *   2. 选项摘掉了最后一张门票 —— 退赃拿掉「皮岛敛财」时，面板上的「海盗之王」
+ *      会直接消失。门票丢了，落点也就没了，和撞上闸门是同一件事。
+ *
+ * 四条边界：
+ *   1. 只提醒**正在追**的落点（门票还齐）。没上这条路的选项不该来打扰；
+ *   2. 已经相冲或年窗已过的落点不再提醒 —— 面板已经写着原因，重复一次没有信息；
+ *   3. 闸门只认不可撤销的。可退赃的三条不算"断了"，玩家还有回头路；
+ *   4. 门票丢了才算断：手里还剩别的票，落点就没关。
+ *
+ * 返回 choiceId → 将被断掉的落点标题。EventDisplay 只负责画，不再算一遍。
+ */
+export function findRouteClosures(
+  choices: EventChoice[],
+  character: Character,
+  gameState: GameStateValues
+): Map<string, string[]> {
+  const held = new Set(character.flags)
+  const registry = endingRegistry()
+  const active: Array<{
+    title: string
+    mode: 'any' | 'all'
+    tickets: string[]
+    blockers: string[]
+  }> = []
+
+  for (const family of ROUTE_FAMILIES) {
+    for (const spec of family.destinations) {
+      if (!matchesTickets(spec, held).length) continue
+      if (windowStatus(spec.window, gameState.turn, gameState.currentYear) === 'passed') continue
+      const flags = registry.get(spec.endingId)?.event.conditions?.flags
+      const blockers = [...(flags?.notHas ?? []), ...(flags?.none ?? [])]
+      if (blockers.some(f => held.has(f))) continue
+      active.push({ title: spec.title, mode: spec.mode, tickets: spec.tickets, blockers })
+    }
+  }
+
+  const closures = new Map<string, string[]>()
+  if (!active.length) return closures
+
+  for (const choice of choices) {
+    const added = new Set(choice.effects?.flags?.add ?? [])
+    const removed = new Set(choice.effects?.flags?.remove ?? [])
+    if (!added.size && !removed.size) continue
+
+    const kept = (ticket: string) => added.has(ticket) || (held.has(ticket) && !removed.has(ticket))
+
+    const titles: string[] = []
+    for (const dest of active) {
+      const hit = dest.blockers.filter(f => added.has(f))
+      const closedByGate = hit.length > 0 && !hit.every(f => REVERSIBLE_ROUTE_BLOCKERS.has(f))
+      const closedByTicket = dest.mode === 'all'
+        ? !dest.tickets.every(kept)
+        : !dest.tickets.some(kept)
+      if (closedByGate || closedByTicket) titles.push(dest.title)
+    }
+    if (titles.length) closures.set(choice.id, titles)
+  }
+  return closures
+}
+
+/**
  * 走向：只看玩家身上已有的门票，不预测数值。
  * 每一途里按结局优先级排序（与 BoundaryEventManager 的结算顺序一致），
  * ready 则直接问注册表——所以"条件已足"不是这里另算的，是引擎说成立。
@@ -564,11 +655,7 @@ function collectDangers(character: Character, gameState: GameStateValues): Dange
 export function buildRouteTrail(character: Character, gameState: GameStateValues): RouteTrail {
   const held = new Set(character.flags)
   const params = buildCheckParams(character, gameState)
-  const registry = new Map(
-    Object.values(boundaryEventManager.getAll())
-      .filter(b => b.type === 'ending')
-      .map(b => [b.event.id, b])
-  )
+  const registry = endingRegistry()
 
   const routes: ActiveRoute[] = []
   for (const family of ROUTE_FAMILIES) {

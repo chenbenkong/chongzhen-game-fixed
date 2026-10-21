@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { makeCharacter, makeGameState } from './helpers/gameEngine'
 import { simulateRun, type SimOutcome } from './helpers/simulate'
-import { ROUTE_FAMILIES, buildRouteTrail, previewEnding } from '../../src/utils/routeTrail'
+import { ROUTE_FAMILIES, REVERSIBLE_ROUTE_BLOCKERS, buildRouteTrail, findRouteClosures, previewEnding } from '../../src/utils/routeTrail'
+import { initialEvents, allGrayChoiceEvents } from '../../src/data/events'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../../src/data/boundaryEvents'
-import { NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
+import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
 import { ZERO_THRESHOLDS, zeroWarnFlag } from '../../src/data/zeroWarningEvents'
 import type { Attributes, Character, GameStateValues } from '../../src/types/game'
 
@@ -279,6 +280,185 @@ describe('缺口解释', () => {
     expect(counts.open).toBeGreaterThan(0)
     expect(counts.declined).toBeGreaterThan(0)
     expect(counts.conflicted).toBeGreaterThan(0)
+  }, 600_000)
+})
+
+describe('选项断途提醒', () => {
+  const eventOf = (id: string) => initialEvents.find(e => e.id === id)!
+
+  it('正在追的命途会被这一条断掉时，提前点名', () => {
+    // 东林党人 是「清流殉道」的门票；己巳之变 c2 会写上「袁党」，而它不可撤销
+    const event = eventOf('historical_003')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['东林党人'] }),
+      makeGameState({ currentYear: 1629, turn: 20 })
+    )
+    expect(closures.get('c2')).toEqual(['清流殉道'])
+    expect(closures.get('c3')).toBeUndefined()
+  })
+
+  it('可退赃的敛财不是断途，不报警', () => {
+    // 与世无争 是「平凡终老」的门票；赈灾敛财 之后有三条危机事件可以摘掉
+    const event = eventOf('historical_021')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['与世无争'] }),
+      makeGameState({ currentYear: 1634, turn: 70 })
+    )
+    expect(closures.get('c4')).toBeUndefined()
+  })
+
+  it('已经相冲的落点不重复报警', () => {
+    const event = eventOf('historical_021')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['与世无争', '随军出征'] }),
+      makeGameState({ currentYear: 1634, turn: 70 })
+    )
+    expect(closures.size).toBe(0)
+  })
+
+  it('没上这条路的玩家不被打扰', () => {
+    const event = eventOf('historical_003')
+    expect(findRouteClosures(event.choices, makeCharacter(), makeGameState({ currentYear: 1629, turn: 20 })).size).toBe(0)
+  })
+
+  it('年窗已过的落点不再报警', () => {
+    // historical_022 c1 写「随军出征」，而 1650 年「平凡终老」的年窗早过了
+    const event = eventOf('historical_022')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['与世无争'] }),
+      makeGameState({ currentYear: 1650, turn: 264 })
+    )
+    expect(closures.size).toBe(0)
+  })
+
+  it('可撤销名单与全库 remove 数据完全一致', () => {
+    const routeBlockers = new Set<string>()
+    for (const id of ROUTE_FAMILIES.flatMap(f => f.destinations.map(d => d.endingId))) {
+      const flags = allEndingEvents.find(e => e.id === id)!.conditions.flags
+      for (const f of flags?.notHas ?? []) routeBlockers.add(f)
+      for (const f of flags?.none ?? []) routeBlockers.add(f)
+    }
+    const removed = new Set<string>()
+    for (const event of [...initialEvents, ...allGrayChoiceEvents]) {
+      for (const choice of event.choices) {
+        for (const eff of [choice.effects, choice.failEffects]) {
+          for (const f of eff?.flags?.remove ?? []) if (routeBlockers.has(f)) removed.add(f)
+        }
+      }
+    }
+    expect([...removed].sort()).toEqual([...REVERSIBLE_ROUTE_BLOCKERS].sort())
+  })
+
+  it('退赃摘掉最后一张海票，等于断了海盗之王', () => {
+    const event = eventOf('historical_020_crisis')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['皮岛敛财'] }),
+      makeGameState({ currentYear: 1632, turn: 60 })
+    )
+    expect(closures.get('c1')).toEqual(['海盗之王'])
+    expect(closures.get('c2')).toEqual(['海盗之王'])
+    expect(closures.get('c3')).toEqual(['海盗之王'])
+  })
+
+  it('手里还有出海票时，退赃不算断', () => {
+    const event = eventOf('historical_020_crisis')
+    const closures = findRouteClosures(
+      event.choices,
+      makeCharacter({ flags: ['皮岛敛财', '出海'] }),
+      makeGameState({ currentYear: 1632, turn: 60 })
+    )
+    expect(closures.size).toBe(0)
+  })
+
+  it('门票被撤销时，断途提醒必须同时在 —— 面板上的落点不会无声消失', () => {
+    // 全库唯一一处「选项摘走命途门票」是 1632-1634 的皮岛清算：
+    // c1-c3 退赃都会拿走「皮岛敛财」，而它正是「海盗之王」的门票之一。
+    // 断途提醒把门票丢失当作关门，这条测试把两边的契约钉死。
+    const allDestinations = ROUTE_FAMILIES.flatMap(f => f.destinations)
+    const tickets = new Map<string, string[]>()
+    for (const dest of allDestinations) {
+      for (const t of dest.tickets) tickets.set(t, [...(tickets.get(t) ?? []), dest.endingId])
+    }
+
+    let checked = 0
+    for (const event of [...initialEvents, ...allGrayChoiceEvents]) {
+      for (const choice of event.choices) {
+        for (const flag of choice.effects?.flags?.remove ?? []) {
+          for (const destId of tickets.get(flag) ?? []) {
+            const dest = allDestinations.find(d => d.endingId === destId)!
+            const held = dest.mode === 'all' ? dest.tickets : [flag]
+            const ending = allEndingEvents.find(e => e.id === destId)!
+            const blockers = [
+              ...(ending.conditions.flags?.notHas ?? []),
+              ...(ending.conditions.flags?.none ?? [])
+            ]
+            if (blockers.some(b => held.includes(b))) continue
+            const closures = findRouteClosures(
+              event.choices,
+              makeCharacter({ flags: held }),
+              makeGameState({ currentYear: dest.window.min, turn: 400 })
+            )
+            expect(
+              closures.get(choice.id) ?? [],
+              `${event.id}/${choice.id} 摘票未提醒 ${dest.title}`
+            ).toContain(dest.title)
+            checked++
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0)
+  })
+
+  it('实跑对账：提醒说会断的，必须真的断；没提醒的不许悄悄断', async () => {
+    const endingById = new Map(allEndingEvents.map(e => [e.id, e]))
+    const specs = ROUTE_FAMILIES.flatMap(f =>
+      f.destinations.map(d => {
+        const flags = endingById.get(d.endingId)!.conditions.flags
+        return { ...d, blockers: [...(flags?.notHas ?? []), ...(flags?.none ?? [])] }
+      })
+    )
+    const eventById = new Map(initialEvents.map(e => [e.id, e]))
+    const endingIds = new Set(allEndingEvents.map(e => e.id))
+
+    let warnings = 0
+    const run = await simulateRun({ seed: 9500, policy: 'warden', logChoices: true, maxMonths: 260 })
+    for (const c of run.choiceLog) {
+      if (endingIds.has(c.eventId)) continue
+      const event = eventById.get(c.eventId)
+      if (!event) continue
+      const before = new Set(c.flagsBefore)
+      const after = new Set(c.flagsAfter)
+      const holds = (held: Set<string>, d: typeof specs[number]) =>
+        d.mode === 'all' ? d.tickets.every(t => held.has(t)) : d.tickets.some(t => held.has(t))
+
+      const actual = specs
+        .filter(d => {
+          if (!holds(before, d)) return false
+          if (d.blockers.some(b => before.has(b))) return false
+          if (c.turn < NARRATIVE_MIN_TURN) return false
+          if (d.window.max !== undefined && c.year > d.window.max) return false
+          if (!holds(after, d)) return true
+          const hit = d.blockers.filter(b => after.has(b))
+          return hit.length > 0 && !hit.every(b => REVERSIBLE_ROUTE_BLOCKERS.has(b))
+        })
+        .map(d => d.title)
+
+      const warned = findRouteClosures(
+        event.choices,
+        makeCharacter({ flags: c.flagsBefore }),
+        makeGameState({ currentYear: c.year, turn: c.turn })
+      ).get(c.choiceId) ?? []
+
+      expect(new Set(warned), `${c.eventId}/${c.choiceId}`).toEqual(new Set(actual))
+      warnings += warned.length
+    }
+    expect(warnings).toBeGreaterThan(0)
   }, 600_000)
 })
 
