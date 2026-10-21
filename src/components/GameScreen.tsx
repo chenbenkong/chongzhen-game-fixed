@@ -6,6 +6,7 @@ import { useGameShortcuts } from '../hooks/useGameShortcuts'
 import { useGameEngine, RANKS } from '../hooks/useGameEngine'
 import StatusBar from './StatusBar'
 import AttributePanel from './AttributePanel'
+import RoutePanel from './RoutePanel'
 import StatusPanel from './StatusPanel'
 import EventDisplay from './EventDisplay'
 import ActionBar from './ActionBar'
@@ -376,6 +377,8 @@ function GameScreen(props: GameScreenProps) {
           </main>
 
           <aside className="right-sidebar">
+            <RoutePanel character={character} gameState={gameState} />
+
             <StatusPanel gameState={gameState} />
 
             {identityType === 'official' && (
