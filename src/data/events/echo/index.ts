@@ -4,6 +4,7 @@ import { familyEchoEvents } from './family'
 import { factionEchoEvents } from './faction'
 import { emotionEchoEvents } from './emotion'
 import { aftermathEchoEvents } from './aftermath'
+import { familyLaterEchoEvents } from './familyLater'
 
 /**
  * 回响池（echo）。
@@ -53,6 +54,15 @@ import { aftermathEchoEvents } from './aftermath'
  * 其中 `藏人于外`、`萧灵血案`、`不孝之名`、`夺情起复`、`阉党核心` 这几条是**池内自接**：
  * 上一环写，下一环读，这样新产出的 flag 不会立刻变成新的白存。
  * 另有几条被派去读旧事件（见 faction_events.ts 的 notHas 门与 echo_imperial_004 的门）。
+ *
+ * 第三波 `familyLater.ts`（第四十四轮）：第二波的《门内门外》自己又写下了
+ * `wife_respected` / `harmonious_family` 两条没有读者的经历；同时情感线正文里
+ * 有三处"答应过的下文"从未兑现（护住无子妻后的怀孕、去母留子后的问母、杀妻后的丧事）。
+ * 这一波只读前两波与原始情感线的产出，把这三处断头接上：
+ *
+ *   读 protect_childless_wife → echo_family_006 灯花（写 has_children / wife_hurt / wife_respected / harmonious_family）
+ *   读 has_children           → echo_family_007 名帖（读 harmonious_family / wife_respected / legitimate_heir / concubine_killed）
+ *   读 wife_murdered          → echo_family_008 问丧（读 crime_line）
  */
 export const allEchoEvents: GameEvent[] = [
   ...imperialEchoEvents,
@@ -60,7 +70,9 @@ export const allEchoEvents: GameEvent[] = [
   ...factionEchoEvents,
   ...emotionEchoEvents,
   // 第二波：读上面那十二环的产出（见 aftermath.ts 顶部的接线表）
-  ...aftermathEchoEvents
+  ...aftermathEchoEvents,
+  // 第三波：读第二波与原始情感线留下的欠账（见 familyLater.ts 顶部）
+  ...familyLaterEchoEvents
 ]
 
 export {
@@ -68,5 +80,6 @@ export {
   familyEchoEvents,
   factionEchoEvents,
   emotionEchoEvents,
-  aftermathEchoEvents
+  aftermathEchoEvents,
+  familyLaterEchoEvents
 }

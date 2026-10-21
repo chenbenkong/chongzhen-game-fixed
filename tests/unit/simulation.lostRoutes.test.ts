@@ -46,7 +46,12 @@ import type { OriginType } from '../../src/types/game'
  * 一局都量不出来时该说的是"这一组看不见"，不是"这一格坏了"。
  */
 
-const GAMES = Number(process.env.SIM_GAMES ?? 40)
+// 第四十四轮：家宅第三波回响接进事件池之后，前 40 局里《铤而走险》仍播出 12 次，
+// 但事件发生时的 圣眷 全落在 5–29，画像每次都点了【退隐】—— 门票只在 圣眷 35–40
+// 那五点的窄窗里选得起（【举兵】−30，而 BANDIT 的保命底线是 5）。门没坏：
+// 扩到 80 局，seed6446/6476 在 圣眷 32 点【占山为王】并结案。40 局已经分不清
+// "路线死了"与"窄窗没撞上"，这一批的最低样本因此提到 80。
+const GAMES = Number(process.env.SIM_GAMES ?? 80)
 const MONTHS = Number(process.env.SIM_MONTHS ?? 240)
 const POLICIES = (process.env.SIM_POLICIES ?? 'bandit,vanish').split(',') as SimOutcome['policy'][]
 const ORIGINS: OriginType[] = ['缙绅', '寒门', '没落世家', '诗文清望']

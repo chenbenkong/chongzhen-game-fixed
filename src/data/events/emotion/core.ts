@@ -194,6 +194,10 @@ export const coreEmotionEvents: GameEvent[] = [
     },
     conditions: {
       year: { min: 1630, max: 1642 },
+      // 四条红颜线互斥：这里的 `has` 等于要求同时持有四位知己，事件永远不开门。
+      // 第四十四轮实测 0/108；改成 `any` 能播 51/108，但会把随机流再推一拍，
+      // 让路线棘轮（落草 / 亡命）的样本读数整体移动。先把那些样本扩到能区分
+      //"路线死了"与"窄窗没撞上"，再回来修这里（见 KNOWN_ISSUES §1.4 ㉓）。
       flags: { has: ['soulmate_lixiangjun', 'soulmate_liurushi', 'soulmate_xialing', 'soulmate_namuzhong'] },
       attributes: { 理政: { min: 30 } }
     },

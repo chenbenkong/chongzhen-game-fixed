@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { scanFlagReachability } from '../../scripts/audit-flag-reachability'
-import { allEchoEvents, aftermathEchoEvents } from '../../src/data/events/echo'
+import { allEchoEvents, aftermathEchoEvents, familyLaterEchoEvents } from '../../src/data/events/echo'
 import { allEvents } from '../../scripts/event-pools'
 
 /**
@@ -32,8 +32,14 @@ import { allEvents } from '../../scripts/event-pools'
  * 同一事件内结构上不可能成立的删除。**这个数不许回到非零**，见下一条断言。
  */
 
-/** 第十七轮实测：452 条可写经历里 224 条只写不读（第十五轮记录为 447/250） */
-const WRITE_ONLY_CEILING = 224
+/**
+ * 第四十四轮实测：452 条可写经历里 215 条只写不读（第十七轮记录为 224）。
+ * 这一轮没有加门槛、没有调概率，只是把情感线正文里三处"已经写出来的下文"补上了：
+ * 《子嗣问题》答应的孩子、《去母留子》答应的那一问、《灭口》答应的身后事。
+ * `protect_childless_wife` / `harmonious_family` / `wife_respected` / `legitimate_heir` /
+ * `wife_murdered` / `crime_line` 六条由此第一次有了读者。
+ */
+const WRITE_ONLY_CEILING = 215
 
 const report = scanFlagReachability()
 
@@ -139,12 +145,16 @@ describe('回响池自身的接线契约', () => {
    * 第十五轮记下过一次教训 —— 回响池一边接住旧经历，一边又攒出一批新的白存，
    * 净效果是"只写不读"反而变多。第二波要是也这么写，棘轮就只是往前挪了一格而已。
    * 所以这一池除了自己的一次性开关 `echo_*_done`，只许写**别处早已写得出**的经历。
+   *
+   * 第四十四轮的第三波（familyLater）照同一条规矩办：它写 `has_children` 是为了让
+   * 原文答应过的孩子真的出生，不是借机再攒一批新词。
    */
-  it('第二波回响不许造新词', () => {
-    const aftermathIds = new Set(aftermathEchoEvents.map(e => e.id))
+  it('第二、三波回响不许造新词', () => {
+    const laterPools = [...aftermathEchoEvents, ...familyLaterEchoEvents]
+    const laterIds = new Set(laterPools.map(e => e.id))
     const writtenElsewhere = new Map<string, Set<string>>()
     for (const e of allEvents) {
-      if (aftermathIds.has(e.id)) continue
+      if (laterIds.has(e.id)) continue
       for (const c of e.choices ?? []) {
         for (const f of c.effects?.flags?.add ?? []) {
           if (!writtenElsewhere.has(f)) writtenElsewhere.set(f, new Set())
@@ -153,7 +163,7 @@ describe('回响池自身的接线契约', () => {
       }
     }
     const coined: string[] = []
-    for (const e of aftermathEchoEvents) {
+    for (const e of laterPools) {
       for (const c of e.choices ?? []) {
         for (const f of c.effects?.flags?.add ?? []) {
           if (f.endsWith('_done')) continue
@@ -161,7 +171,7 @@ describe('回响池自身的接线契约', () => {
         }
       }
     }
-    expect(coined, '第二波回响是读者，不是作者 —— 新词得由别的事件先写出来').toEqual([])
+    expect(coined, '第二、三波回响是读者，不是作者 —— 新词得由别的事件先写出来').toEqual([])
   })
 
   it('第二波回响确实存在，且读到的是第一波的产出', () => {

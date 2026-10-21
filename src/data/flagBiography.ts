@@ -181,6 +181,7 @@ export const FLAG_GATE_LABELS: Record<string, string> = {
   pingqi_attempt: '为妻妾排解过',
   wife_hurt: '因纳妾伤了正妻',
   wife_jealous: '偏宠致正妻生怨',
+  concubine_for_heir: '为求子纳过妾',
   concubine_killed: '妾室因你而死',
   lixiangjun_poem: '赠诗李香君',
   lixiangjun_disappointed: '凉了香君的心',
