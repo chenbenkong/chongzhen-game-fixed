@@ -12,8 +12,10 @@ import type { GameEvent } from '../../src/types/event'
  * 年年重复的岁末/新年/秋收仪式 + 20 个开局高频道事件）逐条改写，又清掉了
  * 十套跨 6 个以上事件复用的危机菜单。
  *
- * 下面两条阈值都是**只许往下**的棘轮：446 是第三十五轮结束时的存量，
- * 再改一个自我旁白就该变成 445；新增事件若带回 `"当……"` 会立刻顶破。
+ * 下面两条阈值都是**只许往下**的棘轮：321 是第三十六轮结束时的存量
+ * （第三十五轮为 446）。第三十六轮按实际播放频率挑了 35 个高频事件，
+ * 把其中 125 条自我旁白换成具体动作 + 具体后果；剩余 321 条留待后续按频率继续清。
+ * 再改一个自我旁白就该变成 320；新增事件若带回 `"当……"` 会立刻顶破。
  */
 const NATURALIZED_EVENT_IDS = [
   // 岁末总结（8）
@@ -38,7 +40,17 @@ const NATURALIZED_EVENT_IDS = [
   'transition_005', 'transition_005d', 'transition_006', 'transition_011',
   'transition_013', 'transition_014', 'transition_016', 'transition_017',
   'transition_018', 'transition_020', 'transition_021', 'transition_022',
-  'transition_023', 'transition_025', 'transition_028', 'transition_029'
+  'transition_023', 'transition_025', 'transition_028', 'transition_029',
+  // 第三十六轮：按播放频率选出的高频事件（35）
+  'transition_033', 'transition_034', 'transition_035', 'transition_036',
+  'transition_037', 'transition_038', 'transition_039', 'transition_040',
+  'transition_041', 'transition_044', 'transition_045', 'transition_046',
+  'transition_047', 'transition_049', 'transition_050', 'transition_052',
+  'transition_053', 'transition_056', 'transition_058', 'transition_059',
+  'transition_060', 'transition_061', 'transition_062', 'transition_064',
+  'transition_068', 'transition_070', 'transition_071', 'transition_072',
+  'transition_073', 'transition_074', 'transition_076', 'transition_077',
+  'transition_098', 'transition_100', 'transition_113'
 ] as const
 
 const byId = new Map(transitionEvents.map(e => [e.id, e]))
@@ -53,17 +65,17 @@ describe('支线选项的自然度（audit:branch）', () => {
 
   it('自我旁白不再回涨', () => {
     const audit = scanBranching(transitionEvents)
-    // 第三十五轮结束时 446/864；只许减，不许增
-    expect(audit.selfNarration).toBeLessThanOrEqual(446)
+    // 第三十六轮结束时 321/864（第三十五轮 446）；只许减，不许增
+    expect(audit.selfNarration).toBeLessThanOrEqual(321)
   })
 
-  it('已自然化的 60 个事件一个自我旁白都不剩', () => {
+  it('已自然化的 95 个事件一个自我旁白都不剩', () => {
     const events = NATURALIZED_EVENT_IDS.map(id => {
       const e = byId.get(id)
       expect(e, `名单里的 ${id} 在过渡池里找不到`).toBeTruthy()
       return e as GameEvent
     })
-    expect(events).toHaveLength(60)
+    expect(events).toHaveLength(95)
     const audit = scanBranching(events)
     expect(audit.selfNarration).toBe(0)
   })

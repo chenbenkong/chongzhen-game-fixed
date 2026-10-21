@@ -1206,8 +1206,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【统一指挥】"当统一指挥，集中兵力反击"',
-        description: '主张统一勤王军的指挥权，集中兵力反击清军',
+        text: '【请授卢象升节钺】上疏请赐卢象升尚方剑，统辖各路勤王军',
+        description: '节钺赐下去，各路总兵的脸都变了。',
         showConditions: {
           attributes: { 武略: { min: 55 }, 理政: { min: 45 } },
           hidden: { 道德值: { min: 40 } },
@@ -1244,8 +1244,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【分兵把守】"当分兵把守，固守待变"',
-        description: '主张分兵把守各要冲，固守待变，不主动出击',
+        text: '【守九门】令勤王军分守京师九门，不许出城浪战',
+        description: '九门守了一个月，城外六十里没有炊烟。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 3, 清议: 5,
@@ -1277,8 +1277,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【克扣军饷】"当克扣军饷，中饱私囊"',
-        description: '利用勤王军粮饷不足之机，克扣军饷，中饱私囊',
+        text: '【短解勤王饷】把勤王军的饷银每百两扣下二十两',
+        description: '扣下的银子，进了你名下的当铺。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1316,8 +1316,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【筹措粮饷】"当筹措粮饷，保障军需"',
-        description: '四处筹措粮饷，保障勤王军的军需供应',
+        text: '【借银充饷】向京中八家银号借银三万两，先发勤王军',
+        description: '借据上盖的是你私人的印。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1551,8 +1551,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力善后】"当全力善后，恢复京畿"',
-        description: '全力投入善后工作，恢复京畿的民生和秩序',
+        text: '【设善后局】在通州设善后局，收埋尸骨、修房、发种',
+        description: '善后局开了四十天，账上只剩三十两。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1591,8 +1591,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【追究责任】"当追究责任，严惩失职者"',
-        description: '追究清军入塞期间临阵脱逃者的责任，以正军法',
+        text: '【劾逃将】上疏弹劾弃城而走的两位总兵，请斩一人',
+        description: '斩令下来那天，另一位总兵连夜送出两车礼。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1623,8 +1623,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报损失】"当虚报损失，借善后之机敛财"',
-        description: '虚报清军入塞造成的损失，借善后之机中饱私囊',
+        text: '【多报焚毁】把没烧的官仓也报成焚毁，领取修缮银',
+        description: '修缮银领了两回，官仓的瓦一片没换。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1660,8 +1660,8 @@ export const events1636: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【休养生息】"当休养生息，不急于行动"',
-        description: '主张休养生息，不急于行动，让百姓自行恢复',
+        text: '【免畿辅秋粮】下令免去京畿三府本年秋粮，不加催征',
+        description: '告示贴出后，府里的催粮差役散了。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -3, 清议: 3,

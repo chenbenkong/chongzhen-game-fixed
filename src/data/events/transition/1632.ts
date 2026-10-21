@@ -180,8 +180,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主围剿】"当力主围剿，绝不可使火器资敌"',
-        description: '主张立即调兵围剿孔有德，绝不能让其火器部队投降后金',
+        text: '【请调关宁兵】请调关宁铁骑入山东，堵住孔有德渡海之路',
+        description: '檄文发到宁远，关宁兵说马还没备齐。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -214,8 +214,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张招安】"当主张招安，以安抚为主"',
-        description: '主张招安孔有德，以优厚条件安抚其归降',
+        text: '【补饷招抚】请先补发登州欠饷四个月，再遣人招抚',
+        description: '银子拨下去，孔有德的回信只有一句：晚了。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -246,8 +246,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中联络】"当暗中联络，借叛变谋利"',
-        description: '暗中与孔有德联络，利用叛变之机谋取私利',
+        text: '【托商队带话】让莱州的商队给孔有德捎去一封密信',
+        description: '商队回来时，带了两箱东珠。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -279,8 +279,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不轻易表态"',
-        description: '对孔有德叛变之事保持沉默，不轻易表态',
+        text: '【不预军事】廷议登州兵变时，你只坐在末座听',
+        description: '议了两天，没有一句话是你说的。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -333,8 +333,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【赈灾为先】"当赈灾为先，安抚流民"',
-        description: '主张先赈济灾民，消除流寇产生的根源',
+        text: '【散银赈饥】拨五千两设赈局，先给延安、庆阳两府发粮',
+        description: '赈局开到第三处时，银子只剩一半。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -369,8 +369,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【围剿为主】"当围剿为主，以儆效尤"',
-        description: '主张调集兵力围剿流寇，以武力平乱',
+        text: '【调榆林兵】檄调榆林边兵南下，追剿王嘉胤',
+        description: '边兵追到黄河边，流寇已经渡过去了。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -401,8 +401,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报军情】"当虚报军情，借剿匪谋利"',
-        description: '利用剿匪之机，虚报军费，中饱私囊',
+        text: '【虚报剿匪费】把两万兵报成四万，按月多领一份饷',
+        description: '多领的银子，在票号里存了三年。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -436,8 +436,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求增兵"',
-        description: '向朝廷上书，请求增派兵力围剿流寇',
+        text: '【请增陕兵】上疏请从河南、山西调兵入陕协剿',
+        description: '疏到兵部，被压了二十天才议。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -499,8 +499,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【捐资助耕】"当捐资助耕，帮助百姓春耕"',
-        description: '拿出自己的积蓄，购买种子和耕牛，帮助百姓春耕',
+        text: '【买种买牛】拿二百两私银，从河南买回三十头耕牛',
+        description: '牛分到村里那天，你家的厨子辞了工。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
@@ -535,8 +535,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【劝分富户】"当劝分富户，让士绅出力"',
-        description: '劝说地方士绅出资帮助春耕，共度难关',
+        text: '【宴请士绅】在府衙摆三桌酒，请城中富户认领村子的春耕',
+        description: '三桌酒认下了九个村，剩下的没人开口。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -567,8 +567,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【囤积居奇】"当囤积居奇，借春耕谋利"',
-        description: '利用春耕困难之机，囤积种子和耕牛，高价出售',
+        text: '【收尽种子】派人在开春前把四乡的麦种收了个干净',
+        description: '开犁那天，来借种的人在你门口跪了一排。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -604,8 +604,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求拨发种子"',
-        description: '向朝廷上书，请求拨发春耕所需的种子和耕牛',
+        text: '【请发农本】上疏请拨农本银，买种牛分给北直隶农户',
+        description: '户部批了三千两，够买两百头牛。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -667,8 +667,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【仗义执言】"当仗义执言，弹劾温体仁"',
-        description: '上疏弹劾温体仁排挤异己、陷害忠良',
+        text: '【劾温体仁】上疏列温体仁排挤大臣的七件事，请皇上察核',
+        description: '疏递进去第三天，你被罚俸半年。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 60 } },
@@ -701,8 +701,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【依附周延儒】"当依附周延儒，与之抗衡"',
-        description: '选择依附首辅周延儒，与温体仁抗衡',
+        text: '【赴周府宴】周延儒的私宴，你坐到了末席',
+        description: '散席时，首辅多看了你一眼。',
         showConditions: {
           origin: ['缙绅']
         },
@@ -733,8 +733,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠温体仁】"当投靠温体仁，趋炎附势"',
-        description: '投靠温体仁，成为其一党，借机上位',
+        text: '【递手本】按温府规矩，你把一份手本和礼单送了进去',
+        description: '手本收下，你在朝房的位置往前挪了三排。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -998,8 +998,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【剿抚并用】"当剿抚并用，恩威并施"',
-        description: '主张对首恶围剿、对胁从招安，剿抚并用',
+        text: '【分名单处置】把流寇名册分成首恶、胁从两册，分别处置',
+        description: '胁从册子传到第三营，营里有人哭了。',
         showConditions: {
           attributes: { 理政: { min: 60 }, 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1034,8 +1034,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【铁血围剿】"当铁血围剿，以儆效尤"',
-        description: '主张铁血围剿流寇，绝不姑息',
+        text: '【合围商洛】请调三镇兵合围商洛山，不许接受投降',
+        description: '山里的降旗举了三次，官军没有停手。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -1068,8 +1068,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【两头牟利】"当两头牟利，借剿匪谋利"',
-        description: '暗中与流寇和围剿将领双方勾结，两头牟利',
+        text: '【两头递信】把官军的进兵日期卖给流寇，又向将领报功',
+        description: '两边给的信物，都藏在同一只匣子里。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1105,8 +1105,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默不语】"当沉默不语，静观其变"',
-        description: '对剿匪之争保持沉默，不表态',
+        text: '【托病避议】廷议当天告了病，折子让幕僚代递',
+        description: '折子上没有你的名字，议也没等你。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -1163,8 +1163,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【加强水师】"当加强水师，阻止孔有德渡海"',
-        description: '主张加强水师巡逻，阻止孔有德叛军渡海投降后金',
+        text: '【调登莱水师】调登莱水师封锁庙岛，断孔有德渡海之路',
+        description: '封锁的第七天，海上起了大雾。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1197,8 +1197,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【增兵辽东】"当增兵辽东，加强防御"',
-        description: '主张增兵辽东，加强关宁锦防线',
+        text: '【增戍宁远】从京营抽调六千兵增戍宁远、锦州',
+        description: '京营点卯那天，名册上有三百个名字没人应。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -1229,8 +1229,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报军情】"当虚报军情，借边患谋利"',
-        description: '利用辽东军情之机，虚报军费，中饱私囊',
+        text: '【虚报增兵数】把六千援军报成一万二，多领一份饷',
+        description: '多领的饷车进城时，走的是侧门。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -1264,8 +1264,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【按兵不动】"当按兵不动，静观其变"',
-        description: '主张暂不增兵，静观后金动向',
+        text: '【不增一兵】批复辽东塘报只写了“知道了”三个字',
+        description: '塘报退回辽东时，又多了三封。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -5, 清议: -3 },
@@ -1487,8 +1487,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【减免赋税】"当减免赋税，安抚民心"',
-        description: '主张减免灾区赋税，从根本上安抚民心',
+        text: '【请免加派】上疏请免陕西、河南三府的本年加派',
+        description: '疏里附了三个府的钱粮册子，数目对得上。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1521,8 +1521,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【铁血镇压】"当铁血镇压，以儆效尤"',
-        description: '主张调集兵力，铁血镇压各地民变',
+        text: '【调边兵入陕】请调延绥、宁夏两镇边兵入陕剿办',
+        description: '边兵过境那天，沿途州县闭了城门。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -1553,8 +1553,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱牟利】"当趁乱牟利，借民变谋利"',
-        description: '利用民变之机，趁乱牟利，中饱私囊',
+        text: '【低价收田】趁乱派家人下乡，按三成价收买抛荒的田亩',
+        description: '地契收回来那天，卖田的人还站在村口。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1590,8 +1590,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求赈灾"',
-        description: '向朝廷上书，请求调拨赈灾物资，安抚民心',
+        text: '【请拨内帑】上疏请发内帑十万两，先赈陕西、山西',
+        description: '疏递上去二十天，户部回文说在议。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1685,8 +1685,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，等待时机"',
-        description: '暂时隐忍，韬光养晦，等待反击的时机',
+        text: '【闭门抄书】这半个月的折子都推给幕僚，自己在家抄书',
+        description: '抄到第七卷时，温府的人来了两回。',
         effects: {
           attributes: { 体质: 3, 文韬: 2 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -1712,8 +1712,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【助纣为虐】"当助纣为虐，借清洗上位"',
-        description: '配合温体仁的清洗，陷害异己，借机上位',
+        text: '【递黑名单】把政敌的名字混进温体仁的结党名册',
+        description: '名册送进内阁的当晚，有人连夜离京。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 野心值: { min: 45 } },
           origin: ['缙绅']
@@ -1745,8 +1745,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【称病不出】"当称病不出，避过风头"',
-        description: '以生病为由，闭门不出，避过清洗风头',
+        text: '【告病在家】把告病的折子递上去，闭门三个月不出',
+        description: '三个月里，朝中又换了四个尚书。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: -3 },

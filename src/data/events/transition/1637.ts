@@ -1665,8 +1665,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【坚守正道】"当坚守正道，直言进谏"',
-        description: '不论党争，直言进谏，指出杨嗣昌之策的利弊',
+        text: '【分疏陈利弊】上疏分列“先安内”的三利三弊，请皇上裁度',
+        description: '疏里的每一句，两派都拿去当自己的话。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } }
@@ -1696,8 +1696,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【支持杨嗣昌】"当支持杨嗣昌，维护大局"',
-        description: '支持杨嗣昌，认为其"先安内后攘外"之策是正确的',
+        text: '【赴杨府夜谈】散朝后往杨府走了一趟，谈到二更',
+        description: '第二天，反杨派的名单上多了你的名字。',
         effects: {
           attributes: { 文韬: 2,
               财帛: -5
@@ -1725,8 +1725,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【落井下石】"当落井下石，借机铲除杨嗣昌势力"',
-        description: '利用清军入塞之机，打击杨嗣昌及其党羽，借机上位',
+        text: '【联名劾杨】在反杨派的弹章上第一个签了名',
+        description: '弹章递上去，杨府的灯亮了一夜。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } }
         },
