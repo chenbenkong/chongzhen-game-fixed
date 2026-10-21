@@ -192,8 +192,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【请缨赴援】"当请缨赴援，誓死守土"',
-        description: '主动请缨，率军驰援中原，誓死守卫疆土',
+        text: '【请缨赴援】上疏请率军出潼关，驰援中原',
+        description: '兵出了京，洛阳已经陷了半月。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -230,8 +230,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【固守本境】"当固守本境，不可轻动"',
-        description: '主张固守自己辖区，不轻易出兵驰援',
+        text: '【固守本境】闭城练兵，不出一兵',
+        description: '你的辖区保住了，洛阳的急报堆在案头。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 5, 清议: 5,
@@ -400,8 +400,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【量力而行】"当量力而行，适度助耕"',
-        description: '适度帮助百姓恢复春耕，不倾尽所有',
+        text: '【量力而行】先买两成种子，余下的等朝廷',
+        description: '两成种子发了，余下的地还荒着。',
         effects: {
           attributes: {理政: 3,
               财帛: -8
@@ -468,8 +468,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求增加赈灾银两"',
-        description: '向朝廷上书，请求增加赈灾银两和种子',
+        text: '【上书朝廷】疏请拨银十万两，附上荒田数',
+        description: '银拨了三万两，荒田报了三万顷。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -536,8 +536,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主援辽】"当力主援辽，确保松锦之战胜利"',
-        description: '力主全力支援洪承畴，确保松锦之战的胜利',
+        text: '【力主援辽】上疏请拨粮饷，又捐出一年俸银',
+        description: '粮饷出了京，锦州还在围中。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -576,8 +576,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【稳扎稳打】"当稳扎稳打，不可冒进"',
-        description: '主张洪承畴稳扎稳打，不可急于求成',
+        text: '【稳扎稳打】上疏请洪承畴步步为营，勿轻进',
+        description: '奏疏递到前线，洪承畴已经拔营。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -610,8 +610,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【克扣军饷】"当克扣军饷，中饱私囊"',
-        description: '利用松锦之战之机，克扣援辽军饷，中饱私囊',
+        text: '【克扣军饷】在援辽的粮册上多写三千石',
+        description: '前线少了粮，你的仓里多了三千石。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1216,8 +1216,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【支持洪承畴】"当支持洪督师，稳扎稳打"',
-        description: '上疏支持洪承畴的稳扎稳打策略，反对朝廷催战',
+        text: '【支持洪承畴】上疏请勿催战，给洪督师三个月',
+        description: '奏疏留中，兵部的催檄一天三道。',
         showConditions: {
           attributes: { 武略: { min: 50 }, 文韬: { min: 40 } },
           hidden: { 道德值: { min: 40 } },
@@ -1252,8 +1252,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【催促速战】"当催促速战，不可迁延"',
-        description: '支持朝廷催促洪承畴速战速决的意见',
+        text: '【催促速战】附兵部的折子，请洪承畴即日决战',
+        description: '旨意下了，松山的粮道还没通。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1282,8 +1282,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【两头下注】"当两头下注，左右逢源"',
-        description: '表面上支持速战，暗中与主稳派保持联系，两头下注',
+        text: '【两头下注】朝上主速战，散朝后给主稳派递话',
+        description: '两边的酒都吃了，前线的兵还是没动。',
         showConditions: {
           hidden: { 道德值: { max: 35 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -1319,8 +1319,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【称病不出】"当称病不出，避过风头"',
-        description: '以称病为由，不参与关于辽东战事的任何讨论',
+        text: '【称病不出】告病在家，辽东的塘报一概不看',
+        description: '松山陷落那天，你的门还关着。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: 3 },
@@ -2050,8 +2050,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【密献良策】"当密献良策，料敌于先"',
-        description: '私下向兵部献策，料敌于先，提出以守为攻',
+        text: '【密献良策】把以守为攻的条陈密送兵部',
+        description: '条陈递进去，兵部尚书批了四个字：可堪大用。',
         showConditions: {
           attributes: { 文韬: { min: 60 }, 武略: { min: 40 } }
         },
@@ -2081,8 +2081,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【上疏直言】"当上疏直言，痛陈时弊"',
-        description: '上疏直言，痛陈松锦战事之失',
+        text: '【上疏直言】上疏劾兵部调度无方，言辞不留情',
+        description: '奏疏传遍朝堂，东林的帖子到了门口。',
         showConditions: {
           attributes: { 文韬: { min: 55 } },
           origin: ['寒门', '诗文清望']
@@ -2111,8 +2111,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【闭口不谈】"当闭口不谈，明哲保身"',
-        description: '对松锦战事保持沉默，明哲保身',
+        text: '【闭口不谈】松锦的塘报压在案头，不置一词',
+        description: '朝上的争吵过去了，你的案头落了灰。',
         effects: {
           attributes: { 体质: 2 },
           gameState: { 圣眷: 2 }

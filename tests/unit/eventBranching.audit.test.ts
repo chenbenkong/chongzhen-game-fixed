@@ -12,11 +12,11 @@ import type { GameEvent } from '../../src/types/event'
  * 年年重复的岁末/新年/秋收仪式 + 20 个开局高频道事件）逐条改写，又清掉了
  * 十套跨 6 个以上事件复用的危机菜单。
  *
- * 下面两条阈值都是**只许往下**的棘轮：206 是第三十七轮结束时的存量
- * （第三十五轮 446，第三十六轮 321）。第三十六轮按实际播放频率挑了 35 个
- * 高频事件，把其中 125 条自我旁白换成具体动作 + 具体后果；第三十七轮沿同一
- * 口径再清 36 个事件、115 条，剩余 206 条留待后续按频率继续清。
- * 再改一个自我旁白就该变成 205；新增事件若带回 `"当……"` 会立刻顶破。
+ * 下面两条阈值都是**只许往下**的棘轮。第三十五轮 446 条，第三十六轮按实际
+ * 播放频率清到 321，第三十七轮 206。第三十八轮把最后 64 个事件（27 个实测
+ * 播放过 + 37 个走特定路线、样本没覆盖到的）一次清完，存量归零：749 → 0。
+ * 因此阈值从 206 直接落到 0，名单里的 195 个事件必须一条自我旁白都没有；
+ * 新增事件若带回 `"当……"` 会立刻顶破。
  */
 const NATURALIZED_EVENT_IDS = [
   // 岁末总结（8）
@@ -61,7 +61,26 @@ const NATURALIZED_EVENT_IDS = [
   'transition_148', 'transition_155', 'transition_156', 'transition_157',
   'transition_160', 'transition_161', 'transition_165', 'transition_167',
   'transition_168', 'transition_169', 'transition_170', 'transition_173',
-  'transition_179', 'transition_181', 'transition_185', 'transition_186'
+  'transition_179', 'transition_181', 'transition_185', 'transition_186',
+  // 第三十八轮：实测播放过、还剩自我旁白的 27 个事件
+  'transition_009', 'transition_080', 'transition_081', 'transition_082',
+  'transition_083', 'transition_084', 'transition_086', 'transition_088',
+  'transition_089', 'transition_104', 'transition_106', 'transition_107',
+  'transition_109', 'transition_116', 'transition_117', 'transition_118',
+  'transition_120', 'transition_121', 'transition_122', 'transition_144',
+  'transition_145', 'transition_146', 'transition_163', 'transition_176',
+  'transition_178', 'transition_180', 'prelude_martyr_1644_2',
+  // 第三十八轮：样本没走到、按 storyline 覆盖补上的 37 个事件
+  'transition_002', 'transition_007', 'transition_010', 'transition_015',
+  'transition_024', 'transition_026', 'transition_048', 'transition_057',
+  'transition_065', 'transition_069', 'transition_085', 'transition_105',
+  'transition_108', 'transition_119', 'transition_130', 'transition_132',
+  'transition_136', 'transition_140', 'transition_141', 'transition_142',
+  'transition_143', 'transition_149', 'transition_152', 'transition_153',
+  'transition_154', 'transition_158', 'transition_164', 'transition_166',
+  'transition_172', 'transition_177', 'transition_182', 'transition_183',
+  'transition_184', 'prelude_zhongxing_1643_12', 'prelude_died_battlefield_1643_9',
+  'prelude_usurper_1643_12', 'prelude_exterminate_1644_1'
 ] as const
 
 const byId = new Map(transitionEvents.map(e => [e.id, e]))
@@ -74,19 +93,19 @@ describe('支线选项的自然度（audit:branch）', () => {
     ).toEqual([])
   })
 
-  it('自我旁白不再回涨', () => {
+  it('自我旁白归零后不再回涨', () => {
     const audit = scanBranching(transitionEvents)
-    // 第三十七轮结束时 206/864（第三十六轮 321，第三十五轮 446）；只许减，不许增
-    expect(audit.selfNarration).toBeLessThanOrEqual(206)
+    // 第三十八轮起 0/864（第三十七轮 206，第三十六轮 321，第三十五轮 446）
+    expect(audit.selfNarration).toBe(0)
   })
 
-  it('已自然化的 131 个事件一个自我旁白都不剩', () => {
+  it('已自然化的 195 个事件一个自我旁白都不剩', () => {
     const events = NATURALIZED_EVENT_IDS.map(id => {
       const e = byId.get(id)
       expect(e, `名单里的 ${id} 在过渡池里找不到`).toBeTruthy()
       return e as GameEvent
     })
-    expect(events).toHaveLength(131)
+    expect(events).toHaveLength(195)
     const audit = scanBranching(events)
     expect(audit.selfNarration).toBe(0)
   })

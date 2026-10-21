@@ -193,8 +193,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力支持】"当全力支持杨嗣昌，共平流寇"',
-        description: '全力支持杨嗣昌的剿寇方略，为其建言献策',
+        text: '【全力支持】把本部的粮册先送到杨府过目',
+        description: '杨嗣昌在皇上面前提了你一句。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 40 } },
@@ -227,8 +227,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【审慎观望】"当审慎观望，不急于表态"',
-        description: '对杨嗣昌的方略审慎观望，不急于表态',
+        text: '【审慎观望】贺礼送到门口，人没有进去',
+        description: '杨府的门槛，你终究没跨过去。',
         effects: {
           attributes: { 理政: 3, 文韬: 2 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -254,8 +254,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中掣肘】"当暗中掣肘，削弱杨嗣昌之势"',
-        description: '暗中掣肘杨嗣昌，防止其权势过大，威胁自身利益',
+        text: '【暗中掣肘】把粮饷的批文压在案上，先拖半月',
+        description: '杨嗣昌的方略慢了半拍，你的位置稳了。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅', '没落世家']
@@ -289,8 +289,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不卷入纷争"',
-        description: '对杨嗣昌入阁之事保持中立，不卷入纷争',
+        text: '【明哲保身】朝上论到杨嗣昌，你只报本职的事',
+        description: '两派都没把你当自己人。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -385,8 +385,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【以工代耕】"当以工代耕，组织百姓互助"',
-        description: '组织百姓互助合作，以工代耕，恢复春耕',
+        text: '【以工代耕】把饥民编成队，修渠换种',
+        description: '渠修了二十里，种子省下一半。',
         effects: {
           attributes: { 理政: 4, 体质: -2 },
           gameState: { 圣眷: 5, 清议: 8,
@@ -414,8 +414,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，兼并田地"',
-        description: '利用春耕困难之机，低价兼并百姓田地',
+        text: '【趁火打劫】用三斗米换一亩田，趁人急',
+        description: '地契收了一匣，村里的人走空了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -451,8 +451,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求援助"',
-        description: '向朝廷上书，请求调拨种子和耕牛',
+        text: '【上书求援】疏请免河南三年剿饷，留粮春耕',
+        description: '免饷的旨意没下，春耕先误了。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -516,8 +516,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力支持】"当全力支持，此乃平寇良策"',
-        description: '全力支持"四正六隅"之策，认为这是平定流寇的唯一出路',
+        text: '【全力支持】在御前把四正六隅的条陈念了一遍',
+        description: '条陈准了，剿饷的加派也准了。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -550,8 +550,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【提出异议】"当提出异议，忧心加征剿饷"',
-        description: '对"四正六隅"之策提出异议，忧心加征剿饷会激出民变',
+        text: '【提出异议】上疏请减剿饷，先免河南三年',
+        description: '杨嗣昌说你是妇人之仁，皇上没说话。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -584,8 +584,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【借机敛财】"当借机敛财，虚报剿饷"',
-        description: '利用加征剿饷之机，虚报冒领，中饱私囊',
+        text: '【借机敛财】把剿饷的账目过一遍，截下一成',
+        description: '二百八十万两里，三万进了你的库。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -622,8 +622,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默不语】"当沉默不语，不参与争论"',
-        description: '对"四正六隅"之策保持沉默，不参与争论',
+        text: '【沉默不语】御前议事，你站在最后一排',
+        description: '散朝时你连条陈的边都没摸到。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -678,8 +678,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【秉公办事】"当秉公办事，维护科举公正"',
-        description: '严格按规章办事，维护科举公正，拒绝一切请托',
+        text: '【秉公办事】把请托的帖子原封退回，亲自盯誊录',
+        description: '落第的权贵子弟在贡院外骂了三天。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } }
@@ -711,8 +711,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【适度通融】"当适度通融，兼顾各方"',
-        description: '在不严重破坏公正的前提下，适度照顾权贵子弟',
+        text: '【适度通融】收了礼单，把几个名字记在袖中',
+        description: '榜上多了两个名字，没人查得出。',
         showConditions: {
           attributes: { 理政: { min: 50 } }
         },
@@ -745,8 +745,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【大肆收贿】"当大肆收贿，卖官鬻爵"',
-        description: '利用监考之权，大肆收受贿赂，为权贵子弟大开方便之门',
+        text: '【大肆收贿】把名额明码标价，写在阄纸上',
+        description: '银子抬进后门，榜上的名字换了七个。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -783,8 +783,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【推辞不受】"当推辞不受，避免麻烦"',
-        description: '以各种理由推辞监考之职，避免麻烦',
+        text: '【推辞不受】称病辞了监考，把差事让给同僚',
+        description: '贡院出了事，你的名字不在卷宗里。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -5, 清议: 3 },
@@ -882,8 +882,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【修堤为先】"当修堤为先，防止灾情扩大"',
-        description: '优先组织人力修筑堤坝，防止灾情进一步扩大',
+        text: '【修堤为先】调民夫先堵决口，赈粮押后再发',
+        description: '堤堵上了，粥棚晚了十天。',
         effects: {
           attributes: { 理政: 4, 武略: 2, 体质: -3 },
           gameState: { 圣眷: 8, 清议: 8,
@@ -913,8 +913,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，借赈灾谋利"',
-        description: '利用赈灾之机，中饱私囊，大发灾难财',
+        text: '【趁火打劫】把赈粮的损耗多报三成',
+        description: '账上少了三千石，仓里多了三千石。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -953,8 +953,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，等待时机"',
-        description: '不急于行动，拖延观望，等待更好的时机',
+        text: '【拖延观望】先派人下去查灾，查完再议',
+        description: '查完的时候，水已经退了。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8,
@@ -1017,8 +1017,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【痛定思痛】"当痛定思痛，主张剿抚并用"',
-        description: '反思招安失败的教训，主张剿抚并用，以剿为主，以抚为辅',
+        text: '【剿抚并用】上疏拟出剿抚章程，首恶与胁从分列',
+        description: '章程递上去，皇上在剿字上圈了朱。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 50 } }
@@ -1050,8 +1050,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【追责招安派】"当追责招安派，以正朝纲"',
-        description: '追责当初支持招安张献忠的官员，以正朝纲',
+        text: '【追责招安派】把当年主抚的奏疏翻出来，点名列上',
+        description: '三名主张招安的大臣革了职。',
         effects: {
           attributes: { 理政: 3 },
           gameState: { 圣眷: 10, 清议: -8, 中官: 5 },
@@ -1113,8 +1113,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【缄口不言】"当缄口不言，不参与争论"',
-        description: '对张献忠诈降之事保持沉默，不参与任何争论',
+        text: '【缄口不言】朝会上论到谷城，你只管低头记粮价',
+        description: '散朝时没人记得你站在哪边。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },

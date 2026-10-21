@@ -195,8 +195,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【痛陈时弊】"当痛陈时弊，弹劾催战误国之人"',
-        description: '上疏痛陈松山之败的根源，弹劾催战误国的陈新甲等人',
+        text: '【痛陈时弊】上疏把催战的旨意一条条列出来',
+        description: '奏疏震动朝堂，陈新甲的人开始查你。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 50 } },
@@ -229,8 +229,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【固守山海关】"当固守山海关，保存实力"',
-        description: '主张放弃辽东，固守山海关，保存现有实力',
+        text: '【固守山海关】上疏请撤辽东残兵，守关不出',
+        description: '关守住了，关外的人没撤回来。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 5, 清议: 5,
@@ -260,8 +260,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报军情】"当虚报军情，借辽东之败谋利"',
-        description: '利用松山之败之机，虚报军饷，中饱私囊',
+        text: '【虚报军情】把松山的粮饷报成三倍',
+        description: '账上多了五万两，山海关的兵少了三成。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -532,8 +532,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主救援】"当力主救援开封，中原不可失"',
-        description: '力主全力救援开封，认为开封是中原的门户',
+        text: '【力主救援】上疏请调各路兵马，驰援开封',
+        description: '旨意下了，各路兵还在路上。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -566,8 +566,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【围魏救赵】"当围魏救赵，攻击流寇老巢"',
-        description: '主张攻击李自成的后方基地，迫使他从开封撤军',
+        text: '【围魏救赵】请派奇兵袭李自成后方',
+        description: '奇兵出去了，没有再回来。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -600,8 +600,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，借开封之围谋利"',
-        description: '利用开封之围之机，囤积粮草，高价出售，谋取暴利',
+        text: '【趁火打劫】在城外收粮，等开封粮尽',
+        description: '粮价涨到十两，开封的城门开了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -637,8 +637,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求调集天下兵马"',
-        description: '向朝廷上书，请求调集天下兵马驰援开封',
+        text: '【上书求援】疏请调天下兵马，附上开封围城图',
+        description: '图递上去，援军还没凑齐。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1539,8 +1539,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【痛陈时弊】"当痛陈时弊，追责掘堤之人"',
-        description: '上疏痛陈开封淹没之惨，追责下令掘堤之人',
+        text: '【痛陈时弊】上疏请查掘堤的将令出自谁手',
+        description: '奏疏震动朝堂，查案的折子被压了下来。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 50 } },
@@ -1573,8 +1573,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【赈灾救援】"当赈灾救援，安置灾民"',
-        description: '致力于开封灾后的赈灾和安置工作',
+        text: '【赈灾救援】带粮船赶到开封，先收埋再放粮',
+        description: '城外的新坟排了十里，粥棚支了七处。',
         showConditions: {
           origin: ['寒门', '没落世家']
         },
@@ -1609,8 +1609,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱谋利】"当趁乱谋利，侵吞赈灾款"',
-        description: '利用开封淹没之机，侵吞赈灾款项，中饱私囊',
+        text: '【趁乱谋利】把赈灾的粮价报高两倍',
+        description: '账上多了四万两，灾民少了一半。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1646,8 +1646,8 @@ export const events1642: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默叹息】"当沉默叹息，听天由命"',
-        description: '对开封淹没之事保持沉默，听天由命',
+        text: '【沉默叹息】开封的急报读完，你把它合上',
+        description: '朝上吵了三天，你一句没接。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -5 },

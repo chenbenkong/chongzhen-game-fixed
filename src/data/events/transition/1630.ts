@@ -875,8 +875,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【以工代赈】"当以工代赈，既救灾又修水利"',
-        description: '组织饥民兴修水利，以劳动换取粮食',
+        text: '【以工代赈】把饥民编成队，开渠换粮',
+        description: '渠修了三十里，赈粮省下四成。',
         showConditions: {
           attributes: { 理政: { min: 60 }, 财帛: { min: 20 } }
         },
@@ -913,8 +913,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，借赈灾谋利"',
-        description: '利用赈灾之机，中饱私囊，大发灾难财',
+        text: '【趁火打劫】虚报赈粮的损耗，余下的运回自家',
+        description: '账上多了一万石，仓里堆到梁上。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -953,8 +953,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求援助"',
-        description: '向朝廷上书，请求调拨更多赈灾粮饷',
+        text: '【上书朝廷】疏请拨粮十万石，附上饥民名册',
+        description: '粮拨了五万石，名册上的人少了一半。',
         effects: {
           attributes: { 文韬: 3 },
           gameState: { 圣眷: -5, 清议: 8,
@@ -1184,8 +1184,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【暗中哀悼】"当暗中哀悼，铭记忠良"',
-        description: '在心中默默哀悼袁崇焕，铭记忠良之冤',
+        text: '【暗中哀悼】关起门来写了一首挽诗，压在箱底',
+        description: '诗没有示人，清议却有人知道了。',
         showConditions: {
           hidden: { 道德值: { min: 60 } }
         },
@@ -1218,8 +1218,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【随众表态】"当随众表态，拥护圣裁"',
-        description: '随大流表态拥护皇上的裁决',
+        text: '【随众表态】跟着百官喊了一句皇上圣明',
+        description: '散朝时你的嗓子是哑的。',
         effects: {
           attributes: { 理政: 2 },
           gameState: { 圣眷: 5, 中官: 5, 清议: -5 },
@@ -1247,8 +1247,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【弹冠相庆】"当弹冠相庆，借机上位"',
-        description: '与温体仁等人一同庆祝，借机攀附权贵',
+        text: '【弹冠相庆】备了酒，到温府道贺',
+        description: '温府的门开了，你的名字进了另一本册子。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 野心值: { min: 45 } }
         },
@@ -1283,8 +1283,8 @@ export const events1630: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门不出】"当闭门不出，不闻不问"',
-        description: '闭门不出，对袁崇焕之死不闻不问',
+        text: '【闭门不出】西市行刑那天，你告病在家',
+        description: '外面的叫好声传进院子，你关上了窗。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },

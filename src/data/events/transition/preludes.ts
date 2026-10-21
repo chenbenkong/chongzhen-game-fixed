@@ -41,8 +41,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【鞠躬尽瘁】"当鞠躬尽瘁，死而后已"',
-        description: '再接再厉，为中兴大业燃尽最后一份力',
+        text: '【鞠躬尽瘁】连夜写中兴十策，天亮递进宫',
+        description: '十策念完，你在殿上咳了血。',
         effects: {
           attributes: { 体质: -5, 文韬: 3, 理政: 3 },
           gameState: { 圣眷: 10, 清议: 10,}
@@ -65,8 +65,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【激流勇退】"当激流勇退，明哲保身"',
-        description: '见好就收，主动请求致仕',
+        text: '【激流勇退】上疏请致仕，把印绶留在案上',
+        description: '百官送到十里外，你只带走了两箱书。',
         showConditions: { attributes: { 体质: { max: 40 } } },
         effects: {
           attributes: { 体质: 5,},
@@ -90,8 +90,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【密谋大事】"当中兴之后，当更进一步"',
-        description: '权势之巅，野心开始萌动',
+        text: '【密谋大事】把心腹的名单又添了三个名字',
+        description: '名单锁进匣子，匣子放在床头。',
         showConditions: { hidden: { 野心值: { min: 50 } } },
         effects: {
           hidden: { 野心值: 10, 道德值: -15 },
@@ -154,8 +154,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【入宫面圣】"当入宫面圣，与君共决"',
-        description: '入宫面圣，誓与皇上共进退',
+        text: '【入宫面圣】整了衣冠，连夜进宫见皇上',
+        description: '煤山的风很冷，皇上问你能守几日。',
         effects: {
           attributes: { 体质: -3, 文韬: 2 },
           gameState: { 圣眷: 5, 清议: 10 },
@@ -187,8 +187,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【南渡避祸】"当南渡避祸，保存大明"',
-        description: '劝皇上南渡，保存大明社稷',
+        text: '【南渡避祸】跪请皇上迁都南京，再图恢复',
+        description: '皇上看了你很久，没有点头。',
         showConditions: { attributes: { 文韬: { min: 50 } } },
         effects: {
           attributes: { 文韬: 3, 体质: 2 },
@@ -214,8 +214,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【弃城而去】"当弃城而去，独善其身"',
-        description: '趁乱逃出京师，自寻生路',
+        text: '【弃城而去】带着家人和细软，趁夜出广渠门',
+        description: '天亮时你到了通州，京师的火光照着天。',
         showConditions: { hidden: { 道德值: { max: 30 } } },
         effects: {
           attributes: {体质: 3 },
@@ -280,8 +280,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【誓死跟随】"当誓死跟随，与督师共存亡"',
-        description: '随军出阵，与孙传庭共存亡',
+        text: '【誓死跟随】给家里写完信，随秦军出潼关',
+        description: '信没有寄出去，第二天你站在了阵前。',
         effects: {
           attributes: { 武略: 5, 体质: -5 },
           gameState: { 圣眷: 5, 清议: 15,},
@@ -309,8 +309,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【回京复命】"当回京复命，保存有用之身"',
-        description: '回京复命，保存有用之身以图后举',
+        text: '【回京复命】连夜离营，快马赶回京师',
+        description: '三日后噩耗传来，你在城里听到了钟声。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -5 },
@@ -334,8 +334,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【临阵倒戈】"当临阵倒戈，投靠新主"',
-        description: '暗中联络李自成，临阵倒戈',
+        text: '【临阵倒戈】把秦军的布防写在纸上，送进李营',
+        description: '决战那天，你的兵从背后动了手。',
         showConditions: { hidden: { 道德值: { max: 25 }, 野心值: { min: 40 } } },
         effects: {
           attributes: {文韬: -3 },
@@ -404,8 +404,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【黄袍加身】"当黄袍加身，即皇帝位"',
-        description: '发动政变，篡位称帝',
+        text: '【黄袍加身】让心腹带禁军入宫，逼皇上禅位',
+        description: '玉玺到手的那一刻，宫里没有一个人喊。',
         effects: {
           attributes: { 文韬: 5, 武略: 5 },
           gameState: { 圣眷: -50, 清议: -50, 中官: 30, 士绅: 20,},
@@ -435,8 +435,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【悬崖勒马】"当悬崖勒马，放弃篡位"',
-        description: '在最后一刻放弃，保全忠臣之名',
+        text: '【悬崖勒马】把起事的密令烧了，屏退幕僚',
+        description: '窗外爆竹响了，你在密室里坐到天亮。',
         showConditions: { hidden: { 道德值: { min: 30 } } },
         effects: {
           attributes: { 体质: 3 },
@@ -469,8 +469,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【徐徐图之】"当徐徐图之，待时而动"',
-        description: '暂不篡位，先做权臣，再做皇帝',
+        text: '【徐徐图之】把起事的日子往后推，先掌京营',
+        description: '日子推了三次，三月十九先到了。',
         effects: {
           hidden: { 野心值: 10 },
           gameState: { 中官: 5, 圣眷: -3 }
@@ -539,8 +539,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【自尽谢罪】"当自尽谢罪，保全家人"',
-        description: '自尽谢罪，恳请皇上开恩只罪己身',
+        text: '【自尽谢罪】给皇上写完遗疏，在书房悬梁',
+        description: '锦衣卫登门时，案上的墨还没干。',
         showConditions: { hidden: { 道德值: { min: 20 } } },
         effects: {
           attributes: { 体质: -100 },
@@ -569,8 +569,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【铤而走险】"当铤而走险，挟资潜逃"',
-        description: '连夜出逃，隐姓埋名',
+        text: '【铤而走险】带着家人和细软，连夜出后门',
+        description: '千户站在阴影里，看着你的马车走远。',
         showConditions: { hidden: { 道德值: { max: 30 } } },
         effects: {
           attributes: {体质: 3 },
@@ -601,8 +601,8 @@ export const preludeEvents: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【拼死一搏】"当拼死一搏，孤注一掷"',
-        description: '召集死士，发动叛乱',
+        text: '【拼死一搏】召三百死士，趁夜攻皇宫',
+        description: '死士刚出府门，三千锦衣卫已经围了街。',
         showConditions: { hidden: { 野心值: { min: 50 } } },
         effects: {
           attributes: { 文韬: -3, 武略: 5 },

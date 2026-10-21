@@ -250,8 +250,8 @@ export const events1628: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【建议议和】"当与后金议和，争取时间整顿内政"',
-        description: '建议与后金暂时议和，争取喘息之机',
+        text: '【建议议和】上疏请遣使赴沈阳，先缓一年',
+        description: '主战派骂你秦桧，皇上把折子摔了回来。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { max: 50 } }
@@ -1501,8 +1501,8 @@ export const events1628: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【尽心筹备】"当尽心筹备，确保大典顺利"',
-        description: '尽心尽力筹备祭天大典，确保万无一失',
+        text: '【尽心筹备】在南郊盯了七夜，祭器一件件过手',
+        description: '大典那天风很大，帷帐没有倒。',
         showConditions: {
           attributes: { 理政: { min: 60 } }
         },
@@ -1531,8 +1531,8 @@ export const events1628: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【借机表现】"当借机表现，在皇上面前露脸"',
-        description: '利用筹备祭天之机，在皇上面前表现自己',
+        text: '【借机表现】写了一篇祭天文，托人递到御前',
+        description: '皇上当众念了你的名字。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           origin: ['寒门', '诗文清望']
@@ -1564,8 +1564,8 @@ export const events1628: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【中饱私囊】"当趁机捞取好处，中饱私囊"',
-        description: '利用筹备祭天之机，大肆搜刮钱财，中饱私囊',
+        text: '【中饱私囊】把祭器的价目改了三成，余下的入库',
+        description: '账上多了八万两，御史在查。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -1599,8 +1599,8 @@ export const events1628: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不主动参与"',
-        description: '保持低调，不主动参与祭天筹备，明哲保身',
+        text: '【明哲保身】推说不熟礼仪，把差事让给礼部',
+        description: '大典顺利，嘉奖名单上没有你。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },

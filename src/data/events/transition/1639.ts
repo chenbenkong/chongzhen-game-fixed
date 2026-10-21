@@ -527,8 +527,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【主动请缨】"当主动请缨，参与剿匪"',
-        description: '主动请缨参与剿灭张献忠，为国效力',
+        text: '【主动请缨】上疏请率军南下，随杨嗣昌剿张',
+        description: '兵出了京，张献忠已经破了三座城。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -563,8 +563,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【守土防备】"当守土防备，防止流寇蔓延"',
-        description: '不主动出击，但加强辖区防备，防止流寇蔓延',
+        text: '【守土防备】在自己的辖区修城墙、练乡勇',
+        description: '邻县被破了，你的城门还关着。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 5,
@@ -592,8 +592,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱谋利】"当趁乱谋利，借剿匪之名中饱私囊"',
-        description: '利用剿匪之机，虚报军需，中饱私囊',
+        text: '【趁乱谋利】在剿饷的册子上多写两千兵',
+        description: '饷银过手，你的箱底重了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -881,8 +881,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【组织修堤】"当组织修堤，防止再患"',
-        description: '组织人力物力修缮堤坝，防止洪涝再次发生',
+        text: '【组织修堤】征民夫修堤，先堵住黄河决口',
+        description: '堤修了二十里，来年没有再决。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -913,8 +913,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁灾谋利】"当趁灾谋利，侵吞赈灾款"',
-        description: '利用赈灾之机，侵吞赈灾款项，中饱私囊',
+        text: '【趁灾谋利】把赈灾的粮价报高五成',
+        description: '账上多出两万两，灾民少了两成。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -950,8 +950,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求增加赈灾银两"',
-        description: '向朝廷上书，请求增加赈灾银两和物资',
+        text: '【上书求援】疏请拨银十万两，附上受灾州县',
+        description: '银拨了四万，州县报了三十二个。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1512,8 +1512,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【仗义执言】"当仗义执言，为言官辩护"',
-        description: '上疏为被下狱的言官辩护，认为言路不可堵塞',
+        text: '【仗义执言】上疏为黄道周辩白，请开言路',
+        description: '奏疏递上去，杨府把你记在了另一本册子上。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1546,8 +1546,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不参与争论"',
-        description: '对朝中整肃保持中立，不参与争论',
+        text: '【明哲保身】朝上整肃，你只报本职的账',
+        description: '两派都没把你当自己人。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -1610,8 +1610,8 @@ export const events1639: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门谢客】"当闭门谢客，避过风头"',
-        description: '闭门谢客，以各种理由回避朝中整肃',
+        text: '【闭门谢客】称病在家，把拜帖都退了',
+        description: '名单定了，没有你的名字。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: 5 },

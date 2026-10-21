@@ -397,8 +397,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【以工代耕】"当以工代耕，组织百姓互助"',
-        description: '组织百姓互助合作，以工代耕，恢复春耕',
+        text: '【以工代耕】把无牛的农户编成队，换工换种',
+        description: '换工队下了地，荒田开出来一半。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -429,8 +429,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，兼并田地"',
-        description: '利用春耕困难之机，低价兼并百姓田地',
+        text: '【趁火打劫】用两斗米换一亩田，立契为凭',
+        description: '契书收了一叠，村里的耕牛都姓了你的姓。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -466,8 +466,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求援助"',
-        description: '向朝廷上书，请求调拨种子和耕牛',
+        text: '【上书求援】疏请调耕牛三千头、种子五万石',
+        description: '牛来了八百头，种子还在路上。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1717,8 +1717,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【依附周延儒】"当依附周延儒，与之抗衡"',
-        description: '选择依附首辅周延儒，与温体仁抗衡',
+        text: '【依附周延儒】递了门帖，替周府跑几趟吏部',
+        description: '周延儒提了你一级，温府记下了。',
         showConditions: {
           origin: ['缙绅']
         },
@@ -1749,8 +1749,8 @@ export const events1633: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠温体仁】"当投靠温体仁，趋炎附势"',
-        description: '投靠温体仁，成为其一党，借机上位',
+        text: '【投靠温体仁】把周延儒的旧账抄给温府',
+        description: '温府的门开了，周延儒的门关了。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']

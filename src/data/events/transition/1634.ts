@@ -395,8 +395,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【量力而行】"当量力而行，适度赈灾"',
-        description: '适度赈灾，不倾尽所有，量力而行',
+        text: '【量力而行】先买两成种子，剩下的等朝廷',
+        description: '两成种子下了地，余下的地还荒着。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -466,8 +466,8 @@ export const events1634: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求增加赈灾银两"',
-        description: '向朝廷上书，请求增加赈灾银两和种子',
+        text: '【上书朝廷】疏请增拨赈银，附上缺种户数',
+        description: '户数报了三万，银拨了一万。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },

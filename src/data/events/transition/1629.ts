@@ -29,8 +29,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【积极参与】"当积极参与，向皇上表忠心"',
-        description: '积极参与朝贺大典，向皇上展示自己的忠心',
+        text: '【积极参与】朝贺时第一个出班，向皇上进贺表',
+        description: '皇上多看了你一眼，阉党的人记下了。',
         showConditions: {
           attributes: { 文韬: { min: 40 } }
         },
@@ -59,8 +59,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【保持低调】"当保持低调，不引人注目"',
-        description: '保持低调，不参与各方势力的较量',
+        text: '【保持低调】站在殿角，跟着众人行礼',
+        description: '散朝时没人叫得出你的名字。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 5 },
@@ -88,8 +88,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗通东林】"当暗通东林，寻求靠山"',
-        description: '暗中与东林党人接触，寻求政治靠山',
+        text: '【暗通东林】借同乡的名义，给东林递了帖子',
+        description: '东林的回帖到了，你的名字上了另一本册子。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 野心值: { min: 30 } },
@@ -124,8 +124,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【两边观望】"当两边观望，不急于站队"',
-        description: '对东林和阉党都保持距离，不急于站队',
+        text: '【两边观望】收了东林的帖，也收了阉党的礼',
+        description: '两边都没再找你，两边都记着你。',
         showConditions: {
           attributes: { 理政: { min: 50 } }
         },
@@ -186,8 +186,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【支持增饷】"当增拨军饷，固守辽东"',
-        description: '支持袁崇焕的请求，增拨军饷，固守辽东',
+        text: '【支持增饷】上疏请拨辽东军饷，宁锦不可弃',
+        description: '饷银出了京，到宁远少了三成。',
         showConditions: {
           attributes: { 武略: { min: 40 } },
           origin: ['没落世家']
@@ -223,8 +223,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张议和】"当与后金议和，争取喘息之机"',
-        description: '主张与后金暂时议和，争取喘息之机',
+        text: '【主张议和】上疏请遣使议和，先安内政',
+        description: '折子被驳，你的名字进了清议的另册。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { max: 50 } }
@@ -256,8 +256,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【建议裁军】"当裁军节支，以纾民困"',
-        description: '建议裁减辽东军费，节约开支',
+        text: '【建议裁军】上疏请缩辽东防线，省下的饷赈民',
+        description: '百姓叫好，边将骂你误国。',
         showConditions: {
           attributes: { 理政: { min: 60 } }
         },
@@ -290,8 +290,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不急于表态"',
-        description: '不急于表态，静观事态发展',
+        text: '【静观其变】朝上论到辽东，你等别人先开口',
+        description: '饷还是拨了，数额砍了一半。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -1017,8 +1017,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【召回崇焕】"当立即召回袁崇焕，救援京师"',
-        description: '主张立即召回袁崇焕，救援京师',
+        text: '【召回崇焕】上疏请飞檄召袁崇焕回援京师',
+        description: '檄文发出去了，袁军还在路上。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           origin: ['没落世家']
@@ -1052,8 +1052,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【加固城防】"当加固京师防务，固守待援"',
-        description: '主张加固京师防务，固守待援',
+        text: '【加固城防】把民夫编成队，连夜加固九门城墙',
+        description: '城墙加了三尺，城外的村子没人管。',
         showConditions: {
           attributes: { 理政: { min: 50 } }
         },
@@ -1086,8 +1086,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【主张议和】"当与后金议和，争取退兵"',
-        description: '主张与后金议和，争取退兵',
+        text: '【主张议和】上疏请与后金议和，先解京师之围',
+        description: '朝上骂声一片，宦官把你的折子留下了。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { max: 50 } }
@@ -1119,8 +1119,8 @@ export const events1629: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【静观其变】"当静观其变，不急于表态"',
-        description: '不急于表态，静观事态发展',
+        text: '【静观其变】京师戒严，你在家里等消息',
+        description: '袁崇焕赶到时，你的门一直关着。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },

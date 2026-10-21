@@ -194,8 +194,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主抗清】"当力主抗清，誓死守土"',
-        description: '力主全力抗击清军，誓死守卫京畿',
+        text: '【力主抗清】请调天下勤王之师，截清军后路',
+        description: '勤王的兵来了，粮却没人管。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -230,8 +230,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张固守】"当固守京师，以待援军"',
-        description: '主张固守京师，等待各地勤王之师到来',
+        text: '【主张固守】令九门闭城，等勤王兵到齐',
+        description: '京师守住了，城外被抢空了。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 5, 清议: 5,
@@ -398,8 +398,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【量力而行】"当量力而行，适度助耕"',
-        description: '适度帮助百姓恢复春耕，不倾尽所有',
+        text: '【量力而行】出一半种子，剩下的让富户分摊',
+        description: '富户摊了，农户还是差两成。',
         effects: {
           attributes: {理政: 3,
               财帛: -8
@@ -466,8 +466,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求增加赈灾银两"',
-        description: '向朝廷上书，请求增加赈灾银两和种子',
+        text: '【上书朝廷】疏请从山东调种，附上荒田清册',
+        description: '清册递上去，山东的种子还没出仓。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -535,8 +535,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【痛陈时弊】"当痛陈时弊，弹劾误国之人"',
-        description: '上疏痛陈时弊，弹劾掣肘抗清的杨嗣昌等人',
+        text: '【痛陈时弊】上疏把济南之败归到掣肘的人身上',
+        description: '奏疏震动朝堂，杨嗣昌记下了你的名字。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 50 } },
@@ -569,8 +569,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【追责地方】"当追责地方，严惩失职官员"',
-        description: '主张追责济南失守的地方官员，严惩失职者',
+        text: '【追责地方】把山东的失职官员列成名单递上去',
+        description: '名单上的人革了职，没人替你说话。',
         effects: {
           attributes: { 理政: 3 },
           gameState: { 圣眷: 8, 清议: -5, 中官: 5 },
@@ -633,8 +633,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【缄口不言】"当缄口不言，不参与争论"',
-        description: '对济南失守之事保持沉默，不参与任何争论',
+        text: '【缄口不言】济南的急报读完，你把折子合上',
+        description: '朝上吵了三天，你一句没接。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -693,8 +693,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【仗义执言】"当仗义执言，为言官辩护"',
-        description: '上疏为被下狱的言官辩护，认为言路不可堵塞',
+        text: '【仗义执言】上疏为下狱的言官辩白',
+        description: '奏疏递上去，你的名字也进了弹章。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -727,8 +727,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【明哲保身】"当明哲保身，不参与争论"',
-        description: '对朝中问责保持中立，不参与争论',
+        text: '【明哲保身】朝上问到弹章，你只报本职',
+        description: '两派都没再找你。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: 3 },
@@ -756,8 +756,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠杨嗣昌】"当投靠杨嗣昌，借机上位"',
-        description: '投靠杨嗣昌，成为其一党，借机上位',
+        text: '【投靠杨嗣昌】把弹劾杨嗣昌的言官名单抄给他',
+        description: '杨府的门开了，言官的名册少了三页。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -793,8 +793,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门谢客】"当闭门谢客，避过风头"',
-        description: '闭门谢客，以各种理由回避朝中争论',
+        text: '【闭门谢客】称病在家，拜帖一概退回',
+        description: '风头过去，你的名字不在任何一边。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: 5 },
@@ -855,8 +855,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力防疫】"当全力防疫，救民于水火"',
-        description: '亲自组织防疫，不惜一切代价拯救百姓',
+        text: '【全力防疫】拿出私财购药，沿街设棚施药',
+        description: '棚子搭到第七天，城外的哭声稀了。',
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
@@ -893,8 +893,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【封城隔离】"当封城隔离，防止蔓延"',
-        description: '主张封城隔离，防止疫病向京师蔓延',
+        text: '【封城隔离】封了城门，在九门外设卡验人',
+        description: '城门封了半月，城外的车马排到十里外。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -927,8 +927,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁疫谋利】"当趁疫谋利，囤积药材"',
-        description: '利用疫病之机，囤积药材，高价出售，谋取暴利',
+        text: '【趁疫谋利】把库里的陈药翻出来，按三倍价卖',
+        description: '陈药卖空了，账上多了四千两。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -964,8 +964,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求太医院支援"',
-        description: '向朝廷上书，请求太医院派遣更多御医支援疫区',
+        text: '【上书求援】拟疏请调御医，附上疫区名册',
+        description: '名册递上去，御医还在路上，疫区先封了。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1031,8 +1031,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏鸣冤】"当上疏鸣冤，为卢象升正名"',
-        description: '上疏为卢象升鸣冤，揭露杨嗣昌掣肘抗清的真相',
+        text: '【上疏鸣冤】把巨鹿之战的实情写成弹章',
+        description: '弹章递上去，杨嗣昌在内阁摔了茶碗。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1065,8 +1065,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【暗中哀悼】"当暗中哀悼，不敢公开表态"',
-        description: '在心中哀悼卢象升，但不敢公开表态',
+        text: '【暗中哀悼】在家里设了牌位，关门烧了一首诗',
+        description: '诗稿藏在箱底，朝上你一句话没说。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 清议: 5 },
@@ -1096,8 +1096,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【附和杨嗣昌】"当附和杨嗣昌，诋毁卢象升"',
-        description: '附和杨嗣昌的说法，诋毁卢象升"畏敌逃跑"',
+        text: '【附和杨嗣昌】在朝上顺着杨嗣昌的话说卢象升轻敌',
+        description: '杨府的人送来一张银票。',
         showConditions: {
           hidden: { 道德值: { max: 20 }, 欲望值: { min: 40 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -1133,8 +1133,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【称病不出】"当称病不出，避过风头"',
-        description: '以称病为由，不参与关于卢象升的任何讨论',
+        text: '【称病不出】告病三日，不接任何拜帖',
+        description: '卢象升的恤典议了半月，你没在场。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: 3 },
@@ -1197,8 +1197,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【坚决主战】"当坚决主战，绝不议和"',
-        description: '坚决反对与清军议和，主张抗战到底',
+        text: '【坚决主战】在朝会上把议和的折子当众驳了',
+        description: '主战派叫好，杨嗣昌在门外看了你一眼。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1233,8 +1233,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【支持议和】"当支持议和，攘外必先安内"',
-        description: '支持杨嗣昌的议和主张，认为攘外必先安内',
+        text: '【支持议和】附杨嗣昌的折子，请先安内',
+        description: '清议骂你秦桧，皇上把你的名字记下了。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1265,8 +1265,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【两头下注】"当两头下注，左右逢源"',
-        description: '表面上支持议和，暗中与主战派保持联系，两头下注',
+        text: '【两头下注】朝上附议和，散朝后给主战派递话',
+        description: '两边的门都给你留着，两边的账都记着。',
         showConditions: {
           hidden: { 道德值: { max: 35 }, 野心值: { min: 40 } },
           origin: ['缙绅']

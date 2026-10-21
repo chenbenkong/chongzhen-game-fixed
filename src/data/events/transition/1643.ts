@@ -195,8 +195,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主围剿】"当力主围剿，不可姑息"',
-        description: '力主全力围剿李自成，不可姑息养奸',
+        text: '【力主围剿】请调左良玉、孙传庭合击襄阳',
+        description: '旨意下了，两路兵各走各的。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -229,8 +229,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张招安】"当主张招安，以分化流寇"',
-        description: '主张招安李自成部下，以分化流寇势力',
+        text: '【主张招安】拟诏招抚李自成部下，许以免死',
+        description: '招抚的诏书没出京，主战派先骂上了。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -261,8 +261,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中通贼】"当暗中通贼，留一条后路"',
-        description: '暗中与李自成部下接触，为自己留一条后路',
+        text: '【暗中通贼】托人给襄阳带去一封策应的信',
+        description: '回信只有四个字：静候佳音。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -296,8 +296,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书迁都】"当上书迁都，以避锋芒"',
-        description: '上书建议迁都南京，以避李自成锋芒',
+        text: '【上书迁都】密疏请皇上南幸，以南京为留都',
+        description: '密疏被留中，你的名字上了主战派的名单。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -362,8 +362,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主救援】"当力主救援四川，西南不可失"',
-        description: '力主全力救援四川，认为四川是西南的门户',
+        text: '【力主救援】上疏请调秦良玉部，驰援成都',
+        description: '檄文到了四川，成都已经戒严。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -396,8 +396,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【集中力量】"当集中力量对付李自成"',
-        description: '主张放弃四川，集中力量对付李自成',
+        text: '【集中力量】上疏请弃四川，专力对付李自成',
+        description: '清议骂你弃川，皇上把你的折子留了。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -428,8 +428,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱谋利】"当趁乱谋利，侵吞军饷"',
-        description: '利用四川之危之机，侵吞军饷，中饱私囊',
+        text: '【趁乱谋利】在四川军饷的册子上多写两千兵',
+        description: '饷银过手，你的箱底重了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -560,8 +560,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【以工代耕】"当以工代耕，组织百姓互助"',
-        description: '组织百姓互助合作，以工代耕，恢复春耕',
+        text: '【以工代耕】把流民编成队，挖渠换粮',
+        description: '渠修了二十里，换出去的粮装满了三车。',
         effects: {
           attributes: { 理政: 4, 体质: -2 },
           gameState: { 圣眷: 5, 清议: 8,
@@ -589,8 +589,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁火打劫】"当趁火打劫，兼并田地"',
-        description: '利用春耕困难之机，低价兼并百姓田地',
+        text: '【趁火打劫】用三斗米换一亩荒田',
+        description: '地契收了一匣子，村里的人走空了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -626,8 +626,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求援助"',
-        description: '向朝廷上书，请求调拨种子和耕牛',
+        text: '【上书求援】疏请拨种子十万石，附上荒田数',
+        description: '种子拨了四万石，运到河南只剩一半。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -852,8 +852,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力防疫】"当全力防疫，救民于水火"',
-        description: '亲自组织防疫，不惜一切代价拯救百姓',
+        text: '【全力防疫】把家里的银子换成药材，亲自押往疫区',
+        description: '药熬了七天七夜，你的眼窝陷了下去。',
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } }
@@ -889,8 +889,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【封城隔离】"当封城隔离，防止蔓延"',
-        description: '主张封城隔离，防止疫病向京师蔓延',
+        text: '【封城隔离】下令封锁疫区，只留一条运药的通道',
+        description: '京师保住了，疫区的人隔着墙领药。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -923,8 +923,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁疫谋利】"当趁疫谋利，囤积药材"',
-        description: '利用疫病之机，囤积药材，高价出售，谋取暴利',
+        text: '【趁疫谋利】在城门口盘下三间药铺，等药价翻倍',
+        description: '药价翻了三倍，你的地窖塞满了银锭。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -960,8 +960,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求太医院支援"',
-        description: '向朝廷上书，请求太医院派遣更多御医支援疫区',
+        text: '【上书求援】连夜写疏，请太医院拨二十名御医',
+        description: '御医来了六名，奏疏在通政司压了四天。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -1188,8 +1188,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主增援】"当力主增援潼关，不可失此重镇"',
-        description: '力主全力增援潼关，认为潼关是陕西的门户',
+        text: '【力主增援】上疏请调山西兵出关，援孙传庭',
+        description: '旨意下了，援兵还在山西。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1222,8 +1222,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张撤退】"当主张撤退，保存实力"',
-        description: '主张放弃陕西，退守山西，保存实力',
+        text: '【主张撤退】上疏请孙传庭弃潼关，退守山西',
+        description: '清议骂你弃陕，孙传庭没有退。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1256,8 +1256,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报军情】"当虚报军情，借潼关之危谋利"',
-        description: '虚报潼关军情，借机索取军饷，中饱私囊',
+        text: '【虚报军情】把潼关的兵额多报一倍，请饷',
+        description: '饷银过手，潼关的兵还是那些。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } }
         },
@@ -1292,8 +1292,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求统筹兼顾"',
-        description: '向朝廷上书，请求统筹兼顾潼关和京师两线',
+        text: '【上书朝廷】疏请分兵守潼关与京师两线',
+        description: '折子准了，兵从哪来没人说。',
         effects: {
           attributes: { 文韬: 3 },
           gameState: { 圣眷: -3, 清议: 8 },
@@ -1354,8 +1354,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏鸣冤】"当上疏鸣冤，为孙督师正名"',
-        description: '上疏为孙传庭鸣冤，揭露催战误国的真相',
+        text: '【上疏鸣冤】把催战的檄文抄进弹章，为孙传庭请恤',
+        description: '弹章递上去，皇上把折子压在御案下。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } }
@@ -1387,8 +1387,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【暗中哀悼】"当暗中哀悼，不敢公开表态"',
-        description: '在心中哀悼孙传庭，但不敢公开表态',
+        text: '【暗中哀悼】关起门来写了一首挽诗',
+        description: '诗藏在箱底，朝上你一句话没说。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 清议: 5 },
@@ -1418,8 +1418,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【附和权贵】"当附和权贵，诋毁孙传庭"',
-        description: '附和权贵的说法，诋毁孙传庭"轻敌冒进"',
+        text: '【附和权贵】在朝上顺着权贵说孙传庭轻敌',
+        description: '权贵送来一张银票，清议记下了你。',
         showConditions: {
           hidden: { 道德值: { max: 20 }, 欲望值: { min: 40 }, 野心值: { min: 40 } }
         },
@@ -1454,8 +1454,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【称病不出】"当称病不出，避过风头"',
-        description: '以称病为由，不参与关于孙传庭的任何讨论',
+        text: '【称病不出】告病三日，不接任何拜帖',
+        description: '孙传庭的恤典议了半月，你没在场。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: 3 },
@@ -1518,8 +1518,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【死守京师】"当死守京师，与城共存亡"',
-        description: '力主死守京师，誓与城池共存亡',
+        text: '【死守京师】把京营的兵编上城，亲自督守九门',
+        description: '城上支起了锅灶，城下的人开始逃。',
         showConditions: {
           attributes: { 武略: { min: 50 }, 体质: { min: 50 } },
           hidden: { 道德值: { min: 50 } }
@@ -1553,8 +1553,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张迁都】"当主张迁都南京，以避锋芒"',
-        description: '主张迁都南京，以长江为天险，徐图恢复',
+        text: '【主张迁都】密疏请皇上南幸，以南京为留都',
+        description: '密疏留中，主战派把你的名字记下了。',
         effects: {
           attributes: { 理政: 3, 文韬: 2 },
           gameState: { 圣眷: -12, 清议: -10,
@@ -1584,8 +1584,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中通贼】"当暗中通贼，为自己留后路"',
-        description: '暗中与李自成部下接触，为自己留一条后路',
+        text: '【暗中通贼】托人给李自成营中送去城防图',
+        description: '回信只有一句：入城之后，列位如故。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } }
         },
@@ -1618,8 +1618,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书求援，请求天下勤王"',
-        description: '向朝廷上书，请求调集天下兵马勤王',
+        text: '【上书求援】疏请天下勤王，附上京师兵力册',
+        description: '兵力册递上去，各路兵还在观望。',
         effects: {
           attributes: { 文韬: 3 },
           gameState: { 圣眷: -5, 清议: 8,

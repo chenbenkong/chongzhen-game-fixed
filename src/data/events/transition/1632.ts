@@ -828,8 +828,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力治河】"当全力治河，拯救百万生灵"',
-        description: '不惜一切代价，全力治河堵口，拯救灾民',
+        text: '【全力治河】把私财全填进决口，亲自在堤上督工',
+        description: '口子堵上那天，你在堤上睡了三个时辰。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -866,8 +866,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【先救灾后治河】"当先救灾后治河，分步进行"',
-        description: '先组织救灾，安置灾民，然后再治河堵口',
+        text: '【先救灾后治河】先设粥棚安置灾民，再议堵口',
+        description: '灾民有了棚子，决口又宽了二里。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -898,8 +898,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报治河费】"当虚报治河费，中饱私囊"',
-        description: '利用治河之机，虚报工程费用，中饱私囊',
+        text: '【虚报治河费】把河工的料价翻倍，余下的入库',
+        description: '堤修得薄，账做得厚。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -935,8 +935,8 @@ export const events1632: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求治河经费"',
-        description: '向朝廷上书，请求拨付更多治河经费',
+        text: '【上书求援】疏请拨治河银二十万两，附上决口图',
+        description: '银子拨了八万，图还在通政司。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
