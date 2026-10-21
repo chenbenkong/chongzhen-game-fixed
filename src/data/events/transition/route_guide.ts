@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ORDINARY_LIFE_EXCLUDED_FLAGS } from '../../ordinaryLife'
 
 // ════════════════════════════════════════════════
 // 路线引导事件（1635-1643）
@@ -2034,9 +2035,9 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你愣住了。
 
-你想了很久，发现——你没有什么"最大的成就"。你没弹劾过权贵，没赈济过灾民，没平定过叛乱，没写过什么流传后世的奏疏。
+你想了很久，发现——你没有什么"最大的成就"。你没有扳倒过谁，没有救过一省的灾，没有在边关立过功，也没有哪道奏疏被人传抄。
 
-你只是每天按时上衙、按时退衙；不结党、不攀附、不贪墨、但也无所作为。
+你只是每天按时上衙、按时退衙；不贪墨，也没能在哪件大事上留下自己的名字。朝堂上的风暴一场接一场，你被卷进去过，也随波逐流过，可到最后，没有哪一场是因为你而改变的。
 
 同事们都说你"是个好人"，但也"没什么大用"。
 
@@ -2045,8 +2046,12 @@ export const eventsRouteGuide: GameEvent[] = [
     },
     conditions: {
       year: { min: 1635, max: 1645 },
-      hidden: { 道德值: { min: 35, max: 70 } },
-      attributes: { 体质: { min: 30, max: 70 } }
+      // 第四十轮：上界拿掉。原来的 道德 35–70 ∧ 体质 30–70 是"中人之姿"的
+      // 数值代理，可 体质 只涨不回头 —— 1635 年多数玩家已经 80+，这一格
+      // 等于永远不开。现在数值只保下界，"不平凡"交给 c1 自己的 showConditions：
+      // 玩家能看见是哪段经历把【与世无争】锁住了（见 ordinaryLife.ts）。
+      hidden: { 道德值: { min: 35 } },
+      attributes: { 体质: { min: 30 } }
     },
     choices: [
       {
@@ -2054,6 +2059,11 @@ export const eventsRouteGuide: GameEvent[] = [
         storyline: 'ordinary',
         text: '【与世无争】平平淡淡过完一生',
         description: '接受自己的平庸',
+        // 事件照常出现，只锁这一条：走过另一条路的人看得见原因（选项下方会写出
+        // "与你的另一段经历相冲：随军出征"），而不是整张卡凭空消失。
+        showConditions: {
+          flags: { notHas: [...ORDINARY_LIFE_EXCLUDED_FLAGS] }
+        },
         effects: {
           hidden: {野心值: -10 },
           flags: { add: ['与世无争', '不争不抢'] }
@@ -2078,7 +2088,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 —— 你的名字，在史书里只有一行。但那一行，足够了。
 
-【获得标记：与世无争、不争不抢 — 此标记将直接解锁 ending_ordinary_life 结局】`
+【获得标记：与世无争、不争不抢 — 只要你仍是官身、八维尚可，晚年便会归入 ending_ordinary_life】`
         }
       },
       {

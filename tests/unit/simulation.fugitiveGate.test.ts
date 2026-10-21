@@ -40,6 +40,10 @@ import type { OriginType } from '../../src/types/game'
  * 仍是 4。本文的断言一律写成不等式（≥11 / ≥8 / >0），所以照旧过；上面那批数当"闸单独的效果"读，
  * 当下的逐月读数看 `simulation.fugitiveIncome.test.ts`。同轮还量掉了一句归因：
  * "17 局死在破产"里那批人并不是被《倾家荡产》(p1) 抢走这一格(p127) 的 —— 依据见 §1.4 ⑳。
+ *
+ * **第四十轮又挪了同一批样本**：打开《平庸之念》的隐藏上界之后，共享种子的随机流整体动了一拍，
+ * `fugitive` 组结案 12 → 13、控制组 `vanish` 2 → 5。闸一个字没动，三条后果断言照旧成立；
+ * 控制组那个 2 是第卅九轮的样本读数，已按本版重抄为 5（见该用例注释）。
  */
 
 const GAMES = Number(process.env.SIM_GAMES ?? 40)
@@ -174,19 +178,19 @@ describe(`潜逃者不再领朝廷的恩（${GAMES} 局 × 两副画像）`, () 
     expect(sealed, `${GAMES} 局里《亡命江湖》结案 0 次 —— 上面那行分布会指出人死在哪一格`).toBeGreaterThan(0)
   })
 
-  it('控制组：`vanish` 的结案数（第卅九轮重抄为 2；第廿六轮那版是 4）', () => {
+  it('控制组：`vanish` 的结案数（第四十轮重抄为 5；第卅九轮 2，第廿六轮 4）', () => {
     const sealed = van.filter(r => r.endingId === FUGITIVE).length
     const v = favorRises(van)
     console.log(
       `vanish：带票 ${van.filter(r => r.trace.some(t => t.derived.flags.includes(FUGITIVE_FLAG))).length}/${GAMES} · ` +
         `结案 ${sealed} · 逃后 圣眷 上涨 ${v.after}/${v.afterMonths} 月`
     )
-    // 第卅九轮新增「内廷门路」之后，这条危机在 months 里多消耗了一次概率门随机数，
-    // 同一批种子的随机流整体挪了一拍：这批 vanish 局从 4 局结案变成 2 局。
-    // 变的是**样本**，不是这条闸 —— `fugitive` 组在同一构建上仍是 12 局结案、
-    // 年窗内 圣眷 挡路 0 次（见上面两条）。控制组的价值是"同一版上量出来的旁证"，
-    // 所以这里按本版重抄，而不是为了保住旧数去动闸或动种子。
-    expect(sealed, 'vanish 组的结案数又动了 —— 先确认是内容改动的随机流偏移，还是这条闸被改坏').toBe(2)
+    // 第四十轮打开《平庸之念》的隐藏上界之后，与这批种子共享随机流的每一组都挪了一拍：
+    // 控制组从 2 局结案变成 5 局。变的是**样本**，不是这条闸 —— `fugitive` 组在
+    // 同一构建上仍是 13 局结案、年窗内 圣眷 挡路 0 次（见上面两条）。
+    // 控制组的价值是"同一版上量出来的旁证"，所以这里按本版重抄，而不是为了保住旧数
+    // 去动闸或动种子。
+    expect(sealed, 'vanish 组的结案数又动了 —— 先确认是内容改动的随机流偏移，还是这条闸被改坏').toBe(5)
     expect(v.after, 'vanish 组也带得上 潜逃，闸对它同样生效').toBe(0)
   })
 

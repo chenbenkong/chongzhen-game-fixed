@@ -105,16 +105,18 @@ export const soulmateEvents: GameEvent[] = [
         text: '【敬而不扰】"夜已深，姑娘早些休息，在下告辞"',
         description: '不刻意结交也不故作清高，留下良好第一印象后离开',
         effects: {
-          attributes: { 文韬: 3 },
-          gameState: { 清议: 4 },
+          // 第四十轮：主动告辞不会让人更有文才。这一格给的是"知进退"的眼力。
+          gameState: { 清议: 5 },
           hidden: {
-              道德值: 3
+              道德值: 7,
+              机敏值: 3,
+              欲望值: -5
         },
           flags: { add: ['lixiangjun_respect'] }
         },
         result: {
           title: '风月场中的君子',
-          tags: ['文韬+3', '清议+4', '道德+3', '君子之交'],
+          tags: ['机敏+3', '清议+5', '道德+7', '欲望-5', '君子之交'],
           echo: `你端起茶盏饮了一口，起身拱手："姑娘画作不凡，在下大开眼界。只是夜已深，不敢多扰。改日再来请教。"
 
 李香君眼中闪过一丝讶异。在秦淮这地方，客人巴不得多坐一刻，你倒是第一个主动告辞的。
@@ -552,15 +554,21 @@ export const soulmateEvents: GameEvent[] = [
         text: '【留书答谢】"姑娘留步——这枚玉佩请收下，日后凭此寻我"',
         description: '留下信物以备日后相认，不追问对方身份',
         effects: {
-          attributes: { 武略: 3 },
+          // 第四十轮：财帛是 Attributes，不是 GameStateValues。原先写进
+          // effects.gameState 会被 audit:shape 记成 DROP（`财帛` 不在 STATE_MAP 里）——
+          // 选项正文写着"赠玉佩"，存档里却一分钱没少。
+          // 赠一块玉也练不出武艺；这一格留下的是一步后手（机敏）。
+          attributes: { 财帛: -5 },
+          gameState: { 清议: 3 },
           hidden: {
-              道德值: 3
+              道德值: 5,
+              机敏值: 3
         },
           flags: { add: ['met_xianv', 'xianv_token'] }
         },
         result: {
           title: '玉佩之约',
-          tags: ['武略+3', '道德+3', '结识侠女', '玉佩之约'],
+          tags: ['机敏+3', '清议+3', '道德+5', '财帛-5', '结识侠女', '玉佩之约'],
           echo: `你从腰间解下那枚随身多年的玉佩，双手递上："姑娘留步——这枚玉佩请收下，日后若有需要，凭此寻我。"
 
 无名怔了一下，显然没料到你会这样。她没有接玉佩，只是淡淡看了你一眼："不必了。"

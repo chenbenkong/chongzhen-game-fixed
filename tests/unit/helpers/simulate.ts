@@ -30,7 +30,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
-  | 'bandit' | 'vanish' | 'fugitive'
+  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary'
 
 export interface SimOutcome {
   seed: number
@@ -302,6 +302,19 @@ interface RetireProfile {
    * 等于把别人三轮的结论一起改掉。见 `fleeChoice`。
    */
   fleeOnWarning?: boolean
+  /**
+   * 优先选**不会**在履历上添 `avoid` 里那些 flag 的选项（第四十轮）。
+   *
+   * 默认的 `floors` 是一条硬筛：一条选项只要把某一维压到地板以下就被整批剔除，
+   * 于是"保命"会盖过"不沾大事" —— 实测 `ordinary` 在 1628 年就被逼着点了
+   * 【积极清算】（+清议 +道德，但写 清算阉党/东林党人 两张票），
+   * 只因【明哲保身】要掉 5 点道德、恰好落到地板下。真人玩家看得见两个选项，
+   * 完全可以选后者；量具不能把"我不想"伪装成"我不能"。
+   *
+   * 开了这一项之后的顺序：干净且过地板 → 干净且不踩八条归零线 → 过地板（含脏选项）
+   * → `pickSafest`。只有前三层都空时才回到保命。
+   */
+  preferClean?: boolean
 }
 
 /** 想往空门／归隐那两格走的玩家，会去捡的门票 */
@@ -491,6 +504,33 @@ const FUGITIVE: RetireProfile = {
   fleeOnWarning: true
 }
 
+/**
+ * 想走《平凡终老》的那副画像（第四十轮）。
+ *
+ * 这一格从前读的是**中段**：道德 50–68 ∧ 体质 35–65 ∧ ……六维上下界同时成立。
+ * 实测 200 局里 0 局落进窗口，连一副专门往中段压的量具（20/20 拿到门票）
+ * 也封不了笔 —— 体质、民望 是**只涨不回头**的，上界没有玩家能操作的回路。
+ * 第四十轮把上界换成了 `notHas` 名单：`avoid` 直接读那一格自己的互斥面
+ * （`tileFlagPool(..., 'notHas')`，58 条"做过大事"的经历），
+ * 于是画像的活法变成"该保的底下界保住、遇大事就让开"，而不是"把数值按在 60 以下"。
+ *
+ * 评分只往 道德／清议 上加（那一格的下界），圣眷交给 `keepAbove` 托底。
+ * 不再需要"整局往下压"的负系数 —— 上界没了，民望高不再是罪过。
+ */
+const ORDINARY: RetireProfile = {
+  targets: new Set(['ending_ordinary_life']),
+  tickets: new Set(tileFlagPool('ending_ordinary_life', 'any')),
+  avoid: new Set(tileFlagPool('ending_ordinary_life', 'notHas')),
+  // 平凡终老要的是「不惹事地活着」，不是求退画像那种「把圣眷压到低处」。
+  // favorBand 写 65 时，评分会一路奖励降圣眷的选项，把 30 的地板压穿到诏狱的 15。
+  favorBand: 34,
+  weights: { 道德值: 2, 清议: 1.5, 圣眷: 0.5 },
+  floors: { 财帛: 25, 体质: 30, 圣眷: 30, 中官: 22, 清议: 30, 士绅: 22, 民望: 25, 道德值: 40 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 32 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 },
+  preferClean: true
+}
+
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
 const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   monk: MONK,
@@ -498,7 +538,8 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   stream: STREAM,
   bandit: BANDIT,
   vanish: VANISH,
-  fugitive: FUGITIVE
+  fugitive: FUGITIVE,
+  ordinary: ORDINARY
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
@@ -544,7 +585,19 @@ function pickHermit(
     const v = postValues(character, gameState, c)
     return v.every((x, i) => x >= floorOf(i))
   })
-  const bounded = sustainable.length ? sustainable : [pickSafest(candidates, character, gameState)]
+  const clean = (c: EventChoice) =>
+    !((c.effects?.flags?.add ?? []) as string[]).some(f => profile.avoid.has(f))
+  const cleanSafe = profile.preferClean ? sustainable.filter(clean) : []
+  const cleanAlive = profile.preferClean
+    ? candidates.filter(c => clean(c) && postValues(character, gameState, c).every(x => x >= 8))
+    : []
+  const bounded = cleanSafe.length
+    ? cleanSafe
+    : cleanAlive.length
+      ? cleanAlive
+      : sustainable.length
+        ? sustainable
+        : [pickSafest(candidates, character, gameState)]
   let best = bounded[0]
   let bestScore = -Infinity
   for (const c of bounded) {

@@ -159,48 +159,63 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(total, '一局里都没有一个月让《亡命江湖》的门成立 —— 这一格是真死的，不是"没人朝它走"').toBeGreaterThan(0)
   })
 
-  it('成对票不是这一格的活路：只靠 隐姓埋名/下落不明 开门的月份，一律被《不知所踪》拿走', () => {
+  it('成对票开门时先让《不知所踪》裁决；它不成立，才轮到这一格接住', () => {
     const pairOnlyOpen = runs.flatMap(r =>
       r.trace
         .map((s, i) => ({ s, i, r }))
         .filter(x => gateHeldAt(x.r, x.i) && !x.s.derived.flags.includes(FUGITIVE_FLAG))
     )
+    const unknown = (Object.values(boundaryEventManager.getAll()).filter(e => e.type === 'ending') as BoundaryEvent[]).find(
+      e => e.event.id === 'ending_unknown_fate'
+    )
     const winners = new Map<string, number>()
+    const stolen: string[] = []
     for (const x of pairOnlyOpen) {
       const w = winnerAt(x.r, x.i)
       const k = w ? `p${w.priority}《${w.title}》` : '（无人命中）'
       winners.set(k, (winners.get(k) ?? 0) + 1)
+      // 《不知所踪》的门票与这一格共用同一对 隐姓埋名/下落不明，但它排在前头（p117）。
+      // 只要它自己也成立，这一格就不许抢；它不成立时，成对票照样能把这一格送出去 ——
+      // 第四十轮样本里就有 2 个月是这么赢的，所以断言写成"让位"而不是"永远不属于这一格"。
+      if (unknown?.check(buildParams(x.s.derived)) && w?.id !== 'ending_unknown_fate') {
+        stolen.push(`第${x.s.turn}月 seed${x.r.seed}：${k}`)
+      }
     }
     console.log(
       `门开着但不带 潜逃 的月份 ${pairOnlyOpen.length} 个 —— ` +
         ([...winners].map(([k, v]) => `${k}×${v}`).join(' · ') || '无')
     )
-    expect(
-      pairOnlyOpen.every(x => winnerAt(x.r, x.i)?.id !== FUGITIVE),
-      '不带 潜逃 的月份里《亡命江湖》赢过 —— 那《不知所踪》和这一格就还在抢同一批玩家'
-    ).toBe(true)
+    expect(stolen, '《不知所踪》同时也成立时，《亡命江湖》不许抢在它前面').toEqual([])
   })
 
-  it('这两副画像里已经没有"带票活进年窗"的局 —— 这一格改用 fugitive 画像量（第卅九轮实测）', () => {
-    // 第廿七轮这一条读的是「带 潜逃 的局在年窗里关着的月份，差的全是 道德」。
-    // 第卅九轮新增「内廷门路」之后，这条危机在月份里多消耗一次概率门随机数，
-    // 同一批种子的随机流整体挪了一拍：本组唯一的带票局 seed6425 现在死在 1634 年
-    // （《倾家荡产》），差一年进不了年窗 —— 旧断言 `closed > 0` 已经没有样本可量。
-    //
-    // 不再拿一句空转的 0 冒充读数：这一格的正经量具是
-    // `simulation.fugitiveGate.test.ts` 的 `fugitive` 画像（带票 37/40、门开 19 月、
-    // 年窗内 圣眷 挡路 0 次、结案 12 局）。这里只钉住"本组样本到哪里为止"，
-    // 哪天又有带票局活进年窗，这条会红，提醒把归因重抄一遍。
+  it('带 潜逃 活进年窗的局（本组第四十轮只剩 1 局）：门关着全因 道德/体质，圣眷 一次没挡路', () => {
+    // 第四十轮打开《平庸之念》的上界之后，这批共享种子的随机流整体挪了一拍：
+    // 本组又出现 1 局带票活进年窗（seed6415/vanish，活到 1638），
+    // 第卅九轮那句"本组已无带票活进年窗"的读数到此作废。
+    // 这一条重新变成有样本的实测：门关着的月份里 圣眷 一次都不许出现。
     const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     const inWindow = withTicket.filter(r => r.trace.some(s => s.derived.year >= EFFECTIVE_MIN_YEAR))
     console.log(
       `带 潜逃 ${withTicket.length} 局（${withTicket.map(r => `seed${r.seed}/${r.policy}`).join(' · ') || '无'}）· ` +
         `活进年窗 ${inWindow.length} 局`
     )
-    expect(inWindow.length, '又有带票局活进年窗了 —— 用上面的逐月数据把 道德/圣眷 归因重抄一遍').toBe(0)
+    expect(inWindow.length, '带票活进年窗的样本数又动了 —— 先重抄下面的差池，再决定是样本还是闸').toBe(1)
+    let closed = 0
+    let favorBlocked = 0
+    for (const r of inWindow) {
+      const start = r.trace.findIndex(s => s.derived.year >= EFFECTIVE_MIN_YEAR)
+      for (let i = start; i < r.trace.length; i++) {
+        if (gateHeldAt(r, i)) continue
+        closed++
+        if (r.trace[i].derived.states.圣眷 > (fugitive!.event.conditions?.gameState?.圣眷?.max ?? 999)) favorBlocked++
+      }
+    }
+    console.log(`带票·年窗内·门关着 ${closed} 个月，其中 圣眷 挡路 ${favorBlocked} 次`)
+    expect(closed, '门一次都没关过 —— 那上面那句 0 只是"根本没人站在门口"').toBeGreaterThan(0)
+    expect(favorBlocked, '带票之后 圣眷 还在挡路 —— 那条闸没生效').toBe(0)
   })
 
-  it('这两副画像结案 0 次 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {
+  it('这两副画像只结得出 2 局，且每一局都带着票 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {
     const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     console.log(
       `结案 ${sealed(FUGITIVE)} 局；带 潜逃 ${withTicket.length} 局；` +
@@ -237,11 +252,24 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
         console.log(rows.join('\n'))
       }
     }
+    // 第四十轮打开《平庸之念》的上界之后，这批共享种子的随机流挪了一拍：
+    // 本组从 0 局结案变成 2 局，且两局都是**成对票**（隐姓埋名/下落不明）结的 ——
+    // 不是 潜逃 那条线。这正是这一格 `any` 里本来就承认的门票；拿掉它反而是改设计。
+    // 所以这里钉的不是"0"，而是"结案必须带票"：先证明不是凭空结的，再记下本版读数。
+    const anyTickets = ((fugitive!.event.conditions?.flags as { any?: string[] })?.any ?? [])
+    const sealedRuns = runs.filter(r => r.endingId === FUGITIVE)
+    console.log(
+      `结案 ${sealedRuns.length} 局，门票：` +
+        (sealedRuns.map(r => `seed${r.seed}[${anyTickets.filter(f => (r.finalFlags ?? []).includes(f)).join('/')}]`).join(' · ') || '无')
+    )
+    for (const r of sealedRuns) {
+      const carried = anyTickets.filter(f => (r.finalFlags ?? []).includes(f))
+      expect(carried.length, `seed${r.seed} 没带任何一张门票就结了这一格 —— 那不是画像的读数`).toBeGreaterThan(0)
+    }
     expect(
       sealed(FUGITIVE),
-      `${GAMES} 局 ${POLICIES.join('/')} 里《亡命江湖》突然结上案了 —— 那就是画像或闸变了：` +
-        '上一条用例"差池全是 道德"的归因要跟着重写，§1.4 ⑱ 也要重抄'
-    ).toBe(0)
+      `${GAMES} 局 ${POLICIES.join('/')} 的结案数又动了 —— 先区分是内容改动的随机流偏移，还是这一格的门/优先级被改坏`
+    ).toBe(2)
   })
 
   it('抄表本身不许带错：没有一局报错，也没有一局一个月份都没抄到', () => {
