@@ -1375,8 +1375,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【请求减税】"当请求减税，与民休息"',
-        description: '上疏请求减免灾区赋税，与民休息',
+        text: '【请免三府】上疏请免河南、山东、北直隶三地的秋粮',
+        description: '免粮的告示贴出去，户部的催饷单也到了。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 40 } },
@@ -1415,8 +1415,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【借饷富户】"当向富户借饷，共渡难关"',
-        description: '建议向士绅富户借饷，共渡难关',
+        text: '【向富户借饷】把江南八大家的名单列出来，请朝廷按名借银',
+        description: '银子借到了，八大家的门房从此不给你递茶。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1447,8 +1447,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【加征苛税】"当加征苛税，充实国库"',
-        description: '支持加征赋税，充实国库，不惜加重百姓负担',
+        text: '【加派三厘】在廷议上赞成每亩再加三厘，专充军饷',
+        description: '加派的告示贴到县里，第二天就有人逃进山里。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -1484,8 +1484,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【拖延观望】"当拖延观望，不急于表态"',
-        description: '对赋税之争保持沉默，拖延观望',
+        text: '【不议不奏】赋税的折子送进来，你只在封皮上画了个圈',
+        description: '圈画了三个月，最后谁也没等到你的话。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -5,
@@ -1546,8 +1546,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主剿寇】"当力主剿寇，誓平叛乱"',
-        description: '力主全力剿寇，誓平叛乱，保卫朝廷',
+        text: '【请调天下兵】在御前请调各省兵马，限一年内荡平流寇',
+        description: '调兵的部文发出去，先回来的是一批请饷的急件。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1582,8 +1582,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张招抚】"当主张招抚，分化瓦解"',
-        description: '主张对部分流寇招抚，分化瓦解，集中力量对付最危险的敌人',
+        text: '【抚小剿大】主张先招抚罗汝才等小股，集中兵力对付李自成',
+        description: '招抚的使者去了三批，回来的只有两批。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1614,8 +1614,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中自保】"当暗中自保，为自己留后路"',
-        description: '暗中与流寇建立联系，为自己留后路',
+        text: '【密通流寇】托人给李自成营中送去一封没有署名的信',
+        description: '回信只有四个字：静候佳音。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 }, 野心值: { min: 35 } },
           origin: ['缙绅']
@@ -1649,8 +1649,8 @@ export const events1640: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门自守】"当闭门自守，保境安民"',
-        description: '闭门自守，只保自己辖区内的安宁',
+        text: '【保境不援】令本境民团只守自己的寨墙，邻县求援一概不理',
+        description: '本境安稳了半年，邻县的流民涌进来三万。',
         effects: {
           attributes: { 体质: 4, 武略: 2 },
           gameState: { 圣眷: -3, 清议: -5,

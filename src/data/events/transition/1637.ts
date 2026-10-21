@@ -1208,8 +1208,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【支持杨嗣昌】"当支持杨嗣昌，先安内后攘外"',
-        description: '支持杨嗣昌"先安内后攘外"的主张，优先剿灭流寇',
+        text: '【附议安内】在廷议上站到杨嗣昌一侧，主张先平流寇再图辽东',
+        description: '杨嗣昌散朝时朝你拱了拱手，辽东的求饷疏被压下了。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 5, 清议: 5,
@@ -1239,8 +1239,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中通敌】"当暗中通敌，借辽东局势谋利"',
-        description: '暗中与后金商人勾结，利用边境贸易谋取私利',
+        text: '【放行商队】给往来的辽东商队批了通关的票号，抽三成利',
+        description: '一年里过关的商队有六十支，账本上只记了二十支。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } }
         },
@@ -1273,8 +1273,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不轻易表态"',
-        description: '对辽东军情保持沉默，不轻易表态',
+        text: '【称病避议】连着三道廷议的传单，你都告了病',
+        description: '病假的第十天，皇上在朝会上问了一句：某某怎么总不在。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },
@@ -1499,8 +1499,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【力主勤王】"当力主勤王，保卫京师"',
-        description: '力主调集各路兵马勤王，保卫京师',
+        text: '【传檄勤王】以兵部名义飞檄各镇，限五日内入卫京师',
+        description: '檄文发了十七道，先到的只有宣府的一千二百骑。',
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } }
@@ -1536,8 +1536,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【固守待援】"当固守待援，不可轻举妄动"',
-        description: '主张固守京师，等待各地勤王兵马到达',
+        text: '【闭城固守】下令九门落闸，只放勤王兵从德胜门入城',
+        description: '城门关了四十天，城外求入城的百姓在壕边跪了一夜。',
         effects: {
           attributes: { 理政: 3, 武略: 2 },
           gameState: { 圣眷: 3, 清议: 5,
@@ -1567,8 +1567,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【虚报军情】"当虚报军情，借清军入塞谋利"',
-        description: '虚报军情，夸大清军入侵规模，借机索取军饷中饱私囊',
+        text: '【虚报兵额】把入塞清军的数目报成十万，多请三万人的饷',
+        description: '多请的饷银出京时，换了三辆没有标记的车。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } }
         },
@@ -1605,8 +1605,8 @@ export const events1637: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书朝廷】"当上书朝廷，请求统筹兼顾"',
-        description: '向朝廷上书，请求统筹兼顾辽东和剿寇两线',
+        text: '【统筹两线】上疏请把剿饷与辽饷合账，按季分批调拨',
+        description: '疏里的章程写得很细，户部回文只有“知道了”三字。',
         effects: {
           attributes: { 文韬: 3 },
           gameState: { 圣眷: -3, 清议: 8 },

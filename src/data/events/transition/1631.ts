@@ -188,8 +188,8 @@ export const events1631: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【主张招抚】"当主张招抚，以安军心"',
-        description: '主张招抚孔有德，解决军饷问题以平息兵变',
+        text: '【补饷招抚】请先补发登莱欠饷三个月，再遣官宣抚',
+        description: '饷银拨下去时，叛军已破了黄县。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -224,8 +224,8 @@ export const events1631: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【主张剿灭】"当主张剿灭，以儆效尤"',
-        description: '主张坚决剿灭叛军，以儆效尤',
+        text: '【调天津兵】檄调天津、保定两镇兵夹击叛军',
+        description: '两镇兵到德州，孔有德已占了登州。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -258,8 +258,8 @@ export const events1631: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中勾连】"当暗中勾连，借兵变谋利"',
-        description: '暗中与叛军勾连，利用兵变之机谋取私利',
+        text: '【借商船递信】托莱州商船给孔有德送去一封密信',
+        description: '船回来时，舱里多了两口箱子。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -293,8 +293,8 @@ export const events1631: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默观望】"当沉默观望，不轻易表态"',
-        description: '对兵变保持沉默，不轻易表态',
+        text: '【推给兵部】属官来问如何具复，你说此事归兵部管',
+        description: '兵部的回文比你的批复还晚三天。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3 },

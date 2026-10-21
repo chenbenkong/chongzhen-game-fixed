@@ -1530,8 +1530,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏追责】"当上疏追责，为殉国将士请恤"',
-        description: '上疏追责清军入塞之失，为卢象升等殉国将士请恤',
+        text: '【疏请恤典】上疏请为卢象升追赠，并把误国之臣交部议处',
+        description: '疏递上去那天，杨嗣昌的轿子在你门前停了一炷香。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1564,8 +1564,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【重建家园】"当重建家园，恢复民生"',
-        description: '致力于京畿山东的重建工作，恢复民生',
+        text: '【督修废墟】亲自到良乡、房山督修民房，拨银买耕牛种子',
+        description: '入冬前修起了八百间房，你的俸银也见了底。',
         showConditions: {
           origin: ['寒门', '没落世家']
         },
@@ -1600,8 +1600,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱谋利】"当趁乱谋利，侵吞赈灾款"',
-        description: '利用重建之机，侵吞赈灾款项，中饱私囊',
+        text: '【虚报工料】把重建的砖瓦木料报成三倍价，差额进了你的账',
+        description: '账上的砖价是三倍，良乡的墙入冬就裂了缝。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -1637,8 +1637,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【沉默叹息】"当沉默叹息，听天由命"',
-        description: '对清军退去后的局面保持沉默，听天由命',
+        text: '【闭门不出】追责与重建的折子都压在案头，你一份没有批',
+        description: '案上的折子堆到第七天，落了薄薄一层灰。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -5 },
@@ -1733,8 +1733,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【委曲求全】"当委曲求全，表面顺从"',
-        description: '表面上顺从杨嗣昌，暗中保持独立',
+        text: '【虚与周旋】在杨嗣昌的宴上敬了酒，回府后把礼单烧了',
+        description: '酒敬过了，第二天你没有在名单上署名。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1763,8 +1763,8 @@ export const events1638: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠杨嗣昌】"当投靠杨嗣昌，借机上位"',
-        description: '投靠杨嗣昌，成为其一党，借机上位，排挤异己',
+        text: '【列名效忠】在杨嗣昌的效忠折上第一个署名',
+        description: '名字签下去，第二个月你就坐上了佥都御史的位子。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']

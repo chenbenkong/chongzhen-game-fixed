@@ -705,8 +705,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【开仓放粮】"当开仓放粮，赈济饥民"',
-        description: '开仓放粮，赈济饥民，不惜得罪囤粮的士绅',
+        text: '【砸锁开仓】带人砸开城中三座粮仓的锁，当街分米',
+        description: '米分到第三天，囤粮的士绅联名把你告到了巡抚衙门。',
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -745,8 +745,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【劝捐平籴】"当劝捐平籴，以平粮价"',
-        description: '劝说士绅富商捐粮，同时以平价出售官府粮食',
+        text: '【设局平粜】在城门口设平粜局，官粮按市价七成出售',
+        description: '平粜局开了二十天，城里的粮价落了两成。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -779,8 +779,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【囤粮谋利】"当囤粮谋利，趁粮荒发财"',
-        description: '利用粮荒之机，囤积粮食，高价出售，谋取暴利',
+        text: '【买尽新粮】在河南各处码头把新粮尽数买下，囤进自家的仓',
+        description: '入冬后你开仓粜粮，一石卖到四两银。',
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
@@ -817,8 +817,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【上书求援】"当上书朝廷，请求调拨赈灾粮"',
-        description: '向朝廷上书，请求调拨更多赈灾粮食',
+        text: '【疏请漕粮】上疏请截留江南漕粮二十万石，改运中原赈饥',
+        description: '漕粮改道的旨意下来时，中原已经饿死了三万人。',
         showConditions: {
           origin: ['寒门', '诗文清望']
         },
@@ -882,8 +882,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【全力防疫】"当全力防疫，救民于水火"',
-        description: '亲自组织防疫，不惜一切代价拯救百姓',
+        text: '【亲入疫区】带药材进疫区，逐村设隔离的草棚',
+        description: '你在疫区待了二十天，回府时瘦了一圈。',
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
@@ -920,8 +920,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【封城隔离】"当封城隔离，防止蔓延"',
-        description: '主张封城隔离，防止疫病向京师蔓延',
+        text: '【封城断路】下令封锁疫区各村，断路设卡，不许人出入',
+        description: '疫病止住了，疫区里的棺材堆到了村口。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -954,8 +954,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁疫谋利】"当趁疫谋利，囤积药材"',
-        description: '利用疫病之机，囤积药材，高价出售，谋取暴利',
+        text: '【囤药居奇】把城里的药材尽数收进自家库房，等药价翻倍',
+        description: '药价翻了四倍，你的库房门前排起了长队。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -991,8 +991,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门避疫】"当闭门避疫，保全自身"',
-        description: '闭门不出，避免接触疫区，保全自身',
+        text: '【闭门不出】府门上了三道闩，连送菜的都在墙外放下',
+        description: '疫病过去，你家里一个人也没少。',
         effects: {
           attributes: { 体质: 4 },
           gameState: { 圣眷: -5, 清议: -5 },
@@ -1050,8 +1050,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【痛陈时弊】"当痛陈时弊，弹劾招抚失策之人"',
-        description: '上疏痛陈招抚失策之弊，弹劾主张招抚的杨嗣昌',
+        text: '【疏劾主抚】上疏弹劾杨嗣昌主抚误国，请追论襄阳之失',
+        description: '疏递上去的第二天，襄阳逃回来的官员被下狱。',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
           hidden: { 道德值: { min: 50 } },
@@ -1084,8 +1084,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【加强防备】"当加强防备，防贼流窜"',
-        description: '加强本辖区防备，防止张献忠流窜入境',
+        text: '【增卡守隘】在各处隘口增设关卡，乡勇昼夜轮值',
+        description: '张献忠的游骑到隘口外看了一眼，掉头走了。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -1153,8 +1153,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【缄口不言】"当缄口不言，不参与争论"',
-        description: '对襄阳陷落之事保持沉默，不参与任何争论',
+        text: '【不闻不问】襄阳陷落的塘报压在案头，你没有批一个字',
+        description: '塘报压了半个月，纸角卷了起来。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -3, 清议: -3 },
@@ -1585,8 +1585,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【委曲求全】"当委曲求全，表面顺从"',
-        description: '表面上顺从杨嗣昌，暗中保持独立',
+        text: '【赴宴不表态】杨嗣昌的席你照赴，席间只谈粮价不谈朝局',
+        description: '席散时他多看了你一眼，什么也没说。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -1615,8 +1615,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠杨嗣昌】"当投靠杨嗣昌，借机上位"',
-        description: '投靠杨嗣昌，成为其一党，借机上位，排挤异己',
+        text: '【递门生帖】把门生帖子递进杨府，附一份河南屯田的条陈',
+        description: '条陈批了，你名下多了一处屯田的差事。',
         showConditions: {
           hidden: { 道德值: { max: 30 }, 野心值: { min: 40 } },
           origin: ['缙绅']
@@ -1714,8 +1714,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏建言】"当上疏建言，推荐贤能接替"',
-        description: '上疏推荐贤能之士接替杨嗣昌，同时提出剿寇新策',
+        text: '【荐孙传庭】上疏请以孙传庭接任督师，附一份剿抚并用的条陈',
+        description: '疏递进去第三天，孙传庭的任命下来了。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
@@ -1750,8 +1750,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【审慎观望】"当审慎观望，不急于表态"',
-        description: '对杨嗣昌之死保持审慎，不急于表态',
+        text: '【照常点卯】督师之位的争夺你不插手，每天照常到衙门',
+        description: '半个月后新督师到任，你的位置没有动。',
         effects: {
           attributes: { 理政: 3, 体质: 2 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1779,8 +1779,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【趁乱上位】"当趁乱上位，争夺督师之位"',
-        description: '利用杨嗣昌之死造成的权力真空，争夺督师之位',
+        text: '【四处打点】托宦官递话，又给几家勋贵送了厚礼，求督师之位',
+        description: '银子花出去八千两，督师的印信落到了别人手里。',
         showConditions: {
           attributes: { 武略: { min: 50 }, 文韬: { min: 40 } },
           hidden: { 道德值: { max: 35 }, 野心值: { min: 50 } },
@@ -1815,8 +1815,8 @@ export const events1641: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门反思】"当闭门反思，总结杨嗣昌得失"',
-        description: '闭门反思杨嗣昌的得失，从中汲取教训',
+        text: '【录杨相得失】闭门把杨嗣昌督师三年的得失逐条写下来',
+        description: '那本札记后来在士林里传抄，被当作做官的戒条。',
         effects: {
           attributes: { 文韬: 4, 体质: 3 },
           gameState: { 清议: 8 },

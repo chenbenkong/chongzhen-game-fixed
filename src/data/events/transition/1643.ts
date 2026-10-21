@@ -691,8 +691,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【举荐贤才】"当举荐贤才，不拘一格"',
-        description: '举荐真正有才华的人，不论出身，不问党派',
+        text: '【开单举贤】举荐两名寒门知县和一名被革职的武将，各附履历',
+        description: '三人里两人应召，革职的那个回信说不来了。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -725,8 +725,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【举荐门生】"当举荐门生，培植势力"',
-        description: '举荐自己的门生和亲信，培植自己的势力',
+        text: '【保举门生】把三个门生列进举荐名单，履历写得比实绩好看',
+        description: '三人全数录用，逢年过节你家的门生帖多了一叠。',
         showConditions: {
           origin: ['缙绅', '没落世家']
         },
@@ -755,8 +755,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【卖官鬻爵】"当卖官鬻爵，借举荐谋利"',
-        description: '利用举荐之机，收受贿赂，卖官鬻爵',
+        text: '【标价举荐】把举荐的名额按州、县分作两等，明码标价',
+        description: '半年里卖出去九个名额，最贵的一个一千二百两。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
           origin: ['缙绅']
@@ -792,8 +792,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【推辞不受】"当推辞不受，避免麻烦"',
-        description: '以各种理由推辞举荐之责，避免麻烦',
+        text: '【自陈不敏】上疏说自己识人不明，请免去举荐之责',
+        description: '疏批了，皇上在名字旁边画了一道。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -5, 清议: 3 },
@@ -1028,8 +1028,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【上疏缓战】"当上疏缓战，给孙督师更多时间"',
-        description: '上疏请求给孙传庭更多时间准备，不宜轻出',
+        text: '【疏请缓期】上疏请给秦军三个月备饷，再出潼关',
+        description: '疏到御前，皇上批了八个字：迁延观望，是何居心。',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
@@ -1062,8 +1062,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【支持出战】"当支持出战，此乃最后机会"',
-        description: '支持孙传庭出战，认为这是剿灭李自成的最后机会',
+        text: '【催促进兵】在廷议上赞成速战，说秦军久练可一战而定',
+        description: '秦军出关那天，你在城门口送行，没说一句话。',
         showConditions: {
           origin: ['没落世家']
         },
@@ -1094,8 +1094,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中通贼】"当暗中通贼，留一条后路"',
-        description: '暗中与李自成部下接触，为自己留一条后路',
+        text: '【密遣家仆】派家仆带一封没署名的信，往李自成营中走一趟',
+        description: '家仆回来时只带回一句话：看大人日后怎么做。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 } },
           origin: ['缙绅']
@@ -1682,8 +1682,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【誓死守城】"当誓死守城，与京师共存亡"',
-        description: '誓死守城，与京师共存亡，绝不逃跑',
+        text: '【登城督守】把铺盖搬上正阳门城楼，日夜不回家',
+        description: '守城的第九天，城下的火把已经连成一片。',
         showConditions: {
           attributes: { 武略: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } }
@@ -1715,8 +1715,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【南渡避祸】"当南渡避祸，保全性命"',
-        description: '携家带口南渡，避过京师之危',
+        text: '【携眷南行】连夜雇了三辆车，把家眷细软送往南京',
+        description: '车过卢沟桥时，守门的兵卒没有拦你。',
         effects: {
           attributes: {体质: 3,
               财帛: -10
@@ -1748,8 +1748,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【暗中通贼】"当暗中通贼，为自己谋后路"',
-        description: '暗中与李自成联络，表示愿意投降，为自己谋后路',
+        text: '【献城密约】托人给李自成的营中送去京师城防的图样',
+        description: '回信只有一句：入城之后，列位如故。',
         showConditions: {
           hidden: { 道德值: { max: 20 }, 欲望值: { min: 40 }, 野心值: { min: 30 } }
         },
@@ -1782,8 +1782,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【闭门不出】"当闭门不出，静待时变"',
-        description: '闭门不出，既不守城也不逃跑，静待时变',
+        text: '【闭门静待】守城的传帖来了三次，你都推说身子不好',
+        description: '门外的脚步声一夜比一夜近。',
         effects: {
           attributes: { 体质: 3 },
           gameState: { 圣眷: -8, 清议: -5 },
@@ -1842,8 +1842,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c1',
         storyline: 'ordinary',
-        text: '【尽忠报国】"当尽忠报国，为大明尽最后的力"',
-        description: '尽忠报国，为大明尽最后的努力，誓与社稷共存亡',
+        text: '【夜巡九门】裹着旧裘把九门巡了一遍，又去户部催粮',
+        description: '除夕夜城里没有爆竹，只有城头的更鼓。',
         showConditions: {
           attributes: { 文韬: { min: 50 }, 武略: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
@@ -1880,8 +1880,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【韬光养晦】"当韬光养晦，等待时机"',
-        description: '韬光养晦，不做出头鸟，等待时机',
+        text: '【闭门守岁】这一年的朝会你只去了两回，其余都告了病',
+        description: '岁末的爆竹声你是在家里听见的。',
         effects: {
           attributes: { 体质: 5 },
           gameState: { 圣眷: 3, 清议: 5 },
@@ -1911,8 +1911,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【投靠新主】"当投靠新主，为自己谋前程"',
-        description: '暗中联络李自成，准备投靠新主，为自己谋前程',
+        text: '【暗通闯营】托人给李自成的营中送去一封贺年的帖子',
+        description: '帖子送出七天，回礼是一匹绸子。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 40 }, 野心值: { min: 40 } }
         },
@@ -1947,8 +1947,8 @@ export const events1643: GameEvent[] = [
       {
         id: 'c4',
         storyline: 'ordinary',
-        text: '【反思总结】"当反思总结，为来年做准备"',
-        description: '反思这一年的得失，为来年的变局做准备',
+        text: '【写岁末录】把这一年的朝局与自己的得失写成一本札记',
+        description: '札记写完那天，京师的城门已经关了。',
         effects: {
           attributes: { 文韬: 4, 理政: 2 },
           gameState: { 清议: 8 },
