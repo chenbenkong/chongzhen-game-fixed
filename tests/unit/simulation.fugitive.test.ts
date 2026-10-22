@@ -188,10 +188,12 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(stolen, '《不知所踪》同时也成立时，《亡命江湖》不许抢在它前面').toEqual([])
   })
 
-  it('带 潜逃 活进年窗的局（本组第四十轮只剩 1 局）：门关着全因 道德/体质，圣眷 一次没挡路', () => {
+  it('带 潜逃 活进年窗的局（第四十五轮重抄为 2 局）：门关着全因 道德/体质，圣眷 一次没挡路', () => {
     // 第四十轮打开《平庸之念》的上界之后，这批共享种子的随机流整体挪了一拍：
     // 本组又出现 1 局带票活进年窗（seed6415/vanish，活到 1638），
     // 第卅九轮那句"本组已无带票活进年窗"的读数到此作废。
+    // 第四十五轮把历史事件与《名帖》的选项数收口到 3–4 之后，随机流又挪了一拍：
+    // seed6425/vanish 也活进了年窗，样本 1 → 2（两局都带 潜逃）。
     // 这一条重新变成有样本的实测：门关着的月份里 圣眷 一次都不许出现。
     const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     const inWindow = withTicket.filter(r => r.trace.some(s => s.derived.year >= EFFECTIVE_MIN_YEAR))
@@ -199,7 +201,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
       `带 潜逃 ${withTicket.length} 局（${withTicket.map(r => `seed${r.seed}/${r.policy}`).join(' · ') || '无'}）· ` +
         `活进年窗 ${inWindow.length} 局`
     )
-    expect(inWindow.length, '带票活进年窗的样本数又动了 —— 先重抄下面的差池，再决定是样本还是闸').toBe(1)
+    expect(inWindow.length, '带票活进年窗的样本数又动了 —— 先重抄下面的差池，再决定是样本还是闸').toBe(2)
     let closed = 0
     let favorBlocked = 0
     for (const r of inWindow) {
@@ -215,7 +217,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(favorBlocked, '带票之后 圣眷 还在挡路 —— 那条闸没生效').toBe(0)
   })
 
-  it('这两副画像只结得出 3 局，且每一局都带着票 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {
+  it('这两副画像只结得出 2 局（第四十五轮重抄），且每一局都带着票 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {
     const withTicket = runs.filter(r => r.trace.some(s => s.derived.flags.includes(FUGITIVE_FLAG)))
     console.log(
       `结案 ${sealed(FUGITIVE)} 局；带 潜逃 ${withTicket.length} 局；` +
@@ -255,9 +257,11 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     // 第四十轮打开《平庸之念》的上界之后，这批共享种子的随机流挪了一拍：
     // 本组从 0 局结案变成 2 局，且两局都是**成对票**（隐姓埋名/下落不明）结的 ——
     // 不是 潜逃 那条线。这正是这一格 `any` 里本来就承认的门票；拿掉它反而是改设计。
-    // 第四十四轮接进家宅第三波回响后随机流又挪了一拍：同一批 40 局变成 3 局结案，
-    // 仍然每一局都带着门票（见上面的逐局打印）。读数按本版重抄，门与优先级没动。
-    // 所以这里钉的不是"0"，而是"结案必须带票"：先证明不是凭空结的，再记下本版读数。
+    // 第四十四轮接进家宅第三波回响后随机流又挪了一拍：同一批 40 局变成 3 局结案。
+    // 第四十五轮把历史事件与《名帖》的选项数收口到 3–4 后又挪回 2 局（seed6415 带 潜逃、
+    // seed6424 带成对票），仍然每一局都带着门票（见上面的逐局打印）。
+    // 读数按本版重抄，门与优先级没动。所以这里钉的不是"3"或"2"，而是"结案必须带票"：
+    // 先证明不是凭空结的，再记下本版读数。
     const anyTickets = ((fugitive!.event.conditions?.flags as { any?: string[] })?.any ?? [])
     const sealedRuns = runs.filter(r => r.endingId === FUGITIVE)
     console.log(
@@ -271,7 +275,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(
       sealed(FUGITIVE),
       `${GAMES} 局 ${POLICIES.join('/')} 的结案数又动了 —— 先区分是内容改动的随机流偏移，还是这一格的门/优先级被改坏`
-    ).toBe(3)
+    ).toBe(2)
   })
 
   it('抄表本身不许带错：没有一局报错，也没有一局一个月份都没抄到', () => {

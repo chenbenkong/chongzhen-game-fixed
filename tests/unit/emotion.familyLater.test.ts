@@ -68,25 +68,23 @@ describe('家宅第三波：门开在原文已经写下的那件事上', () => {
     expect(adds(e.choices.find(c => c.id === 'c3')!)).toContain('wife_respected')
   })
 
-  it('《名帖》六条分支只写一次性开关，读的却是两种身世', () => {
+  it('《名帖》四条分支只写一次性开关，读的却是两种身世', () => {
     const e = event('echo_family_007')
     for (const c of e.choices) {
       const rest = adds(c).filter(f => f !== 'echo_family_007_done')
       expect(rest, `${c.id} 又造了新词：${rest.join(',')}`).toEqual([])
       expect(adds(c)).toContain('echo_family_007_done')
     }
-    // 亡母/病故 两路只在"去母留子"之后出现；写生母 一路覆盖纳妾、偏宠与伤心。
+    // 亡母 一路只在"去母留子"之后出现；写生母 一路覆盖纳妾、偏宠与伤心。
     expect(choiceGate(e.choices.find(c => c.id === 'c1')!)).toContain('concubine_killed')
-    expect(choiceGate(e.choices.find(c => c.id === 'c6')!)).toContain('concubine_killed')
     const c2 = choiceGate(e.choices.find(c => c.id === 'c2')!)
     expect(c2).toEqual(expect.arrayContaining(['concubine_for_heir', 'wife_jealous', 'wife_hurt']))
-    // 记在正室名下 / 问孩子 读的是前两波刚写出来的体面。
+    // 记在正室名下 读的是前两波刚写出来的体面。
     expect(choiceGate(e.choices.find(c => c.id === 'c3')!)).toEqual(
       expect.arrayContaining(['legitimate_heir', 'wife_respected', 'harmonious_family'])
     )
-    expect(choiceGate(e.choices.find(c => c.id === 'c5')!)).toEqual(
-      expect.arrayContaining(['harmonious_family', 'protect_childless_wife'])
-    )
+    // 只写父名 不设门槛：三条身世线都断的人，仍要能把这一栏留白。
+    expect(choiceGate(e.choices.find(c => c.id === 'c4')!)).toEqual([])
   })
 
   it('《问丧》读的是灭口与犯罪线，不是随便一个丧事', () => {
@@ -150,9 +148,9 @@ describe('家宅第三波真跑局：三条回响都撞得到', () => {
 
     const mingtie = fired('echo_family_007')
     expect(mingtie.length, '有子的人不少，没有一个等到《名帖》').toBeGreaterThanOrEqual(4)
-    expect([...used('echo_family_007')]).toEqual(
-      expect.arrayContaining(['c1', 'c3', 'c5'])
-    )
+    // 这 36 局走到的两条：亡母入帖、记在正室名下；写生母/只写父名 由上面的静态断言
+    // 看着（它们各自要的 纳妾/偏宠/伤心 与"三条身世线全断"不在这批种子的画像里）。
+    expect([...used('echo_family_007')]).toEqual(expect.arrayContaining(['c1', 'c3']))
     expect(
       mingtie.every(r => r.finalYear >= 1638),
       '《名帖》在 1638 年之前播了'

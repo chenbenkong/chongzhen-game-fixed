@@ -257,61 +257,6 @@ export const familyLaterEchoEvents: GameEvent[] = [
 
 你看着他的背影，忽然想起自己当年落笔时，也是这样背着父亲站的。`
         }
-      },
-      {
-        id: 'c5',
-        storyline: 'family',
-        text: '【问孩子】"你想写谁？"',
-        description: '把这一笔交给他自己',
-        showConditions: {
-          flags: { any: ['harmonious_family', 'protect_childless_wife'] }
-        },
-        effects: {
-          hidden: { 道德值: 6, 机敏值: 4 },
-          flags: { add: ['echo_family_007_done'] }
-        },
-        result: {
-          title: '都写',
-          tags: ['道德+6', '机敏+4', '两母入帖'],
-          echo: `你把笔递给孩子。
-
-他握不稳，在"生母"一栏写了"母亲"两个字。
-
-陈先生问："哪位母亲？"
-
-孩子说："都写。"
-
-陈先生看着你，你点了点头。他把名帖收好，没有改。
-
-那一年入塾，孩子是唯一一个名帖上写着两个母亲的人。塾里有人笑，他回了一句："我家里有两个。"`
-        }
-      },
-      {
-        id: 'c6',
-        storyline: 'corrupt',
-        text: '【说她病故】"你娘早已病故"',
-        description: '把那条命从纸上再抹一次',
-        showConditions: {
-          flags: { any: ['concubine_killed'] }
-        },
-        effects: {
-          hidden: { 机敏值: 4, 道德值: -10 },
-          flags: { add: ['echo_family_007_done'] }
-        },
-        result: {
-          title: '病故',
-          tags: ['机敏+4', '道德-10', '生母病故'],
-          echo: `你在名帖上写"生母病故"。
-
-陈先生没有再问。
-
-孩子把"病故"两个字念了一遍，没有哭。夜里你听见他问乳母："病死的人，疼不疼？"
-
-乳母说："不疼。"
-
-他很久没有说话。`
-
-        }
       }
     ]
   },

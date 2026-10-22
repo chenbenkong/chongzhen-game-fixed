@@ -31,6 +31,8 @@
     "audit:values": "vite-node scripts/audit-value-domains.ts",
     "audit:dupkeys": "vite-node scripts/audit-dup-keys.ts",
     "audit:flags": "vite-node scripts/audit-flag-reachability.ts",
+    "audit:route-gates": "vite-node scripts/audit-route-gates.ts",
+    "audit:choice-count": "vite-node scripts/audit-choice-count.ts",
     "audit:economy": "vite-node scripts/audit-state-economy.ts",
     "audit:codex": "vite-node scripts/audit-ending-codex.ts",
     "audit:tags": "vite-node scripts/audit-tag-effects.ts",

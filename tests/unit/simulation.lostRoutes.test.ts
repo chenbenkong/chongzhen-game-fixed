@@ -186,19 +186,32 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
     }
   })
 
-  it('三格失宠结局由真玩家点得开；第四格（亡命江湖）钉的是它新补的票源', () => {
+  it('失宠结局由真玩家点得开；《不知所踪》另用反推存档钉（见下一条）', () => {
     const tiles = ROUTES.map(r => ({ id: r.tile, title: r.tileTitle }))
     console.log(
       tiles.map(t => `《${t.title}》${t.id}：结案 ${sealed(t.id)} 局（玩家亲手点过卡 ${opened(t.id)} 局）`).join('\n') +
         `\n《亡命江湖》${FUGITIVE}：结案 ${sealed(FUGITIVE)} 局，带独立票 潜逃 ${carried('潜逃')} 局`
     )
-    for (const t of tiles) {
+    for (const t of tiles.filter(t => t.id !== 'ending_unknown_fate')) {
       expect(
         sealed(t.id),
         `《${t.title}》在这 ${GAMES} 局里结案 0 次 —— 本轮为它做的门/年窗修正没生效，` +
           '要么产地又抢不到了，要么格子被别的结局截胡'
       ).toBeGreaterThan(0)
     }
+    // 《不知所踪》原来在这 80 局里结案 1 次（seed6424）。第四十五轮把历史事件的选项数
+    // 收口到 3–4 之后，共享随机流的这一批整体挪了一拍：产地《乱世浮沉》仍播 12 次、
+    // 两张票仍有 8 局带齐，但其中再没有一局同时压在 清议≤20 上。
+    // 这不是门坏了 —— 同策略/同出身的 6400–6799 网格里另有 9 局结案（seed6607/6622/…），
+    // 只是不落在这 80 个种子上。样本分不清"格子坏了"与"这一批没撞上"，就按反推存档钉，
+    // 不去动格子的门。（见下一条。）
+    const bothTickets = runs.filter(
+      r => r.finalFlags.includes('下落不明') && r.finalFlags.includes('隐姓埋名')
+    )
+    expect(
+      bothTickets.length,
+      '两张票在这 80 局里一次都没同时上身 —— 那才是产地《乱世浮沉》真的没人走到'
+    ).toBeGreaterThan(0)
     // 《亡命江湖》这一格本轮只敢钉"票源"，不敢钉"结案"，理由是量出来的（见下一条的打印）：
     // 它的 圣眷≤15 与 圣眷 归零那条警告规则（龙颜震怒 p3）同轴，而它的两张共同票
     // 隐姓埋名／下落不明 只成对出现、拿对的人永远先被《不知所踪》p117 接走。
@@ -209,6 +222,17 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
         `${GAMES} 局里 0 人拿到 —— 要么警告卡没开口，要么这条选项又被画像当成自杀跳过了`
     ).toBeGreaterThan(0)
   })
+
+  it('《不知所踪》仍结得了案（反推存档：seed 6406 / vanish / 没落世家）', async () => {
+    const r = await simulateRun({ seed: 6406, policy: 'vanish', origin: '没落世家', maxMonths: MONTHS })
+    expect(
+      r.endingId,
+      `反推存档没走到《不知所踪》—— 结在 ${r.endingTitle ?? '（未结案）'}，` +
+        `年${r.finalYear} 圣眷${r.finalThresholds.圣眷} 清议${r.finalThresholds.清议} 国势${r.finalGates.国势}`
+    ).toBe('ending_unknown_fate')
+    expect(r.finalFlags).toEqual(expect.arrayContaining(['下落不明', '隐姓埋名']))
+    expect(r.finalYear).toBeGreaterThanOrEqual(1638)
+  }, 60_000)
 
   it('无声的即时革职已经不存在：凡是「贪墨被查」收的局，身上一定带着预警票', () => {
     const silent = runs
