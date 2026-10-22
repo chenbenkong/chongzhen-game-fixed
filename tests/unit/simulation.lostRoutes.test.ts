@@ -51,6 +51,14 @@ import type { OriginType } from '../../src/types/game'
 // 那五点的窄窗里选得起（【举兵】−30，而 BANDIT 的保命底线是 5）。门没坏：
 // 扩到 80 局，seed6446/6476 在 圣眷 32 点【占山为王】并结案。40 局已经分不清
 // "路线死了"与"窄窗没撞上"，这一批的最低样本因此提到 80。
+//
+// 第四十六轮：《铤而走险》的主门从「野心≥50 ∧ 道德≤40 ∧ 圣眷≤40」三点隐藏窄窗
+// 换成六张看得见的失势票（党争反戈/袁党/谪戍边疆/廷杖受刑/廷杖求饶/戴罪立功），
+// 结局格《落草为寇》同步撤掉 野心/道德 与 圣眷/国势 四道上界，只留门票 + 武略/体质下界。
+// 改门前同一批 80 局：产地播出 29 次，旧门开 426 月/34 局；按新门口径可开 698 月/20 局，
+// 两门差 445 月全在野心/道德/圣眷 三维。改门后：播出 20 次、结案 1 次（新门开 466 月）。
+// 画像仍在 19/20 次点【退隐】—— 那是画像不想造反，不是格子不开门：播出时 c1 选得起
+// 1 次、c2 6 次（BANDIT 的 圣眷 地板 5 会先拦住 −30 的【举兵】）。
 const GAMES = Number(process.env.SIM_GAMES ?? 80)
 const MONTHS = Number(process.env.SIM_MONTHS ?? 240)
 const POLICIES = (process.env.SIM_POLICIES ?? 'bandit,vanish').split(',') as SimOutcome['policy'][]
@@ -180,7 +188,7 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
       expect(
         firedIn(r.id),
         `${GAMES} 局 ${POLICIES.join('/')} 失宠玩家里《${r.title}》${r.id} 一次也没播出来 —— ` +
-          `它的门是 ${r.id === 'route_bandit_revolt' ? '武略≥35 ∧ 野心≥50 ∧ 道德≤40 ∧ 圣眷≤40' : r.id === 'route_faction_imprisoned' ? '圣眷≤50' : '国势≤25 ∧ 圣眷≤25'}，` +
+          `它的门是 ${r.id === 'route_bandit_revolt' ? '武略≥35 ∧ 任一失势票' : r.id === 'route_faction_imprisoned' ? '圣眷≤50' : '国势≤25 ∧ 圣眷≤25'}，` +
           '这两副画像全程就在低位，播出 0 次说明画像又漂了'
       ).toBeGreaterThan(0)
     }
@@ -192,19 +200,17 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
       tiles.map(t => `《${t.title}》${t.id}：结案 ${sealed(t.id)} 局（玩家亲手点过卡 ${opened(t.id)} 局）`).join('\n') +
         `\n《亡命江湖》${FUGITIVE}：结案 ${sealed(FUGITIVE)} 局，带独立票 潜逃 ${carried('潜逃')} 局`
     )
-    for (const t of tiles.filter(t => t.id !== 'ending_unknown_fate')) {
+    for (const t of tiles) {
       expect(
         sealed(t.id),
         `《${t.title}》在这 ${GAMES} 局里结案 0 次 —— 本轮为它做的门/年窗修正没生效，` +
           '要么产地又抢不到了，要么格子被别的结局截胡'
       ).toBeGreaterThan(0)
     }
-    // 《不知所踪》原来在这 80 局里结案 1 次（seed6424）。第四十五轮把历史事件的选项数
-    // 收口到 3–4 之后，共享随机流的这一批整体挪了一拍：产地《乱世浮沉》仍播 12 次、
-    // 两张票仍有 8 局带齐，但其中再没有一局同时压在 清议≤20 上。
-    // 这不是门坏了 —— 同策略/同出身的 6400–6799 网格里另有 9 局结案（seed6607/6622/…），
-    // 只是不落在这 80 个种子上。样本分不清"格子坏了"与"这一批没撞上"，就按反推存档钉，
-    // 不去动格子的门。（见下一条。）
+    // 随机流会随门的改动整批挪位：第四十五轮收口选项数时《不知所踪》从 1 局挪到 0 局，
+    // 第四十六轮改《铤而走险》的门又挪回来 2 局（seed6455/6469）。所以"这一批结了几局"
+    // 只当读数，不当判据 —— 真正的钉子是同策略/同出身网格的反推存档（见下一条）。
+    // 这条 80 局网格只能证明"产地播出 + 两张票仍会成对上身"，格子本身由反推存档钉住。
     const bothTickets = runs.filter(
       r => r.finalFlags.includes('下落不明') && r.finalFlags.includes('隐姓埋名')
     )
@@ -223,8 +229,10 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
     ).toBeGreaterThan(0)
   })
 
-  it('《不知所踪》仍结得了案（反推存档：seed 6406 / vanish / 没落世家）', async () => {
-    const r = await simulateRun({ seed: 6406, policy: 'vanish', origin: '没落世家', maxMonths: MONTHS })
+  // 原存档 seed6406 在第四十六轮改门后改结《亡命江湖》。同策略/同出身的 6400–6799 网格里
+  // 仍有 18 局落在《不知所踪》（seed6411/6448/…），格子与年窗一字未动 —— 只是随机流挪位。
+  it('《不知所踪》仍结得了案（反推存档：seed 6448 / vanish / 没落世家）', async () => {
+    const r = await simulateRun({ seed: 6448, policy: 'vanish', origin: '没落世家', maxMonths: MONTHS })
     expect(
       r.endingId,
       `反推存档没走到《不知所踪》—— 结在 ${r.endingTitle ?? '（未结案）'}，` +
@@ -247,12 +255,14 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
   })
 
   it('逐条归因：那三副门各自差在哪一维，打出来', () => {
+    const DISGRACE = ['党争反戈', '袁党', '谪戍边疆', '廷杖受刑', '廷杖求饶', '戴罪立功']
     const dims = (r: SimOutcome) => ({
       圣眷: r.finalThresholds.圣眷 ?? 100,
       道德值: r.finalThresholds.道德值 ?? 100,
       国势: r.finalGates.国势 ?? 100,
       武略: r.finalGates.武略 ?? 0,
       野心值: r.finalGates.野心值 ?? 0,
+      失势票: DISGRACE.some(f => r.finalFlags.includes(f)),
       年: r.finalYear
     })
     const report = (name: string, test: (d: ReturnType<typeof dims>) => boolean, parts: Array<[string, (d: ReturnType<typeof dims>) => boolean]>) => {
@@ -262,14 +272,12 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
       return all.length
     }
     report(
-      '《铤而走险》(1636–1643 ∧ 武略≥35 ∧ 野心≥50 ∧ 道德≤40 ∧ 圣眷≤40)',
-      d => d.年 >= 1636 && d.年 <= 1643 && d.武略 >= 35 && d.野心值 >= 50 && d.道德值 <= 40 && d.圣眷 <= 40,
+      '《铤而走险》(1636–1643 ∧ 武略≥35 ∧ 任一失势票)',
+      d => d.年 >= 1636 && d.年 <= 1643 && d.武略 >= 35 && d.失势票,
       [
         ['年在窗内', d => d.年 >= 1636 && d.年 <= 1643],
         ['武略≥35', d => d.武略 >= 35],
-        ['野心≥50', d => d.野心值 >= 50],
-        ['道德≤40', d => d.道德值 <= 40],
-        ['圣眷≤40', d => d.圣眷 <= 40]
+        ['失势票', d => d.失势票]
       ]
     )
     report(

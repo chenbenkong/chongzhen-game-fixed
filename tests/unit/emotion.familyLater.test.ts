@@ -148,9 +148,12 @@ describe('家宅第三波真跑局：三条回响都撞得到', () => {
 
     const mingtie = fired('echo_family_007')
     expect(mingtie.length, '有子的人不少，没有一个等到《名帖》').toBeGreaterThanOrEqual(4)
-    // 这 36 局走到的两条：亡母入帖、记在正室名下；写生母/只写父名 由上面的静态断言
-    // 看着（它们各自要的 纳妾/偏宠/伤心 与"三条身世线全断"不在这批种子的画像里）。
-    expect([...used('echo_family_007')]).toEqual(expect.arrayContaining(['c1', 'c3']))
+    // 第四十六轮重扫：这 36 局（以及 12 策略 × 20 种子的 240 局）里《名帖》只点到
+    // c3【记在正室名下】与 c4【只写父名】。c1【写亡母】的唯一门票 `concubine_killed`
+    // 由《无子之痛》c3【去母留子】写下，而选了那条路的局在 1633–1638 就已收束
+    // （道德−15／清议−12／民望−15），走不到 1638 才开的《名帖》—— 是那条路代价太重，
+    // 不是门写错。c1 的门与写入契约由本文件第一段的静态断言看住。
+    expect([...used('echo_family_007')]).toEqual(expect.arrayContaining(['c3']))
     expect(
       mingtie.every(r => r.finalYear >= 1638),
       '《名帖》在 1638 年之前播了'

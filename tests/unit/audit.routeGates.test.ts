@@ -17,13 +17,17 @@ import { allEndingEvents } from '../../src/data/events/ending'
  * 顶部那三条判定，再决定是补门票还是把这段剧情删掉。
  */
 
-/** 第四十五轮 A 实测基线（减少后必须同步下调，否则棘轮会松） */
+/**
+ * 实测基线，减少后必须同步下调，否则棘轮会松。
+ * 第四十六轮：《铤而走险》换上可见失势票、《落草为寇》撤掉四道隐藏上下界，
+ * 纯数值入口 21→20、隐藏门 17→16、上界 6→5、文本前提无经历门 6→5、待改写落点 23→22。
+ */
 const CEILING = {
-  routeNumericOnly: 21,
-  routeHidden: 17,
-  routeUpperBound: 6,
-  routePremiseWithoutFlag: 6,
-  routeScopeIssues: 23
+  routeNumericOnly: 20,
+  routeHidden: 16,
+  routeUpperBound: 5,
+  routePremiseWithoutFlag: 5,
+  routeScopeIssues: 22
 } as const
 
 /** 路线事件里写出命途门票的条数，只许上升 */
