@@ -248,9 +248,9 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
       {
         endingId: 'ending_usurper_throne',
         title: '篡位自立',
-        mode: 'any',
+        mode: 'all',
         priority: 104,
-        tickets: ['贰臣', '掌军权'],
+        tickets: ['掌军权', '拥兵自重', '问鼎之约'],
         window: { min: 1644, max: 1660 }
       }
     ]
@@ -265,7 +265,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '南渡续祚',
         mode: 'all',
         priority: 105,
-        tickets: ['南渡长江'],
+        // 渡江是脚程，效忠是立场 —— 见结局条件里的说明。命途面板要同时列出两张票。
+        tickets: ['南渡长江', '效忠南明'],
         window: { min: 1640, max: 1660 }
       }
     ]
@@ -564,6 +565,17 @@ function collectDangers(character: Character, gameState: GameStateValues): Dange
  * 这三个字不是随手抄的：`routeTrail.test.ts` 会扫描全部事件，把这份名单与真实数据对账。
  */
 export const REVERSIBLE_ROUTE_BLOCKERS = new Set(['赈灾敛财', '军需牟利', '皮岛敛财'])
+
+/**
+ * 玩家主动交出去的命途门票（第四十七轮）。
+ *
+ * 目前只有《诸将劝进》c2「交出兵权」一处：它摘掉「掌军权」「拥兵自重」两张票，
+ * 让问鼎之路当场关掉。这不是退赃那种"以后还能补回来"的闸门，而是这一拍的**代价本身**，
+ * 所以不进 `REVERSIBLE_ROUTE_BLOCKERS`（那个集合只用于"选项新增 blocker 时是否提醒"）。
+ * 测试拿它和全库 remove 数据对账：凡是摘掉 route 落点 blocker 的 remove，
+ * 必须在这两份名单里出现过，不允许悄悄摘票。
+ */
+export const REVIEWED_ROUTE_TICKET_REMOVALS = new Set(['掌军权', '拥兵自重'])
 
 function endingRegistry() {
   return new Map(

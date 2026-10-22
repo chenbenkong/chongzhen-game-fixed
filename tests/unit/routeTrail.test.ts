@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { makeCharacter, makeGameState } from './helpers/gameEngine'
 import { simulateRun, type SimOutcome } from './helpers/simulate'
-import { ROUTE_FAMILIES, REVERSIBLE_ROUTE_BLOCKERS, buildRouteTrail, findRouteClosures, previewEnding } from '../../src/utils/routeTrail'
+import { ROUTE_FAMILIES, REVERSIBLE_ROUTE_BLOCKERS, REVIEWED_ROUTE_TICKET_REMOVALS, buildRouteTrail, findRouteClosures, previewEnding } from '../../src/utils/routeTrail'
 import { initialEvents, allGrayChoiceEvents } from '../../src/data/events'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
@@ -343,14 +343,26 @@ describe('选项断途提醒', () => {
       for (const f of flags?.none ?? []) routeBlockers.add(f)
     }
     const removed = new Set<string>()
+    const allRemoved = new Set<string>()
     for (const event of [...initialEvents, ...allGrayChoiceEvents]) {
       for (const choice of event.choices) {
         for (const eff of [choice.effects, choice.failEffects]) {
-          for (const f of eff?.flags?.remove ?? []) if (routeBlockers.has(f)) removed.add(f)
+          for (const f of eff?.flags?.remove ?? []) {
+            allRemoved.add(f)
+            if (routeBlockers.has(f)) removed.add(f)
+          }
         }
       }
     }
-    expect([...removed].sort()).toEqual([...REVERSIBLE_ROUTE_BLOCKERS].sort())
+    // 第四十七轮：《诸将劝进》c2「交出兵权」主动摘掉掌军权/拥兵自重，
+    // 后者同时是若干命途落点的 blocker —— 这是该选项的代价，不是"以后能补回来"的退赃。
+    const reviewed = new Set(
+      [...REVERSIBLE_ROUTE_BLOCKERS, ...REVIEWED_ROUTE_TICKET_REMOVALS].filter(f => routeBlockers.has(f))
+    )
+    expect([...removed].sort()).toEqual([...reviewed].sort())
+    for (const f of REVIEWED_ROUTE_TICKET_REMOVALS) {
+      expect(allRemoved.has(f), `REVIEWED_ROUTE_TICKET_REMOVALS 里的「${f}」没有任何 remove 出处`).toBe(true)
+    }
   })
 
   it('退赃摘掉最后一张海票，等于断了海盗之王', () => {

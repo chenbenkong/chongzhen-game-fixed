@@ -230,9 +230,10 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
   })
 
   // 原存档 seed6406 在第四十六轮改门后改结《亡命江湖》。同策略/同出身的 6400–6799 网格里
-  // 仍有 18 局落在《不知所踪》（seed6411/6448/…），格子与年窗一字未动 —— 只是随机流挪位。
-  it('《不知所踪》仍结得了案（反推存档：seed 6448 / vanish / 没落世家）', async () => {
-    const r = await simulateRun({ seed: 6448, policy: 'vanish', origin: '没落世家', maxMonths: MONTHS })
+  // 仍有 17 局落在《不知所踪》（第四十七轮新事件挪动随机流后为 seed6418/6434/…），
+  // 格子与年窗一字未动 —— 只是随机流挪位。
+  it('《不知所踪》仍结得了案（反推存档：seed 6434 / vanish / 没落世家）', async () => {
+    const r = await simulateRun({ seed: 6434, policy: 'vanish', origin: '没落世家', maxMonths: MONTHS })
     expect(
       r.endingId,
       `反推存档没走到《不知所踪》—— 结在 ${r.endingTitle ?? '（未结案）'}，` +

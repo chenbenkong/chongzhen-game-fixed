@@ -30,7 +30,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
-  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary'
+  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper'
 
 export interface SimOutcome {
   seed: number
@@ -531,6 +531,52 @@ const ORDINARY: RetireProfile = {
   preferClean: true
 }
 
+/**
+ * 想走《篡位自立》的那副画像（第四十七轮）。
+ *
+ * 为什么需要它：三张兵权票（掌军权／拥兵自重／问鼎之约）写在 1643 年那两拍里，
+ * 而通用策略在第一拍就点了【压下野心】——120 局里《天命所归》播了 24 次、
+ * 【野心萌动】只点过 2 次，到【诸将劝进】时又全部点了【交出兵权】。
+ * 这不是"走不到"，是"没人朝它走"（与第廿四轮 bandit/vanish 同一条教训）。
+ *
+ * 画像的口径：
+ *  - `tickets` 从格子自己的 `has` 读，不手抄；三张票各 +40，足以压过兵权选项的
+ *    圣眷／清议代价。
+ *  - `weights` 只留野心（+1）。不能用求退画像那套「道德+3」——篡位这一格读的是
+ *    "有没有兵、敢不敢认"，道德不再是门槛，往上推只会把两条兵权选项让给忠臣分支。
+ *  - `floors.圣眷` 放到 8：两拍兵权票自带 圣眷−30，而这一格没有 圣眷门；
+ *    真正会死的是归零，不是低。`keepAbove.圣眷: 9` 让它别贴着 0 走。
+ *  - `over.武略: 50`：结局只把 武略≥50 当下界（人得还活着、还带得动兵），
+ *    画像要主动补这一维，否则票齐了也结不了案。
+ */
+const USURPER: RetireProfile = {
+  targets: new Set(['ending_usurper_throne']),
+  tickets: new Set([
+    ...tileFlagPool('ending_usurper_throne', 'has'),
+    ...tileFlagPool('ending_usurper_throne', 'any')
+  ]),
+  avoid: new Set([
+    ...tileFlagPool('ending_usurper_throne', 'notHas'),
+    // 同一条"手里有兵"的路上的别的终点。不是道德判断，是时序：
+    // 落草/占山在 1636 就结案，出海把 财帛/野心 推过海盗的门，
+    // 袁党把 圣眷 低位的人送进诏狱 —— 任何一条都轮不到 1644 的问鼎。
+    '落草为寇', '啸聚山林', '出海', '通倭', '海贸', '皮岛敛财', '打造舰队',
+    '袁党', '清算袁党', '贰臣', '投降清朝', '投降大顺', '殉国', '殉国报君',
+    '南渡长江', '效忠南明', '出家', '和尚', '归隐', '归隐山林', '藏匿民间', '组织义军',
+    // 党派结局的引信：党争烈度 90 会先一步收走这一局
+    '复社成员', '东林死忠', '阉党路线', '两面三刀',
+    // 铤而走险的门票；带上它们只会把《落草》那格提前打开
+    '党争反戈', '谪戍边疆', '廷杖受刑', '廷杖求饶', '戴罪立功'
+  ]),
+  favorBand: 40,
+  weights: { 野心值: 1 },
+  boost: { 武略: 3 },
+  floors: { 圣眷: 8, 中官: 8, 清议: 8, 道德值: 8, 民望: 15, 财帛: 15 },
+  over: { 武略: 50 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 9 },
+  keepBelow: { 野心值: 66, 欲望值: 72, 财帛: 68 }
+}
+
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
 const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   monk: MONK,
@@ -539,7 +585,8 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   bandit: BANDIT,
   vanish: VANISH,
   fugitive: FUGITIVE,
-  ordinary: ORDINARY
+  ordinary: ORDINARY,
+  usurper: USURPER
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */

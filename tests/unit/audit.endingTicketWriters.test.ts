@@ -91,11 +91,11 @@ describe('结局格子的门票必须有写手', () => {
   })
 
   it('摘完幽灵之后，每一格至少还剩两条能摸到的票', () => {
-    // 5 张"单票格"是设计如此（殉国死节=殉国报君、南渡续祚=南渡长江、称臣纳贡/卖国求荣=贰臣、
+    // 4 张"单票格"是设计如此（殉国死节=殉国报君、称臣纳贡/卖国求荣=贰臣、
     // 流亡海外=转移资产）：它们读的是那一件只有一次可能的动作，不在本条断言的格子里。
+    // 南渡续祚已经拆成"渡江 + 效忠"两张票（第四十八轮），不再享受这条豁免。
     const oneAction = new Set([
       'ending_martyr_nation',
-      'ending_southern_ming',
       'ending_qing_tributary',
       'ending_traitor',
       'ending_exile_overseas'

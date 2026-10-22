@@ -93,9 +93,11 @@ export const events1644: GameEvent[] = [
 
 然而，也有一些有识之士支持你的观点，认为南迁是务实之举。宦官们也对南迁表示支持，因为他们想逃离北京这个危险之地。
 
-最终，皇上没有采纳你的建议，决定死守北京。但你已经做好了准备——你暗中安排家眷南下，又在南京购置了房产。
+最终，皇上没有采纳你的建议，决定死守北京。但你已经做好了准备——你暗中安排家眷南下，又在南京购置了房产，连渡江的船都雇下了。
 
-北京城破后，你随残部南逃，在南京建立了南明政权。虽然你背负了"怯懦"的骂名，但你保全了实力，为南明续命...`
+你只盼着那一天永远不要来。可你心里清楚：真到了城破那几天，这条提前铺好的路，就是你全家唯一的活路。
+
+至于你能不能走成、走成之后在南京又能做什么——要看三月那几天，你还剩下多少选择的余地。`
         }
       },
       {
@@ -675,7 +677,7 @@ export const events1644: GameEvent[] = [
           hidden: {
               道德值: 10
         },
-          flags: { add: ['逃往南京', '南渡长江'] }
+          flags: { add: ['逃往南京', '南渡长江', '效忠南明'] }
         },
         resultDescription: '',
         result: {
@@ -779,7 +781,9 @@ export const events1644: GameEvent[] = [
         description: '效忠南明，参与抗清复明',
         showConditions: {
           attributes: { 武略: { min: 60 } },
-          origin: ['没落世家']
+          origin: ['没落世家'],
+          // 已经降过（迎闯的 c3 会写贰臣）或已经降清的人，不能再去南京当忠臣。
+          flags: { notHas: ['贰臣', '投降清朝', '投降大顺'] }
         },
         effects: {
           attributes: { 武略: 8, 体质: -15 },
@@ -789,7 +793,7 @@ export const events1644: GameEvent[] = [
           hidden: {野心值: 10,
               道德值: 20
         },
-          flags: { add: ['效忠南明'] }
+          flags: { add: ['南渡长江', '效忠南明'] }
         },
         resultDescription: '',
         result: {
@@ -820,7 +824,9 @@ export const events1644: GameEvent[] = [
         text: '【投降清朝】"当投降清朝，保全性命"',
         description: '投降清朝，出仕新朝',
         showConditions: {
-          hidden: { 道德值: { max: 40 } }
+          hidden: { 道德值: { max: 40 } },
+          // 已经过江入朝的人，不会再在北京降清 —— 两张互斥的票不能同时上身。
+          flags: { notHas: ['南渡长江', '效忠南明'] }
         },
         effects: {
           attributes: {理政: 5,
@@ -1338,7 +1344,7 @@ export const events1644: GameEvent[] = [
           hidden: {
               道德值: 30
         },
-          flags: { add: ['殉国', '崇祯所器'] }
+          flags: { add: ['殉国', '殉国报君', '崇祯所器'] }
         },
         resultDescription: '',
         result: {

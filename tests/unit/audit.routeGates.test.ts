@@ -21,17 +21,20 @@ import { allEndingEvents } from '../../src/data/events/ending'
  * 实测基线，减少后必须同步下调，否则棘轮会松。
  * 第四十六轮：《铤而走险》换上可见失势票、《落草为寇》撤掉四道隐藏上下界，
  * 纯数值入口 21→20、隐藏门 17→16、上界 6→5、文本前提无经历门 6→5、待改写落点 23→22。
+ * 第四十七/四十八轮：医家路补《疫起》、篡位补《诸将劝进》、南明补「效忠南明」第二张票，
+ * 《称臣纳贡》撤掉隐藏道德与国势上界，纯数值入口 20→19、隐藏门 16→15、待改写落点 22→20；
+ * 写出命途门票的事件 16→17。上界与文本前提两项本轮没有变化，保持 5。
  */
 const CEILING = {
-  routeNumericOnly: 20,
-  routeHidden: 16,
+  routeNumericOnly: 19,
+  routeHidden: 15,
   routeUpperBound: 5,
   routePremiseWithoutFlag: 5,
-  routeScopeIssues: 22
+  routeScopeIssues: 20
 } as const
 
 /** 路线事件里写出命途门票的条数，只许上升 */
-const ROUTE_FEEDING_FLOOR = 16
+const ROUTE_FEEDING_FLOOR = 17
 
 const report = scanRouteGates()
 const s = report.summary
