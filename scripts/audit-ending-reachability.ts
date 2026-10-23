@@ -8,7 +8,7 @@ import {
 import { allEndingEvents } from '../src/data/events/ending'
 import { boundaryEventManager } from '../src/services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../src/data/boundaryEvents'
-import { DEMOTION_ENDING_ID } from '../src/data/events/ending/endingsDemotion'
+import { DEMOTION_ENDING_ID, EXILE_ENDING_ID } from '../src/data/events/ending/endingsDemotion'
 import { ZERO_THRESHOLDS, zeroWarnFlag, type ZeroKey } from '../src/data/zeroWarningEvents'
 import type { BoundaryEventCheckParams } from '../src/types/boundaryEvent'
 import type { FactionState } from '../src/types/game'
@@ -281,8 +281,8 @@ const DRIVERS: Record<string, (base: DerivedState) => DerivedState> = {
   })
 }
 
-/** 革职这一格由引擎的降官判定自造卡片，不走边界注册表（见 endingsDemotion.ts 的注释） */
-const ENGINE_DRIVEN_ENDING_IDS = new Set([DEMOTION_ENDING_ID])
+/** 革职两支由引擎的降官判定自造卡片，不走边界注册表（见 endingsDemotion.ts 的注释） */
+const ENGINE_DRIVEN_ENDING_IDS = new Set([DEMOTION_ENDING_ID, EXILE_ENDING_ID])
 
 /** flag → 谁写得出它（含结局池自己），用来核对驱动表里的门票不是凭空的 */
 function buildWriterIndex(): Map<string, string[]> {

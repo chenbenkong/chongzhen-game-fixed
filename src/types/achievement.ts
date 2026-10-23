@@ -855,10 +855,122 @@ export const ALL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'ending_demotion_done',
     name: '罢黜归田',
-    description: '达成"革职为民 / 流放边疆"结局',
+    description: '达成"革职为民"结局',
     icon: '黜',
     category: 'endgame',
     checkUnlock: (ctx) => ctx.eventHistory.includes('ending_demotion'),
+    unlocked: false
+  },
+  {
+    // 第五十二轮从 罢黜归田 里拆出来的另一支：押解宁古塔。
+    // 拆之前两条归宿共用一个 id，图鉴那个勾分不清"革职"与"流放"。
+    id: 'ending_exile_done',
+    name: '万里投荒',
+    description: '达成"流放边疆"结局',
+    icon: '荒',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_exile'),
+    unlocked: false
+  },
+  // ── 补齐 10 条边界/阈值结局成就（第五十二轮）──────────────────────────
+  // 这十格注册在 `src/data/boundaryEvents.ts` 里，事件 id 就是 `triggerable_*`。
+  // 第十三轮只做对账、没有给它们建成就，理由是"Steam 单 App 上限 100 已用满"，
+  // 让玩家靠 `reachedEndings` 达成记录点亮图鉴。后果是成就面板少十格、
+  // 「结局收藏」的可收集数被压在 34，而且**成就与图鉴两套口径**长期并存。
+  // 本作不上 Steam（2026-10-23 决定），名额不再是约束，于是补齐。
+  //
+  // 两条必须同时成立的写法（由 scripts/audit-ending-codex.ts 逐条对账）：
+  //   · `id` 用成就层的命名 `ending_<事名>_done` —— 图鉴与「结局收藏」都按这个前缀认结局成就；
+  //   · `checkUnlock` 里写**事件真名** `triggerable_*`，因为 eventHistory 记的就是它。
+  // 两个名字之间的换算只登记在一处：`src/data/endingRegistry.ts` 的 ENDING_ID_ALIASES。
+  {
+    id: 'ending_death_illness_done',
+    name: '病逝任上',
+    description: '达成"病逝任上"结局',
+    icon: '疾',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_death_illness'),
+    unlocked: false
+  },
+  {
+    id: 'ending_emperor_hate_done',
+    name: '龙颜震怒',
+    description: '达成"龙颜震怒"结局',
+    icon: '怒',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_emperor_hate'),
+    unlocked: false
+  },
+  {
+    id: 'ending_eunuch_frame_done',
+    name: '宦官构陷',
+    description: '达成"宦官构陷"结局',
+    icon: '谗',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_eunuch'),
+    unlocked: false
+  },
+  {
+    id: 'ending_scholar_ostracism_done',
+    name: '士林唾弃',
+    description: '达成"士林唾弃"结局',
+    icon: '唾',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_scholar_ostracism'),
+    unlocked: false
+  },
+  {
+    id: 'ending_gentry_rebellion_done',
+    name: '乡绅反目',
+    description: '达成"乡绅反目"结局',
+    icon: '怨',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_gentry_rebellion'),
+    unlocked: false
+  },
+  {
+    id: 'ending_popular_uproar_done',
+    name: '民怨沸腾',
+    description: '达成"民怨沸腾"结局',
+    icon: '沸',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_popular_uproar'),
+    unlocked: false
+  },
+  {
+    id: 'ending_moral_isolation_done',
+    name: '众叛亲离',
+    description: '达成"众叛亲离"结局',
+    icon: '离',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_moral_degeneracy'),
+    unlocked: false
+  },
+  {
+    id: 'ending_faction_martyr_done',
+    name: '东林烈士',
+    description: '达成"东林烈士"结局',
+    icon: '烈',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_faction_martyr'),
+    unlocked: false
+  },
+  {
+    id: 'ending_tyrant_fall_done',
+    name: '权奸末路',
+    description: '达成"权奸末路"结局',
+    icon: '僭',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_faction_tyrant_fall'),
+    unlocked: false
+  },
+  {
+    id: 'ending_faction_sacrifice_done',
+    name: '党争牺牲品',
+    description: '达成"党争牺牲品"结局',
+    icon: '牺',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('triggerable_faction_sacrifice'),
     unlocked: false
   },
   // 「结局收藏」三档：数据源改为跨局的已解锁成就列表（见 countUnlockedEndings），

@@ -79,8 +79,11 @@ check('内部 id 全部小写蛇形', apiNames.every((n) => /^[a-z0-9_]+$/.test(
 const dupes = apiNames.length - new Set(apiNames.map((n) => steam.ACHIEVEMENTS[n].id)).size
 check('内部 id 无重复', dupes, 0)
 if (apiNames.length > steam.STEAM_ACHIEVEMENT_LIMIT) {
-  console.log(`❌ 严重：${apiNames.length} 条超过 Steam 上限 ${steam.STEAM_ACHIEVEMENT_LIMIT}，无法全量注册。`)
-  failures++
+  // 不是失败：本作暂不上 Steam，成就数因此从"倒推裁剪"改成"按图鉴需要补齐"（第五十二轮）。
+  // 留一条醒目的提示，是为了"哪天真要上线"时这里还在替人记着要删多少条 ——
+  // 见 steam.cjs 头部【成就数量】那一段。
+  console.log(`⚠️ 提示：${apiNames.length} 条已超过 Steam 上限 ${steam.STEAM_ACHIEVEMENT_LIMIT}，` +
+    `上线前需先裁到 ${steam.STEAM_ACHIEVEMENT_LIMIT} 条以内（当前超出 ${apiNames.length - steam.STEAM_ACHIEVEMENT_LIMIT} 条）。`)
 }
 
 // ---------------------------------------------------------------------------
@@ -117,9 +120,9 @@ if (!fs.existsSync(ACH_SRC)) {
   check('手写常量 INTERNAL_ACHIEVEMENT_COUNT 与源码实际条数一致',
     steam.INTERNAL_ACHIEVEMENT_COUNT, srcIds.length)
 
-  check('成就总数不超过 Steam 上限', apiNames.length <= steam.STEAM_ACHIEVEMENT_LIMIT, true)
+  // 上限只提示、不判失败（理由见上面「6. 映射表统计」那段）
   if (apiNames.length > steam.STEAM_ACHIEVEMENT_LIMIT) {
-    console.log(`   当前 ${apiNames.length} > ${steam.STEAM_ACHIEVEMENT_LIMIT}`)
+    console.log(`   超出 Steam 上限：${apiNames.length} > ${steam.STEAM_ACHIEVEMENT_LIMIT}`)
   }
 }
 

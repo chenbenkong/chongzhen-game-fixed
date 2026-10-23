@@ -8,6 +8,16 @@
 import { GameEvent } from '../../../types/event'
 
 export const DEMOTION_ENDING_ID = 'ending_demotion'
+/**
+ * 革职的第二支：押解宁古塔。
+ *
+ * 第十五轮之前两支**共用** `ending_demotion` 这一个 id，因为图鉴只留一格、成就只有一条，
+ * 而 Steam 单 App 成就上限 100 已经用满 —— 多一格就要多一条成就，名额不够。
+ * 第五十二轮上限解除（本作不上 Steam），两支各占一格、各有一条成就：
+ * 「流放宁古塔」与「削籍为民」是两种完全不同的人生，挤在同一格里，
+ * 图鉴那个勾说的是"革职"这件事，而不是"你去了哪儿"。
+ */
+export const EXILE_ENDING_ID = 'ending_exile'
 
 const CIVILIAN_QUOTE = '奉旨：某某才疏学浅，难胜其任。着即革职，削籍为民，永不录用。'
 const EXILED_QUOTE = '奉旨：某某革职查办，永不起用，即日押解宁古塔，交驻防将军管束。'
@@ -56,15 +66,11 @@ export const DEMOTION_EXILED_ECHO = `【结局·流放边疆】
 `
 
 /**
- * 革职有两支：削籍为民与押解宁古塔。它们**共用一个事件 id**（成就
- * `ending_demotion_done` 的判据就是这个 id，图鉴也只有这一格），
- * 所以是一格两种归宿，而不是两格。
- *
  * @param reason checkDemotion 给出的贬官理由，进"前事"
  */
 export function buildDemotionEndingEvent(isExiled: boolean, reason: string): GameEvent {
   return {
-    id: DEMOTION_ENDING_ID,
+    id: isExiled ? EXILE_ENDING_ID : DEMOTION_ENDING_ID,
     title: isExiled ? '流放边疆' : '革职为民',
     // 其余边界结局的 description 都是一句现场描写（与 situation 同源）。
     // generateBiography 把它当作人物志的收尾一句，留空等于传略最后一段是白的 ——
@@ -97,20 +103,20 @@ export function buildDemotionEndingEvent(isExiled: boolean, reason: string): Gam
 }
 
 /**
- * 图鉴格子。它不进可玩事件池（`src/data/events/index.ts` 有意不 import `./ending`），
- * 只供 EndingCodex 展示。id 与引擎造的卡片同一个，因此达成任一支都会点亮这一格。
+ * 「削籍为民」那一格。它不进可玩事件池（`src/data/events/index.ts` 有意不 import `./ending`），
+ * 只供 EndingCodex 展示。id 与引擎造的那一支卡片同一个。
  */
 export const DEMOTION_ENDING_TILE: GameEvent = {
   id: DEMOTION_ENDING_ID,
   storyline: 'ordinary',
   title: '罢黜归田',
-  description: '考功册上被注了"不谨"。削籍为民，或押解宁古塔。',
+  description: '考功册上被注了"不谨"。奉旨削籍为民，永不录用。',
   endingConfig: { category: 'personal_fate', tier: 'tragic' },
   narrative: {
     speaker: { title: '吏部文书', name: '吏部主事' },
     quote: CIVILIAN_QUOTE,
     background:
-      '大计之年，吏部的考功册上你的名下多了一行小字。革职的旨意下来时，你正在批阅最后几份公文。\n\n情节轻的削籍为民，情节重的"着即革职查办，永不起用"——那是流放宁古塔的说法。两条路共用这一格：史馆藏本只记"罢归"二字，怎么去的是哪一种，看的是那年冬天你的罪名有多重。',
+      '大计之年，吏部的考功册上你的名下多了一行小字。革职的旨意下来时，你正在批阅最后几份公文。\n\n罪名只在"不谨""才力不及"这一档，所以是削籍、放归，而不是拿问、发遣。史馆藏本这里只写两个字："罢归"。\n\n若那年冬天罪名再重一分，旨意里就会多出一句"即日押解宁古塔"——那是另一格，另一条路。',
     situation: CIVILIAN_SITUATION
   },
   conditions: {},
@@ -128,3 +134,37 @@ export const DEMOTION_ENDING_TILE: GameEvent = {
   ],
   type: 'ending'
 }
+
+/**
+ * 「押解宁古塔」那一格：考功册上注的是"革职查办，永不起用"。
+ * 第五十二轮从 `ending_demotion` 里拆出来独立成格（原因见 EXILE_ENDING_ID 的注释）。
+ */
+export const EXILE_ENDING_TILE: GameEvent = {
+  id: EXILE_ENDING_ID,
+  storyline: 'ordinary',
+  title: '流放边疆',
+  description: '革职查办，永不起用，即日押解宁古塔，交驻防将军管束。',
+  endingConfig: { category: 'personal_fate', tier: 'dark' },
+  narrative: {
+    speaker: { title: '吏部文书', name: '吏部主事' },
+    quote: EXILED_QUOTE,
+    background:
+      '革职的旨意里多了一句"永不起用"，那就不是放归，是发遣。顺治以来宁古塔是囚人去处，去的人多半死在苦寒之地，回来的人几乎不曾有过。\n\n押解官只许你带一床被子、两件换洗衣服和三本书。从京城到宁古塔，整整四个月。',
+    situation: EXILED_SITUATION
+  },
+  conditions: {},
+  choices: [
+    {
+      id: 'accept',
+      text: '接受命运',
+      effects: { special: { type: 'ending' } },
+      result: {
+        title: '万里投荒',
+        tags: ['贬官流放', '个人命运', '黑暗'],
+        echo: DEMOTION_EXILED_ECHO
+      }
+    }
+  ],
+  type: 'ending'
+}
+

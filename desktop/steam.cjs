@@ -19,12 +19,13 @@
  *  3. 游戏内部通过 desktopBridge.syncAchievementToDesktop(内部id) 调用，本模块
  *     反查得到 API Name 再解锁。所以映射表是 owner 唯一需要维护的地方。
  *
- *  【成就数量：已从 105 降到 100，正好卡进 Steam 上限】
- *  Steam 单个 App 的成就上限是 **100** 个，而本项目原本定义了 **105** 个 ——
- *  105 条不可能全量上线，且 Steamworks 后台的 API Name 一经创建就不可修改、
- *  只能删除重建，所以"先全建上去再说"这条路走不通，必须在建之前就定下来。
+ *  【成就数量：111 条，已超过 Steam 上限 100 —— 因为本作暂不上 Steam】
+ *  Steam 单个 App 的成就上限是 **100** 个。第五十二轮之前项目一直按这个上限倒推裁剪：
+ *  删到 100 条，代价是结局图鉴里有 10 格（全是边界/阈值结局）分不到成就，
+ *  只能靠存档里的达成记录点亮 —— 成就面板与图鉴两套口径并存，玩家看得见的是"少了 10 条成就"。
+ *  现在决定不上 Steam（2026-10-23），名额不再是约束，于是补齐 10 条 + 革职拆支 1 条 = 111 条。
  *
- *  已执行的裁剪（合计 -5，见 src/types/achievement.ts 里每处的说明注释）：
+ *  此前已执行的裁剪（合计 -5，见 src/types/achievement.ts 里每处的说明注释）：
  *    · master_collector(60)、ultimate_master(80) —— collector 组的中间档。
  *      它们对玩家本来就不可见：getUnlockedAchievements() 按 group 分桶，
  *      每桶只展示 priority 最高的已解锁项，所以中间档只贡献"多一个勾"的观感。
@@ -35,9 +36,10 @@
  *  保留 random_player 与 careful_player：它们分别有真实入口
  *  （「听天由命」按钮 / 回退功能），且描述的是玩法而非机械操作。
  *
- *  现在映射表 100 条 = 游戏内 100 条，可全量提交到后台。
+ *  现在映射表 111 条 = 游戏内 111 条。
  *  ⚠️ 如果你之后增删游戏内成就，必须同步改这里并重跑 `node desktop/smoke-test.cjs`
- *     —— 它会断言两边逐条一致、数量不超过 100，漂移即失败。
+ *     —— 它会断言两边逐条一致（漂移即失败），数量超上限只报 warning（见上面那段）。
+ *     日后真要上 Steam，必须先删到 100 条以内：API Name 一经创建不可改，只能删重建。
  *
  *  【Steam Cloud 字节配额】
  *  Steam Cloud 需要在后台「Steam Cloud」页面开启并设置字节配额。游戏本体存档
@@ -146,6 +148,21 @@ const ACHIEVEMENTS = {
   ENDING_FUGITIVE_DONE: { id: 'ending_fugitive_done', name: '海外遗民' },
   ENDING_BANKRUPT_DONE: { id: 'ending_bankrupt_done', name: '倾家荡产' },
   ENDING_DEMOTION_DONE: { id: 'ending_demotion_done', name: '削职为民' },
+  // 第五十二轮：革职两支拆开各占一格（原先与上一条共用 id，一格两种归宿）
+  ENDING_EXILE_DONE: { id: 'ending_exile_done', name: '流放边疆' },
+  // 第五十二轮：补齐十格边界/阈值结局的成就。
+  // 游戏内成就 id 用 `ending_*_done`（成就层的命名约定），事件 id 是 `triggerable_*`，
+  // 两者的换算登记在 src/data/endingRegistry.ts 的 ENDING_ID_ALIASES 里。
+  ENDING_DEATH_ILLNESS_DONE: { id: 'ending_death_illness_done', name: '病逝任上' },
+  ENDING_EMPEROR_HATE_DONE: { id: 'ending_emperor_hate_done', name: '龙颜震怒' },
+  ENDING_EUNUCH_FRAME_DONE: { id: 'ending_eunuch_frame_done', name: '宦官构陷' },
+  ENDING_SCHOLAR_OSTRACISM_DONE: { id: 'ending_scholar_ostracism_done', name: '士林唾弃' },
+  ENDING_GENTRY_REBELLION_DONE: { id: 'ending_gentry_rebellion_done', name: '乡绅反目' },
+  ENDING_POPULAR_UPROAR_DONE: { id: 'ending_popular_uproar_done', name: '民怨沸腾' },
+  ENDING_MORAL_ISOLATION_DONE: { id: 'ending_moral_isolation_done', name: '众叛亲离' },
+  ENDING_FACTION_MARTYR_DONE: { id: 'ending_faction_martyr_done', name: '东林烈士' },
+  ENDING_TYRANT_FALL_DONE: { id: 'ending_tyrant_fall_done', name: '权奸末路' },
+  ENDING_FACTION_SACRIFICE_DONE: { id: 'ending_faction_sacrifice_done', name: '党争牺牲品' },
   ENDING_COLLECTION_5: { id: 'ending_collection_5', name: '结局收集 5 种' },
   ENDING_COLLECTION_30: { id: 'ending_collection_30', name: '结局收集 30 种' },
 
@@ -194,8 +211,15 @@ const INTERNAL_ID_TO_API_NAME = (() => {
  * 
 ode desktop/smoke-test.cjs 会失败，而不是等到上线才发现有成就没注册。
  */
-const INTERNAL_ACHIEVEMENT_COUNT = 100
-/** Steam 单 App 成就数量硬上限 */
+const INTERNAL_ACHIEVEMENT_COUNT = 111
+/**
+ * Steam 单 App 成就数量硬上限。
+ *
+ * 第五十二轮起**本表已经超出这个数**（111 > 100）：本作暂不上 Steam，
+ * 而图鉴那 45 格每一格都该有一条成就 —— 此前 10 格因为"名额不够"只能靠达成记录点亮，
+ * 成就面板与图鉴于是长期是两套口径。这条上限因此从"硬约束"降级成"上线前的待办"：
+ * 真要上 Steam，先删够 11 条（候选：category='special' 里的操作统计型成就），再重跑 smoke-test。
+ */
 const STEAM_ACHIEVEMENT_LIMIT = 100
 
 /** runCallbacks 泵的间隔（ms）。steamworks.js 必须持续泵，成就/overlay 才会生效 */

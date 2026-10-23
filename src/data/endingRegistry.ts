@@ -23,7 +23,28 @@ export const ENDING_ID_ALIASES: Readonly<Record<string, string>> = {
    * `ending_bankrupt_done` 与旧存档的 eventHistory 认的是 `ending_bankrupt`
    * （引擎 `withEndingId` 改的名）。保留历史侧名字，映射到格子。
    */
-  ending_bankrupt: 'triggerable_bankrupt'
+  ending_bankrupt: 'triggerable_bankrupt',
+
+  /**
+   * 第十一条起：十条边界/阈值结局。
+   *
+   * 这十格注册在 `boundaryEvents.ts` 里，事件 id 就是 `triggerable_*`，而成就层的命名
+   * 约定是 `ending_<事名>_done`（`countUnlockedEndings` 与图鉴都按这个前缀认结局成就）。
+   * 于是每一格都需要一条"成就名 → 事件名"的换算 —— 这正是本表存在的理由。
+   *
+   * 反方向（事件 id → 成就名）由下面的 `endingAchievementIdOf` 用同一张表推出来，
+   * 不再靠字符串拼接猜。
+   */
+  ending_death_illness: 'triggerable_death_illness',
+  ending_emperor_hate: 'triggerable_emperor_hate',
+  ending_eunuch_frame: 'triggerable_eunuch',
+  ending_scholar_ostracism: 'triggerable_scholar_ostracism',
+  ending_gentry_rebellion: 'triggerable_gentry_rebellion',
+  ending_popular_uproar: 'triggerable_popular_uproar',
+  ending_moral_isolation: 'triggerable_moral_degeneracy',
+  ending_faction_martyr: 'triggerable_faction_martyr',
+  ending_tyrant_fall: 'triggerable_faction_tyrant_fall',
+  ending_faction_sacrifice: 'triggerable_faction_sacrifice'
 }
 
 /**
@@ -34,6 +55,24 @@ export function resolveEndingTileId(id: string): string | null {
   const tileId = ENDING_ID_ALIASES[id] ?? id
   return TILE_IDS.has(tileId) ? tileId : null
 }
+
+/**
+ * 格子 id → 那条结局成就的 id。
+ *
+ * 引擎过去写的是 `` `${event.id}_done` ``：对 34 条叙事结局正好（事件 id 就是格子 id），
+ * 对边界结局就会拼出 `triggerable_eunuch_done` —— 一个按命名约定永远不存在、
+ * 也永远不会出现在成就面板里的名字。第五十二轮给这十格补成就之后，
+ * 拼名必须经过本表换算，否则"补了成就却仍然不亮"与第十三轮那个 bug 是同一种 bug。
+ */
+const TILE_TO_ACHIEVEMENT_STEM: ReadonlyMap<string, string> = new Map(
+  Object.entries(ENDING_ID_ALIASES).map(([from, to]) => [to, from])
+)
+
+export function endingAchievementIdOf(eventId: string): string {
+  const tileId = resolveEndingTileId(eventId) ?? eventId
+  return `${TILE_TO_ACHIEVEMENT_STEM.get(tileId) ?? tileId}_done`
+}
+
 
 /** 图鉴里全部格子 id（审计与测试用） */
 export const ENDING_TILE_IDS: readonly string[] = [...TILE_IDS]

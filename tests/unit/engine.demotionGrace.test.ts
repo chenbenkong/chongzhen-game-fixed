@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
 import { zeroWarnFlag } from '../../src/data/zeroWarningEvents'
+import { EXILE_ENDING_ID } from '../../src/data/events/ending/endingsDemotion'
+import { ENDING_TILE_IDS } from '../../src/data/endingRegistry'
 
 /**
  * 第十四轮实测到的两个「考核杀人太急」的缺陷，以及各自的护栏。
@@ -87,7 +89,13 @@ describe('K-14b：道德归零的两条判死通路必须同进同退', () => {
 
     expect(result.current.isGameOver).toBe(true)
     expect(result.current.identityType).toBe('exiled')
-    // 革职结局的格子 id 由图鉴认账，这里顺手钉住"引擎写的结局 id 仍在注册表里"
-    expect(result.current.eventHistory).toContain('ending_demotion')
+    /**
+     * 革职在第十五轮之前两支共用 `ending_demotion` 一个 id（图鉴只有一格、Steam 成就上限已满）。
+     * 第五十二轮上限解除后拆成两格：`newIdentity === 'exiled'` 的 severity 3 走押解宁古塔那支，
+     * 所以这里钉的是 `ending_exile`，同时钉它真在图鉴注册表里 ——
+     * 这一格从前只内联在引擎里，成就判据永远够不着。
+     */
+    expect(result.current.eventHistory).toContain(EXILE_ENDING_ID)
+    expect(ENDING_TILE_IDS, '引擎写的流放 id 必须在图鉴里有一格').toContain(EXILE_ENDING_ID)
   })
 })

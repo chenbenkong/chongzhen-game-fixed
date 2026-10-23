@@ -3,7 +3,7 @@
 import { Character, GameStateValues, LifeRecord } from '../types/game'
 import { GameEvent } from '../types/event'
 import { unlockAchievement, recordEndingReached } from '../types/achievement'
-import { resolveEndingTileId } from '../data/endingRegistry'
+import { endingAchievementIdOf, resolveEndingTileId } from '../data/endingRegistry'
 
 /**
  * 关键生平事件的统一筛选口径。
@@ -227,16 +227,19 @@ export function triggerEndingAchievements(endingEvent: GameEvent): { newlyUnlock
   const endingType = classifyEnding(endingEvent)
   const newUnlocks: string[] = []
 
+  const tileId = resolveEndingTileId(endingEvent.id) ?? endingEvent.id
+
   /**
    * 达成记录先写，而且写的是**图鉴格子 id**。
-   * 这一步不依赖"有没有一条名字叫 `${id}_done` 的成就"：44 个格子里有 10 个
-   * 没有任何成就判据指向它们（边界/阈值结局），只靠下面那个字符串拼接的话，
-   * 玩家打到那些结局时图鉴永远是灰的。
+   * 这一步不依赖"有没有一条名字叫 `${id}_done` 的成就"：
+   * 补成就之前达成的老存档只有这条记录，图鉴靠它把那些格子点亮。
    */
-  recordEndingReached(resolveEndingTileId(endingEvent.id) ?? endingEvent.id)
+  recordEndingReached(tileId)
 
-  // 解锁该具体结局的成就（id + _done 后缀）
-  const specificId = `${endingEvent.id}_done`
+  // 解锁该具体结局的成就。名字要经过 data/endingRegistry 换算，不能直接拼 `${event.id}_done`：
+  // 边界结局的事件 id 是 `triggerable_*`，而成就层按 `ending_*_done` 命名，
+  // 拼出来的名字在 ALL_ACHIEVEMENTS 里根本不存在 —— 成就永远不会亮。
+  const specificId = endingAchievementIdOf(endingEvent.id)
   if (unlockAchievement(specificId)) {
     newUnlocks.push(specificId)
   }

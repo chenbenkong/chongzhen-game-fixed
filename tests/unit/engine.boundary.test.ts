@@ -247,6 +247,71 @@ describe('第二十八轮：年窗首月的边界判定用的是今年的时钟'
 })
 
 /**
+ * 第五十二轮：§1.4 ㉚ ——「空月清扫跳月会不会把 1644 锁死的那一格扫过去」。
+ *
+ * 180 局取样（random/steady/warden 各 60）里，清扫确实扫过了 9 个「门开着」的月份，
+ * 但每一局都在**下一个落点月**正常结案，一格都没丢；唯二没见过终局的
+ * warden/24、warden/56 也不是引擎漏判 —— 抄表里那一步本来就停在门开的那个月。
+ * 差别只在时序：跑局器把 300ms 定时器跑在 act **之内**，`checkBoundary` 读的是上个月的 ref
+ * （第二十八轮已把这一拍钉死），于是「落点月结案」在模拟里读成「晚一个月」。
+ *
+ * 这两条用反推存档（warden/24 在 1644-04 的全部状态）按**真时序**问引擎：
+ * 站在 1644-04 推一月，落点 1644-05 就当场结在《甲申国变》；
+ * 还差一个月时不许结案 —— 后一条是反向守卫，别把这条钉子读成"进了 1644 就判死"。
+ */
+const JIASHEN_SAVE = (month: number, turn: number) =>
+  makeSaveData({
+    character: makeCharacter({
+      rank: '从五品·知州',
+      attributes: { 财帛: 90, 文韬: 100, 理政: 100, 武略: 100, 体质: 78 },
+      hidden: { 道德值: 87, 欲望值: 51, 野心值: 100, 机敏值: 100, 忠诚值: 50 },
+      flags: ['地方官任职', '言官', '边关任职', '随军出征', '主招抚'],
+      faction: { 东林好感: 82, 阉党好感: 7, 立场: '东林', 党争烈度: 100 }
+    }),
+    gameState: makeGameState({
+      currentYear: 1644, currentMonth: month, turn,
+      圣眷: 60, 中官: 100, 清议: 73, 士绅: 92, 民望: 89, 国势: 0
+    })
+  })
+
+describe('第五十二轮：1644 锁死的那一格，落点月当场接得住（§1.4 ㉚）', () => {
+  it('warden/24 站在 1644-04 推一月，1644-05 就结在《甲申国变》', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const { result } = renderGameEngine({ loadSaveData: JIASHEN_SAVE(4, 195) })
+    await flush()
+
+    await act(async () => {
+      result.current.handleNextMonth()
+    })
+    await flush(600)
+
+    expect(result.current.gameState.currentYear).toBe(1644)
+    expect(result.current.gameState.currentMonth, '这一步没落到 1644-05 —— 月窗 min:5 无从判起').toBe(5)
+    expect(result.current.isGameOver, '门开着、月窗也到了，引擎却没接住这一格').toBe(true)
+    expect(result.current.currentEvent?.id).toBe('ending_jiashen_nationfall')
+    randomSpy.mockRestore()
+  })
+
+  it('还差一个月（落点 1644-04）时不许结案 —— 月窗那道门仍然算数', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const { result } = renderGameEngine({ loadSaveData: JIASHEN_SAVE(3, 194) })
+    await flush()
+
+    await act(async () => {
+      result.current.handleNextMonth()
+    })
+    await flush(600)
+
+    expect(result.current.gameState.currentMonth).toBe(4)
+    expect(
+      result.current.isGameOver,
+      '1644-04 就把《甲申国变》结了 —— 第四十七轮把合卷挪到五月，白挪了'
+    ).toBe(false)
+    randomSpy.mockRestore()
+  })
+})
+
+/**
  * 缺陷 K-14c：crisis 类临界事件**完全不吃冷却**。
  *
  * `EVENT_COOLDOWN_MONTHS` 的表头写的是「冷却期（月）」，但第十四轮之前这张表只管支线池。

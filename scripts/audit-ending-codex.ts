@@ -16,9 +16,9 @@
  *   · 「罢黜归田」整条结局只在引擎里内联存在，图鉴根本没这一格，而成就却会点亮。
  *
  * 三条都已经修掉，这份脚本负责让它们**不再悄悄长回来**：
- * 尤其第 6 项（有格子、无成就）是一份必须显式登记的名单 ——
- * Steam 单 App 成就上限 100 条已经用满，以后再加没有成就的格子时，
- * 要么在这份名单里写清理由，要么就真去补成就。
+ * 尤其第 6 项 —— 每一格都必须有一条成就判据指着它，一格不许漏。
+ * （第五十二轮之前那里有一份显式名单，兜着"Steam 上限 100 已用满、这十格先不补成就"；
+ *  上限解除后名单清空，检查本身留着。）
  */
 import { allEndingEvents, triggerableEndingEvents } from '../src/data/events/ending'
 import { ENDING_ID_ALIASES, ENDING_TILE_IDS, resolveEndingTileId } from '../src/data/endingRegistry'
@@ -38,23 +38,14 @@ const TIER_LABELS = [
 ] as const
 
 /**
- * 有格子、但没有成就指向它 —— 这一批靠 `AchievementData.reachedEndings`
- * （达成记录）点亮，而不是靠成就。名单是**上限**也是**下限**：
- * 名单外新长出一条 → 红；名单里某条补上成就了 → 也红（提醒把它删掉，
- * 免得名单变成永远正确的废话）。
+ * 有格子、但没有成就指向它 —— 第五十二轮起这份名单是**空的**，所以不再需要名单。
+ *
+ * 它原先登记了十条边界/阈值结局，理由是"Steam 单 App 成就上限 100 已经用满"。
+ * 上限解除之后（本作不上 Steam），第 6 项检查改成无条件：每一格都必须有一条成就判据
+ * 指着它。留着名单等于留一条"以后再补"的路，而这条路已经没有必要。
+ * 达成记录（`AchievementData.reachedEndings`）仍然是图鉴的第二条点亮链，
+ * 它服务的是补成就**之前**就已经达成过那些结局的老存档。
  */
-export const KNOWN_TILES_WITHOUT_ACHIEVEMENT: readonly string[] = [
-  'triggerable_death_illness',
-  'triggerable_emperor_hate',
-  'triggerable_eunuch',
-  'triggerable_scholar_ostracism',
-  'triggerable_gentry_rebellion',
-  'triggerable_popular_uproar',
-  'triggerable_moral_degeneracy',
-  'triggerable_faction_martyr',
-  'triggerable_faction_tyrant_fall',
-  'triggerable_faction_sacrifice'
-]
 
 /** 结局成就 → 判据里那个 eventHistory id。读不出来就返回 null（调用方必须报出来，不能跳过）。 */
 function requiredEventId(ach: { id: string; checkUnlock: (ctx: any) => boolean }): string | null {
@@ -115,17 +106,9 @@ export function scanEndingCodex(): Finding[] {
     requiredByAchievement.add(tile)
   }
 
-  // 6. 有格子无成就 —— 必须与登记名单完全一致
-  const withoutAch = ENDING_TILE_IDS.filter(id => !requiredByAchievement.has(id)).sort()
-  for (const id of withoutAch) {
-    if (!KNOWN_TILES_WITHOUT_ACHIEVEMENT.includes(id)) {
-      add('tileWithoutAchievement', id, '没有任何成就判据指向它；它只能靠达成记录点亮。要么补成就，要么在名单里写明理由')
-    }
-  }
-  for (const id of KNOWN_TILES_WITHOUT_ACHIEVEMENT) {
-    if (requiredByAchievement.has(id)) {
-      add('staleKnownList', id, '已经有成就了指向它，却还留在"无成就"名单里 —— 把它删掉')
-    }
+  // 6. 有格子无成就 —— 第五十二轮起一格都不许有（不再有"名额不够"这个理由）
+  for (const id of ENDING_TILE_IDS.filter(t => !requiredByAchievement.has(t)).sort()) {
+    add('tileWithoutAchievement', id, '没有任何成就判据指向它，只能靠达成记录点亮 —— 补一条 ending_*_done，判据写这格的事件 id')
   }
 
   // 7. 别名必须指向真实格子

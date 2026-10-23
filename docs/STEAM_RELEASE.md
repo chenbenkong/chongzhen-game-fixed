@@ -446,8 +446,11 @@ Steam 对单个 app 的成就数量有上限（公开规则为 100 个；建议�
 因此在 `cloneAchievementData`（所有读写边界的唯一入口）统一剔除，
 并由 `tests/unit/achievement.steamLimit.test.ts` 钉住。
 
-**现在的状态**：`npm run check:steam` 全绿 —— 100 个成就 = 100 条映射，
-不超过上限，与源码逐条一致。该检查已加入 CI。
+**现在的状态**：`npm run check:steam` 全绿 —— **111 个成就 = 111 条映射**，与源码逐条一致。
+该检查已加入 CI。**上限那一项目前是警告不是失败**：第五十二轮起本作明确不上 Steam，
+成就不必再挤 100 的名额（补了十条边界结局成就 + 拆出《流放边疆》一条）。
+`desktop/steam.cjs` 里 `STEAM_ACHIEVEMENT_LIMIT = 100` 仍作为平台事实留着，
+**将来真要上线，得先按上面那张表裁掉 11 条**并同步删映射表。
 
 > 后续增删游戏内成就时，记得同步改 `desktop/steam.cjs` 并跑 `npm run check:steam`。
 

@@ -9,6 +9,7 @@ import {
   COLLECTOR_CHAIN_ACHIEVEMENT_IDS,
   ALL_ACHIEVEMENTS
 } from '../../src/types/achievement'
+import { ENDING_TILE_IDS } from '../../src/data/endingRegistry'
 
 /**
  * 成就数量裁剪 + 已删除 id 的存档迁移。
@@ -22,10 +23,26 @@ import {
  * 如果不清理，"已解锁 N 个"的计数会虚高，而 collector(30) 与 legendary_master(全部)
  * 的判据都依赖这个计数 —— 玩家会莫名提前拿到"成就收藏家"，甚至白拿"传奇大师"。
  * 所以这里既钉住数量，也钉住迁移行为。
+ *
+ * 第五十二轮改了"数量"这一半的口径：本作暂不上 Steam，于是把 45 格结局一次补齐
+ * （10 条边界结局成就 + 革职拆支 1 条），总数 100 → 111。
+ * 上限从"倒推裁剪的理由"降级成"上线前的待办"，见 desktop/steam.cjs 头部。
  */
 describe('成就数量与 Steam 上限', () => {
-  it('游戏内成就数量不超过 Steam 单 App 上限 100', () => {
-    expect(ALL_ACHIEVEMENTS.length).toBeLessThanOrEqual(100)
+  it('成就总数是数过的 111 条（第五十二轮补齐 45 格结局成就之后）', () => {
+    // 这条不是"凑数上限"，而是**增删必须是有意识地**：改了这里，
+    // desktop/steam.cjs 的映射表与 INTERNAL_ACHIEVEMENT_COUNT 必须同步改，
+    // 否则 `node desktop/smoke-test.cjs`（CI 里跑）会逐条对拍失败。
+    expect(ALL_ACHIEVEMENTS).toHaveLength(111)
+  })
+
+  it('45 格结局都有 `ending_*_done` 成就，可收集数够得着最高档', () => {
+    const doneIds = ALL_ACHIEVEMENTS
+      .filter(a => a.id.startsWith('ending_') && a.id.endsWith('_done'))
+      .map(a => a.id)
+    // 34 条叙事/内联结局 + 10 条边界结局 + 革职拆出来的流放 = 45
+    expect(doneIds).toHaveLength(ENDING_TILE_IDS.length)
+    expect(doneIds).toHaveLength(45)
   })
 
   it('成就 id 无重复', () => {
