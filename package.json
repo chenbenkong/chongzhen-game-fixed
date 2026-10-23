@@ -41,6 +41,7 @@
     "audit:branch": "vite-node scripts/audit-branch.ts",
     "audit:lockout": "vite-node scripts/audit-choice-lockout.ts",
     "audit:afford": "vite-node scripts/audit-affordability.ts",
+    "audit:label-text": "vite-node scripts/audit-label-text-agreement.ts",
     "audit:events": "vite-node scripts/audit-events.ts",
     "audit:narrative": "vite-node scripts/audit-narrative-quality.ts",
     "audit:validate": "vite-node scripts/validate-events.ts",
