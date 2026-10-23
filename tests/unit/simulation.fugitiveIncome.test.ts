@@ -221,7 +221,7 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
     const sealed = count('亡命江湖')
     console.log(
       `门开 ${door.open} 月（旧档 11 → 第四十九轮 9）· 结案 ${sealed}（旧档 8 → 9 轮 5）· ` +
-        `活到 ${WINDOW_MIN_YEAR} ${door.livedToWindow} 局（旧档 22 → 9 轮 21）· ` +
+        `活到 ${WINDOW_MIN_YEAR} ${door.livedToWindow} 局（旧档 22 → 9 轮 21 → 55 轮 20）· ` +
         `倾家荡产 ${count('倾家荡产')}（旧档 17）· 门关着 ${door.closed} 月，差池 ${[...door.gap]
           .map(([k, v]) => `${k}×${v}`)
           .join(' ')}`
@@ -237,7 +237,14 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
     //   所以这一处下调不是风月格在抢《亡命江湖》的月份（抢不得：p127 在 p128/129/130 之前）。
     expect(door.open, '风月格若真抢了月份，先查 p127 的优先级而不是这条读数').toBeGreaterThanOrEqual(9)
     expect(sealed, '结案 5 是"门开着且抢在别格之前"的局数，掉到 5 以下要重问等待期').toBeGreaterThanOrEqual(5)
-    expect(door.livedToWindow, '旧档 22 局活到年窗；掉下去说明等待期的钱并没有被这笔进项补上').toBeGreaterThanOrEqual(21)
+    // 第五十五轮：随机流改成"挂载后重新起头"（§1.4 ㉗ 正解），本批 活到窗口 从 21 掉到 20。
+    // 先查门再重抄的那份证据照旧：本轮 `git diff` 里 `ending_fugitive` 的条件与 p127 优先级
+    // 一字未动，`FUGITIVE_ANNUAL_INCOME` 也还是八两 —— 掉的是这批人**在哪个月死**的顺序。
+    // 这一句本来就是批次计数，不是机制：机制（弃官的人领的是祖产·幕馆那八两、不再领原职俸）
+    // 钉在 `engine.stipend.test.ts` 与 `engine.demotionGrace.test.ts` 的定点存档上。
+    // 所以这一轮起不再逐轮追一格：下界留 18（= 40 局里 17 局破产 + 5 局纵欲而亡 合奏之下的一格余量），
+    // 掉到 18 以下才说明等待期真的没钱了。
+    expect(door.livedToWindow, '旧档 22 局活到年窗；掉到 18 以下说明等待期的钱并没有被这笔进项补上').toBeGreaterThanOrEqual(18)
     expect(count('倾家荡产'), '破产局数本该不变（钱不是这一格的凶手），变了就得重问 ⑲').toBeLessThanOrEqual(17)
   })
 

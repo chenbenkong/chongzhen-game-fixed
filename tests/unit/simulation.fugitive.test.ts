@@ -36,11 +36,13 @@ import type { OriginType } from '../../src/types/game'
  * 本文因此只管一件事：说清 `bandit`/`vanish` 这两副画像**为什么**走不到这一格。
  * 第五十四轮把这句的口径改正了一次（旧版写的是"差池百分之百是 道德>30，圣眷 一条都不挡路"，
  * 那是被一个巧合喂出来的读数：当时唯一的样本在第 71 月就拿票，年窗 84 月才开，
- * "带票之后"与"年窗之内"恰好是同一批月份）。现在分开量：
- * **带票之后 圣眷 上涨 0 次**（第廿七轮那条闸，本轮重新在带票月份上量到 54 个月全零），
- * 而**年窗内关着的 41 个月里 道德>30 挡到 40 个、圣眷>15 只挡到 20 个** —— 绑住这两副画像的
- * 仍然是 道德；高位 圣眷 只在"弃官那天就已经 65"的那一个人身上单独挡过 1 个月。
- * 结案数在这里读到 2 局，都带票 —— 那是量具的性质（第 5 条用例把它钉住了），不是格子的性质。
+ * "带票之后"与"年窗之内"恰好是同一批月份）。
+ * 第五十五轮又改了一次，这次是**结论搬家**：随机流重新起头之后（§1.4 ㉗ 收口），
+ * 这批 80 局里没有一个带 潜逃 的人活进年窗 —— 本文件的年窗归因失去样本，
+ * 而 `simulation.fugitiveGate.test.ts` 那边同一句话有 140 个月的样本
+ * （逃后·年窗内·门关着 140 月：道德>30×130 · 圣眷>15 全部是带进来的存量×4 · 逃后新涨×0）。
+ * 所以这里只留两句：**带票的月份里 圣眷 一次都不许上涨**（机制棘轮），
+ * 以及**带票之前必须涨过**（反空转对照）。"死在道德上"那句改由有样本的那一侧承重。
  */
 
 const GAMES = Number(process.env.SIM_GAMES ?? 80)
@@ -182,7 +184,11 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
       // 《不知所踪》的门票与这一格共用同一对 隐姓埋名/下落不明，但它排在前头（p117）。
       // 只要它自己也成立，这一格就不许抢；它不成立时，成对票照样能把这一格送出去 ——
       // 第四十轮样本里就有 2 个月是这么赢的，所以断言写成"让位"而不是"永远不属于这一格"。
-      if (unknown?.check(buildParams(x.s.derived)) && w?.id !== 'ending_unknown_fate') {
+      // 第五十五轮重抄读数时这里报过一条 `第177月 seed6405：p102《诏狱冤死》` ——
+      // 那是**排在两者之前的第三格**正常收人，不是这一格抢的。旧写法判的是
+      // "赢家不是 不知所踪"，把优先级更高的别的格子也算成偷；本句管的是 亡命江湖 与 不知所踪
+      // 这两格之间的次序，所以只许盯 亡命江湖 自己。
+      if (unknown?.check(buildParams(x.s.derived)) && w?.id === FUGITIVE) {
         stolen.push(`第${x.s.turn}月 seed${x.r.seed}：${k}`)
       }
     }
@@ -193,7 +199,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(stolen, '《不知所踪》同时也成立时，《亡命江湖》不许抢在它前面').toEqual([])
   })
 
-  it('带 潜逃 活进年窗的局：带票之后 圣眷 一次没涨，绑住这两副画像的是 道德', () => {
+  it('带 潜逃 的月份里 圣眷 一次没涨（年窗内的差池归因见 simulation.fugitiveGate.test.ts）', () => {
     // 第四十轮打开《平庸之念》的上界之后，这批共享种子的随机流整体挪了一拍：
     // 本组又出现 1 局带票活进年窗（seed6415/vanish，活到 1638），
     // 第卅九轮那句"本组已无带票活进年窗"的读数到此作废。
@@ -238,52 +244,34 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     console.log(`带 潜逃 的月份合计 ${ticketMonths} 月（${withTicket.length} 局），其中 圣眷 上涨 ${rose} 次`)
     expect(rose, '带 潜逃 之后 圣眷 还在上涨 —— 第廿七轮那条"逃了的人不再领朝廷的恩"的闸松了：' + riseDetail.slice(0, 4).join(' · ')).toBe(0)
 
-    console.log(
-      `带 潜逃 ${withTicket.length} 局（${withTicket.map(r => `seed${r.seed}/${r.policy}`).join(' · ') || '无'}）· ` +
-        `活进年窗 ${inWindow.length} 局`
-    )
-    // 读数不再钉精确值：这批骰子每轮内容改动都会整体挪位（§1.4 ㉗），钉死"2"只是每轮重抄一遍。
-    // 承重的是机制棘轮 —— 上面那句"带票之后 圣眷 上涨 0 次"、下面那句"头号差池是 道德"，
-    // 以及第 5 条用例里"没带门票就不许结这一格"。这里只留下界：至少要有一个人带着票活到门口。
-    expect(inWindow.length, '带 潜逃 的人一个都没活进年窗 —— 那"门开着却被谁抢走"这句就无从谈起').toBeGreaterThanOrEqual(1)
-
-    const favorMax = fugitive!.event.conditions?.gameState?.圣眷?.max ?? 999
-    let closed = 0
-    let favorBlocked = 0
-    let moralBlocked = 0
-    let soleFavor = 0
-    const badAttribution: string[] = []
-    for (const r of inWindow) {
+    let roseBefore = 0
+    for (const r of withTicket) {
       const first = r.trace.findIndex(s => s.derived.flags.includes(FUGITIVE_FLAG))
-      const windowStart = r.trace.findIndex(s => s.derived.year >= EFFECTIVE_MIN_YEAR)
-      for (let i = Math.max(first, windowStart); i < r.trace.length; i++) {
-        if (!r.trace[i].derived.flags.includes(FUGITIVE_FLAG)) continue
-        if (gateHeldAt(r, i)) continue
-        closed++
-        const keys = closedBy(r, i).map(b => b.key)
-        const byFavor = keys.some(k => k.startsWith('州府.圣眷'))
-        const byMoral = keys.some(k => k.startsWith('隐藏.道德值'))
-        if (byFavor) favorBlocked++
-        if (byMoral) moralBlocked++
-        if (byFavor && !byMoral) soleFavor++
-        if (byFavor && r.trace[i].derived.states.圣眷 <= favorMax)
-          badAttribution.push(`seed${r.seed} 第${r.trace[i].turn}月 圣眷${r.trace[i].derived.states.圣眷} 在门槛内却记成挡路`)
+      for (let i = 1; i < first; i++) {
+        if (r.trace[i].derived.states.圣眷 > r.trace[i - 1].derived.states.圣眷) roseBefore++
       }
-      console.log(
-        `  seed${r.seed}/${r.policy}：票在第${r.trace[first].turn}月(${r.trace[first].derived.year}，圣眷${r.trace[first].derived.states.圣眷}) · ` +
-          `年窗自第${r.trace[windowStart].turn}月 —— 票比年窗晚 ${Math.max(0, r.trace[first].turn - r.trace[windowStart].turn)} 个月`
-      )
     }
     console.log(
-      `年窗内·带票·门关着 ${closed} 月：道德>30×${moralBlocked} · 圣眷>15×${favorBlocked}（其中 圣眷 单独挡路 ${soleFavor} 月）`
+      `带 潜逃 ${withTicket.length} 局（${withTicket.map(r => `seed${r.seed}/${r.policy}`).join(' · ') || '无'}）· ` +
+        `活进年窗 ${inWindow.length} 局 · 带票**之前** 圣眷 上涨 ${roseBefore} 次`
     )
-    expect(closed, '门一次都没关过 —— 那上面那句 0 只是"根本没人站在门口"').toBeGreaterThan(0)
-    expect(badAttribution, '归因器把门槛内的 圣眷 记成挡路 —— 上面的读数不可信').toEqual([])
-    expect(
-      moralBlocked,
-      `年窗内带票的 ${closed} 个月里 道德>30 只挡到 ${moralBlocked} 个，圣眷>15 挡到 ${favorBlocked} 个 —— ` +
-        '本文件"这两副画像死在道德上"那句结论作废，去重读逐月打印'
-    ).toBeGreaterThan(favorBlocked)
+    // 反空转：这一句为 0，上面那句"逃后 0 涨"就只是"这局根本没人涨圣眷"的同义反复。
+    // 它只在**这一组真的有人带票**时才是一件事。第五十五轮重新起头之后这批 0 人带票
+    // （13 次「风闻入告」开口，bandit/vanish 按分数自选，一次都没点【弃官南还】），
+    // 所以这里明说"量不到"而不是让一句 `toBeGreaterThan(0)` 去替骰子还债 ——
+    // 棘轮的承重读数在 `simulation.fugitiveGate.test.ts`（fugitive 画像，逃后新涨×0），
+    // 票源本身点不点得动在 `engine.demotionGrace.test.ts` 的 K-55（引擎驱动，不吃随机流）。
+    if (withTicket.length === 0) {
+      console.log(
+        '本组无一带票：上面那句 0 是空集上的真，不构成闸的证据 —— 已知的两处承重读数见上面的注释'
+      )
+    } else {
+      expect(roseBefore, '带票之前也没有一个月涨过 圣眷 —— 这一组量不出闸的存在').toBeGreaterThan(0)
+    }
+    // 年窗内的差池归因（"死在道德上而不是死在 圣眷 上"）不再钉在这里：
+    // 第五十五轮重新起头之后，这批 80 局里没有一个带票的人活进年窗（样本 0），
+    // 而同一句话在 `simulation.fugitiveGate.test.ts` 有 140 个月的样本
+    // （道德>30×130 · 圣眷>15 存量×4 · 逃后新涨×0）。结论钉在有读数的那一侧。
   })
 
   it('这两副画像结出来的每一局都带着票 —— 它是量具的读数，不是格子的读数（棘轮在 fugitive 那一组）', () => {

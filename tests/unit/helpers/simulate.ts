@@ -1048,7 +1048,7 @@ export async function simulateRun(opts: {
   logChoices?: boolean
 }): Promise<SimOutcome> {
   const { seed, policy = 'random', maxMonths = 260, origin = '寒门', traceMonths = false, logChoices = false } = opts
-  const rand = mulberry32(seed)
+  let rand = mulberry32(seed)
   const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => rand())
   vi.useFakeTimers()
 
@@ -1079,6 +1079,15 @@ export async function simulateRun(opts: {
   let startThresholds: Record<string, number> = {}
   try {
     await actFlush(400)
+    // 重新起头：挂载阶段也会有人消耗 Math.random。实测同一进程里**第一次挂载 3 次、
+    // 之后每次挂载 2 次**（引擎那两次挑事件 + 一次 `react.development.js` 框架自己的），
+    // 多的那一次把整局的随机流推开一格：同种子连跑三次，改前第一次结《烟花之主》@109 月、
+    // 第二三次结《不知所踪》@163 月 —— 这就是 §1.4 ㉗ 说的"反推存档位置相关"。
+    // 从这里换回种子重新计数，本局之后只由「引擎 + 策略」两只手消耗随机数，
+    // 挂载阶段谁多拿过一次都影响不到：改后同种子连跑三次读数完全一致
+    // （《龙颜震怒》@第70月 · 抉择177次）。三次一致也顺带说明挂载结束时的**状态**本来就相同，
+    // 那多出来的一次并没有挤掉引擎的挑事件结果，只是把后面的取值顺序推后了。
+    rand = mulberry32(seed)
     startThresholds = thresholdSnapshot(hook.result.current.character, hook.result.current.gameState)
     let months = 0
     // 一个月最多几个事件，乘一个安全系数就是整局的最大步数；

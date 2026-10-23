@@ -111,13 +111,16 @@ const closedTally = (runs: SimOutcome[]) => {
   for (const r of runs) {
     const flee = r.trace.findIndex(t => t.derived.flags.includes(FUGITIVE_FLAG))
     if (flee < 0) continue
+    // 带上身那天手里的 圣眷 —— 闸只管"不再往上加"，管不着已经揣在怀里的那一截存量。
+    const carried = r.trace[flee].derived.states.圣眷
+    const favorMax = c.gameState?.圣眷?.max ?? 999
     for (let i = flee; i < r.trace.length; i++) {
       const d = r.trace[i].derived
       if (d.year < (c.year?.min ?? 0)) continue
       if (fugitive!.check(buildParams(d))) continue
       const bump = (k: string) => tally.set(k, (tally.get(k) ?? 0) + 1)
       if ((c.hidden?.道德值?.max ?? 999) < d.hidden.道德值) bump(`道德>${c.hidden?.道德值?.max}`)
-      if ((c.gameState?.圣眷?.max ?? 999) < d.states.圣眷) bump(`圣眷>${c.gameState?.圣眷?.max}`)
+      if (favorMax < d.states.圣眷) bump(d.states.圣眷 > carried ? `圣眷>${favorMax}·新涨` : `圣眷>${favorMax}·存量`)
       if ((c.attributes?.体质?.min ?? 0) > d.attributes.体质) bump(`体质<${c.attributes?.体质?.min}`)
       tally.set('月', (tally.get('月') ?? 0) + 1)
     }
@@ -160,17 +163,34 @@ describe(`潜逃者不再领朝廷的恩（${GAMES} 局 × 两副画像）`, () 
     expect(on.after, '人已经弃官南还，朝廷的恩还在往他身上加').toBe(0)
   })
 
-  it('年窗里门关着的月份，一条也不许是因为 圣眷（拔掉这一行读的是 ×353）', () => {
+  it('年窗里门关着的月份，圣眷 这一条只许是带进来的存量，不许是逃后新涨（拔掉闸读的是 ×353）', () => {
     const { months, tally } = closedTally(fug)
-    const favorKey = `圣眷>${fugitive!.event.conditions?.gameState?.圣眷?.max}`
+    const favorMax = fugitive!.event.conditions?.gameState?.圣眷?.max
+    const roseKey = `圣眷>${favorMax}·新涨`
+    const stockKey = `圣眷>${favorMax}·存量`
     console.log(
-      `逃后·年窗内·门关着 ${months} 个月，差池：${line(tally) || '（一条都没有）'} · 其中 ${favorKey}×${tally.get(favorKey) ?? 0}`
+      `逃后·年窗内·门关着 ${months} 个月，差池：${line(tally) || '（一条都没有）'} · ` +
+        `其中 ${stockKey}×${tally.get(stockKey) ?? 0} · ${roseKey}×${tally.get(roseKey) ?? 0}`
     )
+    // 第廿七轮那条闸管的是「朝廷的恩不再往他身上加」，不是「他手里那一截恩立刻清零」——
+    // 所以判据只能钉在**来路**上。第五十五轮重抄读数时这里读到过 4 个 `圣眷>15` 的月份，
+    // 逐月核对全部是带票那天就揣在怀里的存量（此后一路下坡），闸本身一次没漏（上一条 0 上涨）。
+    // 旧写法把「整条维度都拿掉了」当成断言，那是把量具读数当成了机制承诺。
     expect(
-      tally.get(favorKey) ?? 0,
-      `${favorKey} 还挡得住路 —— 那条闸没生效，或者 圣眷 还有一条这条闸管不到的来路（月 drift？）`
+      tally.get(roseKey) ?? 0,
+      `${roseKey} —— 人已经弃官南还，朝廷的恩还在往他身上加：闸没生效，或 圣眷 还有第三条来路`
     ).toBe(0)
     expect(months, '逃后年窗内一个月都没关过门 —— 那上面那句 0 只是"根本没人站在门口"').toBeGreaterThan(0)
+    // 「这两副画像死在道德上，不是死在 圣眷 上」这句结论也钉在这里：
+    // `simulation.fugitive.test.ts` 第五十五轮那批骰子里没有一个带票的人活进年窗（样本 0），
+    // 同一句话在这里有 140 个月的样本 —— 结论该钉在有读数的那一侧，而不是每轮跟着骰子搬家。
+    const moral = tally.get(`道德>${fugitive!.event.conditions?.hidden?.道德值?.max}`) ?? 0
+    const favorTotal = (tally.get(stockKey) ?? 0) + (tally.get(roseKey) ?? 0)
+    expect(
+      moral,
+      `逃后年窗内关着 ${months} 个月，道德>30 只挡到 ${moral} 个、圣眷>15 挡到 ${favorTotal} 个 —— ` +
+        '上面那句"死在道德上"作废，去重读差池打印'
+    ).toBeGreaterThan(favorTotal)
   })
 
   it('《亡命江湖》在真跑局里至少结一次案（棘轮：第廿七轮实测 8/40）', () => {
