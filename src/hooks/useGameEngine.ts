@@ -1558,6 +1558,14 @@ export function useGameEngine(props: UseGameEngineProps) {
             handleGameOver(withEndingId(triggeredEvent.event))
             return
           }
+          // 结局卡必须吃掉本月剩下的待处理事件。不清队列的话，玩家点「继 续」时
+          // `handleContinue` 会先弹队列里的普通卡，把这张结局卡直接盖掉；而降临型
+          // 结局的窗口常常只有一个月（甲申国变 1644 年五月），盖掉就等于永远错过 ——
+          // 错过之后没有任何一格还能收笔，人活到三千多年（§1.4 ㉛）。
+          // `checkBoundary` 在月份推进时本来就是"命中即 return，本月普通事件不发"，
+          // 这里与它对齐。
+          pendingEventsRef.current = []
+          setPendingEvents([])
           setCurrentEvent(triggeredEvent.event)
         }
       } catch (e) {

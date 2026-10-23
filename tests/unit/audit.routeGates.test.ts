@@ -24,6 +24,9 @@ import { allEndingEvents } from '../../src/data/events/ending'
  * 第四十七/四十八轮：医家路补《疫起》、篡位补《诸将劝进》、南明补「效忠南明」第二张票，
  * 《称臣纳贡》撤掉隐藏道德与国势上界，纯数值入口 20→19、隐藏门 16→15、待改写落点 22→20；
  * 写出命途门票的事件 16→17。上界与文本前提两项本轮没有变化，保持 5。
+ * 第四十九轮：三格纯数值结局（中兴 / 纵欲而亡 / 烟花之主）全部改读经历票，
+ * 《卖国求荣》撤掉隐藏道德/野心；结局纯数值 3→0、隐藏门 24→19。
+ * 路线侧本轮没有变化，四项保持 19/15/5/5。
  */
 const CEILING = {
   routeNumericOnly: 19,
@@ -35,6 +38,15 @@ const CEILING = {
 
 /** 路线事件里写出命途门票的条数，只许上升 */
 const ROUTE_FEEDING_FLOOR = 17
+
+/**
+ * 结局侧的棘轮（第四十九轮第一次收口）：
+ * 44 格结局里不许再出现"没有任何经历门、只靠数值"的格子；
+ * 隐藏数值门 24→19 之后也不许回涨。上界另有 19 格，语义上多是"国破/体弱/名声坏"，
+ * 不属于本轮的清理对象，先不设天花板。
+ */
+const ENDING_NUMERIC_CEILING = 0
+const ENDING_HIDDEN_CEILING = 19
 
 const report = scanRouteGates()
 const s = report.summary
@@ -113,12 +125,32 @@ describe('路线 / 结局门禁（可见行为优先）', () => {
     ).toBeGreaterThanOrEqual(ROUTE_FEEDING_FLOOR)
   })
 
+  it('结局格不许靠纯数值判定（棘轮：0）', () => {
+    expect(
+      s.endingNumericOnly,
+      `没有经历门的结局格：${s.endingNumericOnly} > ${ENDING_NUMERIC_CEILING}。` +
+        '结局至少要读一张玩家看得见的经历票；属性/状态只能当附加下界。'
+    ).toBeLessThanOrEqual(ENDING_NUMERIC_CEILING)
+  })
+
+  it('结局格的隐藏数值门不超过基线', () => {
+    expect(
+      s.endingHidden,
+      `还在读玩家界面上看不到的 hidden 的结局格：${s.endingHidden} > ${ENDING_HIDDEN_CEILING}`
+    ).toBeLessThanOrEqual(ENDING_HIDDEN_CEILING)
+  })
+
   it('归属分类覆盖全部结局，命途数与面板一致', () => {
     const sum = Object.values(s.byScope).reduce((n, b) => n + b.count, 0)
     expect(sum).toBe(s.endingCount)
     expect(s.endingCount).toBe(allEndingEvents.length)
     const routeIds = new Set(ROUTE_FAMILIES.flatMap(f => f.destinations.map(d => d.endingId)))
-    expect(s.byScope.route.count).toBe(routeIds.size)
+    // 秦淮风月那一族第四十九轮也上了命途面板（玩家得看得见自己手里那张风月票通向哪儿），
+    // 但它的归属仍是「纵欲」：那三格的 体质≤30／≤10 就是"身体被掏空"本身，不是命途债。
+    // 详见 `scripts/audit-route-gates.ts` 的 `scopeOf`。
+    const windIds = [...routeIds].filter(id => id.includes('debauch') || id.includes('pimp')).sort()
+    expect(s.byScope.route.count).toBe(routeIds.size - windIds.length)
+    expect(report.endings.filter(r => r.scope === 'debauchery').map(r => r.id).sort()).toEqual(windIds)
     expect(s.destinationCount).toBe(
       ROUTE_FAMILIES.reduce((n, f) => n + f.destinations.length, 0)
     )

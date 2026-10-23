@@ -10,6 +10,7 @@ import { spyDebaucheryEvents } from './spy'
 import { gratitudeDebaucheryEvents } from './gratitude'
 import { powersexDebaucheryEvents } from './powersex'
 import { temptationDebaucheryEvents } from './temptation'
+import { consequenceDebaucheryEvents } from './consequence'
 
 // 所有灰色支线事件（不含结局，结局已迁移到 events/ending/debauchery/）
 export const allGrayBranchEvents: GameEvent[] = [
@@ -23,7 +24,8 @@ export const allGrayBranchEvents: GameEvent[] = [
   ...spyDebaucheryEvents,
   ...gratitudeDebaucheryEvents,
   ...powersexDebaucheryEvents,
-  ...temptationDebaucheryEvents
+  ...temptationDebaucheryEvents,
+  ...consequenceDebaucheryEvents
 ]
 
 // 按类型导出
@@ -38,5 +40,6 @@ export {
   spyDebaucheryEvents,
   gratitudeDebaucheryEvents,
   powersexDebaucheryEvents,
-  temptationDebaucheryEvents
+  temptationDebaucheryEvents,
+  consequenceDebaucheryEvents
 }

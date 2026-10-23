@@ -30,7 +30,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
-  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper'
+  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout'
 
 export interface SimOutcome {
   seed: number
@@ -315,6 +315,16 @@ interface RetireProfile {
    * → `pickSafest`。只有前三层都空时才回到保命。
    */
   preferClean?: boolean
+  /**
+   * `preferClean` 第二层（"干净且还活着"）的死线余量，默认 8。
+   *
+   * 8 是归零警告的安全余量，不是一个想走到某格的人真正付不起的价。
+   * 第四十九轮 burnout 画像量 031《纵欲成疾》：开口时常常只剩二十两，
+   * 【讳疾忌医】花十五两、留下五两，按 8 的余量筛就把唯一不断路的那条筛掉了，
+   * 于是画像点【遣散后院】，拿到 `闭门谢客`，把要量的那格自己关死。
+   * 真玩家看得见卡片上"从此闭门谢客"意味着什么，也愿意把最后一笔钱花在药上。
+   */
+  cleanAliveFloor?: number
 }
 
 /** 想往空门／归隐那两格走的玩家，会去捡的门票 */
@@ -566,7 +576,11 @@ const USURPER: RetireProfile = {
     // 党派结局的引信：党争烈度 90 会先一步收走这一局
     '复社成员', '东林死忠', '阉党路线', '两面三刀',
     // 铤而走险的门票；带上它们只会把《落草》那格提前打开
-    '党争反戈', '谪戍边疆', '廷杖受刑', '廷杖求饶', '戴罪立功'
+    '党争反戈', '谪戍边疆', '廷杖受刑', '廷杖求饶', '戴罪立功',
+    // 第四十九轮：《纵欲成疾》的【讳疾忌医】那张票是「秦淮风月」族的门票，
+    // 想活到 1644 问鼎的人不会为省十两银子选 体质−8 —— 画像第一版没写这一条，
+    // 评分只看 财帛 少扣，12 局里 2 局在 1642 年结在《纵欲而亡》。
+    '纵欲成疾'
   ]),
   favorBand: 40,
   weights: { 野心值: 1 },
@@ -575,6 +589,88 @@ const USURPER: RetireProfile = {
   over: { 武略: 50 },
   keepAbove: { 理政: 42, 民望: 22, 圣眷: 9 },
   keepBelow: { 野心值: 66, 欲望值: 72, 财帛: 68 }
+}
+
+/**
+ * 想走风月线的那副画像（第四十九轮）。
+ *
+ * 为什么要它：三条风月结局（精尽人亡／纵欲而亡／烟花之主）这一轮把判据从隐藏数值
+ * 换成了经历票。静态矩阵能证明票写得出来，却证明不了玩家真能走到那儿 ——
+ * 120 局 random/first/ambitious 里带票的 18 局全部在 1629 年被革职，
+ * 一局都没活到 031《纵欲成疾》的 1630 年窗，更不用说 030《秦淮暗股》的 1632 与结局的 1635。
+ * 那不是格子坏了，是量具里没有一个人**朝着风月走**（与第廿四轮 bandit/vanish 同一条教训）。
+ *
+ * 口径：
+ *  - 门票从三格自己的 `any` 里读，另加两张产地票（006 流连青楼 / 021 纳妓为妾）。
+ *  - `under.体质: 28` 把身体往「纵欲而亡」的 ≤30 里推；`floors.体质: 18` 兜住
+ *    "体质<15 的体弱多病降级"与归零判死。精尽人亡要 ≤10，得另找一条更陡的路，先不混进这副画像。
+ *  - `over.财帛: 100` 朝「烟花之主」的 ≥100 走；`weights.财帛: 0.5` 让评分真的**攒钱**——
+ *    第一版没有这一项，画像一路点最贵的风月选项，24 局里 22 局在 1632 年前就把 财帛 花到 60 以下，
+ *    030 只开了 6 局。风月线要的是"有钱的堕落"，不是"破产的堕落"。
+ *  - 真正要躲的是「贪墨被查」（财帛>70 ∧ 欲望>75 ∧ 道德<30）。第一版 24/24 局撞上并革职：
+ *    画像把钱、欲、德三样一起推过了线，警告卡上又按分数点了【一概不认】。
+ *    现在 `keepBelow.欲望值: 76` 与 `keepAbove.道德值: 29` 都压在那条线上，
+ *    警告卡开口时【散财杜门】（财帛−30／欲望−25／道德+10）正好把三样一起打回线下，评分会选它；
+ *    `floors.道德值: 20` 只是允许风月经历扣道德，不许扣到归零死线。
+ *  - `avoid` 面读三格 `notHas` 的并集：出家、殉国、降清这些票一上身，风月三格永久关死。
+ */
+const DEBAUCHED: RetireProfile = {
+  targets: new Set(['ending_debauchery_001', 'ending_debauch_fall', 'ending_pimp_lord']),
+  tickets: new Set([
+    '流连青楼', '纳妓为妾', '纵欲成疾', '青楼暗股', '青楼靠山'
+  ]),
+  avoid: new Set([
+    ...tileFlagPool('ending_debauchery_001', 'notHas'),
+    ...tileFlagPool('ending_pimp_lord', 'notHas'),
+    '归隐', '归隐山林', '潜逃'
+  ]),
+  favorBand: 40,
+  weights: { 财帛: 0.5, 欲望值: -0.2, 道德值: 0.2, 清议: -0.3 },
+  floors: { 财帛: 20, 体质: 18, 圣眷: 15, 中官: 15, 清议: 12, 士绅: 15, 民望: 15, 道德值: 20 },
+  under: { 体质: 28, 清议: 30 },
+  over: { 财帛: 100 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 15, 道德值: 29 },
+  keepBelow: { 野心值: 68, 欲望值: 76, 财帛: 101 }
+}
+
+/**
+ * 只要「精尽人亡」的那副画像（第四十九轮）。
+ *
+ * 与 `debauched` 分开，理由与 monk/hermit 分开同一条：两张门方向相反。
+ * 烟花之主要把 财帛 顶到 100、把身体养住；精尽人亡要 体质≤10，还要活到 1635 的年窗。
+ * 合成一副画像，评分会把 体质 一路往上抬（财帛 与保命都更重要），量到的 0 就只是画像的选择。
+ *
+ * 口径：`under.体质: 9` + `weights.体质: -0.5` 把身体往下压，`floors.体质: 9` 卡在归零之上
+ * —— 压到 0 是八条归零死线里的「病逝」，不是这一格。体质<15 的「体弱多病」只是 severity 2 的降级，
+ * 官阶见底之后不再构成真实降级，所以 ≤10 的窗口真的存在。
+ *
+ * `preferClean` 是实测补上的：第一版 24 局里 17 次开出了 ≤10 的门，却一局也没结案 ——
+ * 每一局都点过 031 的【遣散后院】。那张票（闭门谢客）是三条风月结局共同的 `notHas`，
+ * 一上身就把自己这一格永久关死；画像点它，只因为 031 开口时 财帛 付不起另外两条，
+ * `floors.财帛: 20` 把【讳疾忌医】整批筛掉了。真玩家看得见"这一条会断后路"，
+ * 也付得起那 15 两银子 —— `preferClean` 让画像先选"不断路且还活得下去"的那一条，
+ * 哪怕它让某一维跌破画像自己的舒适线。与第四十轮 ordinary 的同一课：
+ * 保命不能盖过"我不想断这条路"。
+ */
+const BURNOUT: RetireProfile = {
+  targets: new Set(['ending_debauchery_001']),
+  tickets: new Set(['流连青楼', '纳妓为妾', '纵欲成疾']),
+  avoid: new Set([
+    ...tileFlagPool('ending_debauchery_001', 'notHas'),
+    '归隐', '归隐山林', '潜逃'
+  ]),
+  favorBand: 40,
+  weights: { 体质: -0.5, 财帛: 0.5, 欲望值: -0.1, 道德值: 0.1 },
+  // 财帛 守在 28 以上：本轮给 031《纵欲成疾》加了 `财帛≥25` 的闸门
+  // （`audit:afford` 那条规则 —— 可重复支线不得向付不起的人开张，最贵那条要 25 两抓药），
+  // 画像若把手里留到二十两以下，这一格根本不开门，《精尽人亡》就再也没有 纵欲成疾 这张票。
+  // 破产判死是归零，不是低于三十，所以这一条守的是"买得起药"，不是"阔"。
+  floors: { 财帛: 28, 体质: 9, 圣眷: 15, 中官: 15, 清议: 12, 士绅: 15, 民望: 15, 道德值: 20 },
+  under: { 体质: 9 },
+  keepAbove: { 理政: 42, 民望: 22, 圣眷: 15, 财帛: 28 },
+  keepBelow: { 野心值: 68, 欲望值: 76, 财帛: 68 },
+  preferClean: true,
+  cleanAliveFloor: 1
 }
 
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
@@ -586,7 +682,9 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   vanish: VANISH,
   fugitive: FUGITIVE,
   ordinary: ORDINARY,
-  usurper: USURPER
+  usurper: USURPER,
+  debauched: DEBAUCHED,
+  burnout: BURNOUT
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
@@ -635,8 +733,9 @@ function pickHermit(
   const clean = (c: EventChoice) =>
     !((c.effects?.flags?.add ?? []) as string[]).some(f => profile.avoid.has(f))
   const cleanSafe = profile.preferClean ? sustainable.filter(clean) : []
+  const aliveFloor = profile.cleanAliveFloor ?? 8
   const cleanAlive = profile.preferClean
-    ? candidates.filter(c => clean(c) && postValues(character, gameState, c).every(x => x >= 8))
+    ? candidates.filter(c => clean(c) && postValues(character, gameState, c).every(x => x >= aliveFloor))
     : []
   const bounded = cleanSafe.length
     ? cleanSafe

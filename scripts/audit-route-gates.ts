@@ -43,6 +43,7 @@ export interface GateRow {
   kind: 'ending' | 'route'
   /** 结局的归属：命途落点 / 归零阈值 / 国运 / 纵欲 / 其他 */
   scope: GateScope
+  /** 这一格是不是《命途面板》里的一个落点（看 `ROUTE_FAMILIES`，不看 `scope`） */
   inRouteTrail: boolean
   /** 事件级 flag 门的摘要，`—` = 没有可见行为门 */
   flags: string
@@ -191,7 +192,8 @@ function inspectEvent(
   scope: GateScope,
   granted: Set<string>,
   endingTickets: Set<string>,
-  destinationTickets: Set<string>
+  destinationTickets: Set<string>,
+  inTrail: boolean
 ): GateRow {
   const { numeric, hidden, upperBounds } = numericGates(e.conditions)
   const flags = describeFlags(e.conditions.flags)
@@ -223,7 +225,10 @@ function inspectEvent(
     title: e.title,
     kind,
     scope,
-    inRouteTrail: kind === 'ending' ? scope === 'route' : routeTickets.length > 0,
+    // `inRouteTrail` 回答的是"玩家在《命途面板》里看得见这一格吗"，直接读 `ROUTE_FAMILIES`；
+    // 它与 `scope` 不是同一件事 —— 风月三格第四十九轮上了面板，但它们的 体质／欲望 上界
+    // 仍按 `debauchery` 归类，不计进 `routeScopeIssues` 那条设计债棘轮（见上面 `scopeOf` 的注释）。
+    inRouteTrail: kind === 'ending' ? inTrail : routeTickets.length > 0,
     flags,
     ticketCount: tickets.length,
     deadTickets,
@@ -252,10 +257,13 @@ export function scanRouteGates(): RouteGateReport {
     ROUTE_FAMILIES.flatMap(f => f.destinations.flatMap(d => d.tickets))
   )
   const scopeOf = (id: string, category?: string): GateScope => {
+    // 纵欲线先于 routeIds 判：这三格第四十九轮起也上了命途面板（玩家要看得见自己拿着哪张风月票），
+    // 把它们算成"命途落点"会把 体质≤30／≤10 记成设计债 —— 可这两条上界就是"身体被掏空"这件事本身，
+    // 与 归零阈值 的数值上界同一性质（本文件上面那条注释：阈值/国运的上界是语义，命途落点的上界才是债）。
+    if (id.includes('debauch') || id.includes('pimp')) return 'debauchery'
     if (routeIds.has(id)) return 'route'
     if (thresholdIds.has(id) || id.startsWith('triggerable_')) return 'threshold'
     if (category === 'ming_fate') return 'national'
-    if (id.includes('debauch') || id.includes('pimp')) return 'debauchery'
     return 'other'
   }
 
@@ -266,10 +274,11 @@ export function scanRouteGates(): RouteGateReport {
       scopeOf(e.id, e.endingConfig?.category),
       granted,
       endingTickets,
-      destinationTickets
+      destinationTickets,
+      routeIds.has(e.id)
     ))
   const routes = (eventsRouteGuide as GameEvent[])
-    .map(e => inspectEvent(e, 'route', 'route', granted, endingTickets, destinationTickets))
+    .map(e => inspectEvent(e, 'route', 'route', granted, endingTickets, destinationTickets, false))
 
   const destinations = ROUTE_FAMILIES.flatMap(family =>
     family.destinations.map(dest => {

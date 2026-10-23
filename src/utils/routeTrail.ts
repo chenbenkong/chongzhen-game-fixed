@@ -47,7 +47,7 @@ export interface RouteFamilySpec {
 }
 
 /**
- * 十二个命途。门票全部抄自对应结局的 conditions.flags，
+ * 十三个命途。门票全部抄自对应结局的 conditions.flags，
  * 年窗抄自 conditions.year（叙事结局另有 1635 年 / 36 月的编译兜底），
  * 优先级抄自注册表。三份都有测试对账，不靠肉眼维持同步。
  */
@@ -321,6 +321,39 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         priority: 102,
         tickets: ['袁党', '清算袁党'],
         window: { min: 1635, max: 1644 }
+      }
+    ]
+  },
+  {
+    key: 'debauchery',
+    name: '秦淮风月',
+    motto: '温柔乡里，白骨森森。',
+    // 前两行读同一批票不是重复：《精尽人亡》要 体质≤10，《纵欲而亡》要 体质≤30，
+    // 优先级 128 在 129 之前 —— 同一个人先掉进更狠的那一格，这是"掏空"程度的两道台阶。
+    destinations: [
+      {
+        endingId: 'ending_debauchery_001',
+        title: '精尽人亡',
+        mode: 'any',
+        priority: 128,
+        tickets: ['纵欲成疾', '纳妓为妾'],
+        window: { min: 1635, max: 1644 }
+      },
+      {
+        endingId: 'ending_debauch_fall',
+        title: '纵欲而亡',
+        mode: 'any',
+        priority: 129,
+        tickets: ['纵欲成疾', '纳妓为妾'],
+        window: { min: 1635 }
+      },
+      {
+        endingId: 'ending_pimp_lord',
+        title: '烟花之主',
+        mode: 'any',
+        priority: 130,
+        tickets: ['青楼暗股', '青楼靠山'],
+        window: { min: 1635 }
       }
     ]
   }

@@ -99,9 +99,15 @@ describe('南明：渡江是脚程，效忠是立场', () => {
     }
   })
 
-  it('反推存档：seed 8253 / warden / 缙绅 真的走得到南明', async () => {
+  it('反推存档：seed 2 / warden / 缙绅 真的走得到南明', async () => {
+    // 第四十九轮重抄两次。第一次：《秦淮暗股》补上三张收束票之后不再是"每六个月回一次"的常青卡，
+    // 1630 年之后的月度发牌序列整个换了位（§1.4 ㉗），旧的 8253 结在《殉国死节》，换成 seed 12。
+    // 第二次是本轮收尾那处引擎修复：结局卡现在会吃掉本月剩下的待处理事件（§1.4 ㉛），
+    // 从前"结局卡被队列里的普通卡盖掉、人接着往下活"那一拍没有了 ——
+    // seed 12 这一局在 1644 年五月被《甲申国变》正确收走（他手上还没有 南渡长江），
+    // 而 384 局扫描里 19 局结在南渡续祚，这一格没有被新事件挤掉，只是这副骰子换了位置。
     const r = await simulateRun({
-      seed: 8253,
+      seed: 2,
       policy: 'warden',
       origin: '缙绅',
       maxMonths: 260,
@@ -144,9 +150,12 @@ describe('医家：入路 → 疫起 → 悬壶', () => {
     expect(c3?.effects?.gameState?.民望).toBeLessThan(0)
   })
 
-  it('反推存档：seed 8252 / ambitious / 缙绅 真的走得到悬壶济世', async () => {
+  it('反推存档：seed 24 / ambitious / 缙绅 真的走得到悬壶济世', async () => {
+    // 第四十九轮重抄。旧的 8252 结在《病逝任上》（1638）——《疫起》的年窗在 1640，
+    // 这副骰子的人先病死了，不是这一格做死：本轮 384 局扫描里 5 局结在悬壶济世，
+    // 其中 seed24/ambitious/缙绅 走完了 入路 → 疫起 → 收束 三拍。
     const r = await simulateRun({
-      seed: 8252,
+      seed: 24,
       policy: 'ambitious',
       origin: '缙绅',
       maxMonths: 260,
@@ -201,9 +210,13 @@ describe('贰臣：投降之后也得有下一拍', () => {
     expect(addedFlags('transition_1644_family_martyr', 'c2')).not.toContain('南渡长江')
   })
 
-  it('反推存档：seed 3 / warden / 没落世家 的贰臣票真的结得了案', async () => {
+  it('反推存档：seed 5 / warden / 没落世家 的贰臣票真的结得了案', async () => {
+    // 第四十九轮重抄两次，理由与上面南明那一条同一条：先是《秦淮暗股》不再反复开张把 1630
+    // 年起的发牌换了位（旧的 seed 3 根本没走到投降那一步），再是结局卡不再被待处理队列盖掉
+    // （§1.4 ㉛）—— 旧的 seed 4 这一局带着 殉国/殉国报君 结在《殉国死节》，那张贰臣票压根没写上。
+    // 384 局扫描里 14 局结在称臣纳贡，重抄只换骰子，不改格子。
     const r = await simulateRun({
-      seed: 3,
+      seed: 5,
       policy: 'warden',
       origin: '没落世家',
       maxMonths: 260,

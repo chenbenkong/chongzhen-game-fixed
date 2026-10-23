@@ -155,6 +155,9 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   pending_zhanggui: { line: '首辅赐婚，你推说禀明家母、三日奉复', group: '家宅' },
   wife_hates_cuir: { line: '揽下翠屏的事，正妻自此恨她', group: '家宅' },
   纳妾之议: { line: '妾的名分议了起来，门上有闲话', group: '家宅' },
+  纳妓为妾: { line: '为一名青楼女子赎了身，纳作妾室', group: '家宅' },
+  纵欲成疾: { line: '纵欲伤了根本，从此药不离口', group: '家宅' },
+  闭门谢客: { line: '遣散后院，从此闭门调养', group: '家宅' },
 
   // —— 人情：不肯忘的那些人 ——
   红袖的下落: { line: '出钱问明红袖如今在何处', group: '人情' },
@@ -175,6 +178,10 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   秦淮债清: { line: '秦淮旧债照数还清，契撕在当面', group: '人情' },
   侠女之盟: { line: '城南两间房安下她，不曾令她入门', group: '人情' },
   直言相告: { line: '把自身处境如实说与她听', group: '人情' },
+  流连青楼: { line: '在秦淮河畔的灯影里过过夜', group: '人情' },
+  青楼暗股: { line: '在青楼里占了一份不记名的干股', group: '人情' },
+  青楼靠山: { line: '替几处院子撑着官面上的体面', group: '人情' },
+  辞了暗股: { line: '看过停云馆的账簿，到底没有伸手', group: '人情' },
   侠女自去: { line: '她当夜踏瓦而去，玉佩留在案上', group: '人情' }
 }
 

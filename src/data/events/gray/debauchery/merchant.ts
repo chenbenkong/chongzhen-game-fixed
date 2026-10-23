@@ -375,7 +375,8 @@ export const merchantDebaucheryEvents: GameEvent[] = [
               财帛: -20
         },
           gameState: { 清议: -10 },
-          hidden: { 欲望值: 15 }
+          hidden: { 欲望值: 15 },
+          flags: { add: ['流连青楼'] }
         },
         result: {
           title: '醉卧花丛',
@@ -413,7 +414,8 @@ export const merchantDebaucheryEvents: GameEvent[] = [
           gameState: { 清议: -15, 士绅: -5 },
           hidden: { 欲望值: 20,
               道德值: -8
-        }
+        },
+          flags: { add: ['纳妓为妾'] }
         },
         result: {
           title: '金屋藏娇',

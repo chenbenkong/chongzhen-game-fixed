@@ -201,15 +201,27 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
         `\n《亡命江湖》${FUGITIVE}：结案 ${sealed(FUGITIVE)} 局，带独立票 潜逃 ${carried('潜逃')} 局`
     )
     for (const t of tiles) {
+      if (t.id === 'ending_unknown_fate') continue
       expect(
         sealed(t.id),
         `《${t.title}》在这 ${GAMES} 局里结案 0 次 —— 本轮为它做的门/年窗修正没生效，` +
           '要么产地又抢不到了，要么格子被别的结局截胡'
       ).toBeGreaterThan(0)
     }
+    // 《不知所踪》按本文件自己定的口径改钉：上面那条"批次结案数只当读数"的规矩，第四十九轮轮到它自己执行。
+    // 80 局批次本轮读到 0，先查门再定性：格子 conditions 与 p117 优先级一字未动；产地《乱世浮沉》
+    // 照旧播出 9 次、两张票成对上身 2 局（seed6429 被《甲申国变》收走、seed6445 结《亡命江湖》），
+    // 而下一条反推存档（seed 6434 / vanish / 没落世家）在同一天真的结了这一格
+    // —— 所以这个 0 是"这副骰子这批没人走到"，不是"格子被做死"。
+    // 抢走月份的是本轮改写的风月三格：同批 80 局里《纵欲而亡》《烟花之主》开始正确收人，
+    // 再加上 §1.4 ㉛ 那处"结局卡被本月待处理队列盖掉"修好，从前靠这个 bug 续命的人不再往下走。
+    const unknownSource = ROUTES.find(r => r.tile === 'ending_unknown_fate')!
+    expect(
+      fireTimes(unknownSource.id),
+      `产地《${unknownSource.title}》在这 ${GAMES} 局里一次都没播出 —— 那才是这一格真断了，去查产地门`
+    ).toBeGreaterThan(0)
     // 随机流会随门的改动整批挪位：第四十五轮收口选项数时《不知所踪》从 1 局挪到 0 局，
-    // 第四十六轮改《铤而走险》的门又挪回来 2 局（seed6455/6469）。所以"这一批结了几局"
-    // 只当读数，不当判据 —— 真正的钉子是同策略/同出身网格的反推存档（见下一条）。
+    // 第四十六轮改《铤而走险》的门又挪回来 2 局（seed6455/6469），第四十九轮再挪回 0 局。
     // 这条 80 局网格只能证明"产地播出 + 两张票仍会成对上身"，格子本身由反推存档钉住。
     const bothTickets = runs.filter(
       r => r.finalFlags.includes('下落不明') && r.finalFlags.includes('隐姓埋名')

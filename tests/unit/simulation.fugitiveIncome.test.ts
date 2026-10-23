@@ -35,6 +35,11 @@ import type { OriginType } from '../../src/types/game'
  * 下面钉的是**八两档（已 ship）**的读数与那两条归因；引擎侧那一行代码另有反推存档的钉子，
  * 在 `engine.stipend.test.ts` 的「弃官南还的人不再领原职的俸」。
  * 这一格自己的数值门槛与年窗一个字没动。
+ *
+ * 第四十九轮把这三条读数往下重抄了一格（门开 11→9 · 结案 8→5 · 活到窗口 22→21，破产仍 17）。
+ * 先查门再重抄的那份证据写在棘轮那一条里，一句话版本：**不是这一格的门窄了，是这批人死得更早了**——
+ * 风月三格改读经历票之后同批有 9 局结在《纵欲而亡》/《精尽人亡》，
+ * 而从前"结局卡被本月待处理队列盖掉"那一拍（§1.4 ㉛，本轮修掉）还在替他们续命。
  */
 
 const GAMES = Number(process.env.SIM_GAMES ?? 40)
@@ -215,14 +220,24 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
     const door = doorInWindow(fug)
     const sealed = count('亡命江湖')
     console.log(
-      `门开 ${door.open} 月（旧档 11）· 结案 ${sealed}（旧档 8）· 活到 ${WINDOW_MIN_YEAR} ${door.livedToWindow} 局（旧档 22）· ` +
+      `门开 ${door.open} 月（旧档 11 → 第四十九轮 9）· 结案 ${sealed}（旧档 8 → 9 轮 5）· ` +
+        `活到 ${WINDOW_MIN_YEAR} ${door.livedToWindow} 局（旧档 22 → 9 轮 21）· ` +
         `倾家荡产 ${count('倾家荡产')}（旧档 17）· 门关着 ${door.closed} 月，差池 ${[...door.gap]
           .map(([k, v]) => `${k}×${v}`)
           .join(' ')}`
     )
-    expect(door.open, '第廿七轮的读数是门开 11 月 —— 换了进项反而更差，说明这一格又卡在别处').toBeGreaterThanOrEqual(11)
-    expect(sealed, '第廿七轮 ship 的基线是结案 8 局，本轮实测 10 —— 掉下去就是这一处改动把格子做死了').toBeGreaterThanOrEqual(8)
-    expect(door.livedToWindow, '旧档 22 局活到年窗；掉下去说明等待期的钱并没有被这笔进项补上').toBeGreaterThanOrEqual(22)
+    // 第廿八轮那三条"往下调就是这一处改动把格子做死了"的判据，第四十九轮按老规矩先查门再重抄：
+    // · `endings_all.ts` 里 `ending_fugitive` 那一段本轮 `git diff` 一字未动（改的是同一文件里的南明与否决、中兴的票），
+    //   `useGameEngine.ts` 的 `FUGITIVE_ANNUAL_INCOME` 也还是八两；年窗仍读注册表的 1635–1650，优先级仍是 p127。
+    // · 掉下来的原因不是门变窄，是**这批局结束得更早**：本轮把风月三格改成读经历票之后，
+    //   同这 40 局里有 9 局结在《纵欲而亡》×6／《精尽人亡》×3（见 simulation.fugitiveGate 那份终局分布），
+    //   他们不再在年窗里空熬到第三十九轮那处"结局卡被待处理队列盖掉"的 bug 修好之前 ——
+    //   从前那 9 局中的一部分本会一路活过窗口，多蹭出几个月"门开着"的读数。
+    // · 门开 9 / 结案 5 / 活到窗口 21 是"第四十九轮摘完隐藏门"与"再补上 纳妓为妾 第二条腿"两次实测逐字相同，
+    //   所以这一处下调不是风月格在抢《亡命江湖》的月份（抢不得：p127 在 p128/129/130 之前）。
+    expect(door.open, '风月格若真抢了月份，先查 p127 的优先级而不是这条读数').toBeGreaterThanOrEqual(9)
+    expect(sealed, '结案 5 是"门开着且抢在别格之前"的局数，掉到 5 以下要重问等待期').toBeGreaterThanOrEqual(5)
+    expect(door.livedToWindow, '旧档 22 局活到年窗；掉下去说明等待期的钱并没有被这笔进项补上').toBeGreaterThanOrEqual(21)
     expect(count('倾家荡产'), '破产局数本该不变（钱不是这一格的凶手），变了就得重问 ⑲').toBeLessThanOrEqual(17)
   })
 
