@@ -361,6 +361,15 @@
 > 另把 ㉚ 量到结尾：180 局取样扫过 9 个"门开着"的月份，一局没丢格子，判定时序不改（§三 第五十二轮 八）。
 > 线上复核：图鉴 `0 / 45`、成就 `已解锁 0/111`、三片产物与本地 `dist` 逐字节一致；
 > 顺手量到 §1.4 ㉝（图鉴卡片把机器 id 直接印给玩家，未修）。摘要见 §三「第五十二轮」。
+>
+> **第五十三轮 · 界面（2026-10-23）**：收掉上一轮自己量到的 §1.4 ㉝ —— 结局图鉴不再把机器 id 印给玩家（任务 #77）。
+> 卡片下方那行淡金小字（`triggerable_eunuch` 一类）与详情里的 `ID: ending_exile` 一并删掉，详情那一行换成玩家看得懂的卷名；
+> 但没有走"用调试开关藏起来"那条路：`__DEBUG_PANEL_DEFAULT__` 在 Pages/dev 上是**开**的，藏不住演示站的剧透，
+> 而且这两处本来就不是调试信息。测试原先靠可见文本找卡片，改成 `data-tile-id` 把手（卡片与详情根节点各一个），
+> 于是钉的是"印没印"而不是"找不找得到"。钉子先证红：把组件退回修复前，**9 条全红**（含"那行淡金小字应整行消失"）。
+> 真浏览器实测（`vite preview :4173`，跑的是 `dist`）：当前卷 26 张卡、`.codex-card-id` 节点 **0** 个、26 张全带把手、
+> 无一张正文含自己的 id；点开《流放边疆》详情 `meta=个志卷 未达成`，整个 modal 文本零个 snake_case id；头部仍是 `0 / 45`。
+> 回归 **556 → 558 例**（64 个文件），全量 `tsc`×2 / `build` / 18 个 `audit:*` 全绿。摘要见 §三「第五十三轮」。
 
 ---
 
@@ -1157,17 +1166,29 @@ c1 的门与写入契约有静态断言看住，但**正文自己承诺的那一
 可能就是预期行为；要判它是不是缺陷，得先量那一屏下玩家**滚得动滚不动**（第三十轮那种"顶出视口且滚不动"
 才是真事故）。本轮没有改布局，也没有降这条 `min-width`。
 
-**㉝ 第五十二轮线上复核量到 · 「结局图鉴」每张卡片都把自己的机器 id 印在玩家眼前（未修）。**
+**㉝ 第五十二轮线上复核量到、第五十三轮已修 · 「结局图鉴」每张卡片都把自己的机器 id 印在玩家眼前。**
 线上打开标题页的「局 鉴」，抄到的是这样一屏：卡片名「众叛亲离」，正文下面一行
 `triggerable_moral_degeneracy`，再下面「未 解 锁」。来源只有一处
-（`src/components/EndingCodex.tsx:297` 的 `<div className="codex-card-id">{e.id}</div>`，**没有任何开关**），
+（修复前的卡片渲染里就一处：`src/components/EndingCodex.tsx` 的 `<div className="codex-card-id">{e.id}</div>`，**没有任何开关**），
 样式也不是隐藏的：`display:block`、`visibility:visible`、`opacity:1`、`font-size:11.7px`、
 `color:rgba(212,175,111,.35)` —— 淡金小字，但**实打实渲染出来**，当前展开的那一卷 26 张卡各印一份。
 这与 `audit:lockout` 里"门槛文案漏机器 id 0 处"守的是同一类问题，只是那条尺子只管事件门槛文本，
 从没伸进图鉴卡片。第五十二轮把格子从 44 拆到 45 之后这张屏更明显了：
 `ending_exile` 这种本轮新造的 id 也一样直接摊在玩家面前。
-**本轮只记不修** —— 它是纯前端一行，与本轮的数据/成就改动无关，把它混进同一个提交会让"这轮改了什么"说不清。
-修法待定：要么整行删掉，要么只在调试面板开时显示（游戏内已有调试开关，见 §二 的发布检查清单）。
+详情面板还有一处同源泄漏（`codex-detail-meta` 里那一行 `ID: {detail.id}`），线上没点开就量不到，
+读源码才看见 —— 一处缺陷两个泄漏点。
+
+**第五十三轮修法**：两处文本一并删掉，把手换成 `data-tile-id`（卡片与详情根节点各留一个），
+详情那一行改成玩家看得懂的**卷名**（读到的是 `个志卷 未达成`），CSS 里 `.codex-card-id` 那条规则一并删除，不留死样式。
+**没有用 `isDebugModeEnabled()` 当门**：`__DEBUG_PANEL_DEFAULT__` 只有 desktop 发行构建才关，
+Pages 与本地 dev 默认是**开着**的，拿它当门等于没关 —— 线上玩家照样看得见那行 id。
+钉子两条（`endingCodex.registry.test.ts` 新增一组）：卡片正文不许出现自己的格子 id、
+详情整块文本 `/ending_|triggerable_/` 零命中且带卷名；`cardClassOf` 的锚点同时从
+`.codex-card-id` 文本改成 `data-tile-id`。拿修复前的组件跑过：**9 条红**，
+其中「那行淡金小字应整行消失」直接红在 `.codex-card-id` 节点还在。
+真浏览器实测（`vite preview :4173`，走的是 dist）：当前卷 26 张卡、`.codex-card-id` 节点 **0** 个、
+26 张全带把手、无一张正文含自己的 id；点开《流放边疆》详情读到的是
+`title=流放边疆`、`meta=个志卷 未达成`、整个 modal 文本零个 snake_case id；控制台无新报错。
 
 
 
@@ -1278,7 +1299,46 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **556 例**，分 **64 个文件**，全部在 `tests/unit/`（555 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+回归测试共 **558 例**，分 **64 个文件**，全部在 `tests/unit/`（557 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+
+### 第五十三轮（2026-10-23）：图鉴不再把机器 id 印给玩家
+
+**一、问题**（§1.4 ㉝，第五十二轮线上复核量到）。`EndingCodex` 有两个地方把 id 当文案渲染：
+卡片底部一行淡金等宽小字 `<div className="codex-card-id">{e.id}</div>`，
+和详情弹窗 meta 行的 `<span>ID: {detail.id}</span>`。玩家看到的是 `triggerable_eunuch`、`ending_bankrupt`
+这类内部标识 —— 未达成的格子等于直接把"这一格叫什么、由哪条链点亮"摊在桌面上。
+
+**二、为什么没用调试开关藏。** 顺手能想到的办法是 `isDebugModeEnabled()` 包一层，量了一下发现不成立：
+`src/utils/debug.ts` 的默认值来自构建期常量 `__DEBUG_PANEL_DEFAULT__`，Pages 演示站与本地 dev 都是 **true**，
+只有 `desktop/` 的 Electron/Steam 包才注入 0。也就是说这个门在玩家实际看到的那一站上本来就是开着的，
+拿它藏剧透等于没藏。第二层理由是语义：这两处不是调试信息，是排版时被当成"标题"直接写出来的键名，
+删掉才对得上图鉴自己的定位。
+
+**三、改法。** `src/components/EndingCodex.tsx`：卡片删掉那行 `codex-card-id`，按钮根节点补
+`data-tile-id={e.id}`；详情遮罩内的 `.codex-detail-modal` 补 `data-tile-id={detail.id}`，
+meta 那一行改成 `ENDING_ARCHETYPES[category].name`（即卷名，如「个志卷」）。
+`src/components/EndingCodex.css` 里 `.codex-card-id` 那条规则随之成为死样式，一并删除。
+分组用的 `category` 回退口径与上面 `|| 'special'` 的那处保持一致，不新增判据。
+
+**四、把手不是给玩家看的，是给测试用的。** `tests/unit/endingCodex.registry.test.ts` 的 `cardClassOf()`
+原先靠"卡片正文里含格子 id"找元素 —— 如果把文案删了又不给替代锚点，那批钉子会退化成"随便挑一张卡"，
+第十三轮那种"两边各自以为名字当然对得上"的错就再也量不出来。所以 helper 改读 `data-tile-id`，
+并新增两条第五十三轮钉子：一条断言 `.codex-card-id` 节点数为 0、当前卷每张卡的正文都不含自己的 id、
+但把手一个都不缺；另一条点开《流放边疆》详情，断言 modal 文本里零个 snake_case id 且出现卷名。
+
+**五、钉子先证红。** 把 `EndingCodex.tsx` 与 `.css` 单独退回修复前跑该文件：**9 条全红**，
+红因就是量具想看到的两件事 —— 「那行淡金小字应整行消失：expected `<div class="codex-card-id"></div>`」
+和详情 meta 里那条 `ID: ending_exile`。恢复后该文件 34 例全过。
+
+**六、真浏览器实测**（`vite preview :4173`，跑的是 `dist` 构建产物，不是 dev server）：
+当前卷 `{cards: 26, idNodes: 0, withHandle: 26, leaked: []}`，头部进度仍是 `0 / 45`；
+点开《流放边疆》详情读到 `handle=ending_exile`、`title=流放边疆`、`meta=个志卷 未达成`、`snakeInBody=false`；
+控制台无新报错。验收完已杀掉 preview 进程并删除其日志。
+
+**七、净变化**：回归 **556 → 558 例**（64 个文件，557 通过 / 1 跳过），`tsc --noEmit` 与
+`tsc -p tsconfig.test.json --noEmit` 均净，`vite build` 净，18 个 `audit:*` 全部退出 0
+（`audit:codex` 仍是「格子 45，结局成就 45，问题 0」）。判定、门槛、成就、事件数据一概未动 ——
+本轮只删两处文本，无棘轮需要重抄。
 
 ### 第五十二轮（2026-10-23）：十格边界结局第一次有自己的成就，革职的两支各占一格
 

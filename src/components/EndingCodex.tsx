@@ -148,6 +148,7 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
     <div className="codex-detail-overlay" onClick={handleDetailOverlayClick}>
       <div
         className={`codex-detail-modal ${unlockedIds.has(detail.id) ? '' : 'locked'} ${TIER_TONE[detail.endingConfig?.tier || 'mysterious']}`}
+        data-tile-id={detail.id}
         ref={detailDialogRef}
         {...getDetailModalProps()}
       >
@@ -158,7 +159,7 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
           </div>
           <h3 className="codex-detail-title" id={detailTitleId}>{detail.title}</h3>
           <div className="codex-detail-meta">
-            <span>ID: {detail.id}</span>
+            <span>{ENDING_ARCHETYPES[(detail.endingConfig?.category || 'special') as CategoryKey].name}</span>
             {unlockedIds.has(detail.id) ? (
               <span className="codex-detail-unlocked">已达成</span>
             ) : (
@@ -284,6 +285,7 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
                     <button
                       key={e.id}
                       type="button"
+                      data-tile-id={e.id}
                       className={`codex-card ${unlocked ? 'unlocked' : 'locked'} ${TIER_TONE[tier]}`}
                       title={unlocked ? `${e.title} · 单击查看详情` : `${e.title}（未达成）· 单击查看详情`}
                       onClick={() => setDetail(e)}
@@ -294,7 +296,6 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
                       {displaySub && (
                         <div className="codex-card-sub">{displaySub}</div>
                       )}
-                      <div className="codex-card-id">{e.id}</div>
                       {unlocked && unlockTimes[e.id] && (
                         <div className="codex-card-time">{formatTime(unlockTimes[e.id])}</div>
                       )}

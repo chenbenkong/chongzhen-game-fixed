@@ -263,12 +263,6 @@
   color: rgba(212, 175, 111, 0.32);
   font-style: italic;
 }
-.codex-card-id {
-  font-size: 0.65rem;
-  color: rgba(212, 175, 111, 0.35);
-  font-family: monospace;
-  letter-spacing: 0.5px;
-}
 .codex-card-time {
   font-size: 0.7rem;
   color: rgba(212, 175, 111, 0.55);

@@ -333,7 +333,13 @@ const unlockedCountOf = () =>
 const totalCountOf = () =>
   document.body.querySelector('.codex-progress-total')?.textContent?.trim() ?? ''
 
-/** 切到那一卷，再把那张卡片的 class 拿回来（`unlocked` / `locked` 就是玩家看见的亮与灰） */
+/**
+ * 切到那一卷，再把那张卡片的 class 拿回来（`unlocked` / `locked` 就是玩家看见的亮与灰）。
+ *
+ * 第五十三轮之前这里是拿卡片上那行**印给玩家看的机器 id** 当把手的 ——
+ * 那一行删掉之后把手换成 `data-tile-id`：测试与工具仍然按格子 id 找得到卡片，
+ * 玩家的屏幕上却不再有 `triggerable_moral_degeneracy` 这种东西。
+ */
 const cardClassOf = (tileId: string) => {
   const tile = (allEndingEvents as GameEvent[]).find(e => e.id === tileId)
   if (!tile) throw new Error(`图鉴里没有这一格：${tileId}`)
@@ -343,7 +349,7 @@ const cardClassOf = (tileId: string) => {
   fireEvent.click(tab)
 
   const card = [...document.body.querySelectorAll('.codex-card')].find(
-    el => el.querySelector('.codex-card-id')?.textContent?.trim() === tileId
+    el => el.getAttribute('data-tile-id') === tileId
   )
   if (!card) throw new Error(`${label} 里找不到卡片 ${tileId}`)
   return card.className
@@ -420,6 +426,48 @@ describe('真组件：一格到底会不会亮', () => {
     openCodex()
     expect(unlockedCountOf()).toBe('0')
     expect(totalCountOf()).toBe(String(ENDING_TILE_IDS.length))
+  })
+})
+
+/**
+ * 第五十二轮的**线上复核**量到的一处界面缺陷（§1.4 ㉝）：图鉴每张卡都在玩家眼前印一行机器 id
+ * （`triggerable_moral_degeneracy` 这种淡金小字，`opacity:1`、`display:block`，不是隐藏的），
+ * 点开详情还多一行 `ID: ending_exile`。第五十三轮把两处都收了，把手换成 `data-tile-id`。
+ *
+ * 这两条必须拿修复前的组件跑：那时 `.codex-card-id` 是文本节点、卡片正文里就带着 id，两条都红。
+ */
+describe('第五十三轮：图鉴不把机器 id 印给玩家', () => {
+  afterEach(() => cleanup())
+
+  it('卡片正文里没有格子 id，但每一格仍按 id 找得到', () => {
+    openCodex()
+    expect(document.body.querySelectorAll('.codex-card-id'), '那行淡金小字应整行消失').toHaveLength(0)
+
+    const cards = [...document.body.querySelectorAll('.codex-card')]
+    expect(cards.length, '当前这一卷本该有卡片').toBeGreaterThan(0)
+    for (const card of cards) {
+      const id = card.getAttribute('data-tile-id')
+      expect(id, 'data-tile-id 这个把手不能少').toBeTruthy()
+      expect(card.textContent, `卡片里不该出现 ${id}`).not.toContain(id as string)
+    }
+  })
+
+  it('点开详情也不再印 id，那一行换成玩家看得懂的卷名', () => {
+    openCodex()
+    const tile = (allEndingEvents as GameEvent[]).find(e => e.id === EXILE_ENDING_ID)
+    if (!tile) throw new Error(`图鉴里没有 ${EXILE_ENDING_ID}`)
+    // 先借 cardClassOf 切到那一格所属的卷（图鉴一次只渲染当前卷），再来点它
+    expect(cardClassOf(EXILE_ENDING_ID)).toContain('locked')
+    const card = [...document.body.querySelectorAll('.codex-card')]
+      .find(el => el.getAttribute('data-tile-id') === EXILE_ENDING_ID)
+    if (!card) throw new Error('找不到流放边疆那一格')
+    fireEvent.click(card)
+
+    const modal = document.body.querySelector('.codex-detail-modal')
+    expect(modal, '详情面板没打开').not.toBeNull()
+    expect(modal!.textContent, '详情里不该再有机器 id').not.toMatch(/ending_|triggerable_/)
+    expect(modal!.textContent).toContain(ENDING_ARCHETYPES[tile.endingConfig?.category || 'special'].name)
+    expect(modal!.getAttribute('data-tile-id')).toBe(EXILE_ENDING_ID)
   })
 })
 
