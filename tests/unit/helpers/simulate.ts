@@ -30,7 +30,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
-  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout'
+  | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout' | 'heir'
 
 export interface SimOutcome {
   seed: number
@@ -673,9 +673,55 @@ const BURNOUT: RetireProfile = {
   cleanAliveFloor: 1
 }
 
+/**
+ * 想把嗣子这条路走完的那副画像（第五十四轮）。
+ *
+ * 加它的原因与第廿四轮 bandit、第四十九轮 burnout 同一条教训：**量具里没人朝它走，
+ * 量到的 0 就只是画像的选择**。第五十四轮实测 54 局（9 策略 × 6 种子），
+ * 《无子之痛》开了 14 次、十四次全点【维护妻子】，【去母留子】被点 **0** 次 ——
+ * §1.4 ㉕ 挂着的那句「240 局里点 6 次、6 局全在 1633–1638 收束」在当前的树上已经复现不出来，
+ * 而那一条支线到底断在"活不到"还是断在"没人走"，光凭这 54 局无从分辨。
+ *
+ * 口径：
+ *  - `tickets` 先给成婚那张（不结婚就没有《无子之痛》），再给 `concubine_killed` ——
+ *    后者是 c3 独有的票，+40 压过 c1 的道德加分。
+ *    **不**把 `has_children` 也写成票：它是 c1/c2/c3 与《妾室有子》共用的产出，
+ *    一写成票，画像就抢先在 1630 年前后从妾室那里抱来一个孩子，
+ *    而《无子之痛》的门是 `notHas: has_children` —— 它此后永远开不了，
+ *    实测第一版正是这样：6 局里 5 局压根没见到那张卡。
+ *  - `weights: {}`：这副画像不朝任何维度使劲。默认那套「道德 +3」会把评分变成
+ *    "维护妻子 30 分 vs 去母留子 11 分"，等于量具自己否掉了它要量的那一支。
+ *  - `favorBand: 0`：不求退也不求宠，圣眷加分那一档整个关掉。
+ *  - `targets` 空：任何结局的请笔都拒 —— 这一支线要看的是孩子六岁那一年，不是收笔。
+ *  - `floors` 松开 c3 自己会烧的那三维（清议／民望／道德）。留默认 25 的话，
+ *    画像会在 清议 40 上下就把【去母留子】整批筛掉，那是"我不能"伪装成"我不想"。
+ *  - `avoid` 里那一张 `落草为寇` 与 `keepBelow.野心值` 是被实测教出来的：第一版 6 局里
+ *    5 局结在《落草为寇》(1636)，比孩子六岁早两年 —— 量到的"活不到"是画像自己走偏，
+ *    不是这条路断头。松开的地板允许 圣眷 掉到 20、道德 掉到 6，正好坐在落草那一格里。
+ */
+const HEIR: RetireProfile = {
+  targets: new Set<string>(),
+  tickets: new Set([
+    'married_wang', 'married_lishi', 'married_liu', 'married_zhang', 'pure_love',
+    'concubine_killed'
+  ]),
+  avoid: new Set([
+    '出家', '和尚', '归隐', '归隐山林', '看破红尘',
+    // 妾是《妾室有子》那张卡的前提，而那三选一里每一条都写 `has_children`。
+    // 让画像沾上妾，它就在 1630 年前后抱来一个孩子，从此永久关上《无子之痛》的门
+    // （那卡自己写着 `notHas: has_children`）—— 实测第二版正是这样：6/6 局走不到 c3。
+    'concubine_hongxiu', 'concubine_cuir', 'concubine_waishi', 'concubine_zhaomei', 'concubine_for_heir',
+    ...tileFlagPool('ending_bandit_king', 'any')
+  ]),
+  favorBand: 0,
+  weights: {},
+  floors: { 清议: 8, 民望: 8, 道德值: 6 },
+  keepAbove: { 圣眷: 26, 理政: 42 },
+  keepBelow: { 野心值: 55, 欲望值: 72, 财帛: 68 }
+}
+
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
-const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
-  monk: MONK,
+const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {  monk: MONK,
   hermit: HERMIT,
   stream: STREAM,
   bandit: BANDIT,
@@ -684,7 +730,8 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {
   ordinary: ORDINARY,
   usurper: USURPER,
   debauched: DEBAUCHED,
-  burnout: BURNOUT
+  burnout: BURNOUT,
+  heir: HEIR
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */

@@ -179,6 +179,21 @@ export function checkChoiceRequirement(
     if (forbidden.length) {
       return lockedByFlag(`与你的另一段经历相冲：${sayFlags(forbidden)}`, forbidden[0])
     }
+    // since：这段经历得满多久才算数。与事件级同义、同一条容错（无落笔记录则放行）。
+    for (const [flag, range] of Object.entries(f.since ?? {})) {
+      if (!own.includes(flag)) {
+        return lockedByFlag(`须有这段经历：${sayFlags([flag])}`, flag)
+      }
+      const at = character.flagTurns?.[flag]
+      if (at === undefined) continue
+      const elapsed = gameState.turn - at
+      if (range.min !== undefined && elapsed < range.min) {
+        return lockedByFlag(agoTooYoung(flag, range.min - elapsed), flag)
+      }
+      if (range.max !== undefined && elapsed > range.max) {
+        return lockedByFlag('这段旧事隔得太久，这一回赶不上了', flag)
+      }
+    }
   }
 
   // 出身条件检查
@@ -239,6 +254,21 @@ function lockedByFlag(reason: string, conditionKey: string): ChoiceCheckResult {
 function sayFlags(flags: string[]): string {
   const named = flags.map(gateLabel).filter((s): s is string => !!s)
   return named.length ? named.join('、') : '前头有一段没走到的旧事'
+}
+
+/**
+ * `since` 门锁住时的那一句。
+ *
+ * 月数要说成人话：玩家看得懂"还得再等 2 年 3 个月"，看不得懂"turn 差 27"。
+ * 经历名查得出就带上主语，查不出就只说等多久 —— 与 `sayFlags` 同一条规矩：
+ * 机器 id 一个都不许印到屏幕上。
+ */
+function agoTooYoung(flag: string, months: number): string {
+  const named = gateLabel(flag)
+  const years = Math.floor(months / 12)
+  const rest = months % 12
+  const wait = years ? `${years} 年${rest ? ` ${rest} 个月` : ''}` : `${months} 个月`
+  return named ? `${named}之后，还得再等 ${wait}` : `这段旧事还得再等 ${wait}`
 }
 
 /**

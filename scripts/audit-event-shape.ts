@@ -146,7 +146,19 @@ export function scanEventShape(
       }
       rangeKeys(`${prefix}.gameState`, key, range)
     }
-    for (const k of Object.keys(cond.flags || {})) {
+    for (const [k, v] of Object.entries(cond.flags || {})) {
+      if (k === 'since') {
+        // `since` 读的是 character.flagTurns。边界求值器（结局池 / triggerable）
+        // 的入参里只有 flags 数组、没有"这段经历落在哪一月"，写在那里就是一道看不见的门。
+        if (level === 'event' && NON_POOL_POOLS.includes(poolLabel)) {
+          add('NOOP', where, `${prefix}.flags.since 只有 checkEventConditions / checkChoiceRequirement 会读，boundaryEventCompiler 拿不到落笔月份 —— 这道门等于没装`)
+        }
+        for (const [flag, range] of Object.entries((v as object) || {})) {
+          if (!flag) add('结构', where, `${prefix}.flags.since 里有一条空经历名`)
+          rangeKeys(`${prefix}.flags.since`, flag, range)
+        }
+        continue
+      }
       if (!['has', 'notHas', 'any', 'none', 'all', 'some'].includes(k)) add('NOOP', where, `${prefix}.flags.${k} 引擎不识别`)
     }
     if (cond.random !== undefined) {

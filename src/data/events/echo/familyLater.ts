@@ -11,10 +11,13 @@ import { GameEvent } from '../../../types/event'
  *
  *   1. `emotion_core_003` 的【维护妻子】写完「三年后的某一天，正妻告诉你——她怀孕了」，
  *      却只写 `protect_childless_wife`，不写 `has_children`：那个孩子从未出生。
- *      → `echo_family_006` 灯花（1635 起，实测 108 局里播出 12 局）。
- *   2. `emotion_core_003` 的【去母留子】写完「多年后，当那个孩子长大成人问你
- *      『我的亲生母亲是谁』时，你该如何回答？」，全游戏没有这一问。
- *      → `echo_family_007` 名帖（1638 起，18 局有子且活到年窗，全部播出）。
+ *      → `echo_family_006` 灯花（第四十四轮实测 108 局里播出 12 局；
+ *        第五十四轮把开门的年份换成"护住妻子之后满三年"）。
+ *   2. `emotion_core_003` 的【去母留子】写完「多年后，当那个孩子开到蒙学、认得了几个字，
+ *      仰起脸问你『我的亲生母亲是谁』时，你该如何回答？」，全游戏没有这一问。
+ *      → `echo_family_007` 名帖（第四十四轮实测：18 局有子且活到年窗，全部播出。
+ *        第五十四轮把开门的年份换成"孩子满六岁"——旧的 `year.min: 1638` 量到的是
+ *        15 次开口全在 1638 年、孩子 2.3～8.5 岁都有，正文与门互不相干）。
  *   3. `emotion_core_001` 的【灭口】写完「对外宣称正妻急病暴毙」，此后再无人问。
  *      而 `wife_murdered` / `crime_line` 两条经历 108 局里各被带上身 4 次，一次也没被读过。
  *      → `echo_family_008` 问丧（1635 起）。
@@ -42,11 +45,14 @@ export const familyLaterEchoEvents: GameEvent[] = [
       situation: '灯芯爆了一个花。她把手放在小腹上，没有笑，只是看着你。'
     },
     conditions: {
-      year: { min: 1635, max: 1644 },
-      month: { min: 1, max: 12 },
+      year: { max: 1644 },
       flags: {
         has: ['protect_childless_wife'],
-        notHas: ['has_children', 'echo_family_006_done']
+        notHas: ['has_children', 'echo_family_006_done'],
+        // 正文的第一句就是「三年前，母亲拿'不孝有三，无后为大'逼你纳妾」——
+        // 那么这张卡的门就该是"那一次落笔之后满三年"，而不是公元 1635 年。
+        // 年窗只留上界（甲申之变前），下界交给经历自己的时间。
+        since: { protect_childless_wife: { min: 36 } }
       }
     },
     choices: [
@@ -141,11 +147,15 @@ export const familyLaterEchoEvents: GameEvent[] = [
       situation: '陈先生把笔搁在砚边，没有催你。孩子坐在窗下，正拿一支废笔在纸上画字。'
     },
     conditions: {
-      year: { min: 1638, max: 1644 },
-      month: { min: 1, max: 12 },
+      year: { max: 1644 },
       flags: {
         has: ['has_children'],
-        notHas: ['echo_family_007_done']
+        notHas: ['echo_family_007_done'],
+        // 这一格的门读的是**孩子几岁**，不是公元几年：正文写「孩子到了入塾的年纪」，
+        // 而第五十四轮实测旧的 `year.min: 1638` 让 15 次开口全落在 1638 年，
+        // 开口时孩子 28～102 个月（2.3 岁到 8.5 岁）都有 —— 年窗把"天下何时"当成了"你家孩子几岁"。
+        // 72 个月 = 六岁入塾（《名帖》里孩子正拿废笔画字）。年窗只留甲申之前的上界。
+        since: { has_children: { min: 72 } }
       }
     },
     choices: [

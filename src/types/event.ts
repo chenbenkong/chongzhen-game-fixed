@@ -52,7 +52,32 @@ export interface EventConditions {
   attributes?: LegacyAttributeConditions
   hidden?: Partial<Record<HiddenKey, Range>>
   gameState?: LegacyGameStateConditions
-  flags?: { has?: string[]; notHas?: string[]; any?: string[]; none?: string[]; all?: string[]; some?: string[] }
+  flags?: {
+    has?: string[]
+    notHas?: string[]
+    any?: string[]
+    none?: string[]
+    all?: string[]
+    some?: string[]
+    /**
+     * 「这段经历距今多久」—— 键是经历名，值是**月数**区间，语义与 `cond.turn` 同一把尺子。
+     *
+     * 加它是因为有一类门根本不该读公元年：《名帖》正文写的是「孩子到了入塾的年纪」，
+     * 门却写着 `year.min: 1638` —— 第五十四轮实测 15 次开口全在 1638 年，
+     * 开口时孩子 28～102 个月（2.3 岁到 8.5 岁）都有。年窗管的是"天下发生了什么"，
+     * 管不了"你家孩子几岁"；两者之间没有因果关系，硬对齐就变成玩家看得见正文、
+     * 引擎看不见正文的生硬分支。
+     *
+     * 读的是 `character.flagTurns`（经历落笔那一个月）。**只有** `checkEventConditions`
+     * 与 `checkChoiceRequirement` 认这个键，`boundaryEventCompiler` 不读 ——
+     * 结局格走的是边界求值器，那里没有"经历何时落下"的入参，写了等于没写，
+     * 体检脚本（`audit-event-shape`）按 NOOP 报出。
+     *
+     * 老存档里带着经历却没有落笔月份：这一句**放行**（与 `cond.gameState`
+     * 跳过遗留时间键同一条理由 —— 判死会让玩家已有的内容凭空消失）。
+     */
+    since?: Record<string, { min?: number; max?: number }>
+  }
   random?: number
   /**
    * 只有 `boundaryEventCompiler`（ending / triggerable 两个池，由 BoundaryEventManager 触发）

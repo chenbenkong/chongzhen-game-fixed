@@ -119,6 +119,10 @@ export function scanFlagReachability(
       for (const clause of FLAG_CLAUSES) {
         for (const flag of f[clause] ?? []) noteRead(flag, where)
       }
+      // `since` 的经历名是**键**而不是数组元素，上面那个循环扫不到它。
+      // 第五十四轮起它是一道真门（checkEventConditions / checkChoiceRequirement 都读），
+      // 不扫就会把"只靠孩子几岁开门"的经历错报成没人读。
+      for (const flag of Object.keys(f.since ?? {})) noteRead(flag, where)
     }
   }
 
@@ -130,7 +134,9 @@ export function scanFlagReachability(
     const need = [
       ...(e.conditions?.flags?.has ?? []),
       ...(e.conditions?.flags?.all ?? []),
-      ...(e.conditions?.flags?.some ?? [])
+      ...(e.conditions?.flags?.some ?? []),
+      // since 的语义是"有这段经历、且它落笔已满 N 月"——经历本身写不出来，门同样永不开。
+      ...Object.keys(e.conditions?.flags?.since ?? {})
     ]
     const missing = need.filter(f => !granted.has(f))
     const anyList = e.conditions?.flags?.any ?? []

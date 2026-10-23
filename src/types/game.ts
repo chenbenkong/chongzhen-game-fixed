@@ -170,6 +170,18 @@ export interface Character {
   attributes: Attributes
   hidden: HiddenAttributes
   flags: string[]
+  /**
+   * 每段经历**落笔的那一个月**（`gameState.turn`），与 `flags` 平行。
+   *
+   * 只有这一个用途：给 `conditions.flags.since` 提供入参，让"孩子几岁了""三年之后"
+   * 这类正文承诺能按经历自己的时间开门，而不是按公元年。
+   * 写它的地方是引擎结算抉择的那一处（`useGameEngine` 里加/移除 flag 的同一行），
+   * 移除经历时一起删掉 —— 不然复婚、再中进士这类"第二次发生"会被算成第一次的年纪。
+   *
+   * 可选：第 54 轮之前的存档只有 `flags`。缺记录时门槛**放行**，
+   * 老存档不会因此丢掉已有的回响事件。
+   */
+  flagTurns?: Record<string, number>
   history: string[]
   wives: Wife[]
   lovers: Lover[]

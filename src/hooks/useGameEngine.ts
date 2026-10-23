@@ -598,6 +598,7 @@ function createInitialCharacter(
     attributes: { ...attrs },
     hidden: hidden,
     flags: deg === '进士' ? ['地方官任职'] : [],
+    flagTurns: deg === '进士' ? { 地方官任职: 0 } : {},
     history: [],
     wives: [],
     lovers: [],
@@ -643,6 +644,9 @@ export function useGameEngine(props: UseGameEngineProps) {
         courtesyName: char.courtesyName || '',
         hometown: char.hometown || '',
         flags,
+        flagTurns: flags === char.flags
+          ? char.flagTurns
+          : { ...(char.flagTurns || {}), 地方官任职: loadSaveData.gameState.turn },
         faction: char.faction || {
           东林好感: 50,
           阉党好感: 50,
@@ -1406,6 +1410,17 @@ export function useGameEngine(props: UseGameEngineProps) {
       if (choice.effects.flags?.remove) {
         newChar.flags = newChar.flags.filter(f => !choice.effects.flags!.remove!.includes(f))
       }
+      // 与 flags 同步维护「这段经历落在哪一个月」—— conditions.flags.since 只读它。
+      // 移除时必须一起删：复婚、再中进士这类第二次发生的经历，若留着第一次的月份，
+      // since 门算出来的是上一段的年纪。
+      if (choice.effects.flags?.add || choice.effects.flags?.remove) {
+        const turns = { ...(newChar.flagTurns || {}) }
+        for (const f of choice.effects.flags?.add || []) {
+          if (turns[f] === undefined) turns[f] = currentGameState.turn
+        }
+        for (const f of choice.effects.flags?.remove || []) delete turns[f]
+        newChar.flagTurns = turns
+      }
 
       const addedFlags = choice.effects.flags?.add || []
       const removedFlags = choice.effects.flags?.remove || []
@@ -2122,6 +2137,9 @@ export function useGameEngine(props: UseGameEngineProps) {
       courtesyName: char.courtesyName || '',
       hometown: char.hometown || '',
       flags,
+      flagTurns: flags === char.flags
+        ? char.flagTurns
+        : { ...(char.flagTurns || {}), 地方官任职: loadSaveData.gameState.turn },
       faction
     }
 

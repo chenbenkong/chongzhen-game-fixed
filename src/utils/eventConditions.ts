@@ -19,6 +19,8 @@ export function checkEventConditions(
     attributes: Attributes
     hidden: HiddenAttributes
     flags: string[]
+    /** 每段落笔的月份，`conditions.flags.since` 读它；老存档可以没有 */
+    flagTurns?: Record<string, number>
     origin: OriginType
     /** 当前官阶，用于 conditions.rank 判定 */
     rank?: string
@@ -119,6 +121,22 @@ export function checkEventConditions(
 
     // all：必须全部具备
     if (cond.flags.all && cond.flags.all.some((f: string) => !own.includes(f))) return false
+
+    // 全部具备（all）之后，还有一类门读的是**多久之前**具备的。
+    // 《名帖》正文写「孩子到了入塾的年纪」，这一句才是它的门；公元年窗管天下，不管你家孩子几岁。
+    if (cond.flags.since) {
+      for (const [flag, range] of Object.entries(cond.flags.since)) {
+        if (!own.includes(flag)) return false
+        const at = character.flagTurns?.[flag]
+        // 第 54 轮之前的存档只有 flags、没有落笔月份。缺记录就**放行**：
+        // 判死等于把玩家已经攒出来的回响事件凭空收走，与上面 gameState 跳过遗留时间键同一条理由。
+        if (at === undefined) continue
+        const r = range as Range
+        const elapsed = state.turn - at
+        if (r.min !== undefined && elapsed < r.min) return false
+        if (r.max !== undefined && elapsed > r.max) return false
+      }
+    }
 
     // 容错：数据里存在大写 ALL 的写法（2 处），按 all 语义处理
     const upperAll = (cond.flags as { ALL?: string[] }).ALL
