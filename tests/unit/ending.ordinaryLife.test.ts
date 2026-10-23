@@ -51,6 +51,9 @@ function stateOf(over: Partial<DerivedState> = {}): DerivedState {
     turn: 120,
     year: 1638,
     month: 3,
+    // 1638 年 / turn 120 的那把钟：22 岁开局、玩了 10 年。
+    // 必须写出来 —— 不写，这份存档就"没有岁数"，而《寿终正寝》读的是岁数。
+    age: 32,
     flags: ['与世无争'],
     faction: { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 },
     ...over

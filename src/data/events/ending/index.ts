@@ -3,7 +3,7 @@
 
 import { triggerableEndingEvents } from '../../boundaryEvents'
 import { debaucheryEndingEvents } from './debauchery'
-import { allEndingEvents as mainAndExtraEndings } from './endings_all'
+import { allEndingEvents as mainAndExtraEndings, OLD_AGE_ENDING_TILE } from './endings_all'
 import { DEMOTION_ENDING_TILE, EXILE_ENDING_TILE } from './endingsDemotion'
 
 // 全部结局（去重后）— 仅用于展示，不可作为游戏事件池的一部分
@@ -12,7 +12,9 @@ export const allEndingEvents = [
   ...mainAndExtraEndings,
   DEMOTION_ENDING_TILE,
   EXILE_ENDING_TILE,
-  ...debaucheryEndingEvents
+  ...debaucheryEndingEvents,
+  // 兜底格（§1.4 ㉟）：图鉴要能看到它，才算"这一格也归你收集"
+  OLD_AGE_ENDING_TILE
 ]
 
 // 按需导出（保持向后兼容：mainEndings / extraCategoryEndings 均指向合并数组）

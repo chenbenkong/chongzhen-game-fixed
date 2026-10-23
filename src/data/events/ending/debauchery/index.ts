@@ -32,7 +32,13 @@ const ENDING_DEBAUCHERY_001: GameEvent = {
     id: 'c1',
     text: '【悔恨】',
     description: '在悔恨中死去',
-    effects: { attributes: { 体质: -10 }, hidden: {} },
+    effects: {
+      attributes: { 体质: -10 },
+      hidden: {},
+      // 第五十六轮：这一格全库独一份 —— 正文末尾印着「【游戏结束】」、tags 写着
+      // `游戏结束`，却没有终止标记，于是它成了"唯一一条路也结不了案"的结局格。
+      special: { type: 'ending' },
+    },
     result: {
       title: '精尽人亡',
       tags: ['游戏结束'],

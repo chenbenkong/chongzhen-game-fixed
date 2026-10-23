@@ -1562,7 +1562,8 @@ export function useGameEngine(props: UseGameEngineProps) {
           faction: currentCharacter.faction,
           flags: currentCharacter.flags,
           currentYear: currentGameState.currentYear,
-          currentMonth: currentGameState.currentMonth
+          currentMonth: currentGameState.currentMonth,
+          characterAge: currentCharacter.age
         }
 
         const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
@@ -1610,7 +1611,10 @@ export function useGameEngine(props: UseGameEngineProps) {
         faction: currentCharacter.faction,
         flags: currentCharacter.flags,
         currentYear: currentGameState.currentYear,
-        currentMonth: currentGameState.currentMonth
+        currentMonth: currentGameState.currentMonth,
+        // 年岁门（conditions.age）读的正是这个 —— 《寿终正寝》那一格靠它收熬过
+        // 全部年窗的人；不带这个键，年龄门会被 compiler 按 0 判成恒假（§1.4 ㉟）。
+        characterAge: currentCharacter.age
       }
 
       const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
@@ -2258,7 +2262,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 于是所有带年份窗口的结局（甲申之变、殉国煤山这一类）在挂载路径上永不触发。
       // 「读档进来时条件本来就已经成立」这种最常见的场景恰好走的就是这条路径。
       currentYear: gameStateRef.current.currentYear,
-      currentMonth: gameStateRef.current.currentMonth
+      currentMonth: gameStateRef.current.currentMonth,
+      characterAge: characterRef.current.age
     }
 
     const endingEvent = boundaryEventManager.checkByType(params, 'ending')

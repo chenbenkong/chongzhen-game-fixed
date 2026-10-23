@@ -47,6 +47,24 @@ export interface EventConditions {
    * （boundaryEventCompiler 比，eventConditions 直接 continue 跳过），现改到这里。
    */
   turn?: Range
+  /**
+   * 年岁（`character.age`，整数岁）。
+   *
+   * 加它的原因是一个量具量不到的死局：**全部 43 格结局的年窗最晚只到 1660**，
+   * 而没有任何一处判据读年岁 —— 于是一个熬过最后一个年窗、又没被任何一格收走的人
+   * 从此不朽（第五十六轮实测：`seed6/warden/寒门` 一路活到公元 10713 年、
+   * 局长 109029 个月，中途没有一格肯结案）。
+   *
+   * 为什么用年岁而不是把某个年窗往后延：年岁是玩家**看得见**的量 ——
+   * 顶栏「年方X岁」、生涯回顾的「享年」、碑文里的「卒，年X」。
+   * 「活到七十岁」是一个能被理解、能被预期、也能被回避的条件；
+   * 「1661 年以后天下没有故事了所以系统强行收你」不是。
+   *
+   * 读它的求值器与 `since` 同一套规矩：`boundaryEventCompiler`（结局/边界池）与
+   * `checkEventConditions`（事件池）认这个键，`checkChoiceRequirement`（选项级门）**不读** ——
+   * 写在 `showConditions` 里是一道看不见的门，体检脚本（`audit-event-shape`）按 NOOP 报出。
+   */
+  age?: Range
   rank?: string | string[]
   origin?: string | string[]
   attributes?: LegacyAttributeConditions

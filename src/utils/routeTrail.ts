@@ -453,7 +453,10 @@ function buildCheckParams(character: Character, gameState: GameStateValues): Bou
     faction: character.faction,
     flags: character.flags,
     currentYear: gameState.currentYear,
-    currentMonth: gameState.currentMonth
+    currentMonth: gameState.currentMonth,
+    // 命途面板必须与引擎同一份入参：少了年岁，《寿终正寝》这类年龄门在这里会
+    // 永远显示成"差得远"，而引擎其实下个月就收人。
+    characterAge: character.age
   }
 }
 
@@ -541,6 +544,17 @@ function explainUnmet(
     } else {
       if (conditions.month.min !== undefined && cur < conditions.month.min) gaps.push(`${conditions.month.min} 月后`)
       if (conditions.month.max !== undefined && cur > conditions.month.max) gaps.push('月份已过')
+    }
+  }
+
+  if (conditions.age) {
+    // 与顶栏「年方X岁」同一个说法：玩家看得见的量，缺口也才看得懂
+    const cur = params.characterAge ?? 0
+    if (conditions.age.min !== undefined && cur < conditions.age.min) {
+      gaps.push(`年方 ${cur}（需 ${conditions.age.min} 岁）`)
+    }
+    if (conditions.age.max !== undefined && cur > conditions.age.max) {
+      gaps.push(`年方 ${cur}（需 ≤${conditions.age.max} 岁）`)
     }
   }
 

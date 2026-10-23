@@ -65,7 +65,7 @@ const EVENT_KEYS = ['id', 'title', 'description', 'narrative', 'conditions', 'ch
 const CHOICE_KEYS = ['id', 'text', 'quote', 'description', 'storyline', 'showConditions', 'effects',
   'resultDescription', 'result', 'failEffects', 'failResultDescription', 'failResult',
   'staminaCost', 'staminaRequired', 'staminaBonus']
-const COND_KEYS = ['year', 'month', 'turn', 'rank', 'origin', 'attributes', 'hidden', 'gameState', 'flags',
+const COND_KEYS = ['year', 'month', 'turn', 'age', 'rank', 'origin', 'attributes', 'hidden', 'gameState', 'flags',
   'random', 'custom']
 const EFFECT_KEYS = ['attributes', 'hidden', 'gameState', 'flags', 'special', 'meritScore']
 const NARRATIVE_KEYS = ['speaker', 'quote', 'background', 'situation']
@@ -121,6 +121,14 @@ export function scanEventShape(
         add('DEAD', where, `${path}.${key} 区间倒置 min=${range.min} > max=${range.max}`)
       }
     }
+
+    // `age` 与 `since` 同一条规矩：只有事件级的两个求值器读它
+    // （checkEventConditions / boundaryEventCompiler），选项级走的
+    // checkChoiceRequirement 不看年岁 —— 写在 showConditions 里就是一道看不见的门。
+    if (level === 'choice' && cond.age) {
+      add('NOOP', where, `${prefix}.age 只有事件级求值器读，checkChoiceRequirement 不看年岁 —— 这道门等于没装`)
+    }
+    rangeKeys(prefix, 'age', cond.age)
 
     for (const [key, range] of Object.entries(cond.attributes || {})) {
       if (!ATTR_KEYS.includes(key) && !ATTR_ALIASES.includes(key)) {

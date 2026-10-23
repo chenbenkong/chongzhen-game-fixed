@@ -18,6 +18,8 @@ export interface BoundaryEventCheckParams {
   currentMonth?: number
   characterOrigin?: string
   characterRank?: string
+  /** 年岁（`character.age`）—— `conditions.age` 读它；缺键按 0 算，于是年龄门恒假 */
+  characterAge?: number
 }
 
 export interface BoundaryEvent {

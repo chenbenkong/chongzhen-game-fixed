@@ -1023,6 +1023,7 @@ function derivedOf(character: Character, gameState: GameStateValues): DerivedSta
     turn: gameState.turn,
     year: gameState.currentYear,
     month: gameState.currentMonth,
+    age: character.age,
     flags: [...(character.flags || [])],
     faction: { ...(character.faction ?? NO_FACTION) }
   }

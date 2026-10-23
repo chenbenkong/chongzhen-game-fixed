@@ -24,6 +24,8 @@ export function checkEventConditions(
     origin: OriginType
     /** 当前官阶，用于 conditions.rank 判定 */
     rank?: string
+    /** 年岁，用于 conditions.age 判定（顶栏「年方X岁」的那个数） */
+    age?: number
   },
   state: GameStateValues
 ): boolean {
@@ -46,6 +48,13 @@ export function checkEventConditions(
   if (cond.turn) {
     if (cond.turn.min !== undefined && state.turn < cond.turn.min) return false
     if (cond.turn.max !== undefined && state.turn > cond.turn.max) return false
+  }
+
+  // 年岁 —— 与 boundaryEventCompiler 用同一个键、同一把尺子（缺键按 0 算，年龄门恒假）
+  if (cond.age) {
+    const cur = character.age ?? 0
+    if (cond.age.min !== undefined && cur < cond.age.min) return false
+    if (cond.age.max !== undefined && cur > cond.age.max) return false
   }
 
   // 公开属性

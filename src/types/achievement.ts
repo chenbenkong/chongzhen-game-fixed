@@ -640,6 +640,17 @@ export const ALL_ACHIEVEMENTS: Achievement[] = [
     unlocked: false
   },
   {
+    // 兜底格（§1.4 ㉟）。事件 id == 格子 id，所以不需要进 ENDING_ID_ALIASES；
+    // 但成就必须存在 —— 第五十二轮的教训是"补了格子没补成就，图鉴照样不亮"。
+    id: 'ending_old_age_done',
+    name: '无疾而终',
+    description: '达成"寿终正寝"结局',
+    icon: '终',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_old_age'),
+    unlocked: false
+  },
+  {
     id: 'ending_usurper_throne_done',
     name: '黄袍加身',
     description: '达成"篡位自立"结局',

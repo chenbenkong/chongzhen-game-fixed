@@ -52,7 +52,8 @@ export function buildParams(s: DerivedState): BoundaryEventCheckParams {
     faction: s.faction,
     flags: s.flags,
     currentYear: s.year,
-    currentMonth: s.month
+    currentMonth: s.month,
+    characterAge: s.age
   }
 }
 
@@ -62,6 +63,12 @@ const BASE_STATES = ['圣眷', '中官', '清议', '士绅', '民望', '国势']
 
 /** 游戏的时间跨度：turn 0 = 1628-01，甲申之变 = 1644-03（turn 193），此后没有月份可推进 */
 const LAST_YEAR = 1644
+/**
+ * 反推存档的年岁钟：1628 年开局时最常见的岁数。
+ * 进士 22 / 举人 24 / 其余 16–21（`useGameEngine.ts` 的 defaultAge），取出现频率最高的 22；
+ * 名字输入框允许 16–60，所以这只用于把 `conditions.age` 换算成年月，不是判据。
+ */
+const START_AGE = 22
 
 /**
  * 反推出来的那份存档的形状 —— 也就是边界注册表**唯一看得见的世界**。
@@ -77,6 +84,8 @@ export type DerivedState = {
   turn: number
   year: number
   month: number
+  /** 年岁 —— `conditions.age` 读它，必须与 turn/年份同一把钟，否则矩阵与跑局各说各话 */
+  age: number
   flags: string[]
   faction: FactionState
 }
@@ -96,6 +105,9 @@ function neutral(): DerivedState {
     turn: 120,
     year: 1638,
     month: 1,
+    // 与上面那把钟对齐：1628 年开局最常见的 22 岁，玩到 turn 120（1638）就是 32 岁。
+    // 取 32 而不是 70，是为了不让中性存档顺手把年龄格撞开 —— 中性就该什么都不撞。
+    age: 32,
     flags: [],
     faction: { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
   }
@@ -169,6 +181,32 @@ function derive(e: GameEvent, writable: Set<string>): { state: DerivedState; not
     s.turn = c.turn.max
     s.year = 1628 + Math.floor(s.turn / 12)
     s.month = (s.turn % 12) + 1
+  }
+
+  // 年岁与年月是同一把钟：过了 START_AGE 之后每 12 个月长一岁。
+  // 满足 age 门必须把整条时间线一起拨过去 —— 只改 age 不改 year，矩阵里就会出现
+  // 「70 岁却还停在 1635 年」这种跑局复现不出来的存档（第二十八轮 ⑲ 的同类错位）。
+  s.age = START_AGE + Math.floor(s.turn / 12)
+  if (c.age?.min !== undefined && s.age < c.age.min) {
+    s.turn = (c.age.min - START_AGE) * 12
+    s.year = 1628 + Math.floor(s.turn / 12)
+    s.month = 1
+    s.age = c.age.min
+    if (c.year?.max !== undefined && s.year > c.year.max) {
+      notes.push(`年岁门与年窗互斥：要 ${c.age.min} 岁得活到 ${s.year} 年，而本格年窗最晚 ${c.year.max} —— 这一格没人走得到`)
+    }
+    if (c.turn?.max !== undefined && s.turn > c.turn.max) {
+      notes.push(`年岁门要 ${c.age.min} 岁（第 ${s.turn} 月），已超出本格 turn.max=${c.turn.max}`)
+    }
+  }
+  if (c.age?.max !== undefined && s.age > c.age.max) {
+    s.turn = Math.max(0, (c.age.max - START_AGE) * 12)
+    s.year = 1628 + Math.floor(s.turn / 12)
+    s.month = 1
+    s.age = c.age.max
+    if (c.age.min !== undefined && s.age < c.age.min) {
+      notes.push(`年岁区间自相矛盾：min=${c.age.min} > max=${c.age.max}（按本格的钟算不出来）`)
+    }
   }
 
   const apply = (

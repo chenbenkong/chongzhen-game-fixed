@@ -154,36 +154,46 @@ describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () 
     const all = [...byOrigin.values()].flat()
     expect(all.filter(r => r.error).map(r => `${r.seed} ${r.error}`), '模拟中途抛异常').toEqual([])
     expect(all.filter(r => r.badNumbers.length).map(r => String(r.seed)), '终局存在非有限数值').toEqual([])
-    // §1.4 ㉟ 的**在册读数**（第五十五轮量到，任务 #80 待修）。
-    // 1644 那一年有四个落点，四个都拿 国势 拦人：《甲申国变》≤15 · 《城破殉城》≤20 ·
-    // 《篡位自立》≤25 · 《中兴成功》≥55 且四张军权票里凑齐三张。
-    // 国势 停在 16–54、又没凑齐那三张票的人过了五月就**没有任何一格接他** ——
-    // 日历继续翻，seed 6/warden 这一局翻到公元 3193 年（18789 月）才被步数预算截停。
-    // 钉的是"不朽的恰好是这一局"，不是"允许它一直红"：这一句和下面那条中位局长都属于
-    // ㉟ 的影子，修好之后两处一起改回原样（这一句回 `toBe(0)`，下面那句回平均）。
+    // §1.4 ㉟ 于第五十六轮修掉，这一句按它自己的指示改回"0 局未结案"。
+    // 第五十五轮的在册读数是 `['6/warden/寒门']` —— 那一局国势停在 16–54、
+    // 又没凑齐《中兴成功》要的三张军权票，翻到公元 3193 年（18789 月）才被步数预算截停。
+    // 第五十六轮量出三处真原因（都不是"国势那一段没有落点"）：
+    //   1. 《称臣纳贡》的 `notHas` 里躺着 `组织义军` —— 门票是 贰臣（人已经降了清），
+    //      却禁止"先抗过再降"。组织义军 全库只有一个写手、零个擦除者，
+    //      于是先举义再降清的人撞上一张自相矛盾的禁令，四格 1644 结局一格也接不住他。
+    //   2. 44 格的年窗全部止于 1660 之前，没有一格读年岁 —— 过了 1644 就没有上界。
+    //   3. 五格结局卡上有选项正文已经盖章、`effects` 却没写 `special.type: 'ending'`，
+    //      玩家点了它，结局卡就静默作废（`audit.endingTerminality.test.ts` 钉住）。
+    // 修法：摘掉那条自相矛盾的禁令 + 补 5 个收尾标记 + 加一格最低优先级的《寿终正寝》
+    // （年岁≥70，见 `endings_all.ts`）。同一批 64 局读数：seed 6 那一局现在停在
+    // 1644 年 5 月（第 197 月）《称臣纳贡》，未结案 0 局。
     const stuck: string[] = []
     for (const [origin, list] of byOrigin) for (const r of list) if (!r.ended) stuck.push(`${r.seed}/${r.policy}/${origin}`)
     console.log(`未结案 ${stuck.length} 局：${stuck.join(' · ') || '（无）'}`)
     expect(
       stuck,
-      '§1.4 ㉟ 的形状变了：要么 1644 之后开始收人了（把这一句改回 toBe(0)），要么不朽扩散到了别的局（先量是哪一格不再接人）'
-    ).toEqual(['6/warden/寒门'])
+      '§1.4 ㉟ 回来了：有局跑完预算还没结案 —— 先看是哪一格不再接人，别急着放宽门槛'
+    ).toEqual([])
   })
 
-  it('最长寿出身的中位局长不许比最短的多出一倍以上', () => {
-    // 第五十五轮把量法从平均换成中位：§1.4 ㉟ 那一局不朽的 18789 月把 寒门 的平均局长
-    // 抬到 1270.7 月，同一格里 16 局的中位数是 193 月 —— 平均值被一个上界都不存在的样本
-    // 污染了，拿它比"出身之间谁买到的内容多"没有意义。换成中位之后四格读数 193/197/196/195，
-    // 差 2%，与第十八轮钉这条时读到的是同一件事。㉟ 修好之后这一句可以改回平均。
+  it('最长寿出身的平均局长不许比最短的多出一倍以上', () => {
+    // 第五十五轮曾把量法临时换成中位：§1.4 ㉟ 那一局不朽的 18789 月把 寒门 的平均局长
+    // 抬到 1270.7 月，平均值被一个上界都不存在的样本污染。㉟ 第五十六轮修好之后，
+    // 这一句按当时的指示改回平均 —— 同一批 64 局：诗文清望 113.1 / 缙绅 107.4 = 1.05，
+    // 与中位读数（197 / 193 = 1.02）说的是同一件事。
     const rows = ORIGINS.map(o => {
       const list = byOrigin.get(o)!.map(r => r.months).sort((a, b) => a - b)
-      return { origin: o, months: list[Math.floor(list.length / 2)], avg: avg(byOrigin.get(o)!.map(r => r.months)) }
+      return {
+        origin: o,
+        months: avg(byOrigin.get(o)!.map(r => r.months)),
+        median: list[Math.floor(list.length / 2)]
+      }
     }).sort((a, b) => b.months - a.months)
     const best = rows[0]
     const worst = rows[rows.length - 1]
     console.log(
-      `  中位局长差距：${best.origin} ${best.months} 月 vs ${worst.origin} ${worst.months} 月` +
-        `（平均 ${rows.map(r => `${r.origin} ${r.avg.toFixed(1)}`).join(' / ')}）`
+      `  平均局长差距：${best.origin} ${best.months.toFixed(1)} 月 vs ${worst.origin} ${worst.months.toFixed(1)} 月` +
+        `（中位 ${rows.map(r => `${r.origin} ${r.median}`).join(' / ')}）`
     )
     expect(
       best.months / worst.months,

@@ -5,7 +5,7 @@ import { wrapBatchAsBoundaryEvents, NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } fro
 import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
 import { corruptionWarningEvents, FUGITIVE_FLAG } from './demotionWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
-import { allEndingEvents as mainNarrativeEndings } from './events/ending/endings_all'
+import { allEndingEvents as mainNarrativeEndings, OLD_AGE_ENDING_TILE } from './events/ending/endings_all'
 import { debaucheryEndingEvents } from './events/ending/debauchery'
 
 const ENDING_BANKRUPT: GameEvent = {
@@ -914,7 +914,12 @@ const NARRATIVE_ENDING_IDS = new Set(BOUNDARY_EVENTS.map(e => e.event.id))
 
 const allNarrativeEndings: GameEvent[] = [
   ...mainNarrativeEndings as GameEvent[],
-  ...debaucheryEndingEvents
+  ...debaucheryEndingEvents,
+  // 兜底格《寿终正寝》必须排在**最后**：`wrapBatchAsBoundaryEvents` 按下标发优先级，
+  // 而 `checkByType` 是"数字小的先赢"。它读的是年岁、没有年窗，一旦排到前面，
+  // 就会在每个七十岁玩家的月份上抢掉甲申国变、南渡续祚这些正局。
+  // 第五十六轮 §1.4 ㉟：全部年窗封顶 1660、又没人读年岁，熬过去的人从此不朽。
+  OLD_AGE_ENDING_TILE
 ]
 
 const additionalNarrativeEndings = allNarrativeEndings.filter(

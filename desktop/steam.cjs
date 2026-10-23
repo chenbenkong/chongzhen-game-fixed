@@ -19,11 +19,11 @@
  *  3. 游戏内部通过 desktopBridge.syncAchievementToDesktop(内部id) 调用，本模块
  *     反查得到 API Name 再解锁。所以映射表是 owner 唯一需要维护的地方。
  *
- *  【成就数量：111 条，已超过 Steam 上限 100 —— 因为本作暂不上 Steam】
+ *  【成就数量：112 条，已超过 Steam 上限 100 —— 因为本作暂不上 Steam】
  *  Steam 单个 App 的成就上限是 **100** 个。第五十二轮之前项目一直按这个上限倒推裁剪：
  *  删到 100 条，代价是结局图鉴里有 10 格（全是边界/阈值结局）分不到成就，
  *  只能靠存档里的达成记录点亮 —— 成就面板与图鉴两套口径并存，玩家看得见的是"少了 10 条成就"。
- *  现在决定不上 Steam（2026-10-23），名额不再是约束，于是补齐 10 条 + 革职拆支 1 条 = 111 条。
+ *  现在决定不上 Steam（2026-10-23），名额不再是约束，于是补齐 10 条 + 革职拆支 1 条 = 111 条；第五十六轮补《寿终正寝》一格 = 112 条。
  *
  *  此前已执行的裁剪（合计 -5，见 src/types/achievement.ts 里每处的说明注释）：
  *    · master_collector(60)、ultimate_master(80) —— collector 组的中间档。
@@ -36,7 +36,7 @@
  *  保留 random_player 与 careful_player：它们分别有真实入口
  *  （「听天由命」按钮 / 回退功能），且描述的是玩法而非机械操作。
  *
- *  现在映射表 111 条 = 游戏内 111 条。
+ *  现在映射表 112 条 = 游戏内 112 条。
  *  ⚠️ 如果你之后增删游戏内成就，必须同步改这里并重跑 `node desktop/smoke-test.cjs`
  *     —— 它会断言两边逐条一致（漂移即失败），数量超上限只报 warning（见上面那段）。
  *     日后真要上 Steam，必须先删到 100 条以内：API Name 一经创建不可改，只能删重建。
@@ -116,6 +116,7 @@ const ACHIEVEMENTS = {
   ENDING_PURE_STREAM_DONE: { id: 'ending_pure_stream_done', name: '清流结局' },
   ENDING_HONORABLE_RETIREMENT_DONE: { id: 'ending_honorable_retirement_done', name: '致仕善终' },
   ENDING_ORDINARY_LIFE_DONE: { id: 'ending_ordinary_life_done', name: '平凡一生' },
+  ENDING_OLD_AGE_DONE: { id: 'ending_old_age_done', name: '寿终正寝' },
   ENDING_USURPER_THRONE_DONE: { id: 'ending_usurper_throne_done', name: '篡位结局' },
   ENDING_QING_TRIBUTARY_DONE: { id: 'ending_qing_tributary_done', name: '降清结局' },
   ENDING_CLAN_EXTERMINATE_DONE: { id: 'ending_clan_exterminate_done', name: '满门抄斩' },
@@ -211,14 +212,14 @@ const INTERNAL_ID_TO_API_NAME = (() => {
  * 
 ode desktop/smoke-test.cjs 会失败，而不是等到上线才发现有成就没注册。
  */
-const INTERNAL_ACHIEVEMENT_COUNT = 111
+const INTERNAL_ACHIEVEMENT_COUNT = 112
 /**
  * Steam 单 App 成就数量硬上限。
  *
- * 第五十二轮起**本表已经超出这个数**（111 > 100）：本作暂不上 Steam，
+ * 第五十二轮起**本表已经超出这个数**（112 > 100）：本作暂不上 Steam，
  * 而图鉴那 45 格每一格都该有一条成就 —— 此前 10 格因为"名额不够"只能靠达成记录点亮，
  * 成就面板与图鉴于是长期是两套口径。这条上限因此从"硬约束"降级成"上线前的待办"：
- * 真要上 Steam，先删够 11 条（候选：category='special' 里的操作统计型成就），再重跑 smoke-test。
+ * 真要上 Steam，先删够 12 条（候选：category='special' 里的操作统计型成就），再重跑 smoke-test。
  */
 const STEAM_ACHIEVEMENT_LIMIT = 100
 

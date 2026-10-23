@@ -48,6 +48,13 @@ function compileConditions(conditions: EventConditions | undefined) {
       if (conditions.turn.max !== undefined && cur > conditions.turn.max) return false
     }
 
+    // 2.6) 年岁 —— 与 eventConditions 同一个键；缺键按 0 算（年龄门恒假）
+    if (conditions.age) {
+      const cur = params.characterAge ?? 0
+      if (conditions.age.min !== undefined && cur < conditions.age.min) return false
+      if (conditions.age.max !== undefined && cur > conditions.age.max) return false
+    }
+
     // 3) 出身
     if (conditions.origin) {
       const origins = Array.isArray(conditions.origin) ? conditions.origin : [conditions.origin]
