@@ -369,7 +369,10 @@
 > 于是钉的是"印没印"而不是"找不找得到"。钉子先证红：把组件退回修复前，**9 条全红**（含"那行淡金小字应整行消失"）。
 > 真浏览器实测（`vite preview :4173`，跑的是 `dist`）：当前卷 26 张卡、`.codex-card-id` 节点 **0** 个、26 张全带把手、
 > 无一张正文含自己的 id；点开《流放边疆》详情 `meta=个志卷 未达成`，整个 modal 文本零个 snake_case id；头部仍是 `0 / 45`。
-> 回归 **556 → 558 例**（64 个文件），全量 `tsc`×2 / `build` / 18 个 `audit:*` 全绿。摘要见 §三「第五十三轮」。
+> 回归 **556 → 558 例**（64 个文件），全量 `tsc`×2 / `build` / 18 个 `audit:*` 全绿。
+> 线上复核：分片 `ui-components-DiGBtKRO.js` 与 `style-CQNp6qa5.css` 都和本地 `dist` 逐字节一致，
+> 线上 JS 里 `codex-card-id` / `ID: ` 各 **0 处**；图鉴读到 `0/45`、个志卷 26 张卡全带把手、零张泄漏，
+> 《流放边疆》详情 meta 是 `个志卷 未达成`。摘要见 §三「第五十三轮」。
 
 ---
 
@@ -1339,6 +1342,21 @@ meta 那一行改成 `ENDING_ARCHETYPES[category].name`（即卷名，如「个�
 `tsc -p tsconfig.test.json --noEmit` 均净，`vite build` 净，18 个 `audit:*` 全部退出 0
 （`audit:codex` 仍是「格子 45，结局成就 45，问题 0」）。判定、门槛、成就、事件数据一概未动 ——
 本轮只删两处文本，无棘轮需要重抄。
+
+**八、线上复核**（`https://chenbenkong.github.io/chongzhen-game-fixed/`，真浏览器）。推送后 CI `build` + `deploy` 两job
+均 success，线上首页引的分片就是本轮的构建：`ui-components-DiGBtKRO.js`、`assets/styles/style-CQNp6qa5.css`
+与本地 `dist` 里同名那份 **逐字节一致**（304,476 字节）。
+产物层先查字符串：线上 JS 里 `codex-card-id` **0 处**、`ID: ` **0 处**、`data-tile-id` **2 处**（卡片与详情各一个把手）；
+线上 CSS 里 `.codex-card-id` 规则 **0 处**，而相邻的 `.codex-card-sub` 仍在，说明不是整段样式丢了。
+界面层实测：标题页点「局 鉴」，进度行读到 `0/45 已达成 0%`；切到 个志卷 `{cards: 26, handles: 26, idNodes: 0,
+正文含自己格子 id 的卡 0 张, 正文含 ending_/triggerable_ 的卡 0 张}`；点开《流放边疆》详情
+`handle=ending_exile`、`title=流放边疆`、`meta=个志卷 未达成`、modal 全文 snake_case id **0 个**、`getClientRects().length>0`（真挂上了）；
+控制台只有既有的 `[长任务]` 警告，无新增报错。
+八卷的卡片计数从卷标上直接读得到：`1+1+2+1+5+8+26+1 = 45`，与 `audit:codex` 的格子数对得上。
+（一处量具读数要留档：在同一个脚本里连点八个 `.codex-tab` 再就地抄卡片，八次读回来的都是切换前的 26 张 ——
+React 的状态落地发生在本次 evaluate 之后，分两次调用才读到切换后的那一卷；
+"逐卷有没有泄漏"因此改由上面那组**产物层字符串**判：删掉的类名与 `ID: ` 在整包 JS 里一次都不出现，
+就不可能在任何一卷里重新出现。）
 
 ### 第五十二轮（2026-10-23）：十格边界结局第一次有自己的成就，革职的两支各占一格
 
