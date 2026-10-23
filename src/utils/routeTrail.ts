@@ -375,12 +375,43 @@ export interface RouteDestinationView {
   detail: string
 }
 
+/**
+ * 下一拍：这一格里最早还没凑齐票的那一格，缺哪些票。
+ * 只报**看得见的经历票**，不报数值 —— 玩家能去做的事是"再去打一场仗"，不是"把武略刷到 50"。
+ */
+export interface RouteBeatHint {
+  title: string
+  mode: 'any' | 'all'
+  missing: string[]
+  status: RouteStatus
+}
+
 export interface ActiveRoute {
   key: string
   name: string
   motto: string
   heldTickets: string[]
   destinations: RouteDestinationView[]
+  /** 路线链进度：已集齐门票的落点数 / 这一途的落点总数 */
+  beatsDone: number
+  beatsTotal: number
+  /** 这一途里下一个还没走到的落点；走全了则为空 */
+  nextBeat?: RouteBeatHint
+}
+
+/**
+ * 尚未起步的命途：身上一票没有的那几途。
+ * 第五十一轮之前它们**根本不在返回值里**，于是面板上永远只有"已经沾了边的路"，
+ * 玩家看不见自己还有哪些路可走，也看不见下一拍该往哪迈步。
+ */
+export interface DormantRoute {
+  key: string
+  name: string
+  motto: string
+  /** 起步那一格与它要的票 */
+  nextBeat: RouteBeatHint
+  /** 这一途一共几拍 */
+  beatsTotal: number
 }
 
 export type DangerLevel = 'cliff' | 'zero' | 'near'
@@ -401,6 +432,7 @@ export interface EndingPreview {
 
 export interface RouteTrail {
   routes: ActiveRoute[]
+  dormant: DormantRoute[]
   dangers: DangerRow[]
 }
 
@@ -696,6 +728,10 @@ export function findRouteClosures(
  * 走向：只看玩家身上已有的门票，不预测数值。
  * 每一途里按结局优先级排序（与 BoundaryEventManager 的结算顺序一致），
  * ready 则直接问注册表——所以"条件已足"不是这里另算的，是引擎说成立。
+ *
+ * 十三途二十六个落点**全部**出现在返回值里：沾过票的进 `routes`，一票没有的进 `dormant`。
+ * 第五十一轮之前后者被整个 `continue` 掉了，面板于是只能显示"已经走上路的"那几途，
+ * 玩家看不见自己还有哪些路、也看不见下一拍该往哪迈 —— 全量可见性靠这一刀补上。
  */
 export function buildRouteTrail(character: Character, gameState: GameStateValues): RouteTrail {
   const held = new Set(character.flags)
@@ -703,20 +739,31 @@ export function buildRouteTrail(character: Character, gameState: GameStateValues
   const registry = endingRegistry()
 
   const routes: ActiveRoute[] = []
+  const dormant: DormantRoute[] = []
   for (const family of ROUTE_FAMILIES) {
     const destinations: RouteDestinationView[] = []
+    const unmatched: RouteBeatHint[] = []
     const heldTickets: string[] = []
 
     for (const spec of family.destinations) {
       const matched = matchesTickets(spec, held)
-      if (!matched.length) continue
-      for (const t of matched) if (!heldTickets.includes(t)) heldTickets.push(t)
-
       const status = windowStatus(spec.window, gameState.turn, gameState.currentYear)
       const boundary = registry.get(spec.endingId)
       const ready = boundary ? boundary.check(params) : false
       const explanation = explainUnmet(boundary?.event.conditions, params)
       const declined = explanation.blockedBy.some(x => x.startsWith('搁笔·'))
+
+      if (!matched.length) {
+        unmatched.push({
+          title: spec.title,
+          mode: spec.mode,
+          missing: spec.mode === 'all' ? spec.tickets.filter(t => !held.has(t)) : [...spec.tickets],
+          status
+        })
+        continue
+      }
+
+      for (const t of matched) if (!heldTickets.includes(t)) heldTickets.push(t)
       destinations.push({
         endingId: spec.endingId,
         title: spec.title,
@@ -738,13 +785,27 @@ export function buildRouteTrail(character: Character, gameState: GameStateValues
       })
     }
 
-    if (!destinations.length) continue
+    const nextBeat = unmatched[0]
+    if (!destinations.length) {
+      // 一格票都没有 ⇒ 上面每一格都进了 unmatched，起步那一格必然存在
+      dormant.push({
+        key: family.key,
+        name: family.name,
+        motto: family.motto,
+        beatsTotal: family.destinations.length,
+        nextBeat
+      })
+      continue
+    }
     routes.push({
       key: family.key,
       name: family.name,
       motto: family.motto,
       heldTickets,
-      destinations
+      destinations,
+      beatsDone: destinations.length,
+      beatsTotal: family.destinations.length,
+      nextBeat
     })
   }
 
@@ -756,7 +817,15 @@ export function buildRouteTrail(character: Character, gameState: GameStateValues
     return ROUTE_FAMILIES.findIndex(f => f.key === a.key) - ROUTE_FAMILIES.findIndex(f => f.key === b.key)
   })
 
-  return { routes, dangers: collectDangers(character, gameState) }
+  // 尚未起步的按"起步那一格的年窗"排：开得动的路排在还在训练 / 年代未到的前面
+  dormant.sort((a, b) => {
+    const openA = a.nextBeat.status === 'open' ? 0 : 1
+    const openB = b.nextBeat.status === 'open' ? 0 : 1
+    if (openA !== openB) return openA - openB
+    return ROUTE_FAMILIES.findIndex(f => f.key === a.key) - ROUTE_FAMILIES.findIndex(f => f.key === b.key)
+  })
+
+  return { routes, dormant, dangers: collectDangers(character, gameState) }
 }
 
 /**

@@ -195,6 +195,89 @@
   color: #6b5a3a;
 }
 
+/* 下一拍：这一格里最早还没走到的落点，只列看得见的经历票 */
+.route-next {
+  margin-top: 5px;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: #8a7a4a;
+}
+
+.route-beats {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  color: #7a6a4a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 尚未起步的命途：第五十一轮之前它们压根不进面板 */
+.route-dormant {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #2a2015;
+}
+
+.route-dormant-head {
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  color: #6b5a3a;
+  letter-spacing: 2px;
+}
+
+.route-dormant-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route-dormant-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  padding: 1px 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.route-dormant-name {
+  flex-shrink: 0;
+  color: #7a6a4a;
+}
+
+.route-dormant-count {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  color: #4f4432;
+  font-variant-numeric: tabular-nums;
+}
+
+.route-dormant-beat {
+  font-size: 0.64rem;
+  color: #5f523c;
+}
+
+.route-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px 8px;
+  background: #161210;
+  border: 1px solid #332818;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  color: #8b7a5a;
+  cursor: pointer;
+}
+
+.route-toggle:hover,
+.route-toggle:focus-visible {
+  border-color: #5a4a32;
+  color: #c9a227;
+}
+
 .route-danger {
   margin-top: 10px;
   padding-top: 8px;
