@@ -32,8 +32,7 @@ export const events1644: GameEvent[] = [
         text: '【主战勤王】"当调集勤王之师，与李自成决一死战！"',
         description: '主张调集天下兵马，入京勤王，与李自成决战',
         showConditions: {
-          attributes: { 武略: { min: 70 }, 财帛: { min: 40 } },
-          origin: ['没落世家']
+          attributes: { 武略: { min: 70 }, 财帛: { min: 40 } }
         },
         effects: {
           attributes: { 武略: 8,体质: -15,
@@ -70,8 +69,7 @@ export const events1644: GameEvent[] = [
         text: '【主张南迁】"京师难守，当南迁以图恢复"',
         description: '主张朝廷南迁，保存实力，以图恢复',
         showConditions: {
-          attributes: { 理政: { min: 75 }, 文韬: { min: 60 } },
-          origin: ['缙绅']
+          attributes: { 理政: { min: 75 }, 文韬: { min: 60 } }
         },
         effects: {
           attributes: { 文韬: 5, 理政: 8 },
@@ -105,9 +103,6 @@ export const events1644: GameEvent[] = [
         storyline: 'ordinary',
         text: '【暗中投降】"大势已去，当早为之所，保全性命"',
         description: '暗中联络李自成，准备投降',
-        showConditions: {
-          hidden: { 道德值: { max: 30 }, 野心值: { min: 30 } }
-        },
         effects: {
           attributes: {
               财帛: 30
@@ -143,8 +138,7 @@ export const events1644: GameEvent[] = [
         text: '【护送太子】"当护送太子南迁，保存正统"',
         description: '主张护送太子朱慈烺南迁，保存大明正统',
         showConditions: {
-          attributes: { 武略: { min: 60 }, 理政: { min: 60 } },
-          origin: ['没落世家', '诗文清望']
+          attributes: { 武略: { min: 60 }, 理政: { min: 60 } }
         },
         effects: {
           attributes: { 武略: 5, 理政: 5, 体质: -10 },
@@ -210,8 +204,7 @@ export const events1644: GameEvent[] = [
         text: '【死守宣府】"宣府乃京师屏障，当与城共存亡！"',
         description: '率军死守宣府，与李自成决一死战',
         showConditions: {
-          attributes: { 武略: { min: 70 }, 体质: { min: 60 } },
-          origin: ['没落世家']
+          attributes: { 武略: { min: 70 }, 体质: { min: 60 } }
         },
         effects: {
           attributes: { 武略: 10, 体质: -40 },
@@ -248,8 +241,7 @@ export const events1644: GameEvent[] = [
         text: '【诈降后反戈】"当诈降李自成，然后反戈一击！"',
         description: '假装投降李自成，然后寻找机会反戈一击',
         showConditions: {
-          attributes: { 武略: { min: 75 }, 理政: { min: 70 } },
-          origin: ['没落世家']
+          attributes: { 武略: { min: 75 }, 理政: { min: 70 } }
         },
         effects: {
           attributes: { 武略: 8, 理政: 5 },
@@ -287,9 +279,6 @@ export const events1644: GameEvent[] = [
         storyline: 'ordinary',
         text: '【投降保命】"大势已去，当投降以保全性命"',
         description: '投降李自成，保全性命',
-        showConditions: {
-          hidden: { 道德值: { max: 40 } }
-        },
         effects: {
           attributes: {
               财帛: 25
@@ -327,8 +316,7 @@ export const events1644: GameEvent[] = [
         text: '【撤退保卫北京】"宣府难守，当撤退保卫北京！"',
         description: '放弃宣府，率军撤退保卫北京',
         showConditions: {
-          attributes: { 武略: { min: 60 } },
-          origin: ['没落世家']
+          attributes: { 武略: { min: 60 } }
         },
         effects: {
           attributes: { 武略: 3, 体质: -15 },
