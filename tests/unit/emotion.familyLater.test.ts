@@ -186,7 +186,18 @@ describe('家宅第三波真跑局：三条回响都撞得到', () => {
     expect([...used('echo_family_006')]).toContain('c1')
 
     const mingtie = fired('echo_family_007')
-    expect(mingtie.length, '有子的人不少，没有一个等到《名帖》').toBeGreaterThanOrEqual(4)
+    const withChild = [...deng, ...runs.filter(r => r.finalFlags.includes('has_children') && !deng.includes(r))]
+    console.log(
+      `有子 ${withChild.length} 局 · 《名帖》${mingtie.length} 局（${mingtie.map(r => `${r.policy}/${r.seed}`).join(' · ')}）· ` +
+        `有子局的终局：${withChild.map(r => `${r.policy}/${r.seed}→${r.endingId ?? '未结案'}@${r.finalYear}`).join(' · ')}`
+    )
+    // 第六十一轮：这条下界从 4 改成 3，原因写清楚 —— 不是《名帖》坏了，是《不知所踪》按设计接人。
+    // `hermit/1` 在第九十五月得子，第一百三十二月（1639）带着成对票被《不知所踪》接走，
+    // 孩子实岁才 37 个月，够不到 72 个月那条《名帖》。那一格的选项正文写着
+    // 「此标记将直接解锁结局」，现在它真的兑现了；少掉的一份样本就是这句承诺的代价。
+    // 《名帖》机制本身另有两处不吃这批随机流的读数承重：
+    // 本文件下面的反推存档（孩子满六岁当天开口 / 差一个月不开），以及 12 局【去母留子】专线。
+    expect(mingtie.length, '有子的人不少，没有一个等到《名帖》').toBeGreaterThanOrEqual(3)
     // 棘轮：每一次《名帖》开口，孩子都必须已经满六岁（72 个月）。
     // 第五十四轮之前的这一格钉的是 `finalYear >= 1638`，而实测旧门下 15 次开口全落在 1638 年、
     // 孩子 28～102 个月都有 —— 年窗与正文「孩子到了入塾的年纪」之间没有因果关系。

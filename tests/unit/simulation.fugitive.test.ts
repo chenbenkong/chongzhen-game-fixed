@@ -146,7 +146,7 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
     expect(c.gameState?.圣眷?.max, '圣眷上限是本轮归因的坐标，改了它下面的读数全要重算').toBe(15)
   })
 
-  it('门至少开过一个月：逐月读数里必须存在"这一格自己成立"的月份', () => {
+  it('《亡命江湖》的门在这一批里一次都没开过：成对票的局都被《不知所踪》先接走', () => {
     const perRun = runs.map(r => r.trace.filter((_, i) => gateHeldAt(r, i)).length)
     const total = perRun.reduce((a, b) => a + b, 0)
     console.log(
@@ -163,39 +163,50 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
         `带成对票 ${byTicket(f => f.includes('隐姓埋名') && f.includes('下落不明'))} 局 · ` +
         `只带单张成对票 ${byTicket(f => (f.includes('隐姓埋名') || f.includes('下落不明')) && !(f.includes('隐姓埋名') && f.includes('下落不明')))} 局`
     )
-    expect(total, '一局里都没有一个月让《亡命江湖》的门成立 —— 这一格是真死的，不是"没人朝它走"').toBeGreaterThan(0)
+    // 第六十一轮（§1.4 ㉞）把《不知所踪》的年窗下沿对齐产地 1637、并删掉产地之后的
+    // 圣眷≤15 / 清议≤20 两道二道窗。成对票的局不再多等一年：拿票当月就满足 p117 的判据，
+    // 下一拍结案。于是这一批里《亡命江湖》自己的门一次都没开过 —— 这是**被更高优先级接走**，
+    // 不是"这一格死了"。门是否活着、开过几个月，由 `simulation.fugitiveGate.test.ts`
+    // 的潜逃画像承重（本版：结案 9 局、门开 14 月），引擎侧另有反推存档钉
+    // （`engine.boundary.test.ts` 的《第二十八轮》两条）。
+    const paired = runs.filter(r =>
+      r.trace.some(s => s.derived.flags.includes('隐姓埋名') && s.derived.flags.includes('下落不明'))
+    )
+    expect(paired.length, '这一批里连一局成对票都没有 —— 下面那句"不许被抢"是空集上的真').toBeGreaterThan(0)
+    expect(
+      paired.filter(r => r.endingId === FUGITIVE).map(r => `seed${r.seed} → ${r.endingTitle}`),
+      '成对票在身、《不知所踪》又排在前面，这一格还是把人抢走了'
+    ).toEqual([])
   })
 
-  it('成对票开门时先让《不知所踪》裁决；它不成立，才轮到这一格接住', () => {
-    const pairOnlyOpen = runs.flatMap(r =>
-      r.trace
-        .map((s, i) => ({ s, i, r }))
-        .filter(x => gateHeldAt(x.r, x.i) && !x.s.derived.flags.includes(FUGITIVE_FLAG))
-    )
+  it('成对票在身上、《不知所踪》也成立时，不许这一格抢在前面', () => {
     const unknown = (Object.values(boundaryEventManager.getAll()).filter(e => e.type === 'ending') as BoundaryEvent[]).find(
       e => e.event.id === 'ending_unknown_fate'
     )
     const winners = new Map<string, number>()
     const stolen: string[] = []
-    for (const x of pairOnlyOpen) {
+    // 第六十一轮之后，本批《亡命江湖》自己的门 0 个月 —— 但"优先级次序"仍有非空样本：
+    // 只要成对票在身上，《不知所踪》的判据就该成立，那时赢家只能是它或排得更前的格子。
+    // （旧写法从这里剔掉带 潜逃 的月份，样本 2 月；现在两格共用成对票的月份才是承重点。）
+    const pairOpen = runs.flatMap(r =>
+      r.trace
+        .map((s, i) => ({ s, i, r }))
+        .filter(x => x.s.derived.flags.includes('隐姓埋名') && x.s.derived.flags.includes('下落不明'))
+    )
+    const unknownOpen = pairOpen.filter(x => unknown?.check(buildParams(x.s.derived)))
+    for (const x of unknownOpen) {
       const w = winnerAt(x.r, x.i)
       const k = w ? `p${w.priority}《${w.title}》` : '（无人命中）'
       winners.set(k, (winners.get(k) ?? 0) + 1)
-      // 《不知所踪》的门票与这一格共用同一对 隐姓埋名/下落不明，但它排在前头（p117）。
-      // 只要它自己也成立，这一格就不许抢；它不成立时，成对票照样能把这一格送出去 ——
-      // 第四十轮样本里就有 2 个月是这么赢的，所以断言写成"让位"而不是"永远不属于这一格"。
-      // 第五十五轮重抄读数时这里报过一条 `第177月 seed6405：p102《诏狱冤死》` ——
-      // 那是**排在两者之前的第三格**正常收人，不是这一格抢的。旧写法判的是
-      // "赢家不是 不知所踪"，把优先级更高的别的格子也算成偷；本句管的是 亡命江湖 与 不知所踪
-      // 这两格之间的次序，所以只许盯 亡命江湖 自己。
-      if (unknown?.check(buildParams(x.s.derived)) && w?.id === FUGITIVE) {
-        stolen.push(`第${x.s.turn}月 seed${x.r.seed}：${k}`)
-      }
+      // 本句只管 亡命江湖 与 不知所踪 这两格之间的次序：赢家是排在 p117 之前的第三格
+      // （例如 p102《诏狱冤死》）是正常收人，不算这一格抢。
+      if (w?.id === FUGITIVE) stolen.push(`第${x.s.turn}月 seed${x.r.seed}：${k}`)
     }
     console.log(
-      `门开着但不带 潜逃 的月份 ${pairOnlyOpen.length} 个 —— ` +
+      `成对票 ∧ 《不知所踪》成立 ${unknownOpen.length} 月 —— ` +
         ([...winners].map(([k, v]) => `${k}×${v}`).join(' · ') || '无')
     )
+    expect(unknownOpen.length, '成对票都拿不到《不知所踪》的成立月 —— 这一条又成了空集').toBeGreaterThan(0)
     expect(stolen, '《不知所踪》同时也成立时，《亡命江湖》不许抢在它前面').toEqual([])
   })
 
@@ -340,10 +351,13 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
       const carried = anyTickets.filter(f => (r.finalFlags ?? []).includes(f))
       expect(carried.length, `seed${r.seed} 没带任何一张门票就结了这一格 —— 那不是画像的读数`).toBeGreaterThan(0)
     }
-    expect(
-      sealed(FUGITIVE),
-      `${GAMES} 局 ${POLICIES.join('/')} 结了这一格 0 次 —— 门与优先级都没动的话不该出现这种读数，去查这一格的月份被谁抢走`
-    ).toBeGreaterThanOrEqual(1)
+    // 第六十一轮（§1.4 ㉞）之后本批结案 0 局，这是**设计后的读数**而不是新漏洞：
+    // 成对票在 1637 拿票当月就满足《不知所踪》(p117) 的判据，下一拍被它接走；
+    // 这一组又没有一个带 潜逃 的样本。旧版的 `>=1` 地板在这一版量不到东西，
+    // 硬留着只会让随机流替骰子还债。这一格的活口由两处不吃这批随机流的读数承重：
+    // `simulation.fugitiveGate.test.ts` 的潜逃画像棘轮（本版结案 9 局、门开 14 月），
+    // 以及 `engine.boundary.test.ts` 的反推存档（1635-1 当月结案 / 1634-12 不许放行）。
+    // 上面"结案必须带票"那句照旧生效 —— 本版它是空集上的真，等有样本时不必重写。
   })
 
   it('抄表本身不许带错：没有一局报错，也没有一局一个月份都没抄到', () => {

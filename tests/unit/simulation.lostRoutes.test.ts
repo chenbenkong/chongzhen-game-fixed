@@ -260,6 +260,9 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
   // 落在《不知所踪》的是 seed6417/vanish/缙绅 —— 第 154 月、公元 1640、两张成对票齐。
   // 这一颗骰子从此不再挪：复现性由 `simulate.determinism.test.ts` 钉着。
   // 重扫用的探针脚本不入库（本文件外的临时 test 跑完即删），读数与取舍记在 KNOWN_ISSUES ㉞。
+  // 第六十一轮把那一格的年窗从 1638 对到产地下沿 1637，并删掉圣眷≤15 / 清议≤20 两道二道窗
+  // （产地《乱世浮沉》已经用 ≤25 问过一次）。同一批 80 局里《不知所踪》的结案 1 → 6 局，
+  // 六局全是成对票、都在 1638–1643 之间收人；seed6417 仍是 1640，下面这句只把下界跟着门挪到 1637。
   it('《不知所踪》仍结得了案（反推存档：seed 6417 / vanish / 缙绅）', async () => {
     const r = await simulateRun({ seed: 6417, policy: 'vanish', origin: '缙绅', maxMonths: MONTHS })
     expect(
@@ -268,7 +271,7 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
         `年${r.finalYear} 圣眷${r.finalThresholds.圣眷} 清议${r.finalThresholds.清议} 国势${r.finalGates.国势}`
     ).toBe('ending_unknown_fate')
     expect(r.finalFlags).toEqual(expect.arrayContaining(['下落不明', '隐姓埋名']))
-    expect(r.finalYear).toBeGreaterThanOrEqual(1638)
+    expect(r.finalYear).toBeGreaterThanOrEqual(1637)
   }, 60_000)
 
   it('无声的即时革职已经不存在：凡是「贪墨被查」收的局，身上一定带着预警票', () => {

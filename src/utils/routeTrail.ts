@@ -174,7 +174,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         mode: 'all',
         priority: 117,
         tickets: ['下落不明', '隐姓埋名'],
-        window: { min: 1638, max: 1660 }
+        window: { min: 1637, max: 1660 }
       },
       {
         endingId: 'ending_bandit_king',
