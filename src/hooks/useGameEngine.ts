@@ -1008,7 +1008,7 @@ export function useGameEngine(props: UseGameEngineProps) {
   }, [])
 
   /**
-   * 事件 id → 最后一次被选中的**月份**（state.turn）。
+   * 事件 id → 最后一次被选中的**月份**（state.turn）。冷却的唯一尺子。
    *
    * `EVENT_COOLDOWN_MONTHS` 的表头写的是「冷却期（月）」，可它原先只按 `eventHistory` 的
    * **条目距离**判定，而一个月会往 history 里追加 1~3 条（一条大事件 + 最多两个支线）。
@@ -1017,9 +1017,17 @@ export function useGameEngine(props: UseGameEngineProps) {
    * 做成可重复 gray 之后，这个偏差直接表现成「同一次节礼在三个月里打点了两遍」，
    * 并被 tests/unit/engine.strictMode.test.ts 的「历史里不该有重复 id」抓到。
    *
-   * 这里按月份另记一遍，与条目距离**同时**生效：条目距离维持原语义（不劣化既有行为），
-   * 月份距离是新增的上界。存档里没有 turn 轨迹，读档后这张表是空的 ——
-   * 空表等价于「只按条目距离判」，即维持原行为，不会把冷却算成永远走不完。
+   * 第十四轮起另外记了这张月份表，但当时保留了条目距离作为**同时生效**的门。
+   * 第五十九轮量出这扇门的反作用：空月里 `eventHistory` 不再增长，条目距离就永远停在
+   * 最后一次播放时的那一格 —— 一个月不播卡，距离只增加 0；一年不播，还是 0。
+   * 实测（seed 6 / warden / 寒门）1644-05 到 1645-08 播完 18 张之后，
+   * 1649-08 这一个月 `available` 有卡、`findAllEventsForState` 返回空，
+   * 接着 276 个月一张也没有，直到年满七十被《寿终正寝》收走。
+   * 所以条目距离**整条拆掉**：冷却只按月份判，空月里月份照走，锁不会越锁越死。
+   *
+   * 读档后这张表是空的（存档不记 turn 轨迹）。此时**不判冷却** ——
+   * 旧存档已经把卡播过了，再用历史反推冷却只会把中晚年的存档整批锁死；
+   * 月份记录缺失时，"不知道"应当按"没在冷却"处理，而不是按"刚刚播过"。
    *
    * crisis 类临界事件（`checkBoundary`）第十四轮之前根本不走这套判定，现在共用同一张表、
    * 同一份月份轨迹，因此这条 ref 也是那条路径的唯一记录处。
@@ -1037,31 +1045,17 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     const activeStoryline = getCurrentStoryline()
 
-    // 已触发集合与「最后一次出现位置」表，各构建一次。
+    // 已触发集合构建一次。
     //
     // 改造前：下面 4 处 `!history.includes(e.id)` 各自对最多 2000 个候选做一次线性扫描，
     // 而 history 一局能涨到 200+ 项 —— 单次推进要做几十万次字符串比较。
-    // 更糟的是 lastOccurrenceDistance 用 `history.lastIndexOf()`，
-    // 在 withCooldown 里对每个可重复事件各扫一遍，是本函数最大的热点。
-    // 两张表建一次、之后全是 O(1) 查询，语义与原来完全一致。
+    // 改成 Set 之后全是 O(1) 查询，语义与原来完全一致。
     const seen = new Set(history)
-    const lastIndexById = new Map<string, number>()
-    for (let i = 0; i < history.length; i++) lastIndexById.set(history[i], i)
-
-    // 某个事件距离上次出现在 history 里隔了**几条**（不是几个月，见上面的说明）
-    const lastOccurrenceDistance = (eventId: string): number => {
-      const lastIndex = lastIndexById.get(eventId)
-      if (lastIndex === undefined) return Infinity
-      return history.length - lastIndex
-    }
 
     const withCooldown = (pool: GameEvent[], type: string): GameEvent[] => {
       const minGap = EVENT_COOLDOWN_MONTHS[type] || 0
       if (minGap <= 0) return pool
-      return pool.filter(e => {
-        if (lastOccurrenceDistance(e.id) <= minGap) return false
-        return !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current)
-      })
+      return pool.filter(e => !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current))
     }
 
     const results: GameEvent[] = []

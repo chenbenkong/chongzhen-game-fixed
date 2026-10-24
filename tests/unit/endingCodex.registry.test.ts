@@ -81,10 +81,15 @@ describe('id 对账表（data/endingRegistry）', () => {
    * 后者是一条空转的断言：第十三轮漏掉的那些名字压根不在表里，循环自然全绿。
    * 成就要能点亮格子，靠的是 `ending_<成就名>_done` ↔ `triggerable_<事件名>` 这一行换算；
    * 少一行，那条成就就在成就面板里亮着、图鉴那格却永远是灰的 —— 又回到第十三条那个 bug。
+   *
+   * 第五十九轮多出的第十二条不是成就名，而是一个**事件 id**：
+   * `gray_late_retire`（乞骸骨那张灰卡）收笔时走的是《致仕善终》那一格。
+   * 它同样必须钉住 —— 少了它，中晚年玩家点下「上书乞骸骨」会结在一格图鉴里不存在的名字上。
    */
-  it('别名表登记的正是"成就名 ≠ 事件名"的那十一格', () => {
+  it('别名表登记的正是"成就名 ≠ 事件名"的那十一格，外加一条事件别名', () => {
     expect(Object.entries(ENDING_ID_ALIASES).sort()).toEqual(
       [
+        ['gray_late_retire', 'ending_honorable_retirement'],
         ['ending_bankrupt', 'triggerable_bankrupt'],
         ['ending_death_illness', 'triggerable_death_illness'],
         ['ending_emperor_hate', 'triggerable_emperor_hate'],
@@ -108,9 +113,17 @@ describe('id 对账表（data/endingRegistry）', () => {
    * 破产是唯一"引擎会改名"的：成就名 `ending_bankrupt_done`、判据 `ending_bankrupt`、
    * 格子 `triggerable_bankrupt` —— 前两条相同、第三条不同；十格边界结局正好相反，
    * 成就名与判据不同名。所以这条比的是"两个名字各自 resolve 之后的落点"，不是字面相等。
+   *
+   * 只对 `ending_` 开头的别名要求"成就同名存在"：第五十九轮的 `gray_late_retire`
+   * 是事件别名，它的成就是格子自己的 `ending_honorable_retirement_done`（换算由
+   * `endingAchievementIdOf` 负责，钉在 `engine.lateLife.test.ts`）。
+   * 反过来要求 `gray_late_retire_done` 存在，等于给事件 id 凭空造一条成就。
    */
-  it('每条别名的成就都真存在，且 id 与判据换算到同一格', () => {
-    for (const [stem, tileId] of Object.entries(ENDING_ID_ALIASES)) {
+  it('每条成就别名的成就都真存在，且 id 与判据换算到同一格', () => {
+    const stems = Object.keys(ENDING_ID_ALIASES).filter(s => s.startsWith('ending_'))
+    expect(stems).toHaveLength(11)
+    for (const stem of stems) {
+      const tileId = ENDING_ID_ALIASES[stem]
       const ach = ALL_ACHIEVEMENTS.find(a => a.id === `${stem}_done`)
       expect(ach, `成就 ${stem}_done 不存在 —— 图鉴那格永远点不亮`).toBeTruthy()
 

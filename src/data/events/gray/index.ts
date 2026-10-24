@@ -8,6 +8,7 @@ import { patronageGrayEvents } from './patronage'
 import { regimenGrayEvents } from './regimen'
 import { locallineGrayEvents } from './localline'
 import { reformGrayEvents } from './reform'
+import { lateLifeGrayEvents } from './lateLife'
 
 // 所有灰色支线事件（不含结局）
 // 灰色结局（ending_debauch_fall 等）已迁移到 events/ending/debauchery/，由 BoundaryEventManager 统一注册触发
@@ -27,7 +28,10 @@ export const allGrayChoiceEvents: GameEvent[] = [
   // 而纵欲线（单条最高 −65 道德）偏偏以 欲望值 25~35 为开门条件。
   // 于是"腐化"是一条自我强化的下坡滑梯：欲望涨 → 纵欲事件解锁 → 道德崩 → 第 13 个月被考核革职。
   // reform 补的正是那条缺失的下行通道（欲望 −172 / 道德 +126），也是道德值唯一的主动回升口。
-  ...reformGrayEvents
+  ...reformGrayEvents,
+  // 中晚年（第五十九轮）：年窗在 1645 前全部关完之后，玩家还需要看得见自己的老去。
+  // 这一组按**年岁**开门，不按公元年 —— 见 lateLife.ts 的表头。
+  ...lateLifeGrayEvents
 ]
 
 export {
@@ -39,5 +43,6 @@ export {
   patronageGrayEvents,
   regimenGrayEvents,
   locallineGrayEvents,
-  reformGrayEvents
+  reformGrayEvents,
+  lateLifeGrayEvents
 }

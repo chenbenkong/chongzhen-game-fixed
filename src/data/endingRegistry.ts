@@ -44,7 +44,18 @@ export const ENDING_ID_ALIASES: Readonly<Record<string, string>> = {
   ending_moral_isolation: 'triggerable_moral_degeneracy',
   ending_faction_martyr: 'triggerable_faction_martyr',
   ending_tyrant_fall: 'triggerable_faction_tyrant_fall',
-  ending_faction_sacrifice: 'triggerable_faction_sacrifice'
+  ending_faction_sacrifice: 'triggerable_faction_sacrifice',
+
+  /**
+   * 第五十九轮：中晚年的《乞骸骨》是一张灰卡（按年岁重复出现），
+   * 其中【上书乞骸骨】走 `special.type='ending'` 当场收笔。
+   * 事件 id 不是图鉴格子，必须在这里换算到《致仕善终》；
+   * 否则 `triggerEndingAchievements` 会把一个不存在的 id 写进图鉴/成就。
+   *
+   * 注意它不是成就名 —— 成就名的命名约定是 `ending_<事名>_done`，
+   * 因此下面反推成就 stem 时只认以 `ending_` 开头的别名（见 `TILE_TO_ACHIEVEMENT_STEM`）。
+   */
+  gray_late_retire: 'ending_honorable_retirement'
 }
 
 /**
@@ -57,15 +68,24 @@ export function resolveEndingTileId(id: string): string | null {
 }
 
 /**
- * 格子 id → 那条结局成就的 id。
+ * 格子 id → 那条结局成就名的词干。
  *
  * 引擎过去写的是 `` `${event.id}_done` ``：对 34 条叙事结局正好（事件 id 就是格子 id），
  * 对边界结局就会拼出 `triggerable_eunuch_done` —— 一个按命名约定永远不存在、
  * 也永远不会出现在成就面板里的名字。第五十二轮给这十格补成就之后，
  * 拼名必须经过本表换算，否则"补了成就却仍然不亮"与第十三轮那个 bug 是同一种 bug。
+ *
+ * 本表是把 `ENDING_ID_ALIASES` 反过来查：别名里的 `from` 通常是成就名的词干
+ * （`ending_death_illness` → `ending_death_illness_done`）。但第五十九轮起也出现了
+ * **普通事件 id → 格子 id** 的别名（`gray_late_retire`），它没有对应的成就名。
+ * 无条件反查会让这一格的成就名被它挤掉，玩家达成《致仕善终》时永远不亮。
+ * 成就命名约定是 `ending_<事名>_done`，所以只收以 `ending_` 开头的别名；
+ * 一个格子若同时有一条成就名别名和一条普通事件别名，stem 仍然取前者。
  */
 const TILE_TO_ACHIEVEMENT_STEM: ReadonlyMap<string, string> = new Map(
-  Object.entries(ENDING_ID_ALIASES).map(([from, to]) => [to, from])
+  Object.entries(ENDING_ID_ALIASES)
+    .filter(([from]) => from.startsWith('ending_'))
+    .map(([from, to]) => [to, from])
 )
 
 export function endingAchievementIdOf(eventId: string): string {
