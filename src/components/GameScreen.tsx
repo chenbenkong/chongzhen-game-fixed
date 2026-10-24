@@ -21,6 +21,7 @@ import AchievementPanel from './AchievementPanel'
 import TutorialModal from './TutorialModal'
 import StorylineBar from './StorylineBar'
 import ResignConfirmDialog from './ResignConfirmDialog'
+import { toMingEraYear } from '../utils/endingSystem'
 
 import './GameScreen.css'
 
@@ -142,7 +143,7 @@ function GameScreen(props: GameScreenProps) {
     currentEventTitle: currentEvent?.title,
     currentEventDescription: currentEvent?.description,
     currentChoices: currentEvent?.choices?.map(c => c.text),
-    recentRecords: lifeRecords.slice(-5).map(r => `崇祯${r.year}年${r.month}月：${r.title}`)
+    recentRecords: lifeRecords.slice(-5).map(r => `${toMingEraYear(r.year)}${r.month}月：${r.title}`)
   }), [character, gameState, currentEvent, lifeRecords])
 
   const imageGeneratorContext = useMemo(() => ({

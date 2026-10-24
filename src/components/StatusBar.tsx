@@ -2,6 +2,7 @@ import { memo as ReactMemo } from 'react'
 import { Character, GameStateValues, DegreeType } from '../types/game'
 import { BGMInlineButton } from './BGM'
 import { isDebugModeEnabled } from '../utils/debug'
+import { toMingEraYear } from '../utils/endingSystem'
 import './StatusBar.css'
 
 interface StatusBarProps {
@@ -12,12 +13,6 @@ interface StatusBarProps {
 }
 
 const StatusBarImpl = function StatusBar({ character, gameState, degree, onCheatClick }: StatusBarProps) {
-  const yearNames = ['崇祯元年', '崇祯二年', '崇祯三年', '崇祯四年', '崇祯五年',
-    '崇祯六年', '崇祯七年', '崇祯八年', '崇祯九年', '崇祯十年',
-    '崇祯十一年', '崇祯十二年', '崇祯十三年', '崇祯十四年', '崇祯十五年',
-    '崇祯十六年', '崇祯十七年']
-
-  const yearIndex = Math.max(0, Math.min(yearNames.length - 1, gameState.currentYear - 1628))
 
   // 优先使用 character.degree（当前实际功名），如果没有则使用传入的 degree（初始功名）
   const currentDegree = character.degree || degree
@@ -37,7 +32,9 @@ const StatusBarImpl = function StatusBar({ character, gameState, degree, onCheat
     <div className="status-bar">
       <div className="status-left">
         <div className="time-info">
-          <span className="year">{yearNames[yearIndex] || `崇祯${gameState.currentYear - 1627}年`}</span>
+          {/* 用结局系统同一把年号尺子：年表只写到崇祯十七年，
+              而中晚年的卡全在 1645 以后（1649 读作崇祯二十二年） */}
+          <span className="year">{toMingEraYear(gameState.currentYear)}</span>
           <span className="month">{gameState.currentMonth}月</span>
         </div>
         <div className="divider"></div>
