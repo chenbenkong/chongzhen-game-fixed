@@ -68,6 +68,8 @@ export default function NameInput({ onConfirm }: NameInputProps) {
     setSurname(randomSurname)
     setName(randomName)
     setAutoGenCourtesy(true)  // 随机点名字后，让"字"也跟着重新生成
+    // 一键随机就该交出一份完整身份：籍贯没填时顺手抽一个，已填的不覆盖
+    setHometown((prev) => (prev.trim() ? prev : randomHometown()))
   }
 
   const handleRandomHometown = () => {
@@ -103,6 +105,15 @@ export default function NameInput({ onConfirm }: NameInputProps) {
   const ageValid = ageNum >= 16 && ageNum <= 60
 
   const canConfirm = fullName.trim() && courtesyName.trim() && hometown.trim() && ageValid
+
+  // 主按钮按不动时把缺的格子写出来 —— 玩家点【随机取名】却停在原地，就是因为没有这句话
+  const missingFields = [
+    !surname.trim() ? '姓' : '',
+    !name.trim() ? '名' : '',
+    !courtesyName.trim() ? '字' : '',
+    !hometown.trim() ? '籍贯' : '',
+    !ageValid ? '年岁' : ''
+  ].filter(Boolean)
 
   const handleConfirm = useCallback(() => {
     if (!canConfirm) return
@@ -222,6 +233,12 @@ export default function NameInput({ onConfirm }: NameInputProps) {
               </button>
             </div>
           </div>
+
+          {missingFields.length > 0 && (
+            <div className="name-hint" role="status">
+              还缺：{missingFields.join('、')}
+            </div>
+          )}
 
           {/* 预览：横向一行 */}
           <div className="preview-name preview-horizontal">
