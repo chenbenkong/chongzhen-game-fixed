@@ -175,6 +175,14 @@ export function checkChoiceRequirement(
     if (anyList && anyList.length && !anyList.some(x => own.includes(x))) {
       return lockedByFlag(`须有过其中一段经历：${sayFlags(anyList)}`, anyList[0])
     }
+    // minCount：其中至少 N 段。与事件级同义；同样不给骰子 —— 经历不是努力能换的。
+    const mc = f.minCount
+    if (mc && mc.min > 0) {
+      const missing = mc.flags.filter(x => !own.includes(x))
+      if (mc.flags.length - missing.length < mc.min) {
+        return lockedByFlag(`须有过其中 ${mc.min} 段经历：${sayFlags(missing)}`, missing[0] ?? mc.flags[0] ?? '经历')
+      }
+    }
     const forbidden = [...(f.notHas ?? []), ...(f.none ?? [])].filter(x => own.includes(x))
     if (forbidden.length) {
       return lockedByFlag(`与你的另一段经历相冲：${sayFlags(forbidden)}`, forbidden[0])

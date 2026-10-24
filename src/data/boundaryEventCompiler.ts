@@ -119,6 +119,11 @@ function compileConditions(conditions: EventConditions | undefined) {
           if (flags.includes(f)) return false
         }
       }
+      // minCount：其中至少 N 段。与另外两个求值器同一把尺子（第 62 轮）。
+      if (conditions.flags.minCount) {
+        const { flags: need, min } = conditions.flags.minCount
+        if (min > 0 && need.filter(f => flags.includes(f)).length < min) return false
+      }
     }
 
     // 9) 随机数（用 Math.random 模拟）

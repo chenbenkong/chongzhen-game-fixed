@@ -80,7 +80,7 @@ const NATURALIZED_EVENT_IDS = [
   'transition_154', 'transition_158', 'transition_164', 'transition_166',
   'transition_172', 'transition_177', 'transition_182', 'transition_183',
   'transition_184', 'prelude_zhongxing_1643_12', 'prelude_died_battlefield_1643_9',
-  'prelude_usurper_1643_12', 'prelude_exterminate_1644_1'
+  'prelude_usurper_1643_12', 'prelude_clan_exterminate'
 ] as const
 
 const byId = new Map(transitionEvents.map(e => [e.id, e]))

@@ -119,6 +119,8 @@ export function scanFlagReachability(
       for (const clause of FLAG_CLAUSES) {
         for (const flag of f[clause] ?? []) noteRead(flag, where)
       }
+      // minCount 的经历名在对象里，不在数组槽上 —— 与 since 同理，上面的循环扫不到。
+      for (const flag of f.minCount?.flags ?? []) noteRead(flag, where)
       // `since` 的经历名是**键**而不是数组元素，上面那个循环扫不到它。
       // 第五十四轮起它是一道真门（checkEventConditions / checkChoiceRequirement 都读），
       // 不扫就会把"只靠孩子几岁开门"的经历错报成没人读。
@@ -150,6 +152,17 @@ export function scanFlagReachability(
       unsatisfiable.push(
         `${e.type.padEnd(10)} ${e.id.padEnd(34)} 「${(e.title || '').slice(0, 18)}」  需要永不存在的 flag: ${missing.join(', ')}`
       )
+    }
+    // minCount 是"正门"，但只要求其中 N 段：全库写得出来的段数都凑不够 N 时，
+    // 这道门与"需要一段永不存在的经历"一样恒假。不能把整张名单塞进 need（那会误报）。
+    const mc = e.conditions?.flags?.minCount
+    if (mc && mc.min > 0) {
+      const reachable = mc.flags.filter(f => granted.has(f)).length
+      if (reachable < mc.min) {
+        unsatisfiable.push(
+          `${e.type.padEnd(10)} ${e.id.padEnd(34)} 「${(e.title || '').slice(0, 18)}」  minCount 要 ${mc.min} 段，全库写得出来的只有 ${reachable} 段: ${mc.flags.join(', ')}`
+        )
+      }
     }
     for (const clause of ['notHas', 'none'] as const) {
       for (const f of e.conditions?.flags?.[clause] ?? []) {

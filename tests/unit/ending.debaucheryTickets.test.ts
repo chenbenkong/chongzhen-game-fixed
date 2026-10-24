@@ -84,15 +84,21 @@ describe('风月线结局：判据换成看得见的经历票', () => {
     expect(e.conditions?.gameState?.清议?.max).toBeLessThanOrEqual(30)
   })
 
-  it('《中兴成功》把 custom 依赖的四张改革票写进门里，道德值换成公开清议', () => {
+  it('《中兴成功》用 flags.minCount 读四张改革票，最后一问写 中兴功成，不再挂 custom', () => {
     const e = endingById.get('ending_zhongxing_success')!
-    expect(positivePool(e.conditions?.flags).sort()).toEqual(
-      ['先见之明', '坚持招抚', '阻止孙传庭出战', '持续保袁'].sort()
-    )
+    const flags = e.conditions?.flags as any
+    // 第六十二轮：3 of 4 的基数判定从 custom 搬进 flags.minCount，
+    // 条件对象自己就能读出"哪四张、要几张"，图鉴与选项锁的理由也走同一把尺子。
+    expect(flags?.minCount).toEqual({
+      flags: ['阻止孙传庭出战', '持续保袁', '坚持招抚', '先见之明'],
+      min: 3
+    })
+    // 四张改革票只说明"做过事"；必须先答完《中兴前夜》最后一问【鞠躬尽瘁】。
+    expect(flags?.has).toEqual(['中兴功成'])
+    expect(flags?.notHas).toContain('暗蓄异志')
     expect(e.conditions?.hidden).toBeUndefined()
     expect(e.conditions?.gameState?.清议?.min).toBeGreaterThanOrEqual(55)
-    // 3 of 4 的集合基数判定仍在 custom 里，不能因为加了 any 就把它删了
-    expect(typeof e.conditions?.custom).toBe('function')
+    expect(e.conditions?.custom).toBeUndefined()
   })
 
   it('《卖国求荣》保留贰臣票，撤掉隐藏道德/野心', () => {

@@ -250,7 +250,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '篡位自立',
         mode: 'all',
         priority: 104,
-        tickets: ['掌军权', '拥兵自重', '问鼎之约'],
+        // 第 62 轮：三张兵权票只说明"手里有兵"，前奏【黄袍加身】才是跨过那条线的那一步。
+        tickets: ['掌军权', '拥兵自重', '问鼎之约', '黄袍加身'],
         window: { min: 1644, max: 1660 }
       }
     ]

@@ -31,6 +31,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
   | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout' | 'heir'
+  | 'corrupt'
 
 export interface SimOutcome {
   seed: number
@@ -319,6 +320,19 @@ interface RetireProfile {
    */
   preferClean?: boolean
   /**
+   * 目标票优先于保命硬筛（第六十二轮）。
+   *
+   * `tickets` 原本只值 +40 分，而评分发生在 `floors` 硬筛**之后** —— 一条把某一维
+   * 压到地板以下的票根本进不了评分。`corrupt` 正是这样卡住的：《抄家在即》的入口
+   * 把 圣眷 限在 11–25，【拼死一搏】自己抽 20 点，做完必然低于 `floors.圣眷=12`，
+   * 于是画像 10 次撞见自己那一格的前奏，10 次都点了【破财打点】，
+   * 《抄家灭族》在 32 局里 0 次结案 —— 与 `preferClean` 那条"量具不能把'我不想'
+   * 伪装成'我不能'"是同一课：真人看得见卡片上的代价，也愿意为它付。
+   *
+   * 置真后：池子里只要有点得动的目标票（且不添 `avoid` 里的票），就先拿票。
+   */
+  preferTickets?: boolean
+  /**
    * `preferClean` 第二层（"干净且还活着"）的死线余量，默认 8。
    *
    * 8 是归零警告的安全余量，不是一个想走到某格的人真正付不起的价。
@@ -520,6 +534,38 @@ const FUGITIVE: RetireProfile = {
   floors: { 圣眷: 8, 清议: 8, 道德值: 8, 财帛: 18 },
   under: { 道德值: 30, 圣眷: 15 },
   fleeOnWarning: true
+}
+
+/**
+ * 想走《抄家灭族》的那副画像（第六十二轮）。
+ *
+ * 这一格和前面几副都不一样：它要的不是"活得好"，是**活到被抓**——
+ * 财帛≥60 ∧ 道德≤20 ∧ 圣眷≤25 ∧ 中官≤25 ∧ 体质≥15。
+ * 而 `checkDemotion` 那台考功机器正好在同一个坐标上摆着两道刀：
+ * 「贪墨被查」（财帛>70 ∧ 欲望>75 ∧ 道德<30，severity 3 当场革职流放）
+ * 和「帝心尽失」（圣眷<10，severity 2，一路贬到底）。
+ * 所以这副画像必须在 60–70 的财帛缝里活着、把欲望压在 75 以下，
+ * 同时把中官与圣眷往下压而不压穿。
+ */
+const CORRUPT: RetireProfile = {
+  targets: new Set(['ending_clan_exterminate']),
+  // 第 62 轮起这一格的正门是《抄家在即》【拼死一搏】写下的 抄家问罪；
+  // 画像从格子自己的 has 读票，于是它会主动去点那一条。
+  tickets: new Set([
+    ...tileFlagPool('ending_clan_exterminate', 'has'),
+    ...tileFlagPool('ending_clan_exterminate', 'any')
+  ]),
+  avoid: new Set(tileFlagPool('ending_clan_exterminate', 'notHas')),
+  // 必须先拿票再谈保命：前奏入口的 圣眷 上限是 25，【拼死一搏】自己抽 20 点，
+  // 做完一定落到 floors.圣眷=12 以下。不越过那道硬筛，画像就永远点不到自己那一格。
+  preferTickets: true,
+  favorBand: 25,
+  weights: { 财帛: 0.6, 道德值: -1.2, 中官: -1, 圣眷: -0.5, 欲望值: -1.2 },
+  floors: { 财帛: 40, 体质: 18, 圣眷: 12, 中官: 20, 清议: 8, 士绅: 10, 民望: 10, 道德值: 10 },
+  under: { 道德值: 20, 圣眷: 25, 中官: 25 },
+  over: { 财帛: 60 },
+  keepAbove: { 圣眷: 12, 道德值: 10, 体质: 18, 理政: 40, 民望: 16 },
+  keepBelow: { 欲望值: 70, 财帛: 70 }
 }
 
 /**
@@ -739,7 +785,8 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {  monk: MONK,
   usurper: USURPER,
   debauched: DEBAUCHED,
   burnout: BURNOUT,
-  heir: HEIR
+  heir: HEIR,
+  corrupt: CORRUPT
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
@@ -787,6 +834,12 @@ function pickHermit(
   })
   const clean = (c: EventChoice) =>
     !((c.effects?.flags?.add ?? []) as string[]).some(f => profile.avoid.has(f))
+  if (profile.preferTickets) {
+    const ticketChoice = candidates.find(
+      c => clean(c) && ((c.effects?.flags?.add ?? []) as string[]).some(f => profile.tickets.has(f))
+    )
+    if (ticketChoice) return ticketChoice
+  }
   const cleanSafe = profile.preferClean ? sustainable.filter(clean) : []
   const aliveFloor = profile.cleanAliveFloor ?? 8
   const cleanAlive = profile.preferClean

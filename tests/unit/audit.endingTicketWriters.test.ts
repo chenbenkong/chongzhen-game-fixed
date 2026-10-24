@@ -35,12 +35,17 @@ for (const e of allEvents) {
   }
 }
 
-/** 条件对象里正面读的那批池子（`has` 全要 / `all` 全要 / `some`、`any` 任一） */
+/**
+ * 条件对象里正面读的那批池子（`has` 全要 / `all` 全要 / `some`、`any` 任一）。
+ * `minCount` 的名单同样是正面读的票（第六十二轮起《中兴成功》用它读四张改革票、凑三张），
+ * 里面藏幽灵票一样是门槛撒谎，所以并进池子一起扫。
+ */
 const positivePool = (f: any): string[] => [
   ...(f?.has ?? []),
   ...(f?.all ?? []),
   ...(f?.some ?? []),
-  ...(f?.any ?? [])
+  ...(f?.any ?? []),
+  ...(f?.minCount?.flags ?? [])
 ]
 
 const tiles = allEndingEvents as any[]
@@ -91,14 +96,19 @@ describe('结局格子的门票必须有写手', () => {
   })
 
   it('摘完幽灵之后，每一格至少还剩两条能摸到的票', () => {
-    // 4 张"单票格"是设计如此（殉国死节=殉国报君、称臣纳贡/卖国求荣=贰臣、
+    // "单票格"是设计如此（殉国死节=殉国报君、称臣纳贡/卖国求荣=贰臣、
     // 流亡海外=转移资产）：它们读的是那一件只有一次可能的动作，不在本条断言的格子里。
     // 南渡续祚已经拆成"渡江 + 效忠"两张票（第四十八轮），不再享受这条豁免。
+    // 第六十二轮补进《抄家灭族》：它读的是《抄家在即》最后一问【拼死一搏】写下的
+    // 抄家问罪，与殉国/称臣/卖国/流亡海外同属"只有一次的那件动作"。
+    // 抄家线的前置（财帛≥60 ∧ 圣眷 11–25 ∧ 道德≤20）已经在那张卡的入口上，
+    // 再拆成两张票只会让最后一问的答案失去分量。
     const oneAction = new Set([
       'ending_martyr_nation',
       'ending_qing_tributary',
       'ending_traitor',
-      'ending_exile_overseas'
+      'ending_exile_overseas',
+      'ending_clan_exterminate'
     ])
     const thin: string[] = []
     for (const t of tiles) {

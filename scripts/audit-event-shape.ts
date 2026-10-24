@@ -167,6 +167,20 @@ export function scanEventShape(
         }
         continue
       }
+      if (k === 'minCount') {
+        const mc = (v as { flags?: unknown; min?: unknown }) || {}
+        const list = Array.isArray(mc.flags) ? mc.flags : []
+        if (list.length === 0) {
+          add('结构', where, `${prefix}.flags.minCount.flags 必须是非空的经历名数组`)
+        } else {
+          for (const f of list) if (!f) add('结构', where, `${prefix}.flags.minCount.flags 里有空经历名`)
+        }
+        const n = Number(mc.min)
+        if (!Number.isInteger(n) || n < 1 || n > list.length) {
+          add('NOOP', where, `${prefix}.flags.minCount.min 须是 1 到 flags 长度之间的整数（写成 ${String(mc.min)} 等于没装这道门）`)
+        }
+        continue
+      }
       if (!['has', 'notHas', 'any', 'none', 'all', 'some'].includes(k)) add('NOOP', where, `${prefix}.flags.${k} 引擎不识别`)
     }
     if (cond.random !== undefined) {

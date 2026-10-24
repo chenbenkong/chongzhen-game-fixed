@@ -131,6 +131,13 @@ export function checkEventConditions(
     // all：必须全部具备
     if (cond.flags.all && cond.flags.all.some((f: string) => !own.includes(f))) return false
 
+    // minCount：「其中至少 N 段」—— 夹在 all（全要）与 any（一段就够）中间的那一档。
+    // 中兴线的「四张票凑三张」走的就是它；min 写成 0 或负数等于没这道门。
+    if (cond.flags.minCount) {
+      const { flags: need, min } = cond.flags.minCount
+      if (min > 0 && need.filter((f: string) => own.includes(f)).length < min) return false
+    }
+
     // 全部具备（all）之后，还有一类门读的是**多久之前**具备的。
     // 《名帖》正文写「孩子到了入塾的年纪」，这一句才是它的门；公元年窗管天下，不管你家孩子几岁。
     if (cond.flags.since) {

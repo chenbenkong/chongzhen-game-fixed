@@ -119,16 +119,16 @@ describe('结局可达性矩阵：图鉴每一格都得真能走到', () => {
     expect(under, `这些格子声明的年窗低于 ${NARRATIVE_MIN_YEAR}，会被编译器静默抬上去`).toEqual([])
   })
 
-  it('手写 check 的那十四格仍由驱动表提供存档（防止驱动表漏格）', () => {
+  it('手写 check 的十三格仍由驱动表提供存档（防止驱动表漏格）', () => {
     const driven = report.tiles.filter(t => t.notes.some(n => n.includes('驱动表')))
     expect(
       driven.map(t => t.id).sort(),
-      '驱动表覆盖的是"门槛不在 conditions 里"的那些格：八条归零 + 三条党派 + 两条 custom。' +
-        '少一格说明有人把门槛搬回了 conditions（那很好，同步删掉驱动），或者搬走了却没人接。'
+      '驱动表覆盖的是"门槛不在 conditions 里"的那些格：八条归零 + 三条党派 + 一条 custom。' +
+        '少一格说明有人把门槛搬回了 conditions（那很好，同步删掉驱动），或者搬走了却没人接。' +
+        '《中兴成功》第 62 轮把 custom 的 3 of 4 基数判定换成了 flags.minCount，因此离开这张表。'
     ).toEqual(
       [
         'ending_famous_minister',
-        'ending_zhongxing_success',
         'triggerable_bankrupt',
         'triggerable_death_illness',
         'triggerable_emperor_hate',

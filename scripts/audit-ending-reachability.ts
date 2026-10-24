@@ -244,6 +244,18 @@ function derive(e: GameEvent, writable: Set<string>): { state: DerivedState; not
       wanted.push(pick)
     }
   }
+  // minCount：凑够 N 段就过，反推只取其中写得出来的前 N 段。
+  // 它与 custom 的基数判定同义，但 custom 是一个函数、反推看不见；
+  // 第 62 轮把它换成 minCount 之后，这一格不再需要手写驱动器。
+  const mc = f.minCount
+  if (mc && mc.min > 0) {
+    const pool = mc.flags.filter(flag => writable.has(flag) && !negatives.has(flag))
+    if (pool.length < mc.min) {
+      notes.push(`flags.minCount 要 ${mc.min} 段，写得出来的只有 ${pool.length} 段：${mc.flags.join(' / ')}`)
+    } else {
+      wanted.push(...pool.slice(0, mc.min))
+    }
+  }
   s.flags = wanted.filter(flag => !negatives.has(flag))
   return { state: s, notes }
 }
@@ -263,8 +275,10 @@ export interface EndingReachabilityReport {
  * 三类，各有原因：
  *   1. 八条归零零和三条党派结局在 `boundaryEvents.ts` 里是**手写的 `check` 函数**
  *      （`conditions` 是空对象 `{}`），编译器的反推对它们无从下手。
- *   2. `ending_famous_minister` / `ending_zhongxing_success` 除范围条件外还挂了一个
- *      `custom`，要的是"某几张门票里至少凑齐 N 张" —— 这是集合基数，不是阈值。
+ *   2. `ending_famous_minister` 除范围条件外还挂了一个 `custom`，
+ *      要的是"某几张门票里至少凑齐 N 张" —— 这是集合基数，不是阈值。
+ *      （`ending_zhongxing_success` 第 62 轮已把同类基数判定换成 `flags.minCount`，
+ *      反推能自己凑票，不再需要驱动器。）
  *   3. `ending_demotion` 由引擎的 `checkDemotion` 自造卡片，根本不进边界注册表。
  *
  * 驱动表写在这里而不是散在测试里，是因为它同时是**这一格의说明书**：
@@ -311,12 +325,7 @@ const DRIVERS: Record<string, (base: DerivedState) => DerivedState> = {
     faction: { 东林好感: 30, 阉党好感: 30, 立场: '未定', 党争烈度: 90 }
   }),
   // 名臣垂范：custom 要那九张清流门票里至少两张
-  ending_famous_minister: base => ({ ...base, flags: [...base.flags, '东林党核心', '清算阉党'] }),
-  // 中兴成功：custom 要四张参朝门票里至少三张
-  ending_zhongxing_success: base => ({
-    ...base,
-    flags: [...base.flags, '阻止孙传庭出战', '持续保袁', '坚持招抚']
-  })
+  ending_famous_minister: base => ({ ...base, flags: [...base.flags, '东林党核心', '清算阉党'] })
 }
 
 /** 革职两支由引擎的降官判定自造卡片，不走边界注册表（见 endingsDemotion.ts 的注释） */

@@ -95,6 +95,15 @@ export interface EventConditions {
      * 跳过遗留时间键同一条理由 —— 判死会让玩家已有的内容凭空消失）。
      */
     since?: Record<string, { min?: number; max?: number }>
+    /**
+     * 「这几段经历里至少有过 N 段」—— 四张票凑三张这一类。
+     *
+     * `has` / `all` 是"全都要"，`any` / `some` 是"至少一段"，中间那档此前没有原语：
+     * 中兴线要的是"做过三件不同的事"，写 `any` 就退化成一张票就够。
+     * 它和 `custom` 的基数判定同义，但事件池（`checkEventConditions`）读不到 `custom`，
+     * 所以必须是一等键。三个求值器都认（事件级 / 选项级 / 边界池）。
+     */
+    minCount?: { flags: string[]; min: number }
   }
   random?: number
   /**
