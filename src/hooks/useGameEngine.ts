@@ -1079,26 +1079,37 @@ export function useGameEngine(props: UseGameEngineProps) {
     const historical = available.filter(
       e => (e.type === 'historical' || e.type === 'chain') && !seen.has(e.id)
     )
+
+    // 2. 结局前奏先演
+    //
+    // 改造前前奏是 `historical` 的 else 分支：只有当这个月**没有**历史卡时才轮得到它。
+    // 而 7 张 isPreEnding 前奏的年月（1643-09 / 1643-12 / 1644-01 / 1644-02 / 1644-03）
+    // 全都排着历史卡，于是 256 局里 6 张前奏 0 次登场 —— 玩家永远看不到
+    // 「决战前夜」「城破前夜」这些专门的过渡戏，直接从历史卡跳进结局。
+    // 引擎本来就支持一个月多张卡（results[0] 进 currentEvent，其余进 pendingEvents，
+    // 界面上用「进下一件」翻页），所以这里把前奏排在历史卡之前、同月一起发：
+    // 1643-09《决战前夜》→《孙传庭殉国》，时序天然。
+    // 1644-03 的配对要更小心：《煤山遗恨》问的是同一道"殉国/降/逃/藏"，
+    // 走过《城破前夜》的人已经答过（见 historical/1644.ts 里那张卡的条件），
+    // 它不会排在队列里 —— 三月只留前奏这一拍。
+    const prelude = available.find(
+      e => e.type === 'transition' && e.isPreEnding === true && !seen.has(e.id)
+    )
+    if (prelude) results.push(prelude)
+
     const pickedHistorical = weightedPick(historical, activeStoryline)
     if (pickedHistorical) {
       results.push(pickedHistorical)
-    } else {
-      // 2. 过渡事件（一次性），结局前奏优先
-      const prelude = available.find(
-        e => e.type === 'transition' && e.isPreEnding === true && !seen.has(e.id)
-      )
-      if (prelude) {
-        results.push(prelude)
-      } else {
-        const transition = available.filter(e => e.type === 'transition' && !seen.has(e.id))
-        const pickedTransition = weightedPick(transition, activeStoryline)
-        if (pickedTransition) {
-          results.push(pickedTransition)
-        }
+    } else if (!prelude) {
+      // 3. 没有历史卡也没有前奏时，才用普通过渡事件补位
+      const transition = available.filter(e => e.type === 'transition' && !seen.has(e.id))
+      const pickedTransition = weightedPick(transition, activeStoryline)
+      if (pickedTransition) {
+        results.push(pickedTransition)
       }
     }
 
-    // 3. 若本月没有大事件/过渡事件，用随机事件填充（可重复，带冷却）
+    // 4. 若本月没有大事件/过渡事件，用随机事件填充（可重复，带冷却）
     if (results.length === 0) {
       const random = withCooldown(available.filter(e => e.type === 'random'), 'random')
       const pickedRandom = weightedPick(random, activeStoryline)
@@ -1107,7 +1118,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       }
     }
 
-    // 4. 支线事件：emotion 一次性，gray/character/national/faction 可重复但带冷却
+    // 5. 支线事件：emotion 一次性，gray/character/national/faction 可重复但带冷却
     const branchEmotion = available.filter(e => e.type === 'emotion' && !seen.has(e.id))
     const branchRepeatable = branchRepeatableEventTypes.flatMap(type =>
       withCooldown(available.filter(e => e.type === type), type)
@@ -1777,10 +1788,32 @@ export function useGameEngine(props: UseGameEngineProps) {
   const handleContinue = useCallback(() => {
     const currentPending = pendingEventsRef.current
     if (currentPending.length > 0) {
-      const [next, ...rest] = currentPending
-      setCurrentEvent(next)
-      setPendingEvents(rest)
-      return
+      // 第五十七轮：同月队列是按**月初**的状态排好的，而前奏的抉择会改写状态。
+      // 《城破前夜》选了【出家】之后，《煤山遗恨》还在队列里问同一道
+      // "殉国 / 投降 / 逃 / 藏" —— 再点一次就会在身上同时挂 出家+和尚 与 殉国报君
+      // 两张互斥的票，两个结局都收不了，人一路活到七十岁（实测 缙绅/warden/seed1）。
+      // 出队之前用**现在**的状态再筛一遍：事件条件不成立、或所有选项都关死的卡直接丢掉，
+      // 与 `findAllEventsForState` 的那把尺子（`checkEventConditions` + `hasOpenChoice`）同源。
+      //
+      // 只在**前奏之后**做这一步：普通月份里历史卡与支线同月并排是常态，
+      // 每次抉择都重筛会连带丢掉"抉择前合法、抉择后巧合不合法"的支线，
+      // 把整局的发牌随机流往后推（实测 寒门/warden/seed1 的结局从 1644 挪到 1636）。
+      // 前奏是引擎自己插进当月队列的那一张，只有它需要这道"抉择后的复核"。
+      const valid = currentEventRef.current?.isPreEnding
+        ? currentPending.filter(e =>
+            checkEventConditions(e, characterRef.current, gameStateRef.current) &&
+            hasOpenChoice(e, characterRef.current, gameStateRef.current)
+          )
+        : currentPending
+      if (valid.length > 0) {
+        const [next, ...rest] = valid
+        pendingEventsRef.current = rest
+        setCurrentEvent(next)
+        setPendingEvents(rest)
+        return
+      }
+      pendingEventsRef.current = []
+      setPendingEvents([])
     }
 
     // 当前月份事件已处理完，直接进入下月，不再显示空事件界面

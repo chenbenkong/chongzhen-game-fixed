@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { act } from '@testing-library/react'
 import { allEvents } from '../../scripts/event-pools'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { simulateRun } from './helpers/simulate'
+import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } from './helpers/gameEngine'
+import type { EventChoice, GameEvent } from '../../src/types/event'
 
 /**
  * 三条单终点命途的「第二拍 / 第三拍」（第四十七、四十八轮）。
@@ -102,23 +105,70 @@ describe('南明：渡江是脚程，效忠是立场', () => {
     }
   })
 
-  it('反推存档：seed 1 / warden / 缙绅 真的走得到南明', async () => {
-    // 第五十五轮重抄（旧 seed 2）：随机流"挂载后重新起头"之后序列挪了一拍（§1.4 ㉗），
-    // 200 个种子里 seed 1 走通，且 南渡长江／效忠南明 两张票齐、《transition_1644_aftermath》播过。
-    // 第四十九轮那两次重抄的旧理由仍然成立（《秦淮暗股》不再反复开张、结局卡不再被队列盖掉），
-    // 只是这一轮的换骰子是**最后一次** —— 复现性已由 `simulate.determinism.test.ts` 钉住。
-    const r = await simulateRun({
-      seed: 1,
-      policy: 'warden',
-      origin: '缙绅',
-      maxMonths: 260,
-      logChoices: true
+  it('反推存档：三月【南逃】→ 四月《天崩地坼》在南京入朝 → 五月结到南渡续祚', async () => {
+    // 第五十七轮从整局模拟改成**按内容标定的反推存档**，理由有两层：
+    //  1. 前奏修好后，《城破前夜》在三月先于历史卡播出，而 warden 的保命启发式
+    //     永远不会点【南逃】—— 那一条只有 体质−10，【殉国】【投降】都有正增量。
+    //     整局模拟里"走不到南明"是量具的选择，不是格子做死（与第廿四轮 bandit 同一条教训）。
+    //  2. 这一格真正要钉的是**两拍**：三月渡江是脚程（只写 南渡长江），
+    //     四月到了南京再答立场（《天崩地坼》c2/c4 写 效忠南明）。
+    //     旧 pin 借 seed1/warden/缙绅 顺路撞上它，现在改成把这两拍一步步走一遍。
+    // 站位按内容选：1644-02、国势 20、体质 60（c3 要 体质≥20），身上只有出身经历。
+    const save = makeSaveData({
+      character: makeCharacter({
+        origin: '缙绅',
+        age: 46,
+        attributes: { 财帛: 60, 文韬: 60, 理政: 60, 武略: 60, 体质: 60 },
+        hidden: { 道德值: 60, 欲望值: 30, 野心值: 40, 机敏值: 50, 忠诚值: 50 },
+        flags: ['地方官任职']
+      }),
+      gameState: makeGameState({ currentYear: 1644, currentMonth: 2, turn: 193, 国势: 20 }),
+      origin: '缙绅'
     })
-    expect(r.endingId, `没走到南明，结在 ${r.endingTitle ?? r.endReason}（${r.finalYear}）`).toBe(
+    const { result } = renderGameEngine({ loadSaveData: save })
+    await flush(400)
+
+    // 只在这两拍上点指定选项；其余月份按"还在玩"处理（绕开结局选项）。
+    const pick = (e: GameEvent): EventChoice | null => {
+      const all = e.choices ?? []
+      if (e.id === 'transition_1644_night_before') return all.find(c => c.id === 'c3') ?? null
+      if (e.id === 'transition_1644_aftermath') return all.find(c => c.id === 'c2') ?? null
+      return all.find(c => c.effects?.special?.type !== 'ending') ?? all[0] ?? null
+    }
+    const seen: string[] = []
+    for (let i = 0; i < 40 && !result.current.isGameOver; i++) {
+      const event = result.current.currentEvent
+      if (!event) {
+        await act(async () => {
+          result.current.handleNextMonth()
+        })
+        await flush(600)
+        continue
+      }
+      seen.push(event.id)
+      const c = pick(event)
+      if (c) {
+        await act(async () => {
+          result.current.handleChoice(c, { skipResignConfirm: true })
+        })
+        await flush(300)
+      }
+      if (result.current.isGameOver) break
+      await act(async () => {
+        result.current.handleContinue()
+      })
+      await flush(600)
+    }
+
+    expect(seen, '三月那一拍必须先是《城破前夜》，而不是历史卡').toContain('transition_1644_night_before')
+    expect(seen, '四月这一拍没播 —— 南明就只剩脚程，没有立场').toContain('transition_1644_aftermath')
+    expect(result.current.isGameOver).toBe(true)
+    expect(result.current.currentEvent?.id, '南渡长江+效忠南明 两张票齐了却没结到南明').toBe(
       'ending_southern_ming'
     )
-    expect(r.finalFlags).toEqual(expect.arrayContaining(['南渡长江', '效忠南明']))
-    expect(r.firedEventIds).toEqual(expect.arrayContaining(['transition_1644_aftermath']))
+    expect(result.current.character.flags).toEqual(
+      expect.arrayContaining(['南渡长江', '效忠南明'])
+    )
   }, 60_000)
 })
 
@@ -183,14 +233,23 @@ describe('贰臣：投降之后也得有下一拍', () => {
   })
 
   it('《天崩地坼》不再追问已经给出答案的人', () => {
+    // 第五十七轮把 `南渡长江` 从这一张名单里摘掉了：前奏修好后，四月还活着的局
+    // 三月一定见过《城破前夜》并且已经答过，而它的四条答案每一张票都在这张名单里 ——
+    // 本卡因此十一个月没开过口。渡江只是脚程，南明的立场要四月到了南京再答
+    // （见上面那条反推存档）。已经过江的人仍然不被问"投降清朝/隐姓埋名"以外的问题：
+    // 投降清朝那一条单独用 showConditions 关掉（人在南京没法在北京剃发）。
     const notHas = event('transition_1644_aftermath')?.conditions?.flags?.notHas ?? []
     expect(notHas).toEqual(
       expect.arrayContaining([
         '殉国报君', '殉国', '出家', '和尚',
         '投降清朝', '贰臣',
-        '南渡长江', '效忠南明',
+        '效忠南明',
         '满门忠烈', '藏匿民间'
       ])
+    )
+    expect(notHas, '南渡长江 现在是被允许的 —— 那是这一拍要接的脚程').not.toContain('南渡长江')
+    expect(choice('transition_1644_aftermath', 'c1')?.showConditions?.flags?.notHas ?? []).toContain(
+      '南渡长江'
     )
   })
 
@@ -214,14 +273,18 @@ describe('贰臣：投降之后也得有下一拍', () => {
     expect(addedFlags('transition_1644_family_martyr', 'c2')).not.toContain('南渡长江')
   })
 
-  it('反推存档：seed 14 / warden / 没落世家 的贰臣票真的结得了案', async () => {
+  it('反推存档：seed 1 / warden / 没落世家 的贰臣票真的结得了案', async () => {
     // 第四十九轮重抄两次，理由与上面南明那一条同一条：先是《秦淮暗股》不再反复开张把 1630
     // 年起的发牌换了位（旧的 seed 3 根本没走到投降那一步），再是结局卡不再被待处理队列盖掉
     // （§1.4 ㉛）—— 旧的 seed 4 这一局带着 殉国/殉国报君 结在《殉国死节》，那张贰臣票压根没写上。
-    // 第五十五轮重抄（旧 seed5）：随机流"挂载后重新起头"之后序列挪了一拍（§1.4 ㉗），
-    // 本轮扫描里 seed14 这一局带着贰臣票结在称臣纳贡。重抄只换骰子，不改格子。
+    // 第五十五轮重抄（旧 seed5）：随机流"挂载后重新起头"之后序列挪了一拍（§1.4 ㉗）。
+    // 第五十七轮重抄（旧 seed14）：本轮之前《城破前夜》被历史卡永久挤掉，三月那一拍其实是
+    // 《煤山遗恨》；前奏修好后，1644 的路全从《城破前夜》起，旧 seed14 改点了【殉国】。
+    // 换骰子前先量过供给：同一批 64 局（四出身 × steady/warden × seed1..8）里
+    // 没落世家/warden 的 seed1／2／8 都带着贰臣票结在称臣纳贡（196 月），寒门也有三局 ——
+    // 这一格没做死，只是这一颗骰子挪了位。重抄只换骰子，不改格子。
     const r = await simulateRun({
-      seed: 14,
+      seed: 1,
       policy: 'warden',
       origin: '没落世家',
       maxMonths: 260,
