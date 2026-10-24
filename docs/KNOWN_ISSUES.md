@@ -1475,6 +1475,17 @@ Pages 与本地 dev 默认是**开着**的，拿它当门等于没关 —— 线
 `expected '崇祯十七年' to be '崇祯二十二年'`，修后 1644/1649/1650 三格与月份全绿。
 时间轴徽章（`1649 / 8月`）与列传事迹里的公元年不在本次改动内 —— 它们一直用公元纪年，是另一套一致的口径。
 
+**㊴ 第六十三轮线上复核量到 · 慢网下兜底先亮、应用后挂载，错误遮罩不撤（本轮已修）。**
+
+GitHub Pages 慢网实测：首屏 23 个 JS chunk 约 50 秒才齐，`index.html` 的 20 秒看门狗
+先把「游戏未能启动」点亮；应用随后挂载成功、标题屏渲染出来，但错误遮罩
+（全屏 `fixed` + `pointer-events: auto`）仍盖在最上层 —— 玩家看得见标题屏，却点不到按钮。
+根因是 `reveal()` 只撤 `#boot-splash`，没有摘 `#boot-fallback` 的 `is-visible`。
+修法：`reveal()` 里同时移除兜底的 `is-visible`（`app-ready` 与 MutationObserver
+两条挂载路径共用它）。钉在 `tests/unit/bootFallback.test.ts`（2 条，直接执行
+`index.html` 的真实内联脚本）：修前 2/2 红在 `expected true to be false`，修后 2/2 绿。
+兜底的 20 秒阈值与文案未动 —— 本轮只修"应用已经能玩还盖着错误页"这一件事。
+
 ---
 
 ## 二、需要人工验收的项
@@ -1582,7 +1593,34 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 ## 三、已修复的问题（按轮次索引）
 
-回归测试共 **653 例**，分 **78 个文件**，全部在 `tests/unit/`（652 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+回归测试共 **655 例**，分 **79 个文件**，全部在 `tests/unit/`（654 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+
+### 第六十三轮（2026-10-24）：慢网启动兜底不撤 —— 能玩的标题屏上面压着「游戏未能启动」
+
+**任务 #87。§1.4 ㊴。**
+
+**一、线上怎么量到的。** 第六十二轮部署后按惯例用真实浏览器复核 Pages。本机到
+`github.com:443` 被卡（`api.github.com` 正常），推送改走 Git Data API：逐个 blob 校验
+SHA → `base_tree` 建树 → 建提交 → 推 ref，服务端生成的 commit 与本地 `4835c61`
+**完全一致**，没有分叉。页面在浏览器里 23 个 JS chunk 逐个加载、约 50 秒才齐，
+20 秒兜底先亮；应用最终挂载、标题屏可见，`innerText` 里却同时留着「游戏未能启动」。
+
+**二、根因。** `index.html` 的 `reveal()` 只做三件事：清看门狗、断 observer、撤启动层；
+`#boot-fallback` 的 `is-visible` 没有摘。看门狗开火之后，没有任何代码会把遮罩关掉。
+遮罩是 `position: fixed` + `pointer-events: auto`，会挡住标题屏的按钮 —— 不是难看，是不能玩。
+
+**三、先证红。** `tests/unit/bootFallback.test.ts` 直接读 `index.html`、执行其中真实的
+内联启动脚本（不是抄一份逻辑），手动点亮 `is-visible` 模拟看门狗已开火，再分别走
+`app-ready` 与 MutationObserver 两条挂载路径。修前 **2/2 红**在
+`expected true to be false`，修后 2/2 绿。
+
+**四、修法与边界。** `reveal()` 里加一行摘 `is-visible`；两条挂载路径共用 `reveal()`，
+一处修好两处都收。兜底的 20 秒阈值与文案没动：它仍是"模块真的挂了"时的可操作提示，
+本轮只保证应用一旦能玩，错误页一定让位。
+
+**五、回归**：`tsc --noEmit`×2 / `vite build` / 全量 `vitest run`（**79 文件 655 例**，
+654 通过 1 跳过）/ 18 个 `audit:*` 全绿 / `node desktop/smoke-test.cjs` 全通过；
+线上以真实浏览器复核「遮罩随挂载撤掉」。
 
 ### 第六十二轮（2026-10-24）：三条 0/256 的终局前奏 —— 门不是窄，是不可能成立
 

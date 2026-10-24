@@ -213,6 +213,10 @@
           revealed = true
           if (fallbackTimer) clearTimeout(fallbackTimer)
           if (observer) observer.disconnect()
+          // 慢网下 20 秒看门狗可能先开火（实测 23 个 chunk 要 50 秒），应用随后才挂载。
+          // 遮罩是 pointer-events:auto 的全屏层，不摘掉会一直盖在已经能玩的界面上。
+          var fb = document.getElementById('boot-fallback')
+          if (fb) fb.classList.remove('is-visible')
           if (!splash) return
           splash.classList.add('is-hidden')
           window.setTimeout(function () {
