@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { makeCharacter, makeGameState } from './helpers/gameEngine'
 import { simulateRun, type SimOutcome } from './helpers/simulate'
-import { ROUTE_FAMILIES, REVERSIBLE_ROUTE_BLOCKERS, REVIEWED_ROUTE_TICKET_REMOVALS, buildRouteTrail, findRouteClosures, previewEnding } from '../../src/utils/routeTrail'
+import { ROUTE_FAMILIES, REVERSIBLE_ROUTE_BLOCKERS, REVIEWED_ROUTE_TICKET_REMOVALS, buildRouteTrail, explainUnmet, findRouteClosures, previewEnding } from '../../src/utils/routeTrail'
 import { initialEvents, allGrayChoiceEvents } from '../../src/data/events'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
@@ -9,6 +9,8 @@ import { THRESHOLD_ENDING_BY_KEY } from '../../src/data/boundaryEvents'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
 import { ZERO_THRESHOLDS, zeroWarnFlag } from '../../src/data/zeroWarningEvents'
 import type { Attributes, Character, GameStateValues } from '../../src/types/game'
+import type { EventConditions } from '../../src/types/event'
+import type { BoundaryEventCheckParams } from '../../src/types/boundaryEvent'
 
 const endingById = new Map(allEndingEvents.map(e => [e.id, e]))
 const registeredEndings = () =>
@@ -597,4 +599,56 @@ describe('实跑对账', () => {
       expect(dest!.matchedTickets.length, `${run.endingId} 的落点没有任何门票`).toBeGreaterThan(0)
     }
   }, 300_000)
+})
+
+/**
+ * 第六十九轮：`conditions.flags.since` 这条门终于能在结局格上写了（边界求值器补了
+ * `flagTurns` 入参，§1.4 ㊸）。面板必须跟着说人话 —— 否则玩家看见的是
+ * 「条件都齐了却迟迟不结案」，而引擎其实在等这段经历满几年。
+ *
+ * 目前没有格子真的写着这条门（本轮量过：往《边关大将》写"守边三年"会把这格写成 0 局，
+ * 见 §1.4 ㊹），所以这一段直接钉解释器本身，不钉数据。
+ */
+describe('时长门在命途面板里说人话', () => {
+  const cond = (since: Record<string, { min?: number; max?: number }>): EventConditions => ({
+    flags: { any: ['边关任职'], since }
+  })
+  const params = (
+    turn: number,
+    flags: string[],
+    flagTurns?: Record<string, number>
+  ): BoundaryEventCheckParams => ({
+    attributes: {},
+    gameState: { turn },
+    hidden: {},
+    flags,
+    flagTurns
+  })
+
+  it('不满几年：缺口复用选项锁那一句，不印机器 id', () => {
+    const ex = explainUnmet(cond({ 边关任职: { min: 36 } }), params(130, ['边关任职'], { 边关任职: 121 }))
+    // 121 月落笔，130 月才跟了 9 个月，还差 27 个月 —— 写法沿用选项锁的"几年几个月"，
+    // 面板与锁同一把口径，玩家不会在两处读到两种时长单位。
+    expect(ex.gaps).toEqual(['边关任职之后，还得再等 2 年 3 个月'])
+    expect(ex.gaps.join()).not.toMatch(/[a-z_]{4,}/)
+  })
+
+  it('满了就不再报缺口', () => {
+    const ex = explainUnmet(cond({ 边关任职: { min: 36 } }), params(160, ['边关任职'], { 边关任职: 121 }))
+    expect(ex.gaps).toEqual([])
+  })
+
+  it('老存档没有落笔记录：引擎放行，面板也不许凭空报缺口', () => {
+    expect(explainUnmet(cond({ 边关任职: { min: 36 } }), params(130, ['边关任职'])).gaps).toEqual([])
+  })
+
+  it('这段经历根本不在身上时，只报"还缺其一"一次', () => {
+    const gaps = explainUnmet(cond({ 边关任职: { min: 36 } }), params(130, [])).gaps
+    expect(gaps.filter(g => g.includes('边关任职'))).toHaveLength(1)
+  })
+
+  it('过了上界说的是"隔得太久"，不把"等得不够"当成理由', () => {
+    const ex = explainUnmet(cond({ 边关任职: { min: 6, max: 24 } }), params(130, ['边关任职'], { 边关任职: 100 }))
+    expect(ex.gaps.join()).toContain('隔得太久')
+  })
 })

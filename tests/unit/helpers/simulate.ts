@@ -89,6 +89,14 @@ export interface SimOutcome {
   /** 终局时角色身上的 flag 全集 —— 「死于归零必然先见过警告」这条不变量读它 */
   finalFlags: string[]
   /**
+   * 终局时每段经历的**落笔月份**（`character.flagTurns`），与 `finalFlags` 同键。
+   *
+   * 第六十九轮加它：㊸ 量到"条件在年窗打开那一刻已经全真"，而要把"做过"改成"做了多久"
+   * 就必须能读出`这段经历满几年`。`finalFlags` 只有名字、没有月份，
+   * 于是"这一格该不该用时长门"这类判断在跑局器里根本量不了。
+   */
+  finalFlagTurns: Record<string, number>
+  /**
    * 终局时的党派四项（东林／阉党好感、立场、党争烈度）。
    *
    * 第二十一轮加它，是因为可达性矩阵能证明"门票发得出来、门槛够得着"，
@@ -1163,6 +1171,9 @@ function derivedOf(character: Character, gameState: GameStateValues): DerivedSta
     month: gameState.currentMonth,
     age: character.age,
     flags: [...(character.flags || [])],
+    // 真实存档要带上落笔月份：时长门（conditions.flags.since）读它，
+    // 逐月抄的轨迹少了这张表，"这一格到底该在哪个月结案"就对不上引擎。
+    flagTurns: { ...(character.flagTurns || {}) },
     faction: { ...(character.faction ?? NO_FACTION) }
   }
 }
@@ -1207,6 +1218,7 @@ export async function simulateRun(opts: {
   let endEventId: string | null = null
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
+  let finalFlagTurns: Record<string, number> = {}
   let finalFaction: SimOutcome['finalFaction'] = null
   let finalGates: Record<string, number> = {}
   let endReason: string | null = null
@@ -1314,6 +1326,7 @@ export async function simulateRun(opts: {
     finalRank = hook.result.current.character.rank
     finalThresholds = thresholdSnapshot(hook.result.current.character, hook.result.current.gameState)
     finalFlags = [...(hook.result.current.character.flags || [])]
+    finalFlagTurns = { ...(hook.result.current.character.flagTurns || {}) }
     finalFaction = hook.result.current.character.faction
       ? { ...hook.result.current.character.faction }
       : null
@@ -1374,6 +1387,7 @@ export async function simulateRun(opts: {
     endEventId,
     finalThresholds,
     finalFlags,
+    finalFlagTurns,
     finalFaction,
     finalGates,
     endReason,

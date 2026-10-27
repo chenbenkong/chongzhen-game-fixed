@@ -23,6 +23,7 @@ import { EventChoice, EventConditions } from '../types/event'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../data/boundaryEventCompiler'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../data/boundaryEvents'
+import { agoTooYoung } from './choiceRequirements'
 import { ZERO_THRESHOLDS, zeroWarnFlag, type ZeroKey } from '../data/zeroWarningEvents'
 
 export type RouteStatus = 'training' | 'before' | 'open' | 'passed'
@@ -495,7 +496,10 @@ function buildCheckParams(character: Character, gameState: GameStateValues): Bou
     currentMonth: gameState.currentMonth,
     // 命途面板必须与引擎同一份入参：少了年岁，《寿终正寝》这类年龄门在这里会
     // 永远显示成"差得远"，而引擎其实下个月就收人。
-    characterAge: character.age
+    characterAge: character.age,
+    // 时长门（conditions.flags.since）同理 —— 面板不说"还要等几年"，玩家就只能看见
+    // 「条件都齐了却迟迟不结案」，而这一句其实是引擎在等这段经历满几年。
+    flagTurns: character.flagTurns
   }
 }
 
@@ -549,8 +553,12 @@ function scanRanges(
  * 把"还差什么"翻译成人话。只读注册表里的条件，不另建一套门槛：
  * 年窗由 statusLabel 说（年代没到不能算"缺条件"），这里只列开放窗后仍挡路的东西。
  * `notHas` / `none` 单独归为"相冲" —— 它们不是还能补的缺口，是已经断掉的路。
+ *
+ * 导出给单测：`buildRouteTrail` 只能拿**已注册的结局数据**试出缺口，
+ * 而"时长门"这一类写法目前还没有格子在用（第六十九轮量过：写了会把格子写死，见 §1.4 ㊹），
+ * 不把这个函数露出来，那段人话就只能靠"以后有人写了再说"。
  */
-function explainUnmet(
+export function explainUnmet(
   conditions: EventConditions | undefined,
   params: BoundaryEventCheckParams
 ): UnmetExplanation {
@@ -574,6 +582,21 @@ function explainUnmet(
     }
     for (const x of f.notHas || []) if (flags.includes(x)) blockedBy.push(x)
     for (const x of f.none || []) if (flags.includes(x)) blockedBy.push(x)
+    // since：这段经历还得再跟几年。措辞直接复用选项锁那一句（`agoTooYoung`），
+    // 面板与卡片不许两套说法（第 41 轮口径）。缺落笔记录时引擎按放行，这里也不许凭空报缺口。
+    const listed = new Set([...(f.has || []), ...(f.all || []), ...(f.any || f.some || [])])
+    for (const [flag, range] of Object.entries(f.since ?? {})) {
+      if (!flags.includes(flag)) {
+        // 没这段经历本来就已经被上面几条报过了 —— 只补那些没列进 has/all/any 的键
+        if (!listed.has(flag)) gaps.push(`还缺「${flag}」`)
+        continue
+      }
+      const at = params.flagTurns?.[flag]
+      if (at === undefined) continue
+      const elapsed = (params.gameState?.turn ?? 0) - at
+      if (range.min !== undefined && elapsed < range.min) gaps.push(agoTooYoung(flag, range.min - elapsed))
+      if (range.max !== undefined && elapsed > range.max) gaps.push('这段经历隔得太久，这一格赶不上了')
+    }
   }
 
   if (conditions.month) {

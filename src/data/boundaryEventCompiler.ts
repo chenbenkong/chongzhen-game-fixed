@@ -124,6 +124,24 @@ function compileConditions(conditions: EventConditions | undefined) {
         const { flags: need, min } = conditions.flags.minCount
         if (min > 0 && need.filter(f => flags.includes(f)).length < min) return false
       }
+      // since：这段经历得满多久才算数。与 `checkEventConditions`、`checkChoiceRequirement`
+      // 同一把尺子、同一条容错 —— 缺落笔记录**放行**（老存档只有 flags 没有月份，
+      // 判死等于把玩家已经攒出来的结局收走）。
+      // 第六十九轮才补这一段：这个键此前写在结局格上是纯 NOOP，因为边界入参里没有
+      // `flagTurns`，作者想表达"守了三年孤城"只能改用公元年窗间接兜，而年窗管的是天下、
+      // 不管这个人做了多久（§1.4 ㊸）。
+      // turn 在这里必然已是数字：`wrapBatchAsBoundaryEvents` 强制 `conditions.turn`，
+      // 上面 2.5 那条见到 `gameState.turn` 缺失就整格 return false 了。
+      if (conditions.flags.since) {
+        for (const [flag, range] of Object.entries(conditions.flags.since)) {
+          if (!flags.includes(flag)) return false
+          const at = params.flagTurns?.[flag]
+          if (at === undefined) continue
+          const elapsed = (params.gameState?.turn ?? 0) - at
+          if (range.min !== undefined && elapsed < range.min) return false
+          if (range.max !== undefined && elapsed > range.max) return false
+        }
+      }
     }
 
     // 9) 随机数（用 Math.random 模拟）

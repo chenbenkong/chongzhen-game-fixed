@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { join } from 'path'
 import { makeCharacter, makeGameState } from './helpers/gameEngine'
 import { checkEventConditions } from '../../src/utils/eventConditions'
 import { checkChoiceRequirement } from '../../src/utils/choiceRequirements'
@@ -23,8 +25,10 @@ import type { EventChoice, GameEvent } from '../../src/types/event'
  *   2. 老存档容错：只有 flags、没有 flagTurns 的存档**放行**。
  *      判死等于把玩家已经攒出来的回响事件凭空收走，
  *      与 `eventConditions` 里"遗留的 gameState.turn 跳过而不按 0 判死"同一条理由；
- *   3. 边界/结局求值器**读不到**它（`BoundaryEventCheckParams` 只有 flag 名字、没有落笔月份），
- *      所以这一类门只许写在事件池与选项门上 —— 写错位置由 `audit-event-shape` 报 NOOP。
+ *   3. 边界/结局求值器**也**读它 —— 第六十九轮才补上 `BoundaryEventCheckParams.flagTurns`
+ *      这个入参。在此之前写在结局格上等于没写（体检脚本按 NOOP 报出），
+ *      作者只能改用公元年窗间接表达"这段经历满几年"，而年窗管天下、不管这个人做了多久
+ *      （§1.4 ㊸）。这一家三口现在必须同义，最后一条 describe 钉的就是这件事。
  */
 
 const sinceEvent = (
@@ -149,29 +153,112 @@ describe('showConditions.flags.since 在选项门里的判定与文案', () => {
   })
 })
 
-describe('边界/结局求值器读不到 since（所以这一类门只许写在池与选项上）', () => {
-  const params = (turn: number): BoundaryEventCheckParams => ({
+describe('边界/结局求值器与事件池对 since 同义（第六十九轮补的入参）', () => {
+  const params = (
+    turn: number,
+    opts: { flags?: string[]; flagTurns?: Record<string, number> } = {}
+  ): BoundaryEventCheckParams => ({
     attributes: {},
     gameState: { turn },
     hidden: {},
-    flags: ['has_children']
+    flags: opts.flags ?? ['has_children'],
+    flagTurns: opts.flagTurns
+  })
+  const check = (since: Record<string, { min?: number; max?: number }>, p: BoundaryEventCheckParams) =>
+    wrapAsBoundaryEvent(sinceEvent(since), 100).check(p)
+
+  it('不满 min：池关，边界也关 —— 过去边界这里是开着的，等于一道没装的门', () => {
+    expect(checkEventConditions(sinceEvent({ has_children: { min: 72 } }), kidBornAt(30), makeGameState({ turn: 40 }))).toBe(false)
+    expect(check({ has_children: { min: 72 } }, params(40, { flagTurns: { has_children: 30 } }))).toBe(false)
   })
 
-  it('同一个 since 门：池判定关着，边界判定开着 —— 这是已知分歧，不是 bug', () => {
-    const ev = sinceEvent({ has_children: { min: 72 } })
-    expect(checkEventConditions(ev, kidBornAt(30), makeGameState({ turn: 40 }))).toBe(false)
-    expect(wrapAsBoundaryEvent(ev, 100).check(params(40))).toBe(true)
+  it('满 min：两边在同一个月放人', () => {
+    // 落笔第 30 月 → 第 101 月差一个月，第 102 月正好满 72
+    expect(check({ has_children: { min: 72 } }, params(101, { flagTurns: { has_children: 30 } }))).toBe(false)
+    expect(check({ has_children: { min: 72 } }, params(102, { flagTurns: { has_children: 30 } }))).toBe(true)
+    expect(checkEventConditions(sinceEvent({ has_children: { min: 72 } }), kidBornAt(30), makeGameState({ turn: 102 }))).toBe(true)
   })
 
-  it('体检脚本把"结局池上的 since"报成死门（这条规则有证人）', async () => {
+  it('上界同样同义：过了窗口就关', () => {
+    expect(check({ has_children: { min: 72, max: 84 } }, params(114, { flagTurns: { has_children: 30 } }))).toBe(true)
+    expect(check({ has_children: { min: 72, max: 84 } }, params(115, { flagTurns: { has_children: 30 } }))).toBe(false)
+  })
+
+  it('经历不在身上就关，不许被"没有落笔记录"的容错放走', () => {
+    expect(check({ has_children: { min: 1 } }, params(500, { flags: [], flagTurns: { has_children: 0 } }))).toBe(false)
+  })
+
+  it('老存档容错与事件池一致：整张表缺失、或缺这一段记录，都放行', () => {
+    const legacy = makeCharacter({ flags: ['has_children'] })
+    expect((legacy as any).flagTurns).toBeUndefined()
+    expect(checkEventConditions(sinceEvent({ has_children: { min: 72 } }), legacy, makeGameState({ turn: 40 }))).toBe(true)
+    expect(check({ has_children: { min: 72 } }, params(40))).toBe(true)
+    expect(check({ has_children: { min: 72 } }, params(40, { flagTurns: { 地方官任职: 0 } }))).toBe(true)
+  })
+
+  it('结局池上的 since 不再是死门（体检脚本不许再报 NOOP）', async () => {
     const { scanEventShape } = await import('../../scripts/audit-event-shape')
     const findings = scanEventShape(
       [sinceEvent({ has_children: { min: 72 } }, { type: 'ending' })],
       undefined,
       () => 'ending'
     )
-    const noop = findings.filter(f => f.kind === 'NOOP' && f.detail.includes('since'))
-    expect(noop.length, '往结局池写 since 没人报警 —— 那是一道看不见的门').toBeGreaterThan(0)
-    expect(noop[0].detail).toContain('落笔月份')
+    expect(findings.filter(f => f.kind === 'NOOP' && f.detail.includes('since'))).toEqual([])
+  })
+
+  it('把时长门写在 any 网里的任意一张票上，体检脚本要说它把网收窄了', async () => {
+    // 第六十九轮实验 A 的错法：`{ any: [A, B], since: { A } }` 读起来像"任一条路满三年"，
+    // 引擎看到的是"A 必须有且 A 满三年"，B 那条路整条消失 —— 且没有一行日志。
+    const { scanEventShape } = await import('../../scripts/audit-event-shape')
+    const narrowed = scanEventShape(
+      [{ ...sinceEvent({ 随军出征: { min: 36 } }), conditions: {
+        flags: { any: ['随军出征', '边关任职'], since: { 随军出征: { min: 36 } } }
+      } } as unknown as GameEvent],
+      undefined,
+      () => 'ending'
+    )
+    expect(narrowed.filter(f => f.kind === '窄化').map(f => f.detail).join()).toContain('随军出征')
+
+    // 写在前提经历（has 里那张）上就是正当用法，不许一起报掉
+    const onPremise = scanEventShape(
+      [{ ...sinceEvent({ 边关任职: { min: 36 } }), conditions: {
+        flags: { has: ['边关任职'], any: ['随军出征', '边关任职'], since: { 边关任职: { min: 36 } } }
+      } } as unknown as GameEvent],
+      undefined,
+      () => 'ending'
+    )
+    expect(onPremise.filter(f => f.kind === '窄化')).toEqual([])
+  })
+})
+
+/**
+ * 入参必须成对喂到。`conditions.age` 那条（第 56 轮 ㉟）的教训就是"引擎三处调用点漏了一处"：
+ * 漏掉键的求值器不是报错，是安静地按 0/放行判定，于是同一条门在不同路径上说不同的话。
+ */
+describe('每一处边界入参都带上落笔月份', () => {
+  const SOURCES = [
+    'src/hooks/useGameEngine.ts',
+    'src/utils/routeTrail.ts',
+    'scripts/audit-ending-reachability.ts'
+  ]
+
+  it('凡是喂了 characterAge 的 params 字面量，都同时喂了 flagTurns', () => {
+    for (const rel of SOURCES) {
+      const src = readFileSync(join(__dirname, '../..', rel), 'utf8')
+      const sites = src.split('characterAge:').slice(1)
+      expect(sites.length, `${rel} 里一处边界入参都找不到 —— 构造式改了，这条钉子要跟着改`).toBeGreaterThan(0)
+      for (const site of sites) {
+        expect(
+          site.slice(0, 400),
+          `${rel} 有一处边界入参只带了年岁、没带 flagTurns —— 那条路径上的时长门等于没装`
+        ).toContain('flagTurns')
+      }
+    }
+  })
+
+  it('跑局器逐月抄的边界入参也带上落笔月份（矩阵与跑局对账用的是同一份）', () => {
+    const src = readFileSync(join(__dirname, 'helpers/simulate.ts'), 'utf8')
+    const derived = src.split('function derivedOf')[1] ?? ''
+    expect(derived.slice(0, 900), 'derivedOf 里没有 flagTurns').toContain('flagTurns')
   })
 })

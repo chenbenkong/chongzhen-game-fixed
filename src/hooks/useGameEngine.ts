@@ -1600,7 +1600,9 @@ export function useGameEngine(props: UseGameEngineProps) {
           flags: currentCharacter.flags,
           currentYear: currentGameState.currentYear,
           currentMonth: currentGameState.currentMonth,
-          characterAge: currentCharacter.age
+          characterAge: currentCharacter.age,
+          // conditions.flags.since（这段经历满几年）读它；老存档没这张表时缺项放行
+          flagTurns: currentCharacter.flagTurns
         }
 
         const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
@@ -1651,7 +1653,10 @@ export function useGameEngine(props: UseGameEngineProps) {
         currentMonth: currentGameState.currentMonth,
         // 年岁门（conditions.age）读的正是这个 —— 《寿终正寝》那一格靠它收熬过
         // 全部年窗的人；不带这个键，年龄门会被 compiler 按 0 判成恒假（§1.4 ㉟）。
-        characterAge: currentCharacter.age
+        characterAge: currentCharacter.age,
+        // 时长门（conditions.flags.since）读它 —— 结局格上「守了三年孤城」这类判据
+        // 问的是经历落下多久，不是公元几年；不带这张表，缺项按放行。
+        flagTurns: currentCharacter.flagTurns
       }
 
       const triggeredEvent = boundaryEventManager.checkByType(params, 'ending')
@@ -2322,7 +2327,10 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 「读档进来时条件本来就已经成立」这种最常见的场景恰好走的就是这条路径。
       currentYear: gameStateRef.current.currentYear,
       currentMonth: gameStateRef.current.currentMonth,
-      characterAge: characterRef.current.age
+      characterAge: characterRef.current.age,
+      // 时长门（conditions.flags.since）的入参，同 checkBoundary —— 挂载/读档这条路径漏了它，
+      // 「读档进来时这段经历早已满几年」那种场景就会比引擎少结一次案。
+      flagTurns: characterRef.current.flagTurns
     }
 
     const endingEvent = boundaryEventManager.checkByType(params, 'ending')

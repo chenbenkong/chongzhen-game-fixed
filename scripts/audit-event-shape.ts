@@ -156,13 +156,24 @@ export function scanEventShape(
     }
     for (const [k, v] of Object.entries(cond.flags || {})) {
       if (k === 'since') {
-        // `since` 读的是 character.flagTurns。边界求值器（结局池 / triggerable）
-        // 的入参里只有 flags 数组、没有"这段经历落在哪一月"，写在那里就是一道看不见的门。
-        if (level === 'event' && NON_POOL_POOLS.includes(poolLabel)) {
-          add('NOOP', where, `${prefix}.flags.since 只有 checkEventConditions / checkChoiceRequirement 会读，boundaryEventCompiler 拿不到落笔月份 —— 这道门等于没装`)
-        }
+        // `since` 读的是 character.flagTurns。三个求值器（事件池 / 选项门 / 边界编译器）
+        // 现在都认它 —— 第六十九轮把落笔月份喂进了边界入参，它不再是死门。
+        //
+        // 但它**必查**：写在哪段经历上，就等于把那段经历变成硬前提。
+        // 于是有一种很安静的错法 —— 门限在"网里的任意一张票"上：
+        // `{ any: [A, B], since: { A: { min: 36 } } }` 读起来像"任一条路满三年"，
+        // 引擎看到的是"必须有 A 且 A 满三年"，B 那条路被整条摘掉。
+        // 第六十九轮实测撞上过这一条（把时长门写在 悬壶济世 的 行医 上，
+        // 就把《悬壶之念》开馆行医那一支无声锁死了），所以现在由体检脚本拦。
+        const f = cond.flags || {}
+        const required = new Set([...(f.has || []), ...(f.all || [])])
+        const loose = new Set([...(f.any || []), ...(f.some || []), ...(f.minCount?.flags || [])])
         for (const [flag, range] of Object.entries((v as object) || {})) {
           if (!flag) add('结构', where, `${prefix}.flags.since 里有一条空经历名`)
+          if (flag && !required.has(flag) && loose.has(flag)) {
+            add('窄化', where, `${prefix}.flags.since 把「${flag}」变成了硬前提 —— 它只出现在 any/some/minCount 网里，`
+              + `门限写在网里的任意一张票上等于把其余那几张摘掉；要限时长就限这条路的前提经历`)
+          }
           rangeKeys(`${prefix}.flags.since`, flag, range)
         }
         continue

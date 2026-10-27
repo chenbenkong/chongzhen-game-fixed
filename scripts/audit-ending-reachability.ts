@@ -53,7 +53,12 @@ export function buildParams(s: DerivedState): BoundaryEventCheckParams {
     flags: s.flags,
     currentYear: s.year,
     currentMonth: s.month,
-    characterAge: s.age
+    characterAge: s.age,
+    // 时长门（conditions.flags.since）的入参。反推存档**不给**这张表 = 缺项放行，
+    // 与老存档同一条容错；矩阵本来就只问"这格有没有可能被命中"，它发 flag 时
+    // 从来不问那个 flag 要玩到哪一年才写得出来，所以时长在这里同样不是矩阵要回答的问题。
+    // 跑局器那侧相反：derivedOf 会带上真实的落笔月份，矩阵与跑局对账时才各说各的话。
+    flagTurns: s.flagTurns
   }
 }
 
@@ -87,6 +92,11 @@ export type DerivedState = {
   /** 年岁 —— `conditions.age` 读它，必须与 turn/年份同一把钟，否则矩阵与跑局各说各话 */
   age: number
   flags: string[]
+  /**
+   * 各段经历的落笔月份（`character.flagTurns`）—— `conditions.flags.since` 读它。
+   * 反推存档可以不带（缺项按放行）；跑局器逐月抄的那一份一定带，否则矩阵与引擎对不上账。
+   */
+  flagTurns?: Record<string, number>
   faction: FactionState
 }
 

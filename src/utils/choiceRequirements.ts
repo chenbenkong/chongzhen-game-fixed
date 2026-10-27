@@ -271,8 +271,11 @@ function sayFlags(flags: string[]): string {
  * 月数要说成人话：玩家看得懂"还得再等 2 年 3 个月"，看不得懂"turn 差 27"。
  * 经历名查得出就带上主语，查不出就只说等多久 —— 与 `sayFlags` 同一条规矩：
  * 机器 id 一个都不许印到屏幕上。
+ *
+ * 导出给 `routeTrail` 的「尚缺条件」复用：选项锁与命途面板读的是同一把尺子，
+ * 措辞不许两套（第 41 轮定的口径）。
  */
-function agoTooYoung(flag: string, months: number): string {
+export function agoTooYoung(flag: string, months: number): string {
   const named = gateLabel(flag)
   const years = Math.floor(months / 12)
   const rest = months % 12
