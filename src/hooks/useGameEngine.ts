@@ -253,6 +253,13 @@ function applyOriginModifier(origin: OriginType, attrKey: string, value: number)
     if (attrKey === '文韬' && value > 0) return Math.round(value * 1.25)
     if (attrKey === '武略' && value > 0) return Math.round(value * 0.7)
   }
+  if (origin === '胥吏') {
+    if (attrKey === '理政' && value > 0) return Math.round(value * 1.15)
+    if (attrKey === '文韬' && value > 0) return Math.round(value * 0.9)
+  }
+  if (origin === '海商') {
+    if (attrKey === '财帛' && value > 0) return Math.round(value * 1.2)
+  }
   return value
 }
 
@@ -273,6 +280,15 @@ function applyOriginStateModifier(origin: OriginType, stateKey: string, value: n
   if (origin === '诗文清望') {
     if (stateKey === '清议' && value > 0) return Math.round(value * 1.25)
     if (stateKey === '中官' && value > 0) return Math.round(value * 0.7)
+  }
+  if (origin === '胥吏') {
+    if (stateKey === '中官' && value > 0) return Math.round(value * 1.15)
+    if (stateKey === '清议' && value > 0) return Math.round(value * 0.8)
+  }
+  if (origin === '海商') {
+    if (stateKey === '士绅' && value > 0) return Math.round(value * 1.15)
+    if (stateKey === '圣眷' && value > 0) return Math.round(value * 0.9)
+    if (stateKey === '清议' && value > 0) return Math.round(value * 0.8)
   }
   return value
 }
@@ -597,8 +613,9 @@ function createInitialCharacter(
     degree: deg,
     attributes: { ...attrs },
     hidden: hidden,
-    flags: deg === '进士' ? ['地方官任职'] : [],
-    flagTurns: deg === '进士' ? { 地方官任职: 0 } : {},
+    // 开局即实任知县，与功名无关：第六十五轮的胥吏是举人出身，官却是实缺。
+    flags: ['地方官任职'],
+    flagTurns: { 地方官任职: 0 },
     history: [],
     wives: [],
     lovers: [],
@@ -636,7 +653,7 @@ export function useGameEngine(props: UseGameEngineProps) {
   const [character, setCharacter] = useState<Character>(() => {
     if (loadSaveData) {
       const char = loadSaveData.character
-      const flags = char.degree === '进士' && !char.flags.includes('地方官任职')
+      const flags = !char.flags.includes('地方官任职')
         ? [...char.flags, '地方官任职']
         : char.flags
       return {
@@ -2152,7 +2169,7 @@ export function useGameEngine(props: UseGameEngineProps) {
   useEffect(() => {
     if (!loadSaveData) return
     const char = loadSaveData.character
-    const flags = char.degree === '进士' && !char.flags.includes('地方官任职')
+    const flags = !char.flags.includes('地方官任职')
       ? [...char.flags, '地方官任职']
       : char.flags
 

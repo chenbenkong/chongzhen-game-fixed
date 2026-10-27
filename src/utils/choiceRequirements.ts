@@ -1,5 +1,5 @@
 import { EventChoice, GameEvent } from '../types/event'
-import { Attributes, Character, GameStateValues } from '../types/game'
+import { Attributes, Character, GameStateValues, OriginType } from '../types/game'
 import { gateLabel } from '../data/flagBiography'
 import { ATTR_DISPLAY_MAP, STATE_DISPLAY_MAP } from './constants'
 
@@ -18,8 +18,9 @@ export interface ChoiceCheckResult {
   }
 }
 
-const ORIGIN_NAMES: Record<string, string> = {
-  '寒门': '寒门', '缙绅': '缙绅', '没落世家': '没落世家', '诗文清望': '诗文清望'
+const ORIGIN_NAMES: Record<OriginType, string> = {
+  '寒门': '寒门', '缙绅': '缙绅', '没落世家': '没落世家', '诗文清望': '诗文清望',
+  '胥吏': '胥吏', '海商': '海商'
 }
 
 /**
@@ -208,7 +209,7 @@ export function checkChoiceRequirement(
   if (cond?.origin) {
     const allowed = Array.isArray(cond.origin) ? cond.origin : [cond.origin]
     if (!allowed.includes(character.origin)) {
-      const names = allowed.map(o => ORIGIN_NAMES[o] || o).join('、')
+      const names = allowed.map(o => ORIGIN_NAMES[o as OriginType] || o).join('、')
       return {
         available: false,
         reason: `需要出身：${names}`,

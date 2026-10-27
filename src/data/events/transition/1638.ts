@@ -860,7 +860,7 @@ export const events1638: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 5, 体质: -5,
@@ -896,7 +896,7 @@ export const events1638: GameEvent[] = [
         text: '【封城隔离】封了城门，在九门外设卡验人',
         description: '城门封了半月，城外的车马排到十里外。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 4, 武略: 2 },

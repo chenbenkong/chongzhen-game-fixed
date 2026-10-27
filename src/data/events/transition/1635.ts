@@ -523,7 +523,7 @@ export const events1635: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 财帛: { min: 20 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 5,体质: -5,
@@ -561,7 +561,7 @@ export const events1635: GameEvent[] = [
         text: '【量力而行】先发三成种粮，余下的等朝廷',
         description: '三成种粮种下去，出苗的不足一半。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏']
         },
         effects: {
           attributes: {理政: 3,

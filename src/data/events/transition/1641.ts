@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1641: GameEvent[] = [
   {
@@ -710,7 +711,7 @@ export const events1641: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 5,体质: -3,
@@ -748,7 +749,7 @@ export const events1641: GameEvent[] = [
         text: '【设局平粜】在城门口设平粜局，官粮按市价七成出售',
         description: '平粜局开了二十天，城里的粮价落了两成。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 3, 文韬: 2 },
@@ -1044,7 +1045,7 @@ export const events1641: GameEvent[] = [
     conditions: {
       year: { min: 1641, max: 1641 },
       month: { min: 7, max: 7 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {

@@ -54,7 +54,7 @@ export const figuresEvents: GameEvent[] = [
         description: '直面崇祯帝的刚愎多疑，坦率陈述国事',
         showConditions: {
           attributes: { 文韬: { min: 70 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -93,7 +93,7 @@ export const figuresEvents: GameEvent[] = [
         text: '【歌功颂德】"陛下英明神武，必能中兴"',
         description: '顺着崇祯帝的性格，歌功颂德',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 文韬: 2 },

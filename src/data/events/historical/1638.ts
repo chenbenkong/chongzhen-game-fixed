@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1638: GameEvent[] = [
 {
@@ -26,7 +27,7 @@ export const events1638: GameEvent[] = [
     conditions: {
       year: { min: 1638, max: 1639 },
       month: { min: 5, max: 10 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -210,7 +211,7 @@ export const events1638: GameEvent[] = [
       year: { min: 1641, max: 1641 },
       month: { min: 2, max: 5 },
       flags: { any: ['随军出征', '反对增饷', '主抚派', '军需牟利'] },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -444,7 +445,7 @@ export const events1638: GameEvent[] = [
         showConditions: {
           attributes: { 财帛: { min: 50 } },
           gameState: { 中官: { min: 35 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {
@@ -478,7 +479,7 @@ export const events1638: GameEvent[] = [
         text: '【坦白从宽】"罪孽深重，愿受任何惩处！"',
         description: '主动向朝廷认罪，退还全部赃款并加倍赔偿',
         showConditions: {
-          origin: ['寒门', '没落世家', '诗文清望'],
+          origin: ['寒门', '没落世家', '诗文清望', '胥吏'],
         },
         effects: {
           attributes: {

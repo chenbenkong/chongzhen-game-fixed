@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1639: GameEvent[] = [
 {
@@ -26,7 +27,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1642 },
       month: { min: 1, max: 12 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -209,7 +210,7 @@ export const events1639: GameEvent[] = [
       year: { min: 1642, max: 1642 },
       month: { min: 1, max: 6 },
       flags: { any: ['增援松锦', '建议撤军', '主张议和'] },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -256,7 +257,7 @@ export const events1639: GameEvent[] = [
         description: '因曾参与松锦之战，主动上疏自劾，请求处分',
         showConditions: {
           flags: { has: ['增援松锦'] },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 体质: 5 },
@@ -330,7 +331,7 @@ export const events1639: GameEvent[] = [
         description: '主张广揽人才，培养新的将领',
         showConditions: {
           attributes: { 理政: { min: 65 } },
-          origin: ['诗文清望', '缙绅']
+          origin: ['诗文清望', '缙绅', '海商']
         },
         effects: {
           attributes: { 理政: 8, 文韬: 3 },
@@ -386,7 +387,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 10, max: 10 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -512,7 +513,7 @@ export const events1639: GameEvent[] = [
         description: '上疏为卢象升请恤，请求朝廷给予优厚抚恤',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
-          origin: ['寒门', '缙绅', '诗文清望'],
+          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商'],
         },
         effects: {
           attributes: { 文韬: 3,
@@ -576,7 +577,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 4, max: 4 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -755,7 +756,7 @@ export const events1639: GameEvent[] = [
     conditions: {
       year: { min: 1639, max: 1639 },
       month: { min: 6, max: 6 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {

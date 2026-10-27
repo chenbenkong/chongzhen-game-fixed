@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1629: GameEvent[] = [
 {
@@ -24,7 +25,7 @@ export const events1629: GameEvent[] = [
     conditions: {
       year: { min: 1629, max: 1629 },
       month: { min: 11, max: 12 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -213,7 +214,7 @@ export const events1629: GameEvent[] = [
         showConditions: {
           flags: { has: ['力保袁崇焕'] },
           attributes: { 文韬: { min: 60 } },
-          origin: ['诗文清望', '寒门']
+          origin: ['诗文清望', '寒门', '胥吏']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -255,7 +256,7 @@ export const events1629: GameEvent[] = [
         description: '借袁崇焕下狱之机，参与清算其党羽，从中牟利',
         showConditions: {
           flags: { has: ['弹劾袁崇焕'] },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {理政: 5,

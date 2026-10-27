@@ -701,7 +701,7 @@ export const events1640: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 武略: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家', '诗文清望'],
+          origin: ['寒门', '没落世家', '诗文清望', '胥吏'],
         },
         effects: {
           attributes: { 理政: 5, 武略: 2,
@@ -737,7 +737,7 @@ export const events1640: GameEvent[] = [
         text: '【开放粮禁】贴告示免税，招南方的粮船进京',
         description: '粮船来了十几条，路上的损耗去了三成。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 4, 文韬: 2 },

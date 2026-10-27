@@ -364,7 +364,7 @@ export const events1633: GameEvent[] = [
         showConditions: {
           attributes: { 财帛: { min: 30 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: {理政: 5, 体质: -3,
@@ -400,7 +400,7 @@ export const events1633: GameEvent[] = [
         text: '【以工代耕】把无牛的农户编成队，换工换种',
         description: '换工队下了地，荒田开出来一半。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 4, 体质: -2 },
@@ -854,7 +854,7 @@ export const events1633: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 5, 体质: -5,
@@ -890,7 +890,7 @@ export const events1633: GameEvent[] = [
         text: '【抢收补种】发告示让各乡抢收早谷，改种荞麦',
         description: '荞麦种下去那天，蝗群已经过了保定。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 3, 体质: -2 },

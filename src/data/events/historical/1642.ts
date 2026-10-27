@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1642: GameEvent[] = [
 {
@@ -24,7 +25,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 2, max: 3 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -102,7 +103,7 @@ export const events1642: GameEvent[] = [
         description: '上疏弹劾兵部尚书陈新甲，追究松锦之败的责任',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['诗文清望', '寒门']
+          origin: ['诗文清望', '寒门', '胥吏']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -137,7 +138,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 70 } },
           hidden: { 道德值: { max: 50 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: { 理政: 8 },
@@ -316,7 +317,7 @@ export const events1642: GameEvent[] = [
         description: '在城破前提前疏散百姓，减少伤亡',
         showConditions: {
           attributes: { 理政: { min: 65 }, 财帛: { min: 30 } },
-          origin: ['缙绅', '诗文清望'],
+          origin: ['缙绅', '诗文清望', '胥吏', '海商'],
         },
         effects: {
           attributes: {理政: 8,
@@ -463,7 +464,7 @@ export const events1642: GameEvent[] = [
         description: '利用之前弹劾陈新甲的政治资本，参与清理其残余势力',
         showConditions: {
           flags: { has: ['弹劾陈新甲'] },
-          origin: ['寒门', '诗文清望'],
+          origin: ['寒门', '诗文清望', '胥吏'],
         },
         effects: {
           attributes: { 文韬: 3,
@@ -502,7 +503,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           flags: { has: ['暗中议和'] },
           hidden: { 道德值: { max: 40 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {理政: 5,
@@ -570,7 +571,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           flags: { has: ['疏散百姓'] },
           attributes: { 理政: { min: 55 } },
-          origin: ['缙绅', '诗文清望'],
+          origin: ['缙绅', '诗文清望', '胥吏', '海商'],
         },
         effects: {
           attributes: { 理政: 8,

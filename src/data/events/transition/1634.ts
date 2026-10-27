@@ -360,7 +360,7 @@ export const events1634: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 财帛: { min: 20 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 5,体质: -5,
@@ -398,7 +398,7 @@ export const events1634: GameEvent[] = [
         text: '【量力而行】先买两成种子，剩下的等朝廷',
         description: '两成种子下了地，余下的地还荒着。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏']
         },
         effects: {
           attributes: {理政: 3,
@@ -433,7 +433,7 @@ export const events1634: GameEvent[] = [
         description: '多出来的粮，转手卖给了粮商。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '胥吏']
         },
         effects: {
           attributes: {理政: -3,
@@ -1773,7 +1773,7 @@ export const events1634: GameEvent[] = [
         description: '饷银解到那天，营册上的兵额还是空的。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {武略: -5,
@@ -1812,7 +1812,7 @@ export const events1634: GameEvent[] = [
         text: '【请设总理】上疏请设一总理，统筹辽东与剿寇的兵饷',
         description: '疏里把两线的兵额并成了一张表。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },

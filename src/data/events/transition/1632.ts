@@ -338,7 +338,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 4,
@@ -439,7 +439,7 @@ export const events1632: GameEvent[] = [
         text: '【请增陕兵】上疏请从河南、山西调兵入陕协剿',
         description: '疏到兵部，被压了二十天才议。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -504,7 +504,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '海商']
         },
         effects: {
           attributes: {理政: 3,
@@ -607,7 +607,7 @@ export const events1632: GameEvent[] = [
         text: '【请发农本】上疏请拨农本银，买种牛分给北直隶农户',
         description: '户部批了三千两，够买两百头牛。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -833,7 +833,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 5,体质: -5,
@@ -869,7 +869,7 @@ export const events1632: GameEvent[] = [
         text: '【先救灾后治河】先设粥棚安置灾民，再议堵口',
         description: '灾民有了棚子，决口又宽了二里。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 3, 文韬: 2 },
@@ -1492,7 +1492,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 理政: 4, 文韬: 2 },
@@ -1557,7 +1557,7 @@ export const events1632: GameEvent[] = [
         description: '地契收回来那天，卖田的人还站在村口。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {理政: -3,

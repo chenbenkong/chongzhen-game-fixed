@@ -21,7 +21,8 @@ import type { EventChoice } from '../../src/types/event'
  *   · 移除时必须一起删。留着上一段的时间戳，"复婚"那类第二次发生的 `since`
  *     算的会是上一次那份年纪；
  *   · 老存档读进来不补时间（缺记录时 `since` 走容错放行），
- *     但引擎自己补的那一条例外：进士出身读档时补 `地方官任职`，补的那一刻就是它的落笔月份。
+ *     但引擎自己补的那一条例外：六副出身开局都是实任知县，读档时若存档里没有
+ *     `地方官任职`，补的那一刻就是它的落笔月份。
  */
 
 const NORMAL_EVENT = {
@@ -33,7 +34,15 @@ const NORMAL_EVENT = {
   choices: []
 } as any
 
-/** 举人出身：不触发读档时补 `地方官任职` 那一段，时间账从空白开始 */
+/**
+ * 读档底板：这一小节的存档是"举人的旧档"，里面没有 `地方官任职`。
+ * 第六十五轮起这件事与功名无关 —— 举人出身的胥吏也是实任知县 ——
+ * 所以引擎读档时会补上这一条，落笔月份就是读档当月。下面量的是记账规则，
+ * 先把这块底板算进去；`since` 那类门槛的容错放行另有专门的用例。
+ */
+const withPost = (turn: number, rest: Record<string, number> = {}) => ({ 地方官任职: turn, ...rest })
+
+/** 举人出身的旧档：flags 里没有 `地方官任职`（见上一段注释） */
 const saveAt = (turn: number) =>
   makeSaveData({
     character: makeCharacter({ degree: '举人', flags: [], flagTurns: {} }),
@@ -67,7 +76,7 @@ describe('flagTurns 与 flags 同步', () => {
 
     await take(view, pick(['has_children']))
     expect(view.result.current.character.flags).toContain('has_children')
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 40 })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(40, { has_children: 40 }))
     view.unmount()
   })
 
@@ -80,7 +89,7 @@ describe('flagTurns 与 flags 同步', () => {
     expect(later, '推进一个月没走表 —— 这条断言就退化成上一条的复述').toBeGreaterThan(40)
 
     await take(view, pick(['concubine_killed']))
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 40, concubine_killed: later })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(40, { has_children: 40, concubine_killed: later }))
     view.unmount()
   })
 
@@ -92,7 +101,7 @@ describe('flagTurns 与 flags 同步', () => {
 
     const flags = view.result.current.character.flags as string[]
     expect(flags.filter(f => f === 'has_children')).toHaveLength(1)
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 40 })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(40, { has_children: 40 }))
     view.unmount()
   })
 
@@ -130,7 +139,7 @@ describe('flagTurns 与 flags 同步', () => {
     await take(view, pick(['has_children']))
     await take(view, { id: 'c_noop', text: '什么都不做', effects: { attributes: { 文韬: 3 } } })
 
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 40 })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(40, { has_children: 40 }))
     view.unmount()
   })
 })
@@ -144,7 +153,7 @@ describe('老存档读入', () => {
       })
     })
     await flush()
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 17 })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(90, { has_children: 17 }))
     view.unmount()
   })
 
@@ -156,13 +165,15 @@ describe('老存档读入', () => {
       })
     })
     await flush()
-    expect(view.result.current.character.flagTurns).toBeUndefined()
+    // 老档没有 flagTurns：引擎只补「地方官任职」这一条，
+    // `has_children` 仍然没有时间 —— 下面推进一个月，`since` 门不许因此收走回响
+    expect(view.result.current.character.flagTurns).toEqual(withPost(90))
     await advanceMonths(view.result, 1)
     expect(view.result.current.isGameOver).toBe(false)
     view.unmount()
   })
 
-  it('引擎自己补的那条经历（进士 → 地方官任职），补的就是当前月份', async () => {
+  it('引擎自己补的那条经历（→ 地方官任职），补的就是当前月份', async () => {
     const view = renderGameEngine({
       loadSaveData: makeSaveData({
         character: makeCharacter({ degree: '进士', flags: ['has_children'], flagTurns: { has_children: 12 } }),
@@ -171,15 +182,24 @@ describe('老存档读入', () => {
     })
     await flush()
     expect(view.result.current.character.flags).toContain('地方官任职')
-    expect(view.result.current.character.flagTurns).toEqual({ has_children: 12, 地方官任职: 90 })
+    expect(view.result.current.character.flagTurns).toEqual(withPost(90, { has_children: 12 }))
     view.unmount()
   })
 
-  it('新开一局也带这本账：进士开局第 0 月就在任上', async () => {
-    const view = renderGameEngine({ degree: '进士' })
+  it('新开一局也带这本账：开局第 0 月就在任上，举人出身的胥吏同样如此', async () => {
+    const jinshi = renderGameEngine({ degree: '进士' })
     await flush()
-    expect(view.result.current.character.flags).toContain('地方官任职')
-    expect(view.result.current.character.flagTurns).toEqual({ 地方官任职: 0 })
-    view.unmount()
+    expect(jinshi.result.current.character.flags).toContain('地方官任职')
+    expect(jinshi.result.current.character.flagTurns).toEqual({ 地方官任职: 0 })
+    jinshi.unmount()
+
+    // 第六十五轮：胥吏是举人，但官是吏部铨选来的实缺，不是殿试点出来的。
+    // 在任经历跟着「实任知县」走，不跟着功名走 —— 否则他会在所有以
+    // 「地方官任职」为前提的事件面前变成哑巴。
+    const xuli = renderGameEngine({ origin: '胥吏', degree: '举人' })
+    await flush()
+    expect(xuli.result.current.character.flags).toContain('地方官任职')
+    expect(xuli.result.current.character.flagTurns).toEqual({ 地方官任职: 0 })
+    xuli.unmount()
   })
 })

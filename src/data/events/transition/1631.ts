@@ -1031,7 +1031,7 @@ export const events1631: GameEvent[] = [
         showConditions: {
           attributes: { 文韬: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -1100,7 +1100,7 @@ export const events1631: GameEvent[] = [
         description: '饷银过通州时，押解官换了个人。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '胥吏']
         },
         effects: {
           attributes: {理政: -3,
@@ -1136,7 +1136,7 @@ export const events1631: GameEvent[] = [
         text: '【清汰老弱】请各镇清汰老弱兵丁，把空额折成现银',
         description: '裁下来的兵在营门外站了三天没走。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 3 },
@@ -1364,7 +1364,7 @@ export const events1631: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 4,
@@ -1400,7 +1400,7 @@ export const events1631: GameEvent[] = [
         text: '【江南漕粮】上疏请调漕粮，附一份分批发运的日程',
         description: '第一批粮船到通州时，冬天已经过半。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '海商']
         },
         effects: {
           attributes: { 理政: 3, 文韬: 2 },

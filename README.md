@@ -50,7 +50,7 @@
 
 ### 角色与成长
 
-- **四种出身**：寒门、缙绅、没落世家、诗文清望，各带不同初始属性、特色标签与科举加成
+- **六种出身**：寒门、缙绅、没落世家、诗文清望、胥吏、海商，各带不同初始属性、特色标签、专属支线与科举加成
 - **取名系统**：姓名 + 表字（自动按姓名生成，可改）+ 籍贯（可填可随机）
 - **科举系统**：六级考试 → 五等功名（童生 / 秀才 / 举人 / 贡士 / 进士）
 - **官阶与政绩**：政绩分驱动升迁与**贬官**，记录升迁次数与贬官次数
@@ -118,7 +118,7 @@
   **首次进入不再自动弹出**
 - **错误边界**：崩溃时给出可操作的恢复界面，而不是白屏
 - **移动端适配**：`viewport-fit=cover` + `env(safe-area-inset-*)`，
-  覆盖 360px 到 1920px 共 9 档视口 × 标题屏/主玩法两屏的布局回归测试
+  覆盖 218px 到 1920px 共 13 档视口 × 标题屏/主玩法两屏的布局回归测试
 - **可访问性**：所有对话框统一使用 `useModal` 钩子
   （`role="dialog"` / `aria-modal` / ESC / Tab 焦点环 / 焦点归还 / 滚动锁定），
   核心玩法可纯键盘完成，事件与结算通过 `aria-live` 播报
@@ -205,7 +205,7 @@ chongzhen-game/
 │   │   └── TutorialModal / CheatMode / ErrorBoundary / ConfirmDialog ...
 │   ├── data/
 │   │   ├── events/               # 事件库：historical/transition/gray/emotion/origin/faction/ending
-│   │   ├── origins.ts            # 四种出身
+│   │   ├── origins.ts            # 六种出身
 │   │   ├── storylines.ts         # 15 条故事线
 │   │   ├── boundaryEvents.ts     # 属性临界事件
 │   │   └── boundaryEventCompiler.ts

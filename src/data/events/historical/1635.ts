@@ -42,7 +42,7 @@ export const events1635: GameEvent[] = [
         description: '上疏朝廷，主张招抚流民、瓦解闯军',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望', '缙绅']
+          origin: ['寒门', '诗文清望', '缙绅', '胥吏', '海商']
         },
         effects: {
           attributes: { 文韬: 5 },

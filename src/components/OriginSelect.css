@@ -23,15 +23,18 @@
   letter-spacing: 1px;
 }
 
+/* 六副出身排成 3×2：四列会摆成 4+2，最后一行空出半排，读起来像漏了两副。
+   上限从 1600 收到 1240，卡片不至于被拉得过宽。 */
 .origin-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
   gap: 12px;
-  max-width: 1600px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
-@media (max-width: 1300px) {
+/* 三列最小需 3×280+2×12+两侧留白 ≈ 950，取 980 收成两列，别让卡片挤到换行。 */
+@media (max-width: 980px) {
   .origin-grid {
     grid-template-columns: repeat(2, 1fr);
   }

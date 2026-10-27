@@ -1,6 +1,6 @@
 // 结局处理工具：人物志生成、成就联动、反事实预览
 
-import { Character, GameStateValues, LifeRecord } from '../types/game'
+import { Character, GameStateValues, LifeRecord, OriginType } from '../types/game'
 import { GameEvent } from '../types/event'
 import { unlockAchievement, recordEndingReached } from '../types/achievement'
 import { endingAchievementIdOf, resolveEndingTileId } from '../data/endingRegistry'
@@ -176,11 +176,15 @@ export function generateBiography(
   // 拼装人物志（仿《明史》列传体）
   // 死亡结局判定：ID 含以下关键字的视为人物已死；其余是罢官/归隐/流亡/篡位等活人结局
   const isDeathEnding = /martyr|zhaoyu|died_battlefield|southern_ming|jiashen|duty_death|city_fall|clan_exterminate|death_illness|bankrupt|emperor_hate|eunuch|scholar_ostracism|gentry_rebellion|popular_uproar|moral_degeneracy|debauchery|burning_death|died_fighting|whole_family|traitor|massacre|frame_loyal/.test(endingEvent.id)
-  const originShortMap: Record<string, string> = {
+  // 键类型写成 OriginType 而不是 string：漏一个出身在运行时只会静默显示「出身未详」，
+  // 类型把它变成编译错误（第六十五轮新增胥吏/海商时正是靠这一条认出这三张表）。
+  const originShortMap: Record<OriginType, string> = {
     '寒门': '寒门子也',
     '缙绅': '缙绅家也',
     '没落世家': '没落世家也',
-    '诗文清望': '诗礼家也'
+    '诗文清望': '诗礼家也',
+    '胥吏': '刀笔吏也',
+    '海商': '海商家也'
   }
   const originShort = originShortMap[character.origin] || '出身未详'
 
@@ -308,11 +312,13 @@ export function generateEpitaph(
     : '某公'
 
   // 出身称谓
-  const originMap: Record<string, string> = {
+  const originMap: Record<OriginType, string> = {
     '寒门': '寒门',
     '缙绅': '缙绅',
     '没落世家': '世胄',
-    '诗文清望': '诗礼'
+    '诗文清望': '诗礼',
+    '胥吏': '刀笔',
+    '海商': '海商'
   }
   const originShort = originMap[character.origin] || '布衣'
 

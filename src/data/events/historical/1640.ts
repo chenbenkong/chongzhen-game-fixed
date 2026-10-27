@@ -92,7 +92,7 @@ export const events1640: GameEvent[] = [
         description: '上疏弹劾失职诸臣，痛陈关外弊政',
         showConditions: {
           attributes: { 文韬: { min: 70 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏', '海商']
         },
         effects: {
           attributes: { 文韬: 8 },

@@ -412,7 +412,7 @@ interface BoundaryEvent {
 | 组件 | 文件 | 职责 |
 |------|------|------|
 | NameInput | [NameInput.tsx](file:///c:/Users/moli/Desktop/Trae/chongzhen-game/src/components/NameInput.tsx) | 姓名输入界面，支持手动输入和随机生成 |
-| OriginSelect | [OriginSelect.tsx](file:///c:/Users/moli/Desktop/Trae/chongzhen-game/src/components/OriginSelect.tsx) | 出身选择界面，展示四种出身及其初始属性 |
+| OriginSelect | [OriginSelect.tsx](file:///c:/Users/moli/Desktop/Trae/chongzhen-game/src/components/OriginSelect.tsx) | 出身选择界面，展示六种出身及其初始属性 |
 
 ### 7.3 弹窗与辅助组件
 
@@ -581,7 +581,7 @@ function calculateMeritScore(character, gameState, baseScore = 280, eventType?, 
 
 ### 9.5 出身系统
 
-四种出身影响初始属性和游戏特性：
+六种出身影响初始属性和游戏特性：
 
 | 出身 | 特点 | 核心加成 |
 |------|------|----------|
@@ -589,6 +589,8 @@ function calculateMeritScore(character, gameState, baseScore = 280, eventType?, 
 | 缙绅 | 高财帛高理政，党争敏感 | 人脉网络初始3关系 |
 | 没落世家 | 高武略高体质，文官歧视 | 军事事件+20%成功率 |
 | 诗文清望 | 最高文韬，清流路线 | 文章/弹劾+25%成功率 |
+| 胥吏 | 举人实缺，理政最高、文韬与清议最低 | 理政+15%、中官+15%，文韬-10%、清议-20% |
+| 海商 | 财帛最高，士绅厚、圣心防 | 财帛+20%、士绅+15%，清议-20%、圣眷-10% |
 
 ---
 

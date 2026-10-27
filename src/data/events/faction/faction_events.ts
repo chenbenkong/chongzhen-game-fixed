@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const factionEvents: GameEvent[] = [
 {
@@ -157,7 +158,7 @@ export const factionEvents: GameEvent[] = [
     conditions: {
       year: { min: 1628, max: 1632 },
       month: { min: 1, max: 12 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -289,7 +290,7 @@ export const factionEvents: GameEvent[] = [
       year: { min: 1630, max: 1636 },
       month: { min: 1, max: 12 },
       flags: { has: ['东林党人'] },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -335,7 +336,7 @@ export const factionEvents: GameEvent[] = [
         text: '【婉言推辞】"某近日身体有恙，恐怕无法参与..."',
         description: '找借口推辞，保持低调',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏', '海商']
         },
         effects: {
           gameState: { 清议: -10 },

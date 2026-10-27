@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1642: GameEvent[] = [
   {
@@ -189,7 +190,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 2, max: 2 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -354,7 +355,7 @@ export const events1642: GameEvent[] = [
     conditions: {
       year: { min: 1642, max: 1642 },
       month: { min: 3, max: 3 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -432,7 +433,7 @@ export const events1642: GameEvent[] = [
         description: '关上的兵册是五万，点名时只到了四万三。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '胥吏']
         },
         effects: {
           attributes: {理政: -3,
@@ -468,7 +469,7 @@ export const events1642: GameEvent[] = [
         text: '【疏请南迁】上疏请皇上移跸南京，以长江为险，徐图恢复',
         description: '疏一上，主战派在午门外堵了你的轿子。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '海商']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -604,7 +605,7 @@ export const events1642: GameEvent[] = [
         description: '粮价涨到十两，开封的城门开了。',
         showConditions: {
           hidden: { 道德值: { max: 25 }, 欲望值: { min: 45 } },
-          origin: ['缙绅']
+          origin: ['缙绅', '海商']
         },
         effects: {
           attributes: {理政: -3,
@@ -640,7 +641,7 @@ export const events1642: GameEvent[] = [
         text: '【上书求援】疏请调天下兵马，附上开封围城图',
         description: '图递上去，援军还没凑齐。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: { 文韬: 3 },

@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1643: GameEvent[] = [
   {
@@ -189,7 +190,7 @@ export const events1643: GameEvent[] = [
     conditions: {
       year: { min: 1643, max: 1643 },
       month: { min: 2, max: 2 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -232,7 +233,7 @@ export const events1643: GameEvent[] = [
         text: '【主张招安】拟诏招抚李自成部下，许以免死',
         description: '招抚的诏书没出京，主战派先骂上了。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 3, 文韬: 2 },
@@ -299,7 +300,7 @@ export const events1643: GameEvent[] = [
         text: '【上书迁都】密疏请皇上南幸，以南京为留都',
         description: '密疏被留中，你的名字上了主战派的名单。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '海商']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -1022,7 +1023,7 @@ export const events1643: GameEvent[] = [
     conditions: {
       year: { min: 1643, max: 1643 },
       month: { min: 7, max: 7 },
-      origin: ['寒门', '缙绅', '没落世家', '诗文清望']
+      origin: ALL_ORIGINS
     },
     choices: [
       {

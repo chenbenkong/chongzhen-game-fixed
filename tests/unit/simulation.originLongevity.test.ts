@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { simulateRun, type SimOutcome, type SimPolicy } from './helpers/simulate'
 import { DECLINABLE_ENDING_IDS } from '../../src/data/endingDecline'
-import type { OriginType } from '../../src/types/game'
+import { ALL_ORIGINS, type OriginType } from '../../src/types/game'
 
 /**
  * 「换一种出身，看到的还是不是同一个游戏」—— 实测钉死。
@@ -10,7 +10,7 @@ import type { OriginType } from '../../src/types/game'
  *
  * ⑩ `诗文清望` 的一局比别的出身短得多（第十五轮第一次把 100 局拆成四个出身才露出来）。
  *    局长短不是"难度高"那么无害：死得早的直接后果是**能撞见的事件与结局变少**，
- *    等于玩家花同样的时间买了一张内容更少的票。这一池有四种开局身份，
+ *    等于玩家花同样的时间买了一张内容更少的票。这一池有六种开局身份，
  *    任何一种的内容量明显少于一半，就是内容问题而不是平衡问题。
  *    第十八轮定位到根因不是出身，而是《东林烈士》那条没有年代闸的结局
  *    （见 `engine.boundary.test.ts`）—— 补闸之后四档局长之比从 1.25 收到 1.18。
@@ -51,7 +51,7 @@ import type { OriginType } from '../../src/types/game'
  *   SIM_GAMES=50 node node_modules/vitest/vitest.mjs run tests/unit/simulation.originLongevity.test.ts
  */
 
-const ORIGINS: OriginType[] = ['寒门', '缙绅', '没落世家', '诗文清望']
+const ORIGINS: OriginType[] = ALL_ORIGINS
 const SEEDS = Number(process.env.SIM_GAMES ?? 8)
 const POLICIES = (process.env.SIM_POLICIES ?? 'steady,warden').split(',') as SimPolicy[]
 const MAX_MONTHS = Number(process.env.SIM_MONTHS ?? 260)
@@ -147,9 +147,12 @@ beforeAll(async () => {
         ` ${((100 * to1643) / list.length).toFixed(0).padStart(9)}%   ${top}`
     )
   }
-}, 300_000)
+  // 第六十五轮从四副出身扩到六副：`SIM_GAMES=100` 现在是 100×2×6=1200 局，
+  // 实测单局约 0.45~0.5 秒，原来钉死的 300 秒会在深跑时把整格拖成 "Hook timed out"。
+  // 这里按局数给预算（每局 1 秒的余量），默认 8 局/格时仍是原来的下限。
+}, Math.max(300_000, SEEDS * POLICIES.length * ORIGINS.length * 1000))
 
-describe(`四种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () => {
+describe(`六种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () => {
   it('模拟本身跑得干净（否则下面所有结论都不成立）', () => {
     const all = [...byOrigin.values()].flat()
     expect(all.filter(r => r.error).map(r => `${r.seed} ${r.error}`), '模拟中途抛异常').toEqual([])

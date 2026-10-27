@@ -1028,7 +1028,7 @@ export const events1644: GameEvent[] = [
         description: '上疏请皇帝南迁南京，保留大明社稷',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '缙绅', '诗文清望']
+          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -1212,7 +1212,7 @@ export const events1644: GameEvent[] = [
         description: '密谋送太子出京，到南京即位',
         showConditions: {
           attributes: { 文韬: { min: 70 } },
-          origin: ['缙绅', '寒门', '诗文清望']
+          origin: ['缙绅', '寒门', '诗文清望', '胥吏', '海商']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -1338,7 +1338,7 @@ export const events1644: GameEvent[] = [
         description: '自缢殉国，效忠大明',
         showConditions: {
           hidden: { 道德值: { min: 80 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '胥吏']
         },
         effects: {
           attributes: {},
@@ -1424,7 +1424,7 @@ export const events1644: GameEvent[] = [
         description: '混入难民中，潜逃出京',
         showConditions: {
           attributes: { 体质: { min: 60 } },
-          origin: ['没落世家', '缙绅']
+          origin: ['没落世家', '缙绅', '海商']
         },
         effects: {
           attributes: { 体质: -10,

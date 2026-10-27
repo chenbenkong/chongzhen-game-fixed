@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildVocab, scanValueDomains, valueDomains } from '../../scripts/audit-value-domains'
+import { origins } from '../../src/data/origins'
 import type { ValueVocab } from '../../scripts/audit-value-domains'
 
 /**
@@ -211,7 +212,9 @@ describe('scanValueDomains 自身能抓住每一类值域错误', () => {
   })
 
   it('查的确实是引擎那套词表：官阶名与 RANKS 同源，出身名与 origins 同源', () => {
-    expect([...vocab.origins].sort()).toEqual(['诗文清望', '没落世家', '缙绅', '寒门'].sort())
+    // 不写死名字表：第六十五轮加了两副出身，写死的四元组会把「同源」检查退化成
+    // 「和去年那份名单一致」，新出身在词表里漏了也照样绿。
+    expect([...vocab.origins].sort()).toEqual(Object.keys(origins).sort())
     expect(vocab.ranks.has('正七品·知县')).toBe(true)
     expect(vocab.ranks.has('从九品·司狱')).toBe(true)
     // 「正七品」这种半截写法是拼错的主要形态，词表里不该有它

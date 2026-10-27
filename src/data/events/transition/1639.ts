@@ -848,7 +848,7 @@ export const events1639: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '胥吏']
         },
         effects: {
           attributes: { 理政: 5, 体质: -5,
@@ -884,7 +884,7 @@ export const events1639: GameEvent[] = [
         text: '【组织修堤】征民夫修堤，先堵住黄河决口',
         description: '堤修了二十里，来年没有再决。',
         showConditions: {
-          origin: ['缙绅', '没落世家']
+          origin: ['缙绅', '没落世家', '海商']
         },
         effects: {
           attributes: { 理政: 4, 武略: 2 },
