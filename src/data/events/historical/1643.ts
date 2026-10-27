@@ -35,7 +35,7 @@ export const events1643: GameEvent[] = [
         description: '上疏朝廷，阻止孙传庭出战，建议坚守潼关',
         showConditions: {
           attributes: { 文韬: { min: 75 }, 理政: { min: 70 } },
-          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商'],
+          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商', '罪臣之后'],
         },
         effects: {
           attributes: { 文韬: 5, 理政: 5 },
@@ -69,7 +69,7 @@ export const events1643: GameEvent[] = [
         description: '主动请缨，替代孙传庭出征，与李自成决战',
         showConditions: {
           attributes: { 武略: { min: 85 }, 体质: { min: 70 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 15, 体质: -35 },
@@ -219,7 +219,7 @@ export const events1643: GameEvent[] = [
         description: '因劝阻孙传庭推迟出师而使秦军保存了部分实力',
         showConditions: {
           flags: { has: ['阻止孙传庭出战'] },
-          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商'],
+          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商', '罪臣之后'],
         },
         effects: {
           attributes: { 武略: 5, 理政: 5 },
@@ -252,7 +252,7 @@ export const events1643: GameEvent[] = [
         description: '替代孙传庭出征后在郏县获胜但身负重伤，养伤期间李自成占领西安',
         showConditions: {
           flags: { has: ['替代孙传庭'] },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 体质: 10, 文韬: 5 },

@@ -479,7 +479,7 @@ export const events1638: GameEvent[] = [
         text: '【坦白从宽】"罪孽深重，愿受任何惩处！"',
         description: '主动向朝廷认罪，退还全部赃款并加倍赔偿',
         showConditions: {
-          origin: ['寒门', '没落世家', '诗文清望', '胥吏'],
+          origin: ['寒门', '没落世家', '诗文清望', '胥吏', '罪臣之后', '军户'],
         },
         effects: {
           attributes: {

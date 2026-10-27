@@ -35,7 +35,7 @@ export const events1632: GameEvent[] = [
         description: '上疏弹劾袁崇焕擅杀封疆大吏，要求朝廷彻查',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -97,7 +97,7 @@ export const events1632: GameEvent[] = [
         description: '主动请缨前往皮岛，安抚毛文龙旧部，防止他们叛逃',
         showConditions: {
           attributes: { 理政: { min: 65 }, 武略: { min: 50 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 理政: 8,体质: -15,

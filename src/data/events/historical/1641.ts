@@ -25,7 +25,7 @@ export const events1641: GameEvent[] = [
     conditions: {
       year: { min: 1641, max: 1641 },
       month: { min: 1, max: 2 },
-      origin: ['寒门', '缙绅', '没落世家', '胥吏', '海商']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -35,7 +35,7 @@ export const events1641: GameEvent[] = [
         description: '率军死守开封，与李自成决一死战',
         showConditions: {
           attributes: { 武略: { min: 65 }, 体质: { min: 60 } },
-          origin: ['没落世家', '海商']
+          origin: ['没落世家', '海商', '军户']
         },
         effects: {
           attributes: { 武略: 10, 体质: -20 },
@@ -105,7 +105,7 @@ export const events1641: GameEvent[] = [
         description: '主张招抚流民，分化流寇势力，剿抚并用',
         showConditions: {
           attributes: { 理政: { min: 65 }, 财帛: { min: 30 } },
-          origin: ['缙绅', '胥吏', '海商']
+          origin: ['诗文清望', '缙绅', '胥吏', '海商', '罪臣之后']
         },
         effects: {
           attributes: {理政: 8,
@@ -211,7 +211,7 @@ export const events1641: GameEvent[] = [
         showConditions: {
           flags: { has: ['死守开封'] },
           attributes: { 武略: { min: 55 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5,体质: -10,
@@ -286,7 +286,7 @@ export const events1641: GameEvent[] = [
         showConditions: {
           flags: { has: ['招抚流民'] },
           attributes: { 理政: { min: 55 }, 财帛: { min: 20 } },
-          origin: ['诗文清望', '缙绅', '胥吏', '海商']
+          origin: ['诗文清望', '缙绅', '胥吏', '海商', '罪臣之后']
         },
         effects: {
           attributes: { 理政: 5,

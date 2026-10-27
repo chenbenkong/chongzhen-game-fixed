@@ -398,7 +398,7 @@ export const events1634: GameEvent[] = [
         text: '【量力而行】先买两成种子，剩下的等朝廷',
         description: '两成种子下了地，余下的地还荒着。',
         showConditions: {
-          origin: ['缙绅', '没落世家', '胥吏']
+          origin: ['缙绅', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: {理政: 3,
@@ -469,7 +469,7 @@ export const events1634: GameEvent[] = [
         text: '【上书朝廷】疏请增拨赈银，附上缺种户数',
         description: '户数报了三万，银拨了一万。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -1702,7 +1702,7 @@ export const events1634: GameEvent[] = [
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 4, 体质: -3 },
@@ -1812,7 +1812,7 @@ export const events1634: GameEvent[] = [
         text: '【请设总理】上疏请设一总理，统筹辽东与剿寇的兵饷',
         description: '疏里把两线的兵额并成了一张表。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

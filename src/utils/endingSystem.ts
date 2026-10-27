@@ -184,7 +184,9 @@ export function generateBiography(
     '没落世家': '没落世家也',
     '诗文清望': '诗礼家也',
     '胥吏': '刀笔吏也',
-    '海商': '海商家也'
+    '海商': '海商家也',
+    '罪臣之后': '罪臣之后',
+    '军户': '军户子也'
   }
   const originShort = originShortMap[character.origin] || '出身未详'
 
@@ -318,7 +320,9 @@ export function generateEpitaph(
     '没落世家': '世胄',
     '诗文清望': '诗礼',
     '胥吏': '刀笔',
-    '海商': '海商'
+    '海商': '海商',
+    '罪臣之后': '罪臣后',
+    '军户': '军户'
   }
   const originShort = originMap[character.origin] || '布衣'
 

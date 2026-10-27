@@ -46,7 +46,11 @@ beforeAll(async () => {
   for (let i = 0; i < GAMES; i++) {
     runs.push(
       await simulateRun({
-        seed: 4000 + i,
+        // 第六十六轮重抄（旧 4000 起）：八条历史事件的出身门从"五名里的五名"补成 ALL_ORIGINS
+        // （§1.4 ㊶），四种老出身的事件池各多了一两条，骰子序列整体挪位 —— 4000..4023 里
+        // 阉党路线一次也没被带上身。在 4000..4079 里筛出 4048 起 24 局：阉党路线（faction_002/c2
+        // 的写手）、东林死忠、两面三刀三张票都在，faction_005 播了 4 次，echo_faction_007 播了 5 次。
+        seed: 4048 + i,
         policy: POLICIES[i % POLICIES.length],
         // 出身与策略错开取，四种出身都能被两种策略轮到
         origin: ORIGINS[Math.floor(i / POLICIES.length) % ORIGINS.length],

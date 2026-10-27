@@ -52,12 +52,15 @@ describe('篡位：掌军 → 劝进 → 问鼎', () => {
     expect(soulmateWriters.length, '问鼎之约至少要有「诸将劝进」和一条感情线两个产地').toBeGreaterThanOrEqual(2)
   })
 
-  it('反推存档：seed 8000 / usurper / 没落世家 真的走得到篡位', async () => {
+  it('反推存档：seed 7990 / usurper / 没落世家 真的走得到篡位', async () => {
     // 第五十五轮重抄（旧 8101）：本轮把跑局器的随机流改成"挂载之后重新起头"（§1.4 ㉗ 收口），
     // 序列整体挪了一拍。200 个种子里 8000 走通，三张军权票齐。
+    // 第六十六轮再重抄（旧 8000）：八条历史事件的出身门从"五名里的五名"补成 ALL_ORIGINS
+    // （§1.4 ㊶），没落世家能抽到的事件池多了三条，骰子序列又挪了一拍 —— 8000 结在殉国死节。
+    // 7990 在 7990..8210 里第一批走通，三张军权票齐，点的是 transition_1643_ambition.c1。
     // 从此这一颗骰子不会再换位置 —— 复现性由 `simulate.determinism.test.ts` 钉着。
     const r = await simulateRun({
-      seed: 8000,
+      seed: 7990,
       policy: 'usurper',
       origin: '没落世家',
       maxMonths: 260,

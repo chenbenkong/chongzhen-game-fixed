@@ -50,7 +50,7 @@
 
 ### 角色与成长
 
-- **六种出身**：寒门、缙绅、没落世家、诗文清望、胥吏、海商，各带不同初始属性、特色标签、专属支线与科举加成
+- **八种出身**：寒门、缙绅、没落世家、诗文清望、胥吏、海商、罪臣之后、军户，各带不同初始属性、特色标签、专属支线与科举加成
 - **取名系统**：姓名 + 表字（自动按姓名生成，可改）+ 籍贯（可填可随机）
 - **科举系统**：六级考试 → 五等功名（童生 / 秀才 / 举人 / 贡士 / 进士）
 - **官阶与政绩**：政绩分驱动升迁与**贬官**，记录升迁次数与贬官次数
@@ -205,7 +205,7 @@ chongzhen-game/
 │   │   └── TutorialModal / CheatMode / ErrorBoundary / ConfirmDialog ...
 │   ├── data/
 │   │   ├── events/               # 事件库：historical/transition/gray/emotion/origin/faction/ending
-│   │   ├── origins.ts            # 六种出身
+│   │   ├── origins.ts            # 八种出身
 │   │   ├── storylines.ts         # 15 条故事线
 │   │   ├── boundaryEvents.ts     # 属性临界事件
 │   │   └── boundaryEventCompiler.ts

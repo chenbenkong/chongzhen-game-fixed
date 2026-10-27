@@ -711,7 +711,7 @@ export const events1641: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家', '胥吏']
+          origin: ['寒门', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: { 理政: 5,体质: -3,
@@ -821,7 +821,7 @@ export const events1641: GameEvent[] = [
         text: '【疏请漕粮】上疏请截留江南漕粮二十万石，改运中原赈饥',
         description: '漕粮改道的旨意下来时，中原已经饿死了三万人。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

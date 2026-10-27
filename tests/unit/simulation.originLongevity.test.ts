@@ -147,12 +147,12 @@ beforeAll(async () => {
         ` ${((100 * to1643) / list.length).toFixed(0).padStart(9)}%   ${top}`
     )
   }
-  // 第六十五轮从四副出身扩到六副：`SIM_GAMES=100` 现在是 100×2×6=1200 局，
-  // 实测单局约 0.45~0.5 秒，原来钉死的 300 秒会在深跑时把整格拖成 "Hook timed out"。
-  // 这里按局数给预算（每局 1 秒的余量），默认 8 局/格时仍是原来的下限。
+  // 第六十五轮从四副出身扩到六副、第六十六轮扩到八副：`SIM_GAMES=100` 现在是
+  // 100×2×8=1600 局，实测单局约 0.45~0.5 秒，原来钉死的 300 秒会在深跑时把整格拖成
+  // "Hook timed out"。这里按局数给预算（每局 1 秒的余量），默认 8 局/格时仍是原来的下限。
 }, Math.max(300_000, SEEDS * POLICIES.length * ORIGINS.length * 1000))
 
-describe(`六种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () => {
+describe(`八种出身的内容量（${SEEDS * POLICIES.length} 局/格）`, () => {
   it('模拟本身跑得干净（否则下面所有结论都不成立）', () => {
     const all = [...byOrigin.values()].flat()
     expect(all.filter(r => r.error).map(r => `${r.seed} ${r.error}`), '模拟中途抛异常').toEqual([])

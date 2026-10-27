@@ -20,7 +20,7 @@ export interface ChoiceCheckResult {
 
 const ORIGIN_NAMES: Record<OriginType, string> = {
   '寒门': '寒门', '缙绅': '缙绅', '没落世家': '没落世家', '诗文清望': '诗文清望',
-  '胥吏': '胥吏', '海商': '海商'
+  '胥吏': '胥吏', '海商': '海商', '罪臣之后': '罪臣之后', '军户': '军户'
 }
 
 /**

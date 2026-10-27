@@ -372,7 +372,7 @@ export const events1632: GameEvent[] = [
         text: '【调榆林兵】檄调榆林边兵南下，追剿王嘉胤',
         description: '边兵追到黄河边，流寇已经渡过去了。',
         showConditions: {
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 3, 理政: 2 },
@@ -439,7 +439,7 @@ export const events1632: GameEvent[] = [
         text: '【请增陕兵】上疏请从河南、山西调兵入陕协剿',
         description: '疏到兵部，被压了二十天才议。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -504,7 +504,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 财帛: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家', '海商']
+          origin: ['寒门', '没落世家', '海商', '军户']
         },
         effects: {
           attributes: {理政: 3,
@@ -607,7 +607,7 @@ export const events1632: GameEvent[] = [
         text: '【请发农本】上疏请拨农本银，买种牛分给北直隶农户',
         description: '户部批了三千两，够买两百头牛。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -833,7 +833,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家', '胥吏']
+          origin: ['寒门', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: { 理政: 5,体质: -5,
@@ -938,7 +938,7 @@ export const events1632: GameEvent[] = [
         text: '【上书求援】疏请拨治河银二十万两，附上决口图',
         description: '银子拨了八万，图还在通政司。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -1492,7 +1492,7 @@ export const events1632: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 理政: 4, 文韬: 2 },
@@ -1524,7 +1524,7 @@ export const events1632: GameEvent[] = [
         text: '【调边兵入陕】请调延绥、宁夏两镇边兵入陕剿办',
         description: '边兵过境那天，沿途州县闭了城门。',
         showConditions: {
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 4 },

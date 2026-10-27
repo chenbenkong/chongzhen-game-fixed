@@ -896,7 +896,7 @@ export const events1638: GameEvent[] = [
         text: '【封城隔离】封了城门，在九门外设卡验人',
         description: '城门封了半月，城外的车马排到十里外。',
         showConditions: {
-          origin: ['缙绅', '没落世家', '胥吏']
+          origin: ['缙绅', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: { 理政: 4, 武略: 2 },
@@ -967,7 +967,7 @@ export const events1638: GameEvent[] = [
         text: '【上书求援】拟疏请调御医，附上疫区名册',
         description: '名册递上去，御医还在路上，疫区先封了。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

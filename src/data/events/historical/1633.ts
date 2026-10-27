@@ -36,7 +36,7 @@ export const events1633: GameEvent[] = [
         description: '以文韬之名上疏，主张刊刻《农政全书》以惠农桑',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望', '胥吏', '海商']
+          origin: ['寒门', '诗文清望', '胥吏', '海商', '罪臣之后', '军户']
         },
         effects: {
           attributes: { 文韬: 6 },

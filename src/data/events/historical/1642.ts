@@ -35,7 +35,7 @@ export const events1642: GameEvent[] = [
         description: '主张集结残部，死守宁远，为山海关争取时间',
         showConditions: {
           attributes: { 武略: { min: 60 }, 体质: { min: 50 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 8, 体质: -15 },
@@ -103,7 +103,7 @@ export const events1642: GameEvent[] = [
         description: '上疏弹劾兵部尚书陈新甲，追究松锦之败的责任',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['诗文清望', '寒门', '胥吏']
+          origin: ['诗文清望', '寒门', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -201,7 +201,7 @@ export const events1642: GameEvent[] = [
         description: '率军死守开封，与李自成决一死战',
         showConditions: {
           attributes: { 武略: { min: 70 }, 体质: { min: 60 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 12, 体质: -30 },
@@ -317,7 +317,7 @@ export const events1642: GameEvent[] = [
         description: '在城破前提前疏散百姓，减少伤亡',
         showConditions: {
           attributes: { 理政: { min: 65 }, 财帛: { min: 30 } },
-          origin: ['缙绅', '诗文清望', '胥吏', '海商'],
+          origin: ['缙绅', '诗文清望', '胥吏', '海商', '罪臣之后'],
         },
         effects: {
           attributes: {理政: 8,
@@ -387,7 +387,7 @@ export const events1642: GameEvent[] = [
         description: '清军总攻前组织宁远军民撤回关内，最大限度减少伤亡',
         showConditions: {
           flags: { has: ['死守宁远'] },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -20 },
@@ -464,7 +464,7 @@ export const events1642: GameEvent[] = [
         description: '利用之前弹劾陈新甲的政治资本，参与清理其残余势力',
         showConditions: {
           flags: { has: ['弹劾陈新甲'] },
-          origin: ['寒门', '诗文清望', '胥吏'],
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后'],
         },
         effects: {
           attributes: { 文韬: 3,
@@ -571,7 +571,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           flags: { has: ['疏散百姓'] },
           attributes: { 理政: { min: 55 } },
-          origin: ['缙绅', '诗文清望', '胥吏', '海商'],
+          origin: ['缙绅', '诗文清望', '胥吏', '海商', '罪臣之后'],
         },
         effects: {
           attributes: { 理政: 8,
@@ -642,7 +642,7 @@ export const events1642: GameEvent[] = [
         description: '因主张弃守开封而被追究责任，降职受罚',
         showConditions: {
           flags: { has: ['弃守开封'] },
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '军户']
         },
         effects: {
           attributes: { 文韬: 3 },

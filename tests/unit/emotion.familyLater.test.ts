@@ -155,10 +155,10 @@ describe('家宅第三波：门开在原文已经写下的那件事上', () => {
   })
 })
 
-describe('家宅第三波真跑局：三条回响都撞得到', () => {
+describe('家宅第三波真跑局：《灯花》《名帖》在样本里撞得到，《问丧》改由反推存档钉', () => {
   const SEEDS = 3
 
-  it('36 局里三条都播出，且《灯花》的每个孩子都落了地', async () => {
+  it('36 局里《灯花》《名帖》都播出，且《灯花》的每个孩子都落了地', async () => {
     const runs: SimOutcome[] = []
     for (const policy of POLICIES) {
       for (let seed = 1; seed <= SEEDS; seed++) {
@@ -218,10 +218,11 @@ describe('家宅第三波真跑局：三条回响都撞得到', () => {
     ).toEqual([])
     expect([...used('echo_family_007')]).toEqual(expect.arrayContaining(['c3']))
 
-    const wensang = fired('echo_family_008')
-    expect(wensang.length, '灭口之后再无人问 —— 《问丧》没播过').toBeGreaterThanOrEqual(1)
-    expect([...used('echo_family_008')]).toContain('c2')
-    for (const r of wensang) {
+    // 第六十六轮：《问丧》从这一批样本里撤下来了 —— 不是门变窄，是骰子挪位。
+    // 它的触发链要求两件事同时成立：点过【灭口】（144 局里只有 3 局点到）、且活到 1635。
+    // 样本撞不上不等于走不到，所以改按老规矩用**反推存档**钉门（见下一段《问丧》的定点用例）。
+    // 样本这一侧只留一条不许自相矛盾的不变式：它若真被撞上，身上必须带着灭口与犯罪线。
+    for (const r of fired('echo_family_008')) {
       expect(r.finalFlags).toContain('wife_murdered')
       expect(r.finalFlags).toContain('crime_line')
     }
@@ -427,4 +428,71 @@ describe('专门走这一支的人：去母留子 → 六岁 → 写亡母', () 
       expect(card!.turn - born!, `孩子 ${card!.turn - born!} 个月就收到入塾名帖`).toBeGreaterThanOrEqual(72)
     }
   }, 240_000)
+})
+
+/**
+ * 反推存档：《问丧》读的是灭口与犯罪线，门开在 1635 之后。
+ *
+ * 第六十六轮从 36 局样本里撤下来的原因写在样本那一段：那一千多个月的随机流里，
+ * 点过【灭口】的只有 3 局，且都没有活到 1635 —— 抽样撞不上，不等于这一格走不到。
+ * 这里按第五十四轮《名帖》的老办法钉四件事：年窗两界、wife_murdered 那道门、
+ * 【以势压人】只认犯罪线，以及真引擎结算时三个数都入账。
+ */
+describe('反推存档：灭口之后，妻族带着公信来问卒年', () => {
+  const wensang = event('echo_family_008')
+  const c2 = wensang.choices.find(c => c.id === 'c2')!
+
+  const murderer = (flags: string[] = ['wife_murdered', 'crime_line']) =>
+    makeCharacter({ degree: '举人', flags, flagTurns: { wife_murdered: 100, crime_line: 100 } })
+  const stateAt = (year: number, month = 6) =>
+    makeGameState({
+      turn: (year - 1627) * 12 + (month - 1),
+      currentYear: year,
+      currentMonth: month
+    })
+
+  it('1634 年门关着，1635 年门开 —— 上下界都钉住', () => {
+    expect(checkEventConditions(wensang, murderer(), stateAt(1634))).toBe(false)
+    expect(checkEventConditions(wensang, murderer(), stateAt(1635))).toBe(true)
+  })
+
+  it('没灭过口的人撞不到这一问 —— 门读的是 wife_murdered，不是随便一场丧事', () => {
+    expect(checkEventConditions(wensang, murderer(['crime_line']), stateAt(1638))).toBe(false)
+  })
+
+  it('【以势压人】只认犯罪线，锁住时说的是人话', () => {
+    expect(checkChoiceRequirement(c2, murderer(), stateAt(1638)).available).toBe(true)
+    const locked = checkChoiceRequirement(c2, murderer(['wife_murdered']), stateAt(1638))
+    expect(locked.available).toBe(false)
+    expect(locked.reason).not.toMatch(/crime_line|[a-z_]{4,}/)
+  })
+
+  it('真引擎结算【以势压人】：士绅升、民望与道德降，这一格被关掉，时间戳一起写下', async () => {
+    const view = renderGameEngine({
+      loadSaveData: makeSaveData({
+        character: murderer(),
+        currentEvent: wensang,
+        currentEventId: wensang.id,
+        gameState: stateAt(1638)
+      })
+    })
+    await flush()
+
+    const before = view.result.current
+    const turn = before.gameState.turn
+    await act(async () => {
+      before.handleChoice(c2)
+    })
+
+    const after = view.result.current
+    expect(after.gameState.士绅, '【以势压人】的 士绅+5 没入账').toBeGreaterThan(before.gameState.士绅)
+    expect(after.gameState.民望, '【以势压人】的 民望−8 没入账').toBeLessThan(before.gameState.民望)
+    expect(
+      after.character.hidden.道德值,
+      '【以势压人】的 道德−10 没入账'
+    ).toBeLessThan(before.character.hidden.道德值)
+    expect(after.character.flags).toContain('echo_family_008_done')
+    expect(after.character.flagTurns?.echo_family_008_done).toBe(turn)
+    view.unmount()
+  })
 })

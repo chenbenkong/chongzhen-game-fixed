@@ -366,7 +366,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -3 },
@@ -469,7 +469,7 @@ export const events1642: GameEvent[] = [
         text: '【疏请南迁】上疏请皇上移跸南京，以长江为险，徐图恢复',
         description: '疏一上，主战派在午门外堵了你的轿子。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '海商']
+          origin: ['寒门', '诗文清望', '海商', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -538,7 +538,7 @@ export const events1642: GameEvent[] = [
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -3 },
@@ -641,7 +641,7 @@ export const events1642: GameEvent[] = [
         text: '【上书求援】疏请调天下兵马，附上开封围城图',
         description: '图递上去，援军还没凑齐。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

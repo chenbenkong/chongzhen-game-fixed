@@ -260,6 +260,13 @@ function applyOriginModifier(origin: OriginType, attrKey: string, value: number)
   if (origin === '海商') {
     if (attrKey === '财帛' && value > 0) return Math.round(value * 1.2)
   }
+  if (origin === '罪臣之后') {
+    if (attrKey === '文韬' && value > 0) return Math.round(value * 1.1)
+  }
+  if (origin === '军户') {
+    if (attrKey === '武略' && value > 0) return Math.round(value * 1.15)
+    if (attrKey === '体质' && value > 0) return Math.round(value * 1.1)
+  }
   return value
 }
 
@@ -289,6 +296,14 @@ function applyOriginStateModifier(origin: OriginType, stateKey: string, value: n
     if (stateKey === '士绅' && value > 0) return Math.round(value * 1.15)
     if (stateKey === '圣眷' && value > 0) return Math.round(value * 0.9)
     if (stateKey === '清议' && value > 0) return Math.round(value * 0.8)
+  }
+  if (origin === '罪臣之后') {
+    if (stateKey === '圣眷' && value > 0) return Math.round(value * 0.8)
+    if (stateKey === '清议' && value > 0) return Math.round(value * 1.15)
+    if (stateKey === '士绅' && value > 0) return Math.round(value * 0.9)
+  }
+  if (origin === '军户') {
+    if (stateKey === '清议' && value > 0) return Math.round(value * 0.85)
   }
   return value
 }

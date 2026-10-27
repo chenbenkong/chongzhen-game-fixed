@@ -219,7 +219,7 @@ export const events1639: GameEvent[] = [
         text: '【誓师讨贼】"洪承畴降清，当誓师讨伐，声讨其叛国之罪！"',
         description: '公开声讨洪承畴的叛国罪行，誓师讨伐',
         showConditions: {
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 文韬: 5, 武略: 3 },
@@ -257,7 +257,7 @@ export const events1639: GameEvent[] = [
         description: '因曾参与松锦之战，主动上疏自劾，请求处分',
         showConditions: {
           flags: { has: ['增援松锦'] },
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 体质: 5 },
@@ -397,7 +397,7 @@ export const events1639: GameEvent[] = [
         description: '主动请缨，率军追击撤退的清军，为卢象升复仇',
         showConditions: {
           attributes: { 武略: { min: 70 }, 体质: { min: 60 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 10, 体质: -25 },
@@ -435,7 +435,7 @@ export const events1639: GameEvent[] = [
         description: '上疏弹劾太监高起潜，追究其拥兵不救之罪',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -473,7 +473,7 @@ export const events1639: GameEvent[] = [
         description: '收编卢象升残部，重整军队，继续抗清',
         showConditions: {
           attributes: { 武略: { min: 60 }, 理政: { min: 50 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 理政: 5 },
@@ -513,7 +513,7 @@ export const events1639: GameEvent[] = [
         description: '上疏为卢象升请恤，请求朝廷给予优厚抚恤',
         showConditions: {
           attributes: { 文韬: { min: 50 } },
-          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商'],
+          origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商', '罪臣之后'],
         },
         effects: {
           attributes: { 文韬: 3,

@@ -364,7 +364,7 @@ export const events1633: GameEvent[] = [
         showConditions: {
           attributes: { 财帛: { min: 30 }, 理政: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家', '海商']
+          origin: ['寒门', '没落世家', '海商', '军户']
         },
         effects: {
           attributes: {理政: 5, 体质: -3,
@@ -469,7 +469,7 @@ export const events1633: GameEvent[] = [
         text: '【上书求援】疏请调耕牛三千头、种子五万石',
         description: '牛来了八百头，种子还在路上。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -854,7 +854,7 @@ export const events1633: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家', '胥吏']
+          origin: ['寒门', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: { 理政: 5, 体质: -5,
@@ -959,7 +959,7 @@ export const events1633: GameEvent[] = [
         text: '【请截漕粮】上疏请截留南直隶本年漕粮二十万石赈灾',
         description: '户部讨价还价，最后批了八万石。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

@@ -1,4 +1,12 @@
-export type OriginType = '寒门' | '缙绅' | '没落世家' | '诗文清望' | '胥吏' | '海商'
+export type OriginType =
+  | '寒门'
+  | '缙绅'
+  | '没落世家'
+  | '诗文清望'
+  | '胥吏'
+  | '海商'
+  | '罪臣之后'
+  | '军户'
 
 /**
  * 全部出身，一处定义、处处引用。
@@ -16,7 +24,9 @@ export const ALL_ORIGINS: OriginType[] = [
   '没落世家',
   '诗文清望',
   '胥吏',
-  '海商'
+  '海商',
+  '罪臣之后',
+  '军户'
 ]
 
 export type ExamStage = 

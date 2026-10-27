@@ -54,7 +54,7 @@ export const figuresEvents: GameEvent[] = [
         description: '直面崇祯帝的刚愎多疑，坦率陈述国事',
         showConditions: {
           attributes: { 文韬: { min: 70 } },
-          origin: ['寒门', '诗文清望', '胥吏']
+          origin: ['寒门', '诗文清望', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
@@ -133,7 +133,7 @@ export const figuresEvents: GameEvent[] = [
         description: '请旨外放，到地方任职',
         showConditions: {
           attributes: { 体质: { min: 60 }, 武略: { min: 50 } },
-          origin: ['没落世家', '缙绅']
+          origin: ['没落世家', '缙绅', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -5 },

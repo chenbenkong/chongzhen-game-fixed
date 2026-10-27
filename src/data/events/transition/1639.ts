@@ -848,7 +848,7 @@ export const events1639: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 体质: { min: 40 } },
           hidden: { 道德值: { min: 50 } },
-          origin: ['寒门', '没落世家', '胥吏']
+          origin: ['寒门', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: { 理政: 5, 体质: -5,
@@ -953,7 +953,7 @@ export const events1639: GameEvent[] = [
         text: '【上书求援】疏请拨银十万两，附上受灾州县',
         description: '银拨了四万，州县报了三十二个。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

@@ -69,7 +69,7 @@ describe('出身骨架：表、数值、专属内容与"给所有人"的门', ()
     expect(d.initialHidden.道德值, '道德值').toBeGreaterThanOrEqual(20)
   })
 
-  it('六个出身在能力面板上互不相同（任意两副的属性 L1 距离 ≥ 30）', () => {
+  it('八个出身在能力面板上互不相同（任意两副的属性 L1 距离 ≥ 30）', () => {
     const vec = (o: OriginType) => ATTR.map(k => origins[o].initialAttributes[k])
     for (let i = 0; i < ALL_ORIGINS.length; i++) {
       for (let j = i + 1; j < ALL_ORIGINS.length; j++) {
@@ -141,6 +141,69 @@ describe('出身骨架：表、数值、专属内容与"给所有人"的门', ()
     expect(
       offenders,
       '这些事件的门手抄了四个老出身，新出身会在它们面前变成哑巴 —— 改用 ALL_ORIGINS'
+    ).toEqual([])
+  })
+
+  it('两副新出身的每一段经历都有人读（不许只写不读）', () => {
+    // 第六十六轮加「罪臣之后」「军户」时，三拍留下的 24 段经历里有 12 段
+    // 全游戏没有一处门槛读 —— 玩家做完那次抉择，世界毫无反应。
+    // 补法不是改文案，是各加一条回响事件（`origin_zuichen_004` / `origin_junhu_004`），
+    // 让第四拍按第三拍留下的经历分岔。这里钉的是**读**这件事本身：
+    // 谁再把手抄的 any 名单删掉一段，那段经历就重新变成白存，这条会红。
+    // 判据不看事件 id：从两副出身的专属事件里收集"写出来的 flag"，
+    // 再对着全库六个子句找读者 —— 换一种补法（改写别人的门槛）同样能过。
+    const NEW_ORIGINS: OriginType[] = ['罪臣之后', '军户']
+    const exclusive = (e: GameEvent) => {
+      const gate = e.conditions?.origin
+      const arr = Array.isArray(gate) ? gate : gate ? [gate] : []
+      return arr.length === 1 && NEW_ORIGINS.includes(arr[0] as OriginType)
+    }
+    const written = new Map<string, string>()
+    for (const e of ALL_EVENTS.filter(exclusive)) {
+      for (const c of e.choices) {
+        for (const f of c.effects?.flags?.add ?? []) written.set(f, `${e.id}/${c.id}`)
+      }
+    }
+    const read = new Set<string>()
+    const clauses = ['has', 'all', 'some', 'notHas', 'none', 'any'] as const
+    for (const e of ALL_EVENTS) {
+      const groups = [
+        e.conditions?.flags,
+        ...e.choices.map(c => c.showConditions?.flags)
+      ]
+      for (const g of groups) {
+        if (!g) continue
+        for (const clause of clauses) for (const f of g[clause] ?? []) read.add(f)
+      }
+    }
+    const orphan = [...written.entries()]
+      .filter(([f]) => !read.has(f))
+      .map(([f, where]) => `${f}（${where} 写入）`)
+    expect(written.size, '两副新出身没有专属事件').toBeGreaterThan(0)
+    expect(orphan, '这些经历写出来之后再没人读：给它们一处门槛或一条回响').toEqual([])
+  })
+
+  it('事件级的门不许"抄一大半"：长过半数的名单必须就是 ALL_ORIGINS', () => {
+    // 第六十六轮实测逮到的第二形态：第六十五轮只把**四元组**换成 ALL_ORIGINS，
+    // 而国库里还有八处五元组（阉党清算、袁崇焕之死、登莱兵变、清国建立、
+    // 流寇糜烂、科举舞弊），每一处都各漏一个老出身 —— 没落世家或被漏在文事里，
+    // 寒门被漏在兵事里。这种门看起来"有取向"，其实只是手抄时少写了一个名字，
+    // 玩家读到的是"这件事跟我出身无关"，而不是"我不该看见它"。
+    // 判据按形状定：事件级点名超过半数出身，就是"给所有人"的意思，必须写 ALL_ORIGINS。
+    const same = (a: string[], b: string[]) =>
+      a.length === b.length && a.every(x => b.includes(x))
+    const offenders = ALL_EVENTS.filter(e => {
+      const gate = e.conditions?.origin
+      return (
+        Array.isArray(gate) &&
+        gate.length > ALL_ORIGINS.length / 2 &&
+        !same(gate, ALL_ORIGINS)
+      )
+    }).map(e => `${e.id}「${e.title}」：${(e.conditions!.origin as string[]).join('/')}`)
+    expect(
+      offenders,
+      '这些事件点了超过半数出身，却漏掉了其中几个 —— 要么补齐成 ALL_ORIGINS，' +
+        '要么缩到半数以下并说明"这件事确实只关某几类人"'
     ).toEqual([])
   })
 })

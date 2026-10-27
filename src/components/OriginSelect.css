@@ -23,18 +23,20 @@
   letter-spacing: 1px;
 }
 
-/* 六副出身排成 3×2：四列会摆成 4+2，最后一行空出半排，读起来像漏了两副。
-   上限从 1600 收到 1240，卡片不至于被拉得过宽。 */
+/* 八副出身排成 4×2：宽屏两排正好铺满，最后一行不会空出半排。
+   三列永远排成 3+3+2，读起来像漏了一副，所以中段直接收成两列（4 排、每排 2 副）。
+   上限 1600 是四列各留 280 的余量（4×280+3×12+两侧留白 ≈ 1200，再宽只会把卡片拉散）。 */
 .origin-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
   gap: 12px;
-  max-width: 1240px;
+  max-width: 1560px;
   margin: 0 auto;
 }
 
-/* 三列最小需 3×280+2×12+两侧留白 ≈ 950，取 980 收成两列，别让卡片挤到换行。 */
-@media (max-width: 980px) {
+/* 四列需要 4×250+3×12+两侧留白 ≈ 1100。低于 1180 收成两列，
+   宁可排成 4 排，也不要 3+3+2 那种"最后一行缺一块"的形状。 */
+@media (max-width: 1180px) {
   .origin-grid {
     grid-template-columns: repeat(2, 1fr);
   }

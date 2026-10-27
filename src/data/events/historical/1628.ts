@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1628: GameEvent[] = [
 {
@@ -158,7 +159,7 @@ export const events1628: GameEvent[] = [
     conditions: {
       year: { min: 1628, max: 1628 },
       month: { min: 11, max: 12 },
-      origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -286,7 +287,7 @@ export const events1628: GameEvent[] = [
       year: { min: 1628, max: 1629 },
       month: { min: 10, max: 12 },
       flags: { has: ['清算阉党'] },
-      origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -384,7 +385,7 @@ export const events1628: GameEvent[] = [
       year: { min: 1628, max: 1629 },
       month: { min: 10, max: 12 },
       flags: { has: ['保护阉党'] },
-      origin: ['寒门', '缙绅', '诗文清望', '胥吏', '海商']
+      origin: ALL_ORIGINS
     },
     choices: [
       {

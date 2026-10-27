@@ -1,4 +1,5 @@
 import { GameEvent } from '../../../types/event'
+import { ALL_ORIGINS } from '../../../types/game'
 
 export const events1636: GameEvent[] = [
 {
@@ -24,7 +25,7 @@ export const events1636: GameEvent[] = [
     conditions: {
       year: { min: 1636, max: 1636 },
       month: { min: 5, max: 5 },
-      origin: ['缙绅', '没落世家', '诗文清望', '胥吏', '海商']
+      origin: ALL_ORIGINS
     },
     choices: [
       {
@@ -229,7 +230,7 @@ export const events1636: GameEvent[] = [
         showConditions: {
           flags: { has: ['主战派'] },
           attributes: { 武略: { min: 50 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -15 },
@@ -264,7 +265,7 @@ export const events1636: GameEvent[] = [
         description: '秘密议和的消息泄露，需要应对朝野的弹劾和调查',
         showConditions: {
           flags: { has: ['主和派'] },
-          origin: ['缙绅']
+          origin: ['缙绅', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

@@ -52,7 +52,7 @@ export const events1640: GameEvent[] = [
         description: '请缨出关，整军再战',
         showConditions: {
           attributes: { 体质: { min: 70 }, 武略: { min: 70 } },
-          origin: ['没落世家', '缙绅']
+          origin: ['没落世家', '缙绅', '军户']
         },
         effects: {
           attributes: { 体质: -20, 武略: 12,
@@ -92,7 +92,7 @@ export const events1640: GameEvent[] = [
         description: '上疏弹劾失职诸臣，痛陈关外弊政',
         showConditions: {
           attributes: { 文韬: { min: 70 } },
-          origin: ['寒门', '诗文清望', '胥吏', '海商']
+          origin: ['寒门', '诗文清望', '胥吏', '海商', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 8 },

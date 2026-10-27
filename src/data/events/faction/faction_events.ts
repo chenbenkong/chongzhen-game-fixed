@@ -299,7 +299,7 @@ export const factionEvents: GameEvent[] = [
         text: '【联名弹劾】"阉党余孽，人人得而诛之！某愿联名！"',
         description: '参与联名弹劾阉党余孽',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -336,7 +336,7 @@ export const factionEvents: GameEvent[] = [
         text: '【婉言推辞】"某近日身体有恙，恐怕无法参与..."',
         description: '找借口推辞，保持低调',
         showConditions: {
-          origin: ['缙绅', '没落世家', '胥吏', '海商']
+          origin: ['缙绅', '没落世家', '胥吏', '海商', '军户']
         },
         effects: {
           gameState: { 清议: -10 },

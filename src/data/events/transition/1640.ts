@@ -701,7 +701,7 @@ export const events1640: GameEvent[] = [
         showConditions: {
           attributes: { 理政: { min: 50 }, 武略: { min: 30 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['寒门', '没落世家', '诗文清望', '胥吏'],
+          origin: ['寒门', '没落世家', '诗文清望', '胥吏', '军户'],
         },
         effects: {
           attributes: { 理政: 5, 武略: 2,
@@ -809,7 +809,7 @@ export const events1640: GameEvent[] = [
         text: '【缩减开支】把家里的膳食减到两菜一汤',
         description: '省下的银子买了三百石粮，分给了街坊。',
         showConditions: {
-          origin: ['寒门', '没落世家']
+          origin: ['寒门', '没落世家', '罪臣之后']
         },
         effects: {
           attributes: { 体质: -2,

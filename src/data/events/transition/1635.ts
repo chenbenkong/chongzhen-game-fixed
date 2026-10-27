@@ -561,7 +561,7 @@ export const events1635: GameEvent[] = [
         text: '【量力而行】先发三成种粮，余下的等朝廷',
         description: '三成种粮种下去，出苗的不足一半。',
         showConditions: {
-          origin: ['缙绅', '没落世家', '胥吏']
+          origin: ['缙绅', '没落世家', '胥吏', '军户']
         },
         effects: {
           attributes: {理政: 3,
@@ -632,7 +632,7 @@ export const events1635: GameEvent[] = [
         text: '【上书朝廷】疏请拨银十万两，购种运往中原',
         description: '银子拨了四万，到河南只剩两万。',
         showConditions: {
-          origin: ['寒门', '诗文清望']
+          origin: ['寒门', '诗文清望', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },

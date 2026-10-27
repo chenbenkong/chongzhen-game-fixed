@@ -42,7 +42,7 @@ export const events1635: GameEvent[] = [
         description: '上疏朝廷，主张招抚流民、瓦解闯军',
         showConditions: {
           attributes: { 文韬: { min: 60 } },
-          origin: ['寒门', '诗文清望', '缙绅', '胥吏', '海商']
+          origin: ['寒门', '诗文清望', '缙绅', '胥吏', '海商', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },
@@ -72,7 +72,7 @@ export const events1635: GameEvent[] = [
         description: '请缨从军，亲赴陕西前线剿贼',
         showConditions: {
           attributes: { 体质: { min: 60 }, 武略: { min: 50 } },
-          origin: ['没落世家', '缙绅']
+          origin: ['没落世家', '缙绅', '军户']
         },
         effects: {
           attributes: { 体质: -10, 武略: 8,

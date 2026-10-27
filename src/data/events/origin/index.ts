@@ -5,6 +5,8 @@ import { moluoEvents } from './moluo'
 import { shiwenEvents } from './shiwen'
 import { xuliEvents } from './xuli'
 import { haishangEvents } from './haishang'
+import { zuichenEvents } from './zuichen'
+import { junhuEvents } from './junhu'
 
 export const originEvents: GameEvent[] = [
   ...hanmenEvents,
@@ -12,5 +14,7 @@ export const originEvents: GameEvent[] = [
   ...moluoEvents,
   ...shiwenEvents,
   ...xuliEvents,
-  ...haishangEvents
+  ...haishangEvents,
+  ...zuichenEvents,
+  ...junhuEvents
 ]

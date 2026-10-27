@@ -175,7 +175,7 @@ export const events1629: GameEvent[] = [
         showConditions: {
           flags: { has: ['勤王有功'] },
           attributes: { 武略: { min: 65 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 8, 体质: -20 },
@@ -214,7 +214,7 @@ export const events1629: GameEvent[] = [
         showConditions: {
           flags: { has: ['力保袁崇焕'] },
           attributes: { 文韬: { min: 60 } },
-          origin: ['诗文清望', '寒门', '胥吏']
+          origin: ['诗文清望', '寒门', '胥吏', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 5 },

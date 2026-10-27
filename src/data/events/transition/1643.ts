@@ -201,7 +201,7 @@ export const events1643: GameEvent[] = [
         showConditions: {
           attributes: { 武略: { min: 50 } },
           hidden: { 道德值: { min: 40 } },
-          origin: ['没落世家']
+          origin: ['没落世家', '军户']
         },
         effects: {
           attributes: { 武略: 5, 体质: -3 },
@@ -300,7 +300,7 @@ export const events1643: GameEvent[] = [
         text: '【上书迁都】密疏请皇上南幸，以南京为留都',
         description: '密疏被留中，你的名字上了主战派的名单。',
         showConditions: {
-          origin: ['寒门', '诗文清望', '海商']
+          origin: ['寒门', '诗文清望', '海商', '罪臣之后']
         },
         effects: {
           attributes: { 文韬: 3 },
