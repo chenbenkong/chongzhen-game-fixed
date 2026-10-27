@@ -933,7 +933,8 @@
   border: 1px solid #3a2a1a;
   border-radius: 4px;
   padding: 32px 40px;
-  min-width: 300px;
+  /* 300px 是桌面下限；窄视口必须让弹窗跟着遮罩内容区收 */
+  min-width: min(300px, 100%);
   /* 20rem = 默认根字号(18px)下的 360px，写法换成 rem 是为了跟着 html 那把全局排版尺一起放：
      200% 字号时它还停在 360px，一行只塞得下 11 个汉字，标题「勉 力 一 试」折成两行、
      每行说明各折两行，中间那段因此 654px 高（同档改完实测 470px）——

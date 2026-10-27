@@ -34,7 +34,8 @@
     0 10px 40px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: slideIn 0.3s ease-out;
-  min-width: 280px;
+  /* 窄视口下跟着容器收，280px 不能成为硬下限 */
+  min-width: min(280px, 100%);
 }
 
 @keyframes slideIn {

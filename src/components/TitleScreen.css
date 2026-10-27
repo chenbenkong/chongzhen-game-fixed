@@ -410,6 +410,45 @@
 }
 
 /* ============================================================
+   极窄视口（<320 CSS px：浏览器高倍缩放、分屏极窄窗口）
+   ============================================================
+   这一段解决两件具体的事：
+   1. 标题框与按钮不再要求 180–220px 最小宽度 —— body 已去掉 320 下限，
+      内容必须跟着收，否则仍会撑出视口被裁。
+   2. 右下角的「成就/局鉴/帮助」从固定定位改回文档流。固定定位在窄屏会
+      横跨几乎整个底边，正好压住「开始仕途」的点击区域（实测 240px 宽时
+      elementFromPoint 命中的是「帮助」）。
+   标题屏内容高于视口时靠文档纵向滚动，主按钮始终能滚到。 */
+@media (max-width: 320px) {
+  .title-screen {
+    justify-content: flex-start;
+    padding: 12px 12px 16px;
+  }
+  .title-frame {
+    padding: 16px 12px;
+    max-width: 100%;
+  }
+  .title-main {
+    font-size: 2.2rem;
+    letter-spacing: 0.18em;
+  }
+  .title-main::after { width: 64px; }
+  .title-sub { letter-spacing: 0.25em; }
+  .title-buttons { width: 100%; }
+  .title-btn {
+    min-width: 0;
+    width: 100%;
+    padding: 11px 8px;
+    letter-spacing: 0.2em;
+  }
+  .title-corner-buttons {
+    position: static;
+    margin-top: 16px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ============================================================
    触控点按目标：仅 any-pointer: coarse 生效（触屏笔记本也命中），
    不影响桌面鼠标下的视觉密度
    ============================================================ */
