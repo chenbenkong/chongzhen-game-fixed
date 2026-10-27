@@ -92,14 +92,14 @@ describe('RoutePanel', () => {
    *
    * 从前面板只渲染"已经沾了边"的那几途、每途前两格，一票没有的命途连返回值都没有 ——
    * 玩家既看不见自己还有哪些路可走，也看不见下一拍该往哪迈步。
-   * 下面钉的是：十三途二十六个落点**全都**在面板上数得出来，且折叠态不因此变得吵。
+   * 下面钉的是：十四途二十九个落点**全都**在面板上数得出来，且折叠态不因此变得吵。
    */
-  describe('全量可见（十三途 / 二十六落点）', () => {
+  describe('全量可见（十四途 / 二十九落点）', () => {
     const allTickets = [
       ...new Set(ROUTE_FAMILIES.flatMap(f => f.destinations.flatMap(d => d.tickets)))
     ]
 
-    it('开局仍是那句"尚无定数"，但明说另有 13 途尚未起步', () => {
+    it('开局仍是那句"尚无定数"，但明说另有 14 途尚未起步', () => {
       render(
         <RoutePanel
           character={makeCharacter()}
@@ -107,25 +107,25 @@ describe('RoutePanel', () => {
         />
       )
       expect(screen.getByText(/尚无定数/)).toBeTruthy()
-      expect(screen.getByText('另有 13 途尚未起步')).toBeTruthy()
-      expect(screen.getByRole('button', { name: /展开全部 13 途/ })).toBeTruthy()
+      expect(screen.getByText('另有 14 途尚未起步')).toBeTruthy()
+      expect(screen.getByRole('button', { name: /展开全部 14 途/ })).toBeTruthy()
     })
 
-    it('展开之后十三途全部排得出来', () => {
+    it('展开之后十四途全部排得出来', () => {
       render(
         <RoutePanel
           character={makeCharacter({ flags: ['随军出征'] })}
           gameState={makeGameState({ currentYear: 1640, turn: 60 })}
         />
       )
-      fireEvent.click(screen.getByRole('button', { name: /展开全部 13 途/ }))
+      fireEvent.click(screen.getByRole('button', { name: /展开全部 14 途/ }))
       for (const family of ROUTE_FAMILIES) {
         expect(screen.getAllByText(family.name).length, `${family.name} 没有出现在面板上`).toBeGreaterThan(0)
       }
-      expect(screen.getByText(/尚未起步 · 12 途/)).toBeTruthy()
+      expect(screen.getByText(/尚未起步 · 13 途/)).toBeTruthy()
     })
 
-    it('集齐全部门票时，二十六个落点一个都不少', () => {
+    it('集齐全部门票时，二十九个落点一个都不少', () => {
       const { container } = render(
         <RoutePanel
           character={makeCharacter({ flags: allTickets })}
@@ -133,8 +133,8 @@ describe('RoutePanel', () => {
         />
       )
       fireEvent.click(screen.getByRole('button', { name: /展开全部/ }))
-      expect(container.querySelectorAll('.route-dest')).toHaveLength(26)
-      expect(screen.getByText(/在册 13\/13 途 · 落点 26\/26 格/)).toBeTruthy()
+      expect(container.querySelectorAll('.route-dest')).toHaveLength(29)
+      expect(screen.getByText(/在册 14\/14 途 · 落点 29\/29 格/)).toBeTruthy()
     })
 
     it('每一途写着第几拍，下一拍只报看得见的经历票', () => {
@@ -161,18 +161,18 @@ describe('RoutePanel', () => {
       expect(container.textContent).not.toMatch(/[a-z][a-z0-9]*_[a-z0-9_]+/)
     })
 
-    it('routes + dormant 恒等于十三途，落点恒等于二十六格', () => {
+    it('routes + dormant 恒等于十四途，落点恒等于二十九格', () => {
       const trail = buildRouteTrail(
         makeCharacter({ flags: ['随军出征', '归隐'] }),
         makeGameState({ currentYear: 1640, turn: 60 })
       )
       const totalDests = ROUTE_FAMILIES.reduce((n, f) => n + f.destinations.length, 0)
       expect(trail.routes.length + trail.dormant.length).toBe(ROUTE_FAMILIES.length)
-      // 二十六格要一格不落地**在册**：已起步的按 beatsTotal 记账，未起步的同款字段
+      // 二十九格要一格不落地**在册**：已起步的按 beatsTotal 记账，未起步的同款字段
       const booked =
         trail.routes.reduce((n, r) => n + r.beatsTotal, 0) +
         trail.dormant.reduce((n, d) => n + d.beatsTotal, 0)
-      expect(totalDests).toBe(26)
+      expect(totalDests).toBe(29)
       expect(booked).toBe(totalDests)
       const shown = trail.routes.reduce((n, r) => n + r.destinations.length, 0)
       expect(shown).toBeLessThanOrEqual(booked)

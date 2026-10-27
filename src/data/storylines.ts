@@ -104,6 +104,14 @@ export const STORYLINES: Record<string, Storyline> = {
     iconName: 'starOutline',
     tone: 'dark'
   },
+  // 内廷暗线（第六十七轮）：做官的人怎样一步步走进内廷，五拍一条线
+  eunuch: {
+    key: 'eunuch',
+    name: '内廷暗线',
+    intro: '宫门里的传话、文书房的折子、厂卫的名单——内廷的另一条路。',
+    iconName: 'starOutline',
+    tone: 'dark'
+  },
   // 1644 后的乱世线
   nationfall: {
     key: 'nationfall',

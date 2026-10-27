@@ -854,6 +854,34 @@ export const ALL_ACHIEVEMENTS: Achievement[] = [
     checkUnlock: (ctx) => ctx.eventHistory.includes('ending_fugitive'),
     unlocked: false
   },
+  // 内廷暗线三格（第六十七轮）。事件 id 就是格子 id，所以不需要 ENDING_ID_ALIASES 换算。
+  {
+    id: 'ending_inner_court_chancellor_done',
+    name: '内廷外相',
+    description: '达成"内廷外相"结局',
+    icon: '相',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_inner_court_chancellor'),
+    unlocked: false
+  },
+  {
+    id: 'ending_inner_court_backlash_done',
+    name: '内廷反噬',
+    description: '达成"内廷反噬"结局',
+    icon: '噬',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_inner_court_backlash'),
+    unlocked: false
+  },
+  {
+    id: 'ending_inner_court_escape_done',
+    name: '抽身而去',
+    description: '达成"抽身而去"结局',
+    icon: '抽',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_inner_court_escape'),
+    unlocked: false
+  },
   {
     id: 'ending_bankrupt_done',
     name: '倾家荡产',

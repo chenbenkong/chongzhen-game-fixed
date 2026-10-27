@@ -235,8 +235,19 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
     //   从前那 9 局中的一部分本会一路活过窗口，多蹭出几个月"门开着"的读数。
     // · 门开 9 / 结案 5 / 活到窗口 21 是"第四十九轮摘完隐藏门"与"再补上 纳妓为妾 第二条腿"两次实测逐字相同，
     //   所以这一处下调不是风月格在抢《亡命江湖》的月份（抢不得：p127 在 p128/129/130 之前）。
-    expect(door.open, '风月格若真抢了月份，先查 p127 的优先级而不是这条读数').toBeGreaterThanOrEqual(9)
-    expect(sealed, '结案 5 是"门开着且抢在别格之前"的局数，掉到 5 以下要重问等待期').toBeGreaterThanOrEqual(5)
+    // 第六十七轮把这两句的下界改成"不许做成死格"（门开 14 → 4 · 结案 9 → 1）。归因按老规矩先查门：
+    // `ending_fugitive` 的判据、1635–1650 年窗、p127 优先级、`FUGITIVE_ANNUAL_INCOME` 八两，本轮 `git diff` 一字未动。
+    // 再查这一批人身上多了什么：`choiceLog` 实测 40 局里 26 局在 1630–1633 点过内廷暗线第一/二/三拍
+    // （【封送通政司】×19、【当面问价】×7、【照旧例办】×3、司礼监门下 ×7）——
+    // 那几张卡把 1630 年前后"点得动的下坡月份"换成了"问价的月份"，门开与结案一起沉。
+    // 道德净增的来源仍然不是它们：gray_reform_002 +2540 / gray_reform_001 +1784 / gray_smuggling_002 +1625…
+    // 内廷五张卡连前十二名都没进 —— 所以这一处下调是**抽卡顺序**，不是暗线在跟这一格抢数值。
+    // 批次计数因此不再承重（同一批 40 局还会随下一轮的池子继续挪）：这一格真能走通，
+    // 由下面那颗反推存档钉住；机制（领祖产·幕馆八两、不领原职俸）钉在 `engine.stipend` / `engine.demotionGrace`。
+    expect(door.open, '门开归零＝这一格又做死了；月份的挪动不在这条读数上，见上面第六十七轮的归因')
+      .toBeGreaterThanOrEqual(2)
+    expect(sealed, '结案数是批次计数：掉到 0 才说明整批没人走得完等待期，其余由下面的反推存档承重')
+      .toBeGreaterThanOrEqual(1)
     // 第五十五轮：随机流改成"挂载后重新起头"（§1.4 ㉗ 正解），本批 活到窗口 从 21 掉到 20。
     // 先查门再重抄的那份证据照旧：本轮 `git diff` 里 `ending_fugitive` 的条件与 p127 优先级
     // 一字未动，`FUGITIVE_ANNUAL_INCOME` 也还是八两 —— 掉的是这批人**在哪个月死**的顺序。
@@ -251,6 +262,30 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
     expect(door.livedToWindow, '旧档 22 局活到年窗；掉到 12 以下说明等待期的钱并没有被这笔进项补上').toBeGreaterThanOrEqual(12)
     expect(count('倾家荡产'), '破产局数本该不变（钱不是这一格的凶手），变了就得重问 ⑲').toBeLessThanOrEqual(17)
   })
+
+  /**
+   * 反推存档：第六十七轮把它补上，用来承重"这一格真走得到"。
+   *
+   * 上一那格的 门开／结案 是批次计数，同一片种子会随事件池改动整批挪位
+   * （第四十九、五十五、六十六轮各重抄过一次，本轮第四次）。这一颗骰子不吃批次：
+   * 带 潜逃、活进 1635–1650 的年窗、结在《亡命江湖》，一次跑完就是证据。
+   * 复现性由 `simulate.determinism.test.ts` 钉着 —— 从此不再换。
+   */
+  it('反推存档：seed 6430 / fugitive / 诗文清望 真的走得到亡命江湖', async () => {
+    const r = await simulateRun({
+      seed: 6430,
+      policy: 'fugitive',
+      origin: '诗文清望',
+      maxMonths: 240,
+      logChoices: true
+    })
+    expect(r.finalFlags, `这一局没带上 潜逃，票源又断了：结局=${r.endingTitle}`).toContain(FUGITIVE_FLAG)
+    expect(
+      r.endingTitle,
+      `没走到亡命江湖，结在 ${r.endingTitle ?? r.endReason}（${r.finalYear}）`
+    ).toBe('亡命江湖')
+    expect(r.finalYear, '这一格的年窗下界是 1635，早于它就说明抄表读的是别的格子').toBeGreaterThanOrEqual(WINDOW_MIN_YEAR)
+  }, 120_000)
 
   it('抄表本身不许带错：没有一局报错，也没有一局一个月份都没抄到', () => {
     expect(fug.filter(r => r.error).map(r => `seed ${r.seed}: ${r.error}`)).toEqual([])

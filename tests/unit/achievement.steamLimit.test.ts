@@ -27,23 +27,24 @@ import { ENDING_TILE_IDS } from '../../src/data/endingRegistry'
  * 第五十二轮改了"数量"这一半的口径：本作暂不上 Steam，于是把 45 格结局一次补齐
  * （10 条边界结局成就 + 革职拆支 1 条），总数 100 → 111。
  * 第五十六轮补了第 46 格《寿终正寝》（§1.4 ㉟ 的兜底），总数 111 → 112。
+ * 第六十七轮补内廷暗线三格（内廷外相/内廷反噬/抽身而去），总数 112 → 115、格子 46 → 49。
  * 上限从"倒推裁剪的理由"降级成"上线前的待办"，见 desktop/steam.cjs 头部。
  */
 describe('成就数量与 Steam 上限', () => {
-  it('成就总数是数过的 112 条（第五十二轮补齐 45 格结局成就、第五十六轮补第 46 格之后）', () => {
+  it('成就总数是数过的 115 条（第六十七轮补内廷暗线三格之后）', () => {
     // 这条不是"凑数上限"，而是**增删必须是有意识地**：改了这里，
     // desktop/steam.cjs 的映射表与 INTERNAL_ACHIEVEMENT_COUNT 必须同步改，
     // 否则 `node desktop/smoke-test.cjs`（CI 里跑）会逐条对拍失败。
-    expect(ALL_ACHIEVEMENTS).toHaveLength(112)
+    expect(ALL_ACHIEVEMENTS).toHaveLength(115)
   })
 
-  it('46 格结局都有 `ending_*_done` 成就，可收集数够得着最高档', () => {
+  it('49 格结局都有 `ending_*_done` 成就，可收集数够得着最高档', () => {
     const doneIds = ALL_ACHIEVEMENTS
       .filter(a => a.id.startsWith('ending_') && a.id.endsWith('_done'))
       .map(a => a.id)
-    // 35 条叙事/内联结局 + 10 条边界结局 + 革职拆出来的流放 = 46（第五十六轮加《寿终正寝》）
+    // 35 条叙事/内联结局 + 10 条边界结局 + 革职拆出来的流放 + 寿终正寝 + 内廷暗线三格 = 49
     expect(doneIds).toHaveLength(ENDING_TILE_IDS.length)
-    expect(doneIds).toHaveLength(46)
+    expect(doneIds).toHaveLength(49)
   })
 
   it('成就 id 无重复', () => {

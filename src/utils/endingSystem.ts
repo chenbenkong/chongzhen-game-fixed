@@ -175,7 +175,7 @@ export function generateBiography(
 
   // 拼装人物志（仿《明史》列传体）
   // 死亡结局判定：ID 含以下关键字的视为人物已死；其余是罢官/归隐/流亡/篡位等活人结局
-  const isDeathEnding = /martyr|zhaoyu|died_battlefield|southern_ming|jiashen|duty_death|city_fall|clan_exterminate|death_illness|bankrupt|emperor_hate|eunuch|scholar_ostracism|gentry_rebellion|popular_uproar|moral_degeneracy|debauchery|burning_death|died_fighting|whole_family|traitor|massacre|frame_loyal/.test(endingEvent.id)
+  const isDeathEnding = /martyr|zhaoyu|died_battlefield|southern_ming|jiashen|duty_death|city_fall|clan_exterminate|death_illness|bankrupt|emperor_hate|eunuch|scholar_ostracism|gentry_rebellion|popular_uproar|moral_degeneracy|debauchery|burning_death|died_fighting|whole_family|traitor|massacre|frame_loyal|inner_court_backlash/.test(endingEvent.id)
   // 键类型写成 OriginType 而不是 string：漏一个出身在运行时只会静默显示「出身未详」，
   // 类型把它变成编译错误（第六十五轮新增胥吏/海商时正是靠这一条认出这三张表）。
   const originShortMap: Record<OriginType, string> = {

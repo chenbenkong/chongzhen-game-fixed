@@ -234,7 +234,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_traitor',
         title: '卖国求荣',
         mode: 'all',
-        priority: 131,
+        // 134：第六十七轮在内廷三格插在 debauchery 之前，注册表按下标发优先级，向后挪了 3
+        priority: 134,
         tickets: ['贰臣'],
         window: { min: NARRATIVE_MIN_YEAR }
       }
@@ -330,13 +331,14 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
     name: '秦淮风月',
     motto: '温柔乡里，白骨森森。',
     // 前两行读同一批票不是重复：《精尽人亡》要 体质≤10，《纵欲而亡》要 体质≤30，
-    // 优先级 128 在 129 之前 —— 同一个人先掉进更狠的那一格，这是"掏空"程度的两道台阶。
+    // 优先级 131 在 132 之前 —— 同一个人先掉进更狠的那一格，这是"掏空"程度的两道台阶。
     destinations: [
       {
         endingId: 'ending_debauchery_001',
         title: '精尽人亡',
         mode: 'any',
-        priority: 128,
+        // 131：同上，第六十七轮内廷三格插队，注册表按下标发优先级，向后挪了 3
+        priority: 131,
         tickets: ['纵欲成疾', '纳妓为妾'],
         window: { min: 1635, max: 1644 }
       },
@@ -344,7 +346,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_debauch_fall',
         title: '纵欲而亡',
         mode: 'any',
-        priority: 129,
+        // 132：同上一条，内廷三格插队向后挪了 3
+        priority: 132,
         tickets: ['纵欲成疾', '纳妓为妾'],
         window: { min: 1635 }
       },
@@ -352,9 +355,44 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_pimp_lord',
         title: '烟花之主',
         mode: 'any',
-        priority: 130,
+        // 133：同上
+        priority: 133,
         tickets: ['青楼暗股', '青楼靠山'],
         window: { min: 1635 }
+      }
+    ]
+  },
+  {
+    key: 'innerCourt',
+    name: '内廷之途',
+    motto: '账在人手里，人在账上。',
+    // 第六十七轮：暗线也得在面板上看得见。这三格的门票全部来自 `inner_court_001…005`
+    // 五拍里**点过的那一步**（收帖/接差/挂名/接印），不是任何一条数值。
+    // 一个人手里有 内廷外相 还是 洗手不干，命途面板上就是两条不同的落点。
+    destinations: [
+      {
+        endingId: 'ending_inner_court_chancellor',
+        title: '内廷外相',
+        mode: 'all',
+        priority: 128,
+        tickets: ['内廷外相'],
+        window: { min: 1640, max: 1644 }
+      },
+      {
+        endingId: 'ending_inner_court_backlash',
+        title: '内廷反噬',
+        mode: 'any',
+        priority: 129,
+        tickets: ['厂卫外援', '反戈内廷'],
+        window: { min: 1640, max: 1644 }
+      },
+      {
+        endingId: 'ending_inner_court_escape',
+        title: '抽身而去',
+        mode: 'all',
+        priority: 130,
+        tickets: ['洗手不干'],
+        window: { min: 1640, max: 1644 }
       }
     ]
   }

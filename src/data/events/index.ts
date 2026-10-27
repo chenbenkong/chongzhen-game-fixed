@@ -36,6 +36,7 @@ import { events1643 as transition1643 } from './transition/1643'
 import { events1643 as transition1643b } from './transition/1643b'
 import { events1644_critical as transition1644Critical } from './transition/1644_critical'
 import { eventsRouteGuide as routeGuideEvents } from './transition/route_guide'
+import { innerCourtEvents } from './transition/inner_court'
 import { preludeEvents as transitionPreludes } from './transition/preludes'
 import { allGrayChoiceEvents } from './gray'
 // ./ending 不在这里 import。此前那行 `import { allEndingEvents } from './ending'`
@@ -87,6 +88,7 @@ export const transitionEvents: GameEvent[] = [
   ...transition1643b,
   ...transition1644Critical,
   ...routeGuideEvents,
+  ...innerCourtEvents,
   ...transitionPreludes
 ];
 

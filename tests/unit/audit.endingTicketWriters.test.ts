@@ -103,12 +103,18 @@ describe('结局格子的门票必须有写手', () => {
     // 抄家问罪，与殉国/称臣/卖国/流亡海外同属"只有一次的那件动作"。
     // 抄家线的前置（财帛≥60 ∧ 圣眷 11–25 ∧ 道德≤20）已经在那张卡的入口上，
     // 再拆成两张票只会让最后一问的答案失去分量。
+    // 第六十七轮补进内廷暗线的两格：《内廷外相》读的是第四拍最后那一问的答案
+    // （做不做内廷的外相），《抽身而去》读的是"洗手不干"——后者已经有两条写手
+    // （第四拍 c3、第五拍 c1），但同一次动作只该叫一个名字。它们与上面五格同理：
+    // 再拆票等于把"这一步答不答应"稀释成两个近似选项。
     const oneAction = new Set([
       'ending_martyr_nation',
       'ending_qing_tributary',
       'ending_traitor',
       'ending_exile_overseas',
-      'ending_clan_exterminate'
+      'ending_clan_exterminate',
+      'ending_inner_court_chancellor',
+      'ending_inner_court_escape'
     ])
     const thin: string[] = []
     for (const t of tiles) {

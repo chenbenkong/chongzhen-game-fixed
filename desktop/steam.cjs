@@ -19,11 +19,11 @@
  *  3. 游戏内部通过 desktopBridge.syncAchievementToDesktop(内部id) 调用，本模块
  *     反查得到 API Name 再解锁。所以映射表是 owner 唯一需要维护的地方。
  *
- *  【成就数量：112 条，已超过 Steam 上限 100 —— 因为本作暂不上 Steam】
+ *  【成就数量：115 条，已超过 Steam 上限 100 —— 因为本作暂不上 Steam】
  *  Steam 单个 App 的成就上限是 **100** 个。第五十二轮之前项目一直按这个上限倒推裁剪：
  *  删到 100 条，代价是结局图鉴里有 10 格（全是边界/阈值结局）分不到成就，
  *  只能靠存档里的达成记录点亮 —— 成就面板与图鉴两套口径并存，玩家看得见的是"少了 10 条成就"。
- *  现在决定不上 Steam（2026-10-23），名额不再是约束，于是补齐 10 条 + 革职拆支 1 条 = 111 条；第五十六轮补《寿终正寝》一格 = 112 条。
+ *  现在决定不上 Steam（2026-10-23），名额不再是约束，于是补齐 10 条 + 革职拆支 1 条 = 111 条；第五十六轮补《寿终正寝》一格 = 112 条；第六十七轮补内廷暗线三格 = 115 条。
  *
  *  此前已执行的裁剪（合计 -5，见 src/types/achievement.ts 里每处的说明注释）：
  *    · master_collector(60)、ultimate_master(80) —— collector 组的中间档。
@@ -36,7 +36,7 @@
  *  保留 random_player 与 careful_player：它们分别有真实入口
  *  （「听天由命」按钮 / 回退功能），且描述的是玩法而非机械操作。
  *
- *  现在映射表 112 条 = 游戏内 112 条。
+ *  现在映射表 115 条 = 游戏内 115 条。
  *  ⚠️ 如果你之后增删游戏内成就，必须同步改这里并重跑 `node desktop/smoke-test.cjs`
  *     —— 它会断言两边逐条一致（漂移即失败），数量超上限只报 warning（见上面那段）。
  *     日后真要上 Steam，必须先删到 100 条以内：API Name 一经创建不可改，只能删重建。
@@ -164,6 +164,10 @@ const ACHIEVEMENTS = {
   ENDING_FACTION_MARTYR_DONE: { id: 'ending_faction_martyr_done', name: '东林烈士' },
   ENDING_TYRANT_FALL_DONE: { id: 'ending_tyrant_fall_done', name: '权奸末路' },
   ENDING_FACTION_SACRIFICE_DONE: { id: 'ending_faction_sacrifice_done', name: '党争牺牲品' },
+  // 第六十七轮：内廷暗线三格（权阉 / 反噬 / 抽身）。事件 id 就是格子 id，无别名。
+  ENDING_INNER_COURT_CHANCELLOR_DONE: { id: 'ending_inner_court_chancellor_done', name: '内廷外相' },
+  ENDING_INNER_COURT_BACKLASH_DONE: { id: 'ending_inner_court_backlash_done', name: '内廷反噬' },
+  ENDING_INNER_COURT_ESCAPE_DONE: { id: 'ending_inner_court_escape_done', name: '抽身而去' },
   ENDING_COLLECTION_5: { id: 'ending_collection_5', name: '结局收集 5 种' },
   ENDING_COLLECTION_30: { id: 'ending_collection_30', name: '结局收集 30 种' },
 
@@ -212,14 +216,14 @@ const INTERNAL_ID_TO_API_NAME = (() => {
  * 
 ode desktop/smoke-test.cjs 会失败，而不是等到上线才发现有成就没注册。
  */
-const INTERNAL_ACHIEVEMENT_COUNT = 112
+const INTERNAL_ACHIEVEMENT_COUNT = 115
 /**
  * Steam 单 App 成就数量硬上限。
  *
- * 第五十二轮起**本表已经超出这个数**（112 > 100）：本作暂不上 Steam，
- * 而图鉴那 45 格每一格都该有一条成就 —— 此前 10 格因为"名额不够"只能靠达成记录点亮，
+ * 第五十二轮起**本表已经超出这个数**（115 > 100）：本作暂不上 Steam，
+ * 而图鉴那 49 格每一格都该有一条成就 —— 此前 10 格因为"名额不够"只能靠达成记录点亮，
  * 成就面板与图鉴于是长期是两套口径。这条上限因此从"硬约束"降级成"上线前的待办"：
- * 真要上 Steam，先删够 12 条（候选：category='special' 里的操作统计型成就），再重跑 smoke-test。
+ * 真要上 Steam，先删够 15 条（候选：category='special' 里的操作统计型成就），再重跑 smoke-test。
  */
 const STEAM_ACHIEVEMENT_LIMIT = 100
 

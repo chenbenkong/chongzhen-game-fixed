@@ -133,7 +133,7 @@ describe('数据层：善终结局被转换成可以拒绝的请笔卡片', () =
     expect(bad).toEqual([])
   })
 
-  it('十三道闸门彼此不同名，且每一道都真有人写', () => {
+  it('每一道闸门彼此不同名，且每一道都真有人写', () => {
     const gates = offers.map(e => declineGateOf(e.title))
     expect(new Set(gates).size, '两格的闸门撞了名字：拒掉其中一格会连带关死另一格').toBe(gates.length)
     const writable = new Set(

@@ -31,7 +31,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
   | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout' | 'heir'
-  | 'corrupt'
+  | 'corrupt' | 'eunuch' | 'eunuchBacklash' | 'eunuchExit'
 
 export interface SimOutcome {
   seed: number
@@ -446,6 +446,21 @@ const BANDIT: RetireProfile = {
 }
 
 /**
+ * 内廷暗线的经历票（第六十七轮）。
+ *
+ * 想篡位 / 想消失 / 想逃的人都不该去接内廷的差事 —— 他们真接了，就会在 1636–1638
+ * 被这条线的结局提前收走。实测：usurper 的反推种子结进《内廷反噬》，vanish 的
+ * 反推种子先被内廷收走；贰臣那局在第五拍点了【洗手不干】—— 那几副画像的目标
+ * 都不是"入幕"，量具不该用评分去模拟一件它们不想做的事（与第廿四/四十九轮同一课）。
+ * 只在**非内廷**的画像上挂这份名单；`eunuch` 三副反向使用它当门票。
+ */
+const INNER_COURT_FLAGS = [
+  '内廷奥援', '半门之客', '厂卫差事', '税关差事', '传奉差事',
+  '司礼监门下', '厂卫门下', '抽身之意', '洗手不干', '反戈内廷',
+  '内廷外相', '厂卫外援'
+]
+
+/**
  * 想"人没了"的那副画像。第六十一轮之后《不知所踪》的判据是
  * 门票 下落不明 + 隐姓埋名 **两张都要**（`has`，不是 `any`）+ 国势≤25 + 年窗 1637–1660，
  * 唯一的产地仍是《乱世浮沉》（它自己要求 国势≤25 ∧ 圣眷≤25）；
@@ -482,7 +497,8 @@ const VANISH: RetireProfile = {
   ]),
   avoid: new Set([
     ...tileFlagPool('ending_unknown_fate', 'notHas'),
-    ...tileFlagPool('ending_fugitive', 'notHas')
+    ...tileFlagPool('ending_fugitive', 'notHas'),
+    ...INNER_COURT_FLAGS
   ]),
   favorBand: 15,
   weights: { 圣眷: -1, 清议: -2, 财帛: -0.6, 欲望值: -1 },
@@ -527,7 +543,7 @@ const VANISH: RetireProfile = {
 const FUGITIVE: RetireProfile = {
   targets: new Set(['ending_fugitive']),
   tickets: new Set([FUGITIVE_FLAG]),
-  avoid: new Set(tileFlagPool('ending_fugitive', 'notHas')),
+  avoid: new Set([...tileFlagPool('ending_fugitive', 'notHas'), ...INNER_COURT_FLAGS]),
   favorBand: 15,
   weights: { 道德值: -1.5, 圣眷: -1, 财帛: 0.15, 欲望值: 0.4 },
   boost: { 体质: 1 },
@@ -621,6 +637,7 @@ const USURPER: RetireProfile = {
   ]),
   avoid: new Set([
     ...tileFlagPool('ending_usurper_throne', 'notHas'),
+    ...INNER_COURT_FLAGS,
     // 同一条"手里有兵"的路上的别的终点。不是道德判断，是时序：
     // 落草/占山在 1636 就结案，出海把 财帛/野心 推过海盗的门，
     // 袁党把 圣眷 低位的人送进诏狱 —— 任何一条都轮不到 1644 的问鼎。
@@ -774,6 +791,63 @@ const HEIR: RetireProfile = {
   keepBelow: { 野心值: 55, 欲望值: 72, 财帛: 68 }
 }
 
+/**
+ * 走内廷暗线的三副画像（第六十七轮）。
+ *
+ * 为什么要三副：暗线在第 3 拍分成「司礼监门下」与「厂卫门下」，第 4 拍又分成
+ * 「内廷外相 / 厂卫外援 / 洗手不干 / 反戈内廷」，三个结局互斥。合成一副画像，
+ * 评分只会沿收益最高的那条（实测 ambitious 240 局：入场 75、结《内廷外相》12、
+ * 另外两格 0）—— 那是量具的选择，不是格子坏了。
+ *
+ * 门票都从事件自己写下的经历里读，不手抄第二份；`avoid` 装的是这条线的互斥面
+ * （别的分支与「与内廷绝 / 谢了内廷 / 弹劾阉党」三张断路线）。
+ * `preferTickets` 让画像在保命硬筛之前先拿票：这几拍的门读的全是上一拍的经历，
+ * 差一张票就整条线断开，而拿票那一下往往要掉几维（厂卫差事 −清议 −民望、
+ * 厂卫外援 −民望 12），按默认地板会被筛掉 —— 与 corrupt 画像同一条理由。
+ */
+const INNER_COURT_AVOID = new Set([
+  '弹劾阉党', '与内廷绝', '谢了内廷'
+])
+
+/** 想当《内廷外相》：入幕 → 税关 → 司礼监 → 内廷外相 */
+const EUNUCH: RetireProfile = {
+  targets: new Set(['ending_inner_court_chancellor']),
+  tickets: new Set(['内廷奥援', '半门之客', '税关差事', '司礼监门下', '内廷外相']),
+  avoid: new Set([...INNER_COURT_AVOID, '厂卫差事', '厂卫门下', '厂卫外援', '洗手不干', '反戈内廷', '抽身之意']),
+  preferTickets: true,
+  favorBand: 0,
+  weights: { 中官: 1, 野心值: 0.6, 圣眷: 0.2 },
+  under: {},
+  keepAbove: { 中官: 30, 理政: 42, 民望: 18, 圣眷: 12 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
+}
+
+/** 想撞《内廷反噬》：入幕 → 厂卫差事 → 厂卫门下 → 厂卫外援 */
+const EUNUCH_BACKLASH: RetireProfile = {
+  targets: new Set(['ending_inner_court_backlash']),
+  tickets: new Set(['内廷奥援', '半门之客', '厂卫差事', '厂卫门下', '厂卫外援']),
+  avoid: new Set([...INNER_COURT_AVOID, '税关差事', '传奉差事', '司礼监门下', '内廷外相', '洗手不干']),
+  preferTickets: true,
+  favorBand: 0,
+  weights: { 中官: 1, 野心值: 0.6, 武略: 0.2 },
+  under: {},
+  keepAbove: { 中官: 30, 理政: 42, 民望: 14, 圣眷: 12 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
+}
+
+/** 想《抽身而去》：入幕 → 税关 → 抽身之意（不看第 4 拍）→ 洗手不干 */
+const EUNUCH_EXIT: RetireProfile = {
+  targets: new Set(['ending_inner_court_escape']),
+  tickets: new Set(['内廷奥援', '半门之客', '税关差事', '抽身之意', '洗手不干']),
+  avoid: new Set([...INNER_COURT_AVOID, '厂卫差事', '厂卫门下', '司礼监门下', '内廷外相', '厂卫外援', '反戈内廷']),
+  preferTickets: true,
+  favorBand: 0,
+  weights: { 中官: 0.8, 道德值: 0.4 },
+  under: {},
+  keepAbove: { 中官: 30, 理政: 42, 民望: 18, 圣眷: 12 },
+  keepBelow: { 野心值: 68, 欲望值: 72, 财帛: 68 }
+}
+
 /** 策略 → 画像；各副共用同一个 `pickHermit` */
 const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {  monk: MONK,
   hermit: HERMIT,
@@ -786,7 +860,10 @@ const PROFILES: Partial<Record<SimPolicy, RetireProfile>> = {  monk: MONK,
   debauched: DEBAUCHED,
   burnout: BURNOUT,
   heir: HEIR,
-  corrupt: CORRUPT
+  corrupt: CORRUPT,
+  eunuch: EUNUCH,
+  eunuchBacklash: EUNUCH_BACKLASH,
+  eunuchExit: EUNUCH_EXIT
 }
 
 /** 八条归零死线里 圣眷 的下标 —— 这一组唯一允许它掉到低位的维度 */
