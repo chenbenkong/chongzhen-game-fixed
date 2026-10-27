@@ -183,7 +183,15 @@ describe('医家：入路 → 疫起 → 悬壶', () => {
 
     const plague = event('route_medical_plague')
     expect(plague, '医家路的第二拍《疫起》必须存在').toBeTruthy()
-    expect(plague?.conditions?.year?.min).toBeGreaterThanOrEqual(1640)
+    // 第六十八轮重抄（旧钉 `>= 1640`）：下沿抬到 1639。理由不是"这一拍想早开两年"，
+    // 而是 1640 那一年**没人居住** —— 160 局实测带医疗票的局抉择数是 1639×896 / 1640×69 / 1641 起为 0（§1.4 ㊸），
+    // 高数值画像一进 1640 就被《边关大将》《悬壶济世》《清流骨鲠》成排结案。
+    // 下沿留在 1640 时《疫起》160 局播 0 次；抬到 1639 之后播 28 次，且 18 局《悬壶济世》全都先见过它。
+    expect(plague?.conditions?.year?.min).toBeGreaterThanOrEqual(1639)
+    expect(
+      plague?.conditions?.year?.min,
+      '第二拍必须比《悬壶济世》的年窗下沿早开 —— 同格并排时结局格先收人'
+    ).toBeLessThan(1640)
     expect(plague?.conditions?.flags?.any ?? []).toEqual(
       expect.arrayContaining(['习医', '行医', '开馆行医'])
     )
@@ -226,8 +234,15 @@ describe('医家：入路 → 疫起 → 悬壶', () => {
     expect(r.endingId, `没走到悬壶济世，结在 ${r.endingTitle ?? r.endReason}（${r.finalYear}）`).toBe(
       'ending_medical_saint'
     )
+    // 第六十八轮：这一颗骰子现在还得多背一件事 —— 三拍都要真播出来。
+    // 「疫起」这条断言在本轮之前是**不可能绿**的（它 160 局播 0 次，见 §1.4 ㊷），
+    // 年窗下沿抬到 1639 之后，这一局在 1639 年撞见了那场大疫，1640 年才收的案。
     expect(r.finalFlags).toEqual(expect.arrayContaining(['习医', '行医']))
     expect(r.firedEventIds).toContain('route_medical_healer')
+    expect(
+      r.firedEventIds,
+      `三拍断在第二拍：这一局播过 ${r.firedEventIds.filter(id => id.startsWith('route_medical')).join('/')}`
+    ).toContain('route_medical_plague')
   }, 60_000)
 })
 
