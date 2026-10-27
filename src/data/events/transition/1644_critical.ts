@@ -516,7 +516,7 @@ export const events1644_critical: GameEvent[] = [
 
 你关上门，再也没有回头。
 
-【获得标记：南渡长江 — 此标记将走 ending_southern_ming 路线；你的家人将代替你完成"延续大明"的故事】`
+【过江的是他们，不是你 —— 你的名字留在京城，南京的朝廷里没有你这一段】`
         }
       },
       {
@@ -554,7 +554,7 @@ export const events1644_critical: GameEvent[] = [
 
 那一顿饭，吃了整整两个时辰。
 
-【未获得特殊标记 — 你的家人将随你一同殉国，走 ending_martyr_nation 路线】`
+【这一步不再添新的经历 —— 你此前落下"殉国报君"那一笔，《殉国死节》一路认的就是它】`
         }
       }
     ],

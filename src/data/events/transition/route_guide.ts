@@ -776,7 +776,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你回到衙门后，每逢休沐日便在城南义诊。渐渐地，你的医名传开了——某公不仅是个好官，还是个能治病的官。
 
-【获得标记：习医、行医 — 此标记将解锁 ending_medical_saint 路线】`
+【这段经历记在名下：习医、行医 —— 《悬壶济世》一路便有了凭据】`
         }
       },
       {
@@ -805,7 +805,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你常说："为官能做的事有限，行医能救的人却看得见摸得着。"
 
-【获得标记：开馆行医、仁心仁术、赈灾行医 — 此标记将直接解锁 ending_medical_saint 结局】`
+【这一段记在案：开馆行医、仁心仁术、赈灾行医 —— 《悬壶济世》一路便有了凭据；讲学的人也认"开馆行医"这一张，所以《大儒传世》一路同样算数】`
         }
       },
       {
@@ -973,7 +973,7 @@ export const eventsRouteGuide: GameEvent[] = [
   },
 
   // ── 大儒之路 ──
-  // 高文韬+高道德 → ending_recluse_scholar / ending_hermit_teaching
+  // 高文韬+高道德 → ending_recluse_scholar（讲学/辞官/归隐都是它的门票；曾写过的 ending_hermit_teaching 没有这一格）
   {
     id: 'route_grand_scholar',
     storyline: 'hermit',
@@ -1027,7 +1027,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 三年后，书院已有学生百余人。你著书立说，写成了《经世要义》《治乱通鉴》两部。
 
-【获得标记：辞官、讲学、归隐 — 此标记将解锁 ending_recluse_scholar、ending_hermit_teaching、ending_hermit_taoist 路线】`
+【这一段记在案：辞官、讲学、归隐 —— 《大儒传世》一路便有了凭据；若只归隐不讲学，认的是《归隐田园》】`
         }
       },
       {
@@ -1139,7 +1139,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 虽然弹劾未能扳倒温体仁，但你的名声已经立起来了。
 
-【获得标记：弹劾温体仁、言官 — 此标记是 ending_pure_stream 的前置条件】`
+【这一段记在案：弹劾温体仁、言官 —— 《清流骨鲠》一路便有了凭据】`
         }
       },
       {
@@ -1167,7 +1167,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你被贬到岭南。三年后杨嗣昌因兵败自杀，你的名声反而更高了。
 
-【获得标记：弹劾杨嗣昌、言官 — 此标记是 ending_pure_stream 的前置条件】`
+【这一段记在案：弹劾杨嗣昌、言官 —— 《清流骨鲠》一路便有了凭据】`
         }
       },
       {
@@ -1194,7 +1194,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但你也知道：从此以后，"议和派"会视你为眼中钉。
 
-【获得标记：弹劾陈新甲、言官 — 此标记可叠加 ending_pure_stream 名臣路线】`
+【这一段记在案：弹劾陈新甲、言官 —— 《清流骨鲠》一路便有了凭据】`
         }
       }
     ]
@@ -1261,14 +1261,14 @@ export const eventsRouteGuide: GameEvent[] = [
 
 三年后，辽东局势稳定下来。你奉调回京。
 
-【获得标记：边关任职、随军出征 — 此标记将直接解锁 ending_border_general 结局】`
+【这一段记在案：边关任职、随军出征 —— 《边关大将》一路便有了凭据；若死在一场战事里，同一张票也够上《战死沙场》】`
         }
       },
       {
         id: 'c2',
         storyline: 'ordinary',
         text: '【请守锦州】愿驻守锦州，与城共存亡',
-        description: '主动请守锦州（与 ending_border_general 的"守城"分支对应）',
+        description: '自请把守辽东咽喉，不要求在后方调度的位子',
         showConditions: { hidden: { 道德值: { min: 60 } } },
         effects: {
           attributes: { 武略: 10, 体质: -15 },
@@ -1292,7 +1292,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你知道自己可能回不来。但你还是去了。
 
-【获得标记：边关任职、死守宁远、增援松锦 — 此标记将解锁 ending_border_general 的"死守"专属叙事】`
+【这一段记在案：边关任职、死守宁远、增援松锦 —— 《边关大将》一路便有了凭据】`
         }
       },
       {
@@ -1379,7 +1379,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你继续在朝中为官。但每逢夜深人静，你都会想起南方的家眷——还有那二十万两银子。
 
-【获得标记：转移资产 — 此标记将解锁 ending_exile_overseas 结局（也可叠加 ending_pirate_king 路线）】`
+【这一段记在案：转移资产 —— 《流亡海外》一路便有了凭据；若日后亲自下海，那是另一条路】`
         }
       },
       {
@@ -1407,7 +1407,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 从此以后，你在朝中为官的同时，私下里已是东海一霸。你的船队在日本、朝鲜、菲律宾之间纵横，往来商船都要向你缴纳"保护费"。
 
-【获得标记：转移资产、皮岛敛财、打造舰队 — 此标记将直接解锁 ending_pirate_king 结局】`
+【这一段记在案：转移资产、皮岛敛财、打造舰队 —— 《海盗之王》一路便有了凭据；家眷那笔资产，仍旧算《流亡海外》的凭据】`
         }
       },
       {
@@ -1501,7 +1501,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 朝廷的通缉令上，你的名字前面加了两个字：逆贼。
 
-【获得标记：拥兵自重、落草为寇 — 此标记将直接解锁 ending_bandit_king 结局】`
+【这一段记在案：拥兵自重、落草为寇 —— 《落草为寇》一路便有了凭据；手里有兵这一张，也够上《篡位自立》的门槛】`
         }
       },
       {
@@ -1530,7 +1530,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你成了这一带的"山大王"。官府管不到你，你也懒得去招惹官府。
 
-【获得标记：落草为寇、拥兵自重 — 此标记将解锁 ending_bandit_king 的"占山"专属叙事】`
+【这一段记在案：落草为寇、啸聚山林、拥兵自重 —— 《落草为寇》一路便有了凭据；手里有兵这一张，也够上《篡位自立》的门槛】`
         }
       },
       {
@@ -1562,7 +1562,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你失去了一次"称王"的机会。但你保住了自己的良心。
 
-【此选项不获得落草/拥兵标记 — 不会触发 ending_bandit_king】`        }
+【这一步把人散了，案上什么都没落下 —— 《落草为寇》一路就此无凭】`        }
       }
     ]
   },
@@ -1620,7 +1620,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你不在乎。你只在乎一件事——你的钱，够不够多。
 
-【获得标记：皮岛敛财、盐引生意 — 此标记将解锁 ending_wealthy_retiree 结局】`
+【这一段记在案：皮岛敛财、盐引生意 —— 靠海吃饭的那一笔，算《海盗之王》的凭据；想安稳做《富甲一方》的人，这一格从此不认你】`
         }
       },
       {
@@ -1651,7 +1651,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 清议对你恨之入骨。但你不在乎——你只在乎一件事：你的钱，够不够多。
 
-【获得标记：军需牟利、赈灾敛财 — 此标记将直接触发 ending_clan_exterminate 的前置条件】`
+【这一段记在案：军需牟利、赈灾敛财 —— 边关的粮、赈灾的银，经手一次就说不清第二次；《平凡终老》那一格，从此不认这两笔账】`
         }
       },
       {
@@ -1677,14 +1677,14 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你继续做你的清官。日子虽然清贫，但心里踏实。
 
-【此选项不获得任何标记 — 不会触发 ending_wealthy_retiree】`
+【这一步你把手缩回来了，案上什么都没落下 —— 后来清算的册子上，也没有你这一笔】`
         }
       }
     ]
   },
 
   // ── 入阁之路 ──
-  // 高文韬 + 高理政 + 高圣眷 → ending_official_promoted_minister
+  // 高文韬 + 高理政 + 高圣眷 →（入阁/位极人臣目前没有任何结局格收下，见 §1.4 ㊻）
   {
     id: 'route_promoted_minister',
     storyline: 'power',
@@ -1743,7 +1743,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你不知道的是——这份重担，会让你付出怎样的代价。
 
-【获得标记：入阁、位极人臣 — 此标记将解锁 ending_official_promoted_minister 结局】`
+【这一段记在案：入阁、位极人臣 —— 人臣做到头，往后的祸福要等后来的卷子才见分晓】`
         }
       },
       {
@@ -1773,7 +1773,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但你从不后悔。
 
-【获得标记：辞让入阁 — 此标记会排除 ending_official_promoted_minister，但增加 ending_honorable_retirement 的触发概率】`
+【这一段记在案：辞让入阁 —— 相位的门在你面前合上了，《归隐田园》一路便有了凭据】`
         }
       },
       {
@@ -1873,7 +1873,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 圣旨下来：着即下锦衣卫诏狱勘问。
 
-【获得标记：党争反戈、袁党 — 此标记将解锁 ending_zhaoyu_prison 结局（需同时满足圣眷 ≤ 15）】`
+【这一段记在案：党争反戈、袁党 —— 等圣眷跌到尽头，《诏狱冤死》一路便有了凭据】`
         }
       },
       {
@@ -1902,7 +1902,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但党争没有结束——它只是暂时绕过了你。
 
-【此选项不获得党争相关标记 — 不会触发 ending_zhaoyu_prison 结局】`
+【这一步你不出手，案上没有党争的标记 —— 《诏狱冤死》一路就此无凭】`
         }
       },
       {
@@ -1931,7 +1931,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 而你，在这个边陲小镇里，平平安安地度过了余生。
 
-【获得标记：请调外任、谪戍边疆 — 此标记将触发 ending_official_demoted_border 结局（谪戍边疆）】`
+【这一段记在案：请调外任、谪戍边疆 —— 边地苦寒，朝堂上那些体面的路，从此一条条对你关上】`
         }
       }
     ]
@@ -1991,7 +1991,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你的同辈人说："这才是真正为家族做实事的人。"
 
-【获得标记：持续仁政、修族谱 — 此标记将直接解锁 ending_family_man 结局】`
+【这一段记在案：持续仁政、修族谱 —— 《天伦之乐》一路便有了凭据】`
         }
       },
       {
@@ -2020,7 +2020,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你笑着说："这才是真正的光宗耀祖——不是给祖宗争脸面，是给祖宗留人才。"
 
-【获得标记：士绅联盟、义田、开仓赈灾 — 此标记将直接解锁 ending_family_man 结局】`
+【这一段记在案：士绅联盟、义田、开仓赈灾 —— 《天伦之乐》一路便有了凭据】`
         }
       },
       {
@@ -2048,7 +2048,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你临终前听说此事，叹息良久："当年若亲手操持，或许不至如此。"
 
-【此选项不获得家族/民望相关标记 — 不会触发 ending_family_man】`
+【这一步你把族中之事交回长老，案上什么都没落下 —— 《天伦之乐》一路就此无凭】`
         }
       }
     ]
@@ -2114,7 +2114,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 府衙门口围满了百姓。有人抬着"再生父母"的匾额，有人捧着自己做的"万民伞"。
 
-【获得标记：鞠躬尽瘁、积劳成疾 — 此标记将直接解锁 ending_duty_death 结局】`
+【这一段记在案：鞠躬尽瘁、积劳成疾 —— 《殉职任上》一路便有了凭据】`
         }
       },
       {
@@ -2138,7 +2138,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你的身体慢慢好起来。你又多活了十年。
 
-【此选项不获得积劳/鞠躬尽瘁标记 — 不会触发 ending_duty_death】`
+【你把事分下去了，身体也保住了 —— 案上没有积劳的标记，《殉职任上》一路就此无凭】`
         }
       },
       {
@@ -2167,7 +2167,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但你治下的百姓，听说你走了，都有些失落——他们说："老大人走了，再没人管我们了。"
 
-【获得标记：告病归田 — 此标记会引导 ending_honorable_retirement 路径】`
+【这一段记在案：告病归田 —— 《致仕善终》《归隐田园》两路都有了凭据】`
         }
       }
     ]
@@ -2243,7 +2243,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 —— 你的名字，在史书里只有一行。但那一行，足够了。
 
-【获得标记：与世无争、不争不抢 — 只要你仍是官身、八维尚可，晚年便会归入 ending_ordinary_life】`
+【这一段记在案：与世无争、不争不抢 —— 只要官身尚在、诸事平稳，晚年多半归入《平凡终老》】`
         }
       },
       {
@@ -2270,7 +2270,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你七十一岁那年病倒在任上。临终前你说："这辈子，总算没白过。"
 
-【此选项不获得与世无争标记 — 不会触发 ending_ordinary_life，但可能引导其他结局】`
+【你写下的是"最后拼搏"，不是与世无争 —— 《平凡终老》一路就此无凭，往哪条路去，看你还落下什么】`
         }
       },
       {
@@ -2299,7 +2299,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你走得安安静静，没有在历史上留下什么印记。但你走得很安心——这辈子，不求有功，但求无过。
 
-【获得标记：主动致仕、与世无争 — 此标记可能引导 ending_ordinary_life 或 ending_honorable_retirement 结局】`
+【这一段记在案：主动致仕、与世无争 —— 《平凡终老》与《致仕善终》两路都有了凭据】`
         }
       }
     ]
@@ -2361,7 +2361,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 而真相是：他根本没有死。他只是不想再当"某公"了。
 
-【获得标记：下落不明、隐姓埋名 — 此标记将直接解锁 ending_unknown_fate 结局】`
+【这一段记在案：下落不明、隐姓埋名 —— 《不知所踪》一路便有了凭据；若中途再露一次行藏，认的就是《亡命江湖》】`
         }
       },
       {
@@ -2388,7 +2388,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你沉默良久："因为你是华人。"
 
-【获得标记：转移资产 — 此标记将引导 ending_exile_overseas 结局】`
+【这一段记在案：转移资产 —— 《流亡海外》一路便有了凭据】`
         }
       },
       {
@@ -2413,7 +2413,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你的家人把你安葬在京郊。后来的史书上，会把你列入"忠烈"。
 
-【获得标记：殉国、殉国报君 — 此标记将引导 ending_martyr_nation 结局】`
+【这一段记在案：殉国、殉国报君 —— 《殉国死节》一路便有了凭据】`
         }
       }
     ]
@@ -2476,7 +2476,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 《府志》载："某公，由进士历官至某部侍郎。中年乞骸骨归里，以著书终老。卒年八十一。"
 
-【获得标记：急流勇退、主动致仕 — 此标记将直接解锁 ending_honorable_retirement 结局】`
+【这一段记在案：急流勇退、主动致仕 —— 《致仕善终》一路便有了凭据；若就此不回朝堂，《归隐田园》也认这两张票】`
         }
       },
       {
@@ -2502,7 +2502,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 —— 你的同僚们把你列入"忠勤"。
 
-【获得标记：鞠躬尽瘁 — 此标记可能引导 ending_duty_death 结局】`
+【这一段记在案：鞠躬尽瘁 —— 《殉职任上》一路便有了凭据】`
         }
       },
       {
@@ -2531,14 +2531,14 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你回到老家，过上了普通人的生活。比起直接辞职，这样更"体面"——你不被视作"被朝廷放弃的人"。
 
-【获得标记：告病归田 — 此标记会引导 ending_honorable_retirement 路径】`
+【这一段记在案：告病归田 —— 《致仕善终》《归隐田园》两路都有了凭据】`
         }
       }
     ]
   },
 
   // ── 清白辞官之路 ──
-  // 高道德+高圣眷+高清议 → ending_official_clean_retire
+  // 高道德+高圣眷+高清议 →（清白辞官/乞骸骨目前没有任何结局格收下，见 §1.4 ㊻）
   {
     id: 'route_clean_retire',
     storyline: 'ordinary',
@@ -2598,7 +2598,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但你走得清清白白。
 
-【获得标记：清白辞官、乞骸骨 — 此标记将直接解锁 ending_official_clean_retire 结局】`
+【这一段记在案：清白辞官、乞骸骨 —— 没有党、没有债、也没有兵，将来史馆要写你，只能从这些白处下笔】`
         }
       },
       {
@@ -2622,7 +2622,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 若干年后——大明或许亡了，或许没亡——但你的名字，会被写入史书的"宰辅传"。
 
-【获得标记：入阁、位极人臣 — 此标记将引导 ending_official_promoted_minister 结局】`
+【这一段记在案：入阁、位极人臣 —— 人臣做到头，往后的祸福要等后来的卷子才见分晓】`
         }
       },
       {
@@ -2651,7 +2651,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 你七十六岁那年无疾而终。当地百姓为你立了"去思碑"。
 
-【获得标记：请调外任 — 此标记会引导 ending_official_demoted_border 或 ending_honorable_retirement 路径】`
+【这一段记在案：请调外任 —— 水利、吏治、豪强，一桩一桩都做完了；朝廷怎么记你的功，得等后头的人来写】`
         }
       }
     ]
