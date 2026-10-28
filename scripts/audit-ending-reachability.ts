@@ -300,7 +300,9 @@ export interface EndingReachabilityReport {
  *   1. 八条归零零和三条党派结局在 `boundaryEvents.ts` 里是**手写的 `check` 函数**
  *      （`conditions` 是空对象 `{}`），编译器的反推对它们无从下手。
  *   2. `ending_famous_minister` 除范围条件外还挂了一个 `custom`，
- *      要的是"某几张门票里至少凑齐 N 张" —— 这是集合基数，不是阈值。
+ *      要的是"八张清流门票里至少凑齐 2 张，或者手握一张宰辅/外任票"——
+ *      前者是集合基数、后者是函数体里的名单，都不是 `conditions` 里的阈值。
+ *      名单在 `FAMOUS_MINISTER_EXTRA_TICKETS`（第七十二轮）。
  *      （`ending_zhongxing_success` 第 62 轮已把同类基数判定换成 `flags.minCount`，
  *      反推能自己凑票，不再需要驱动器。）
  *   3. `ending_demotion` 由引擎的 `checkDemotion` 自造卡片，根本不进边界注册表。
@@ -348,7 +350,8 @@ const DRIVERS: Record<string, (base: DerivedState) => DerivedState> = {
     turn: (1636 - 1628) * 12,
     faction: { 东林好感: 30, 阉党好感: 30, 立场: '未定', 党争烈度: 90 }
   }),
-  // 名臣垂范：custom 要那九张清流门票里至少两张
+  // 名臣垂范：custom 要那八张清流门票里至少两张（这里走的是老口径；
+  // 第七十二轮补的宰辅/外任支路由 tests/unit/ending.ticketWiring.test.ts 钉住）
   ending_famous_minister: base => ({ ...base, flags: [...base.flags, '东林党核心', '清算阉党'] })
 }
 

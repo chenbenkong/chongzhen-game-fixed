@@ -24,6 +24,9 @@ import { allEndingEvents } from '../../src/data/events/ending'
  *
  * 管不到的地方要说明白：`ending_famous_minister` 的「>=2 张清流票」写在 `custom` 函数体里，
  * 条件对象扫不到（本轮也顺手把那里的 清议派 摘了，池子实际一直是 8 张在轮转）。
+ * 第七十二轮又给那一格补了一支并列凭据（宰辅/外任三张，见 `FAMOUS_MINISTER_EXTRA_TICKETS`），
+ * 同样在函数体里、同样扫不到 —— 那份由 `tests/unit/ending.ticketWiring.test.ts` 钉住，
+ * `scripts/audit-flag-reachability.ts` 也单独把那三张记成"有人读"。
  * 选项级门槛的同类问题由 `audit.choiceLockout` 看着，两份不重叠。
  */
 

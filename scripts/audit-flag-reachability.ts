@@ -6,6 +6,7 @@ import {
   emotionEvents
 } from '../src/data/events/index'
 import { allEndingEvents } from '../src/data/events/ending'
+import { FAMOUS_MINISTER_EXTRA_TICKETS } from '../src/data/events/ending/endings_all'
 import { FLAG_MEMOIRS } from '../src/data/flagBiography'
 import { GameEvent } from '../src/types/event'
 
@@ -127,6 +128,16 @@ export function scanFlagReachability(
       for (const flag of Object.keys(f.since ?? {})) noteRead(flag, where)
       // `sinceAny` 的经历名同样在对象里（flags 数组），上面两个循环都扫不到。
       for (const flag of f.sinceAny?.flags ?? []) noteRead(flag, where)
+    }
+  }
+
+  // 《名臣垂范》的第二支凭据写在 `custom` 函数体里，上面那圈条件扫描看不见（第七十二轮）。
+  // 名单由数据文件导出，这里按"被这一格读到"记一笔 —— 与 custom 读的是同一份常量，
+  // 不会出现"体检说有读者、函数其实没读"的漂移。只在这份事件集里真有那一格时才记，
+  // 免得夹具事件集把这三张票误算成"被读过"。
+  if (events.some(e => e.id === 'ending_famous_minister')) {
+    for (const flag of FAMOUS_MINISTER_EXTRA_TICKETS) {
+      noteRead(flag, 'ending_famous_minister/custom')
     }
   }
 

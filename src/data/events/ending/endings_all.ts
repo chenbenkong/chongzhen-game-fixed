@@ -7,6 +7,19 @@ import { applyShiguanOffers } from '../../endingDecline';
 import { ORDINARY_LIFE_EXCLUDED_FLAGS } from '../../ordinaryLife';
 
 /**
+ * 《名臣垂范》的第二支凭据（第七十二轮）：宰辅与外任。
+ *
+ * custom 函数体对条件扫描不可见，所以名单提出来放在这里，三处读同一份：
+ * ① 本格的 custom；② `scripts/audit-flag-reachability.ts`（九张无主票的对账要算上它）；
+ * ③ `tests/unit/ending.ticketWiring.test.ts`（写手与行为）。
+ *
+ * 为什么是这三张：本格正文写的就是"从寒门出身到位极人臣"，而"历官中外"那一句
+ * 又正是外任名臣的写照（`请调外任` 的江南知府一支；西北边陲那一支同时带
+ * `谪戍边疆`，早被本格 notHas 挡住）。清流票的口径一个字没动 —— 这是并列的另一支。
+ */
+export const FAMOUS_MINISTER_EXTRA_TICKETS = ['入阁', '位极人臣', '请调外任'] as const;
+
+/**
  * 原始数据。对外一律走下面的 `allEndingEvents` —— 中间那一层 `applyShiguanOffers`
  * 会把"走完这一生"型的善终转成【史馆请笔】卡片（可拒绝，§1.4 ⑬）。
  * 绕过 re-export 直接 import 这个 raw 数组会拿到没开拒绝权的结局，所以它不导出。
@@ -70,6 +83,8 @@ const rawEndingEvents: GameEvent[] = [
         // 「>=2 张清流票」这条池子写在函数体里，条件扫描看不见（第二十三轮的
         // `audit.endingTicketWriters` 也看不见）—— 原先头一张 清议派 全库无人写，
         // 等于池子里永远只有 8 张能摸到，本轮摘掉。
+        // 第七十二轮补第二支凭据：宰辅/外任三张（见 FAMOUS_MINISTER_EXTRA_TICKETS）。
+        // 两支并列，清流票仍然是"两张才算"，宰辅票不拿来凑清流的数。
         const i = [
             '东林党核心',
             '改革派',
@@ -81,7 +96,9 @@ const rawEndingEvents: GameEvent[] = [
             '清算阉党',
           ],
           n = (e && e.flags) || [];
-        return i.filter((r) => n.includes(r)).length >= 2;
+        const cleanStream = i.filter((r) => n.includes(r)).length >= 2;
+        const atCourt = FAMOUS_MINISTER_EXTRA_TICKETS.some((f) => n.includes(f));
+        return cleanStream || atCourt;
       },
       flags: {
         notHas: [
@@ -400,7 +417,10 @@ const rawEndingEvents: GameEvent[] = [
         体质: { min: 15 },
       },
       flags: {
-        any: ['袁党', '清算袁党'],
+        // 第七十二轮：`党争反戈` 的唯一写手同时写下 `袁党`（route_faction_imprisoned/c1），
+        //       对它来说这张票本来就该算数 —— 接进来可达面零变化，正文那句"《诏狱冤死》一路便有了凭据"
+        //       至此才整句成立（此前只靠 `袁党` 那半句撑着）。
+        any: ['袁党', '清算袁党', '党争反戈'],
         notHas: [
           '殉国',
           '殉国报君',
@@ -1670,7 +1690,10 @@ const rawEndingEvents: GameEvent[] = [
         // 紧缩：移除"转移资产"——这是 ending_exile_overseas（流亡海外）的核心 flag，
         //       任何打算跑路的玩家都会拥有它，会导致"海盗之王"被"流亡"玩家误触发。
         //       同步收紧：要求至少有一个真正"海上活动"的具体行为（出海/通倭/海贸/皮岛敛财）。
-        any: ['皮岛敛财', '出海', '通倭', '海贸'],
+        // 第七十二轮：`打造舰队` / `盐引生意` 是《海外之念·海上枭雄》与《亦官亦商·盐引》
+        //       写下的票，两处都**同时**写下 `皮岛敛财`（route_guide.ts 的这两个选项），
+        //       所以接进来可达面零变化 —— 只是把正文早就说出口的那张凭据补成实物（㊻ 第 2 类）。
+        any: ['皮岛敛财', '出海', '通倭', '海贸', '打造舰队', '盐引生意'],
         notHas: [
           '出家',
           '和尚',
@@ -2745,7 +2768,11 @@ const rawEndingEvents: GameEvent[] = [
       },
       flags: {
         // 紧缩：移除 "辞让入阁"——这是"拒绝入阁"的小事件，频繁触发；保留核心三项（急流勇退/主动致仕/告病归田）。
-        any: ['急流勇退', '主动致仕', '告病归田'],
+        // 第七十二轮：`清白辞官` / `乞骸骨` 是《清白之念·乞骸骨》写下的两张票，而这一格的正文
+        //       本来就是那道《乞骸骨疏》（见上面的 background）——同一件事在晚年灰卡里已直接
+        //       指向本格（gray_late_retire/c1 的 special ending），过渡卡这条不该落空。
+        //       不接 `请调外任`：那是外放，不是致仕；它归《名臣垂范》的外任一支。
+        any: ['急流勇退', '主动致仕', '告病归田', '清白辞官', '乞骸骨'],
       },
     },
     choices: [
@@ -2919,7 +2946,9 @@ const rawEndingEvents: GameEvent[] = [
         },
       },
       flags: {
-        any: ['鞠躬尽瘁', '积劳成疾'],
+        // 第七十二轮：`最后拼搏` 的回音写的就是"七十一岁那年病倒在任上"（route_ordinary_life/c2），
+        //       与这一格的"殉职任上"是同一件事；道德≥70 / 文韬≥60 / 民望≥60 三道下界仍然挡在前面。
+        any: ['鞠躬尽瘁', '积劳成疾', '最后拼搏'],
       },
     },
     choices: [

@@ -137,7 +137,9 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '致仕善终',
         mode: 'any',
         priority: 118,
-        tickets: ['急流勇退', '主动致仕', '告病归田'],
+        // 第七十二轮接进 清白辞官/乞骸骨：退休事件（gray_late_retire）的【上书乞骸骨】
+        // 一直写的就是这一格，只是那两张票此前没人读。
+        tickets: ['急流勇退', '主动致仕', '告病归田', '清白辞官', '乞骸骨'],
         window: { min: 1635, max: 1650 }
       }
     ]
@@ -206,7 +208,9 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '海盗之王',
         mode: 'any',
         priority: 110,
-        tickets: ['皮岛敛财', '出海', '通倭', '海贸'],
+        // 第七十二轮接进 打造舰队/盐引生意：写手同时写 皮岛敛财（本格旧票），
+        // 所以这一格的可达面一张没变，只是把同一件事的另外两个名字摆上桌。
+        tickets: ['皮岛敛财', '出海', '通倭', '海贸', '打造舰队', '盐引生意'],
         window: { min: 1636, max: 1660 }
       },
       {
@@ -293,7 +297,9 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '殉职任上',
         mode: 'any',
         priority: 119,
-        tickets: ['鞠躬尽瘁', '积劳成疾'],
+        // 第七十二轮接进 最后拼搏：写手 route_ordinary_life/c2 的回音自己就说
+        // "最后几年做点成绩"，与"死在任上"是同一件事。
+        tickets: ['鞠躬尽瘁', '积劳成疾', '最后拼搏'],
         window: { min: 1635, max: 1660 }
       }
     ]
@@ -323,7 +329,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '诏狱冤死',
         mode: 'any',
         priority: 102,
-        tickets: ['袁党', '清算袁党'],
+        // 第七十二轮接进 党争反戈：写手同时写 袁党（本格旧票），可达面没变。
+        tickets: ['袁党', '清算袁党', '党争反戈'],
         window: { min: 1635, max: 1644 }
       }
     ]
