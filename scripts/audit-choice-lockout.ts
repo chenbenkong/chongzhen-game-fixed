@@ -105,11 +105,14 @@ export function scanChoiceLockout(events: GameEvent[] = allEvents): Finding[] {
       // 1c) 这道门的文案会不会印出机器 id？
       //     六种子句都会印（`相冲`那两支在玩家**带着**该经历时印），所以一并查。
       //     `since` 也印：锁住时说的是「〈这段经历〉之后，还得再等 X 年」，主语就是它。
+      //     `sinceAny` 同理，但它印的是**名单里的一段**（缺经历时那句「须有过其中一段经历」
+      //     把整张名单念给玩家听），所以整张名单都得有人话名。
       //     判据用的是渲染方同一个 `gateLabel`，表和文案不可能各说各话。
       const sf = c.showConditions?.flags
       const printed = [
         ...(sf?.has ?? []), ...(sf?.all ?? []), ...(sf?.any ?? []), ...(sf?.some ?? []),
-        ...(sf?.notHas ?? []), ...(sf?.none ?? []), ...Object.keys(sf?.since ?? {})
+        ...(sf?.notHas ?? []), ...(sf?.none ?? []), ...Object.keys(sf?.since ?? {}),
+        ...(sf?.sinceAny?.flags ?? []), ...(sf?.minCount?.flags ?? [])
       ].filter(f => MACHINE_ID.test(f) && !gateLabel(f))
       if (printed.length) {
         add('RAW_FLAG_ID', `${where} / 选项 ${c.id}`, `门槛引用了没登记人话的机器 id「${printed.join('、')}」—— 玩家会在锁定的选项下面读到它`)

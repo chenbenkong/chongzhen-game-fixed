@@ -21,6 +21,12 @@ import type { OriginType } from '../../src/types/game'
  * 并把正文里钉死的「崇祯十四年」改成不指明年份 —— 年窗跨 1639–1643，正文不许只讲一年。
  *
  * 抬第二拍的下沿不是降门槛：门槛（医疗票）一字未动，只是把"考试"挪到玩家真的活着的那一年。
+ *
+ * 第七十一轮：《悬壶济世》补了一道**时长门**（`sinceAny`，任意一张医疗票满 24 个月，列表形状的 OR）。
+ * 装门之前先抄了那张票的年龄分布：不带门时结在《悬壶济世》的局，结案时最老一张票 17~25~36 个月，
+ * 也就是说"习医第二年就名满天下"也在收人。阶梯（192 局/档）：不装门 13、6 与 12 各 13、
+ * 18 → 12、**24 → 7**、36 → **0**（格子直接死掉，已弃）。取 24 是最大的一档活口。
+ * 这一批 160 局（ambitious）的结案数因此从 18 掉到 9；下界按"留三分之一余量"钉在 6。
  */
 
 const HEALER = 'route_medical_healer'
@@ -100,6 +106,15 @@ beforeAll(async () => {
     const key = `${r.finalYear} ${r.endingTitle ?? r.endReason ?? '未结案'}`
     ended.set(key, (ended.get(key) ?? 0) + 1)
   }
+  const oldestAtClosure = runs
+    .filter(r => r.endingId === SAINT)
+    .map(r => Math.max(...MEDICAL_TICKETS.filter(t => r.finalFlags.includes(t)).map(t => r.months - (r.finalFlagTurns[t] ?? r.months))))
+    .sort((a, b) => a - b)
+  console.log(
+    `  结在《悬壶济世》的 ${oldestAtClosure.length} 局，最老医疗票年龄 ${oldestAtClosure[0] ?? '-'}~` +
+      `${oldestAtClosure[Math.floor(oldestAtClosure.length / 2)] ?? '-'}~${oldestAtClosure[oldestAtClosure.length - 1] ?? '-'} 个月` +
+      `（时长门下沿 ${endingById(SAINT)?.conditions?.flags?.sinceAny?.min ?? '-'}）`
+  )
   console.log(
     `  全部 ${runs.length} 局终局：` +
       [...ended.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([t, n]) => `${t}×${n}`).join(' ')
@@ -145,8 +160,43 @@ describe('医家线：引擎里真的播得出来', () => {
 
   it('把第二拍搬回有人住的年份，不许把收束格搬死', () => {
     // 定向实验的负结果就钉在这里：抬《悬壶济世》的下沿曾让本格结案 20 → 0。
-    // 这一格只要还结得了案，就说明本轮改的是次序而不是把医家路改成死路。
-    expect(countEnding(SAINT), `《悬壶济世》只结案 ${countEnding(SAINT)} 局（下界 10）`).toBeGreaterThanOrEqual(10)
+    // 第七十一轮的时长门又会削一刀（18 → 9），所以下界降到 6 —— 但仍必须结得了案：
+    // 这一格死掉，医家线的心愿就只剩一段没有落款的旅程。
+    expect(countEnding(SAINT), `《悬壶济世》只结案 ${countEnding(SAINT)} 局（下界 6）`).toBeGreaterThanOrEqual(6)
+  })
+
+  it('《悬壶济世》的时长门是列表形状 —— 任意一张票满 24 个月，不是五张都得满', () => {
+    const f = endingById(SAINT)?.conditions?.flags
+    expect(f?.sinceAny?.flags, '时长门不覆盖医疗票池').toEqual(expect.arrayContaining(MEDICAL_TICKETS))
+    expect(f?.sinceAny?.min).toBe(24)
+    // `since`（AND）配 `any` 网会把"任意一张"悄悄收窄成"每一张"—— 第六十九轮记过的那个坑。
+    expect(f?.since, '结局格又长出了 AND 形状的时长门').toBeUndefined()
+  })
+
+  it('结案时，最老的一张医疗票已经满 24 个月', () => {
+    const tooYoung = runs
+      .filter(r => r.endingId === SAINT)
+      .map(r => {
+        const ages = MEDICAL_TICKETS.filter(t => r.finalFlags.includes(t)).map(t => ({
+          ticket: t,
+          age: r.months - (r.finalFlagTurns[t] ?? r.months),
+        }))
+        return { r, oldest: ages.sort((a, b) => b.age - a.age)[0] }
+      })
+      .filter(({ oldest }) => !oldest || oldest.age < 24)
+    expect(
+      tooYoung.map(({ r, oldest }) => `${r.seed} 最老 ${oldest?.ticket ?? '无票'}=${oldest?.age ?? '-'}月`),
+      '有局在"行医还不满两年"时就被封了悬壶济世'
+    ).toEqual([])
+  })
+
+  it('《悬壶之念》交出的票与结果卡宣告的一致 —— 不许静默多塞一张', () => {
+    const c2 = eventById(HEALER)?.choices?.find(c => c.id === 'c2')
+    const written = c2?.effects?.flags?.add ?? []
+    const tags = c2?.result?.tags ?? []
+    expect(written, '《悬壶之念》c2 又把"赈灾行医"塞回来了').not.toContain('赈灾行医')
+    expect(tags, '结果卡宣告了没写进去的票').not.toContain('赈灾行医')
+    expect(written.filter(f => !tags.includes(f)), '写进去却没告诉玩家的票').toEqual([])
   })
 
   it('凡播出《疫起》，身上必带着医疗票', () => {

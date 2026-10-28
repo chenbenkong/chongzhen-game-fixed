@@ -2,6 +2,7 @@ import { EventChoice, GameEvent } from '../types/event'
 import { Attributes, Character, GameStateValues, OriginType } from '../types/game'
 import { gateLabel } from '../data/flagBiography'
 import { ATTR_DISPLAY_MAP, STATE_DISPLAY_MAP } from './constants'
+import { evalSinceAny } from './flagDuration'
 
 export interface ChoiceCheckResult {
   available: boolean
@@ -201,6 +202,21 @@ export function checkChoiceRequirement(
       }
       if (range.max !== undefined && elapsed > range.max) {
         return lockedByFlag('这段旧事隔得太久，这一回赶不上了', flag)
+      }
+    }
+    // sinceAny：这几段里最老的一段满 min 才开。锁住时说的还是同一句人话，
+    // 主语取身上最老的那张票 —— 与事件池、边界编译器共用 `evalSinceAny`。
+    const sa = f.sinceAny
+    if (sa) {
+      const v = evalSinceAny(sa, own, character.flagTurns, gameState.turn)
+      if (!v.open) {
+        if (!v.held) {
+          return lockedByFlag(`须有过其中一段经历：${sayFlags(sa.flags)}`, sa.flags[0] ?? '经历')
+        }
+        if (v.shortBy) {
+          return lockedByFlag(agoTooYoung(v.oldest!.flag, v.shortBy), v.oldest!.flag)
+        }
+        return lockedByFlag('这几段旧事都隔得太久，这一回赶不上了', sa.flags[0] ?? '经历')
       }
     }
   }

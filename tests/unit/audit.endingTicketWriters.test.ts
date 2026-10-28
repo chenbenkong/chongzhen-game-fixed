@@ -39,13 +39,16 @@ for (const e of allEvents) {
  * 条件对象里正面读的那批池子（`has` 全要 / `all` 全要 / `some`、`any` 任一）。
  * `minCount` 的名单同样是正面读的票（第六十二轮起《中兴成功》用它读四张改革票、凑三张），
  * 里面藏幽灵票一样是门槛撒谎，所以并进池子一起扫。
+ * `sinceAny` 也是正面读的名单（第七十一轮）：它只多加一道"最老的一段满几年"，
+ * 网里的每一张票都照样是凭据，所以每张都得有写手。
  */
 const positivePool = (f: any): string[] => [
   ...(f?.has ?? []),
   ...(f?.all ?? []),
   ...(f?.some ?? []),
   ...(f?.any ?? []),
-  ...(f?.minCount?.flags ?? [])
+  ...(f?.minCount?.flags ?? []),
+  ...(f?.sinceAny?.flags ?? [])
 ]
 
 const tiles = allEndingEvents as any[]

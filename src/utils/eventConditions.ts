@@ -4,6 +4,7 @@
 import { GameEvent } from '../types/event'
 import { GameStateValues, Attributes, HiddenAttributes, OriginType } from '../types/game'
 import { ATTR_MAP, STATE_MAP } from './constants'
+import { evalSinceAny } from './flagDuration'
 
 type Range = { min?: number; max?: number }
 
@@ -152,6 +153,12 @@ export function checkEventConditions(
         if (r.min !== undefined && elapsed < r.min) return false
         if (r.max !== undefined && elapsed > r.max) return false
       }
+    }
+
+    // sinceAny：时长门的列表形状 —— 「这几段里最老的一段满 min」，or 语义，不收窄那张网。
+    // 判定与选项锁、边界编译器共用 `evalSinceAny`（含同一条老存档容错）。
+    if (cond.flags.sinceAny) {
+      if (!evalSinceAny(cond.flags.sinceAny, own, character.flagTurns, state.turn).open) return false
     }
 
     // 容错：数据里存在大写 ALL 的写法（2 处），按 all 语义处理

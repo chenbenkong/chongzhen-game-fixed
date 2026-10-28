@@ -266,6 +266,20 @@ function derive(e: GameEvent, writable: Set<string>): { state: DerivedState; not
       wanted.push(...pool.slice(0, mc.min))
     }
   }
+  // sinceAny：这张网里最老的一段满 min 才开。反推只需把"其中一段写得出来的票"塞进存档；
+  // **不**给它编落笔月份 —— 矩阵靠的是与老存档同一条容错（有票没月份 = 放行）。
+  // "玩家到底攒不攒得出那么多年"不是这一层能回答的：它要的是逐月推进的真实存档，
+  // 由 `simulation.*` 跑局 A/B 回答（第六十九轮的负结果就是这么撞出来的：矩阵说能走到，
+  // 跑局说走不到，差的正是这份月份）。
+  const sa = f.sinceAny
+  if (sa) {
+    const pool = (sa.flags || []).filter(flag => writable.has(flag) && !negatives.has(flag))
+    if (!pool.length) {
+      notes.push(`flags.sinceAny 里没有任何一段经历写得出来：${(sa.flags || []).join(' / ')}`)
+    } else {
+      wanted.push(pool[0])
+    }
+  }
   s.flags = wanted.filter(flag => !negatives.has(flag))
   return { state: s, notes }
 }

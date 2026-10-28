@@ -178,6 +178,28 @@ export function scanEventShape(
         }
         continue
       }
+      if (k === 'sinceAny') {
+        // `sinceAny` 是时长门的列表形状（or 语义）：所列经历里至少有一段满 min、不超过 max。
+        // 它**天生不收窄**，所以不适用上面 `since` 那条「窄化」判定 —— 那条管的是
+        // "把 AND 形状的门钉在网里的某一张票上"，而这里钉的是一整张网。
+        const spec = (v as { flags?: unknown; min?: number; max?: number }) || {}
+        const list = Array.isArray(spec.flags) ? spec.flags : []
+        if (!Array.isArray(spec.flags) || list.length === 0) {
+          add('结构', where, `${prefix}.flags.sinceAny.flags 必须是非空的经历名数组`)
+        } else {
+          for (const flag of list) if (!flag) add('结构', where, `${prefix}.flags.sinceAny.flags 里有空经历名`)
+        }
+        const hasMin = spec.min !== undefined
+        const hasMax = spec.max !== undefined
+        if (!hasMin && !hasMax) {
+          add('NOOP', where, `${prefix}.flags.sinceAny 既没写 min 也没写 max —— 退化成「持有其中一段」，这道时长门等于没装`)
+        }
+        if (hasMin && !(Number.isInteger(spec.min) && Number(spec.min) >= 1)) {
+          add('NOOP', where, `${prefix}.flags.sinceAny.min 须是正整数（写成 ${String(spec.min)} 等于没装这道门）`)
+        }
+        rangeKeys(`${prefix}.flags.sinceAny`, 'range', { min: spec.min, max: spec.max })
+        continue
+      }
       if (k === 'minCount') {
         const mc = (v as { flags?: unknown; min?: unknown }) || {}
         const list = Array.isArray(mc.flags) ? mc.flags : []

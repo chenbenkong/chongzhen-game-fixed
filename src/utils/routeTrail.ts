@@ -24,6 +24,7 @@ import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../data/boundaryEventCom
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../data/boundaryEvents'
 import { agoTooYoung } from './choiceRequirements'
+import { evalSinceAny } from './flagDuration'
 import { ZERO_THRESHOLDS, zeroWarnFlag, type ZeroKey } from '../data/zeroWarningEvents'
 
 export type RouteStatus = 'training' | 'before' | 'open' | 'passed'
@@ -596,6 +597,26 @@ export function explainUnmet(
       const elapsed = (params.gameState?.turn ?? 0) - at
       if (range.min !== undefined && elapsed < range.min) gaps.push(agoTooYoung(flag, range.min - elapsed))
       if (range.max !== undefined && elapsed > range.max) gaps.push('这段经历隔得太久，这一格赶不上了')
+    }
+    // sinceAny：这几段里最老的一段还得再跟几年。措辞复用选项锁那一句，
+    // 判据复用 `evalSinceAny` —— 面板、选项锁、引擎必须是同一把尺子。
+    const sa = f.sinceAny
+    if (sa) {
+      const verdict = evalSinceAny(sa, flags, params.flagTurns, params.gameState?.turn ?? 0)
+      if (!verdict.open) {
+        if (!verdict.held) {
+          // 一张都没有：`any`/`has` 那几条已经报过"还缺其一"了，别重复刷屏；
+          // 只有这道门是这张名单**唯一**的读者时才自己报。
+          const covered = [...(f.has || []), ...(f.all || []), ...(anyList || [])]
+          if (!sa.flags.every(x => covered.includes(x))) {
+            gaps.push(`还缺其一：${sa.flags.slice(0, 2).join(' / ')}${sa.flags.length > 2 ? ' 等' : ''}`)
+          }
+        } else if (verdict.shortBy) {
+          gaps.push(agoTooYoung(verdict.oldest!.flag, verdict.shortBy))
+        } else {
+          gaps.push('这几段旧事都隔得太久，这一格赶不上了')
+        }
+      }
     }
   }
 

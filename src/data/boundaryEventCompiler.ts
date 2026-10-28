@@ -3,6 +3,7 @@
 
 import { GameEvent, EventConditions, LegacyAttributeConditions, LegacyGameStateConditions } from '../types/event'
 import { BoundaryEvent, BoundaryEventCheckParams } from '../types/boundaryEvent'
+import { evalSinceAny } from '../utils/flagDuration'
 
 /**
  * 编译结局的 conditions 为边界事件 check 函数
@@ -140,6 +141,14 @@ function compileConditions(conditions: EventConditions | undefined) {
           const elapsed = (params.gameState?.turn ?? 0) - at
           if (range.min !== undefined && elapsed < range.min) return false
           if (range.max !== undefined && elapsed > range.max) return false
+        }
+      }
+      // sinceAny：时长门的列表形状 —— 「这几段里最老的一段满 min」，or 语义，不收窄那张网。
+      // 与事件池、选项锁共用 `evalSinceAny`（含同一条老存档容错：有票没月份就放行，
+      // 一张票都没有才关）。
+      if (conditions.flags.sinceAny) {
+        if (!evalSinceAny(conditions.flags.sinceAny, flags, params.flagTurns, params.gameState?.turn ?? 0).open) {
+          return false
         }
       }
     }

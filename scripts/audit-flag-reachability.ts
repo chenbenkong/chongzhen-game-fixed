@@ -125,6 +125,8 @@ export function scanFlagReachability(
       // 第五十四轮起它是一道真门（checkEventConditions / checkChoiceRequirement 都读），
       // 不扫就会把"只靠孩子几岁开门"的经历错报成没人读。
       for (const flag of Object.keys(f.since ?? {})) noteRead(flag, where)
+      // `sinceAny` 的经历名同样在对象里（flags 数组），上面两个循环都扫不到。
+      for (const flag of f.sinceAny?.flags ?? []) noteRead(flag, where)
     }
   }
 
@@ -163,6 +165,14 @@ export function scanFlagReachability(
           `${e.type.padEnd(10)} ${e.id.padEnd(34)} 「${(e.title || '').slice(0, 18)}」  minCount 要 ${mc.min} 段，全库写得出来的只有 ${reachable} 段: ${mc.flags.join(', ')}`
         )
       }
+    }
+    // sinceAny 也是"正门"，且只要一段：名单里一段都写不出来时，这道门与
+    // "需要一段永不存在的经历"一样恒假（它读的是落笔月份，票本身写不出来就永远没有月份）。
+    const sa = e.conditions?.flags?.sinceAny
+    if (sa && sa.flags?.length && !sa.flags.some(f => granted.has(f))) {
+      unsatisfiable.push(
+        `${e.type.padEnd(10)} ${e.id.padEnd(34)} 「${(e.title || '').slice(0, 18)}」  sinceAny 里没有任何一段经历写得出来: ${sa.flags.join(', ')}`
+      )
     }
     for (const clause of ['notHas', 'none'] as const) {
       for (const f of e.conditions?.flags?.[clause] ?? []) {
