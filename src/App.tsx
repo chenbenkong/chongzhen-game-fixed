@@ -58,9 +58,18 @@ function App() {
   /** 从存档对象恢复一局游戏的公共逻辑 */
   const applySaveData = useCallback((saveData: SaveData) => {
     if (!saveData || !saveData.character || !saveData.gameState) return
+    const restoredOrigin = saveData.origin && origins[saveData.origin] ? saveData.origin : '寒门'
     setLoadSaveData(saveData)
-    setSelectedOrigin(saveData.origin || '寒门')
-    if (saveData.degree) setFinalDegree(saveData.degree)
+    setSelectedOrigin(restoredOrigin)
+    // 这套 setup 状态同时是「死亡/结局后重新开始」的档案来源：读档时必须
+    // 一起换成存档里的这一份，否则读档后重开会拿到「上一局的姓名 + 全零起始属性」
+    // （finalAttributes 为 null 时 GameScreen 只拿到 {财帛:0,…,体质:50} 的兜底）。
+    setPlayerName(saveData.character.name || '')
+    setPlayerCourtesyName(saveData.character.courtesyName || '')
+    setPlayerHometown(saveData.character.hometown || '')
+    setPlayerCustomAge(saveData.character.age ?? null)
+    setFinalDegree(saveData.degree || saveData.character.degree || '进士')
+    setFinalAttributes(origins[restoredOrigin].initialAttributes)
     // 存档自带难度时以存档为准，否则沿用当前设置
     if (saveData.difficulty) setDifficulty(saveData.difficulty)
     // 读档时恢复成就
@@ -82,8 +91,8 @@ function App() {
 
   const handleStart = useCallback(() => {
     setLoadSaveData(null)
-    // 新游戏开始时清掉旧的自动存档，避免下次 start 时继承上次的 character/事件进度
-    deleteAutosave()
+    // 这里不能删自动存档：玩家还停在起名屏，随时可以点「返回」回标题，
+    // 而旧进度要能继续读。真正的「新局开始」是 handleOriginSelect。
     // 成就数据是模块级单例（每个存档独立一份）。新开一局必须清空，
     // 否则上一局的成就状态会被沿用并写进新存档。
     setAchievementData({ unlocked: [], unlockTimes: {} })
@@ -99,6 +108,8 @@ function App() {
   }, [])
 
   const handleOriginSelect = useCallback((origin: OriginType) => {
+    // 身份已定、引擎马上挂载 —— 这一刻旧自动存档才真正作废
+    deleteAutosave()
     setSelectedOrigin(origin)
     const originData = origins[origin]
     setFinalDegree((originData.initialDegree as DegreeType) || '进士')

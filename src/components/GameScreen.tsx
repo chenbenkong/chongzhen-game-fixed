@@ -218,6 +218,8 @@ function GameScreen(props: GameScreenProps) {
     isLifeReviewOpen ||
     isAchievementPanelOpen ||
     resignConfirmModal.isOpen ||
+    // 死亡结局覆盖层同样接管画面：它开着时 Space / S / 数字键不能穿透到下面的牌桌
+    deathEndingState.show ||
     // 结局屏已经接管画面，此时任何游戏快捷键都不该再生效
     isGameOver
 

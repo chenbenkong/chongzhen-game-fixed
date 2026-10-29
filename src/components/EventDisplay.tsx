@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useId, useMemo, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { isTypingTarget } from '../utils/isTypingTarget'
-import { GameEvent, EventChoice } from '../types/event'
+import { GameEvent, EventChoice, AppliedChoiceEffects } from '../types/event'
 import { Character, GameStateValues } from '../types/game'
 import { ATTR_DISPLAY_MAP, STATE_DISPLAY_MAP } from '../utils/constants'
 import { checkChoiceRequirement, type ChoiceCheckResult } from '../utils/choiceRequirements'
@@ -17,7 +17,8 @@ interface EventDisplayProps {
   event: GameEvent | null
   character: Character
   gameState: GameStateValues
-  onChoice?: (choice: EventChoice, opts?: { random?: boolean }) => void
+  /** 返回实际落账增量；null = 还在等二次确认（辞官类结局），此时不要画结算 */
+  onChoice?: (choice: EventChoice, opts?: { random?: boolean }) => AppliedChoiceEffects | null | void
   onContinue?: () => void
   onUndo?: () => void
   onGameOver?: () => void
@@ -260,6 +261,8 @@ function EventDisplay({
 
   const [internalSelectedChoice, setInternalSelectedChoice] = useState<EventChoice | null>(null)
   const [internalShowResult, setInternalShowResult] = useState(false)
+  // 引擎回传的实际落账增量（含难度/出身/上下限）；null 时退回声明值（幽灵模式）
+  const [appliedEffects, setAppliedEffects] = useState<AppliedChoiceEffects | null>(null)
   
   // 幽灵模式使用外部状态，正常模式使用内部状态
   const selectedChoice = isGhostMode 
@@ -436,6 +439,7 @@ function EventDisplay({
 
     setShowResult(false)
     setSelectedChoice(null)
+    setAppliedEffects(null)
     setEventDiceUsed(false) // 切换事件时重置骰子状态
     setDiceModal({
       show: false,
@@ -476,10 +480,15 @@ function EventDisplay({
       })
       onChoice?.(choice, opts)
     } else {
-      // 正常模式
-      setSelectedChoice(choice)
-      setShowResult(true)
-      onChoice?.(choice, opts)
+      // 正常模式：先让引擎落账，再按回传值决定是否进入结果态。
+      // 辞官类结局返回 null（等二次确认）—— 此时不能先画结算，
+      // 否则玩家点「取消」后会看到一次从未发生的抉择。
+      const applied = onChoice?.(choice, opts)
+      if (applied !== null) {
+        if (applied) setAppliedEffects(applied)
+        setSelectedChoice(choice)
+        setShowResult(true)
+      }
     }
   }, [isProcessing, onChoice, isGhostMode, onChoiceSelect, checkDeathEnding, onDeathEnding, choiceChecks, choiceResults])
 
@@ -604,9 +613,12 @@ function EventDisplay({
           onChoiceSelect?.(choice.id)
         } else if (success) {
           // 成功：用原 effects / result
-          setSelectedChoice(choice)
-          setShowResult(true)
-          onChoice?.(choice)
+          const applied = onChoice?.(choice)
+          if (applied !== null) {
+            if (applied) setAppliedEffects(applied)
+            setSelectedChoice(choice)
+            setShowResult(true)
+          }
         } else {
           // 失败：优先用作者在 choice.failEffects / failResult 里配的，
           // 否则根据"成功时的效果"反推；绝不再用死数据"体质-2/道德值-1"敷衍
@@ -623,9 +635,12 @@ function EventDisplay({
               echo: generated.echo
             }
           }
-          setSelectedChoice(useChoice)
-          setShowResult(true)
-          onChoice?.(useChoice)
+          const applied = onChoice?.(useChoice)
+          if (applied !== null) {
+            if (applied) setAppliedEffects(applied)
+            setSelectedChoice(useChoice)
+            setShowResult(true)
+          }
         }
         setDiceModal(p => ({ ...p, show: false }))
       }, motionDelay(1500))
@@ -638,6 +653,7 @@ function EventDisplay({
     } else {
       setShowResult(false)
       setSelectedChoice(null)
+      setAppliedEffects(null)
       onContinue?.()
     }
   }
@@ -648,6 +664,7 @@ function EventDisplay({
     } else {
       setShowResult(false)
       setSelectedChoice(null)
+      setAppliedEffects(null)
       onUndo?.()
     }
   }
@@ -681,19 +698,19 @@ function EventDisplay({
     const push = (label: string, value: number) => {
       parts.push(`${label}${value > 0 ? `+${value}` : value}`)
     }
-    const attrs = selectedChoice.effects?.attributes
+    const attrs = appliedEffects ? appliedEffects.attributes : selectedChoice.effects?.attributes
     if (attrs) {
       for (const [key, value] of Object.entries(attrs)) {
         if (typeof value === 'number') push(ATTR_DISPLAY_MAP[key] || key, value)
       }
     }
-    const states = selectedChoice.effects?.gameState
+    const states = appliedEffects ? appliedEffects.gameState : selectedChoice.effects?.gameState
     if (states) {
       for (const [key, value] of Object.entries(states)) {
         if (typeof value === 'number') push(STATE_DISPLAY_MAP[key] || key, value)
       }
     }
-    const hidden = selectedChoice.effects?.hidden
+    const hidden = appliedEffects ? appliedEffects.hidden : selectedChoice.effects?.hidden
     if (hidden) {
       for (const [key, value] of Object.entries(hidden)) {
         if (typeof value === 'number') push(key, value)
@@ -702,7 +719,10 @@ function EventDisplay({
     const title = selectedChoice.result?.title
     const effectText = parts.length > 0 ? `效果：${parts.join('、')}` : ''
     return [title, effectText].filter(Boolean).join('。')
-  }, [selectedChoice])
+  }, [selectedChoice, appliedEffects])
+
+  // 有引擎回传值时只显示真正落账的增量；幽灵模式没有引擎，退回声明值
+  const displayEffects = appliedEffects || selectedChoice?.effects
 
   if (!event) {
     // 无事件时不渲染任何界面，由 useEffect 自动触发下月推进
@@ -1020,17 +1040,17 @@ function EventDisplay({
             
             {/* 属性变化 */}
             <div className="effects-grid">
-              {selectedChoice?.effects.attributes && Object.entries(selectedChoice.effects.attributes).map(([key, value]) => (
+              {displayEffects?.attributes && Object.entries(displayEffects.attributes).map(([key, value]) => (
                 <div key={key} className={`effect-tag ${value > 0 ? 'positive' : 'negative'}`}>
                   {ATTR_DISPLAY_MAP[key] || key}{value > 0 ? `+${value}` : value}
                 </div>
               ))}
-              {selectedChoice?.effects.gameState && Object.entries(selectedChoice.effects.gameState).map(([key, value]) => (
+              {displayEffects?.gameState && Object.entries(displayEffects.gameState).map(([key, value]) => (
                 <div key={key} className={`effect-tag ${value > 0 ? 'positive' : 'negative'}`}>
                   {STATE_DISPLAY_MAP[key] || key}{value > 0 ? `+${value}` : value}
                 </div>
               ))}
-              {selectedChoice?.effects.hidden && Object.entries(selectedChoice.effects.hidden).map(([key, value]) => (
+              {displayEffects?.hidden && Object.entries(displayEffects.hidden).map(([key, value]) => (
                 <div key={key} className={`effect-tag ${value > 0 ? 'positive' : 'negative'}`}>
                   {key}{value > 0 ? `+${value}` : value}
                 </div>

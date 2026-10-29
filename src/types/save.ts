@@ -54,6 +54,63 @@ export interface SaveData {
 }
 
 /**
+ * 把存档里的五方态度统一成现行键名。
+ *
+ * 必须由「首帧 useState 初始化器」与「读档 effect」共用同一张表：
+ * 两处各写一遍时，初始化器曾把 `百姓口碑` 同时接给士绅与民望、
+ * 又漏了 `安全 → 中官`，于是首帧读到的是错位局势（effect 跑完才修回来）。
+ */
+export function normalizeLegacyGameState(raw: GameStateValues): GameStateValues {
+  const rec = raw as unknown as Record<string, unknown>
+  const numOr = (value: unknown, fallback: number): number => {
+    const n = typeof value === 'number' ? value : Number(value)
+    return Number.isFinite(n) ? n : fallback
+  }
+  return {
+    currentYear: raw.currentYear,
+    currentMonth: raw.currentMonth,
+    turn: raw.turn,
+    圣眷: numOr(rec.帝心 ?? raw.圣眷, 50),
+    中官: numOr(rec.安全 ?? raw.中官, 50),
+    清议: numOr(rec.派系立场 ?? raw.清议, 50),
+    士绅: numOr(rec.商贾 ?? raw.士绅, 50),
+    民望: numOr(rec.百姓口碑 ?? raw.民望, 50),
+    国势: numOr(raw.国势, 75)
+  }
+}
+
+/**
+ * 自动存档的「有没有东西变了」指纹。
+ *
+ * 漏项会让整类抉择永不落盘：此前只读了属性、五方态度、flag 数量与事件 id，
+ * 于是「只改隐藏属性 / 只改连击统计 / 只改政绩加分」的抉择指纹不变，
+ * 400ms 后不会写盘，玩家一刷新就丢掉这次选择（实测 14 条只改隐藏属性的选项）。
+ * 这里按**内容**取指纹，并覆盖一次抉择可能改动的全部持久化字段。
+ */
+export function autosaveFingerprint(data: SaveData): string {
+  const c = data.character
+  const s = data.gameState
+  return JSON.stringify([
+    s.currentYear, s.currentMonth, s.turn,
+    s.圣眷, s.中官, s.清议, s.士绅, s.民望, s.国势,
+    c.attributes, c.hidden,
+    c.rank, c.age, c.promotionCount, c.demotionCount,
+    c.flags, c.flagTurns ?? null, c.faction ?? null,
+    data.eventHistory.length,
+    data.lifeRecords.length,
+    data.stats ?? null,
+    data.meritBonus ?? 0,
+    (data.pendingEvents ?? []).map(e => e.id),
+    data.currentEvent?.id ?? null,
+    data.currentStoryline ?? null,
+    data.identityType,
+    data.origin,
+    data.degree,
+    data.difficulty ?? 'normal'
+  ])
+}
+
+/**
  * 局内统计计数（成就判定用，随存档持久化）。
  * 每个字段都对应 AchievementContext 里的同名计数器。
  */

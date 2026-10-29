@@ -54,9 +54,11 @@ export const ATTR_DISPLAY_MAP: Record<string, string> = {
 
 export const STATE_DISPLAY_MAP: Record<string, string> = {
   '帝心': '圣眷',
-  '国势': '中官',
+  '国势': '国势',
   '派系立场': '清议',
   '百姓口碑': '民望',
+  '商贾': '士绅',
+  '安全': '中官',
   '圣眷': '圣眷',
   '中官': '中官',
   '清议': '清议',

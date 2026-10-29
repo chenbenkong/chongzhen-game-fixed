@@ -203,6 +203,19 @@ export interface EventChoice {
   staminaBonus?: number
 }
 
+/**
+ * 一次抉择真正落账的增量（已含难度倍率、出身修正与上下限裁剪）。
+ *
+ * 结算面板与读屏播报必须渲染这张表，而不是 `choice.effects` 里的声明值 ——
+ * 两者在简单/困难模式与出身加成下常常不是同一个数。`null` 表示这次抉择
+ * 还在等二次确认（辞官类结局），尚未写入任何状态。
+ */
+export interface AppliedChoiceEffects {
+  attributes: Record<string, number>
+  gameState: Record<string, number>
+  hidden: Record<string, number>
+}
+
 export type EventType = 'normal' | 'historical' | 'random' | 'chain' | 'ending' | 'transition' | 'gray' | 'emotion' | 'character' | 'national' | 'faction'
 
 export interface EndingConfig {

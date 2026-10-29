@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Character, GameStateValues, OriginType, DegreeType, Attributes, LifeRecord, LifeSummary, PlayerFaction, HiddenAttributes, HIDDEN_DEFAULTS, normalizeHidden } from '../types/game'
-import { GameEvent, EventChoice } from '../types/event'
-import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosave, loadAutosave, deleteAutosave } from '../types/save'
+import { GameEvent, EventChoice, AppliedChoiceEffects } from '../types/event'
+import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosave, loadAutosave, deleteAutosave, normalizeLegacyGameState, autosaveFingerprint } from '../types/save'
 import { checkAndUnlockAchievements, loadAchievements, Achievement, AchievementContext } from '../types/achievement'
 import { DifficultyLevel, getDifficultyConfig } from '../types/difficulty'
 import { initialEvents, allGrayChoiceEvents } from '../data/events/index'
@@ -692,18 +692,7 @@ export function useGameEngine(props: UseGameEngineProps) {
 
   const [gameState, setGameState] = useState<GameStateValues>(() => {
     if (loadSaveData) {
-      const oldState = loadSaveData.gameState
-      return {
-        currentYear: oldState.currentYear,
-        currentMonth: oldState.currentMonth,
-        turn: oldState.turn,
-        圣眷: (oldState as any).帝心 ?? oldState.圣眷 ?? 50,
-        中官: (oldState as any).中官 ?? 50,
-        清议: (oldState as any).派系立场 ?? oldState.清议 ?? 50,
-        士绅: (oldState as any).百姓口碑 ?? oldState.士绅 ?? 50,
-        民望: (oldState as any).百姓口碑 ?? oldState.民望 ?? 50,
-        国势: oldState.国势 ?? 75
-      }
+      return normalizeLegacyGameState(loadSaveData.gameState)
     }
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
@@ -1320,8 +1309,15 @@ export function useGameEngine(props: UseGameEngineProps) {
         const mappedKey = ATTR_MAP[key] || key
         const attrKey = mappedKey as keyof Attributes
         const bounds = ATTR_BOUNDS[attrKey] || { min: 0, max: 150 }
-        let adjustedValue = value * difficultyConfigRef.current.attributeMultiplier
-        adjustedValue = applyOriginModifier(currentCharacter.origin, mappedKey, adjustedValue)
+        // 难度只放大「获得」。此前正负都乘，简单模式罚得更重、困难模式罚得更轻，
+        // 与设置页写的「属性获得更容易 / 更难」正好相反。
+        // 最后取整：1.5 倍会把 3 变成 4.5，属性面板没有小数位。
+        const difficultyAdjusted = value > 0
+          ? value * difficultyConfigRef.current.attributeMultiplier
+          : value
+        const adjustedValue = Math.round(
+          applyOriginModifier(currentCharacter.origin, mappedKey, difficultyAdjusted)
+        )
         newAttrs[attrKey] = Math.max(bounds.min, Math.min(bounds.max, (newAttrs[attrKey] || 0) + adjustedValue))
       }
     }
@@ -1367,7 +1363,42 @@ export function useGameEngine(props: UseGameEngineProps) {
         newStateVals: newStateVals,
         newAttrs: newAttrs
       })
-      return
+      // null = 这次抉择还没有落账。EventDisplay 据此不画结算，取消后也不会留下
+      // 一张“已经选过”的结果页。
+      return null
+    }
+
+    // 结算面板 / 读屏播报要的是**实际落账值**，不是 choice.effects 里的声明值。
+    // 属性已过难度倍率与出身修正、五方态度已过出身修正、隐藏属性已夹 0-100；
+    // 这里在写入前把每一格的真实差值算出来，由 handleChoice 回传给 EventDisplay。
+    const appliedEffects: AppliedChoiceEffects = {
+      attributes: {},
+      gameState: {},
+      hidden: {}
+    }
+    for (const key of Object.keys(newAttrs) as Array<keyof Attributes>) {
+      const delta = (newAttrs[key] ?? 0) - (currentCharacter.attributes[key] ?? 0)
+      if (delta !== 0) appliedEffects.attributes[key] = delta
+    }
+    for (const key of Object.keys(newStateVals) as Array<keyof GameStateValues>) {
+      if (key === 'currentYear' || key === 'currentMonth' || key === 'turn') continue
+      const delta = ((newStateVals[key] as number) ?? 0) - ((currentGameState[key] as number) ?? 0)
+      if (delta !== 0) appliedEffects.gameState[key] = delta
+    }
+    if (choice.effects.hidden) {
+      const hiddenBase = normalizeHidden(currentCharacter.hidden)
+      for (const [key, value] of Object.entries(choice.effects.hidden)) {
+        if (!(key in HIDDEN_DEFAULTS)) {
+          // 未知隐藏属性键：跳过而不是写入 NaN（NaN 会被 JSON 序列化成 null，
+          // 并让条件判定在「永远通过」和「永远不通过」之间摇摆）
+          console.warn('[effects] 未知的隐藏属性键，已忽略：', key)
+          continue
+        }
+        const hiddenKey = key as keyof HiddenAttributes
+        const next = Math.max(0, Math.min(100, hiddenBase[hiddenKey] + value))
+        const delta = next - hiddenBase[hiddenKey]
+        if (delta !== 0) appliedEffects.hidden[key] = delta
+      }
     }
 
     // ===== 成就统计（选项侧）=====
@@ -1427,18 +1458,13 @@ export function useGameEngine(props: UseGameEngineProps) {
       newChar.history = [...newChar.history, historyEntry]
 
       if (choice.effects.hidden) {
-        // 先规整：旧存档里可能缺键或是 NaN/null，直接相加会污染成 NaN
+        // 先规整：旧存档里可能缺键或是 NaN/null，直接相加会污染成 NaN。
+        // 增量用上面算好的 appliedEffects.hidden（与结算面板同一份数），
+        // 这样夹在上下限上的那部分也有一致的读数。
         newChar.hidden = normalizeHidden(newChar.hidden)
-        for (const [key, value] of Object.entries(choice.effects.hidden)) {
-          if (!(key in HIDDEN_DEFAULTS)) {
-            // 未知隐藏属性键：跳过而不是写入 NaN（NaN 会被 JSON 序列化成 null，
-            // 并让条件判定在「永远通过」和「永远不通过」之间摇摆）
-            console.warn('[effects] 未知的隐藏属性键，已忽略：', key)
-            continue
-          }
+        for (const [key, delta] of Object.entries(appliedEffects.hidden)) {
           const hiddenKey = key as keyof HiddenAttributes
-          const currentVal = newChar.hidden[hiddenKey]
-          newChar.hidden[hiddenKey] = Math.max(0, Math.min(100, currentVal + value))
+          newChar.hidden[hiddenKey] = Math.max(0, Math.min(100, newChar.hidden[hiddenKey] + delta))
         }
       }
       if (choice.effects.flags?.add) {
@@ -1582,7 +1608,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 辞官类结局已在函数开头完成确认（未确认时根本走不到这里），
       // 其余结局直接结算。
       handleGameOver(currentEvent ?? undefined)
-      return
+      return appliedEffects
     }
 
     // 刚答完的那张卡本身就是「史馆请笔」时，跳过这一次判定。
@@ -1611,7 +1637,7 @@ export function useGameEngine(props: UseGameEngineProps) {
           if (triggeredEvent.id === 'bankrupt') {
             setCurrentEvent(withEndingId(triggeredEvent.event))
             handleGameOver(withEndingId(triggeredEvent.event))
-            return
+            return appliedEffects
           }
           // 结局卡必须吃掉本月剩下的待处理事件。不清队列的话，玩家点「继 续」时
           // `handleContinue` 会先弹队列里的普通卡，把这张结局卡直接盖掉；而降临型
@@ -1627,6 +1653,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         console.error('handleChoice boundary check error:', e)
       }
     }
+
+    return appliedEffects
   }, [])
 
   const checkBoundary = useCallback((): boolean => {
@@ -2212,26 +2240,14 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
 
     const oldState = loadSaveData.gameState
-    // 旧存档的键名迁移必须走 STATE_MAP 的同一张表。
-    // 这里原来是 `士绅: 百姓口碑 ?? 士绅` —— 把「百姓口碑」错接给了士绅，
-    // 而按 STATE_MAP，百姓口碑→民望、商贾→士绅。后果是 v1 存档读进来后，
-    // 士绅态度被民望的数字顶替，且这个错误同时污染政绩分与贬官判定。
-    const legacyState = oldState as unknown as Record<string, unknown>
+    // 与首帧初始化器共用同一张旧键表（`normalizeLegacyGameState`）：
+    // 此前两处各写一遍，初始化器把「百姓口碑」同时接给士绅/民望、又漏了「安全」，
+    // 首帧读到的是错位局势，要等这个 effect 跑完才修回来。
     const numOr = (value: unknown, fallback: number): number => {
       const n = typeof value === 'number' ? value : Number(value)
       return Number.isFinite(n) ? n : fallback
     }
-    const initialGameState = {
-      currentYear: oldState.currentYear,
-      currentMonth: oldState.currentMonth,
-      turn: oldState.turn,
-      圣眷: numOr(legacyState.帝心 ?? oldState.圣眷, 50),
-      中官: numOr(legacyState.安全 ?? legacyState.中官, 50),
-      清议: numOr(legacyState.派系立场 ?? oldState.清议, 50),
-      士绅: numOr(legacyState.商贾 ?? oldState.士绅, 50),
-      民望: numOr(legacyState.百姓口碑 ?? oldState.民望, 50),
-      国势: numOr(oldState.国势, 75)
-    }
+    const initialGameState = normalizeLegacyGameState(oldState)
 
     const currentScore = calculateMeritScore(fixedCharacter, initialGameState)
     const correctRank = RANKS.slice().reverse().find(r => currentScore >= r.minScore)
@@ -2420,7 +2436,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       meritBonus
     }
 
-    const fingerprint = `${gameState.currentYear}|${gameState.currentMonth}|${gameState.turn}|${eventHistory.length}|${character.attributes.财帛}|${character.attributes.文韬}|${character.attributes.理政}|${character.attributes.武略}|${character.attributes.体质}|${gameState.圣眷}|${gameState.中官}|${gameState.清议}|${gameState.士绅}|${gameState.民望}|${gameState.国势}|${character.flags.length}|${currentEvent?.id || ''}|${currentStoryline || ''}`
+    const fingerprint = autosaveFingerprint(data)
     if (fingerprint === lastAutosaveFingerprint) return
 
     if (autosaveTimerRef.current !== null) {
