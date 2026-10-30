@@ -564,8 +564,14 @@ describe('真引擎跑完一局：从 handleChoice 到格子亮', () => {
    * 《罢黜归田》一局没有 —— 两支的分岔由 `checkDemotion` 的 severity 决定，不是本用例的门，
    * 所以下面钉的是"两支里必然出现一支"。归田那一支并非走不到（`simulation.fugitive.test.ts`
    * 与 `simulation.lostRoutes.test.ts` 的 bandit 画像里它抢过《亡命江湖》的月份），只是 random 档到不了。
+   *
+   * 第七十五轮再换一次血：末班车补位那张（见 engine.lastChance）改了抽卡顺序，
+   * 旧取样（1/5/8/9/14）里 5 与 9 都落到 `ending_exile`，"恰好一支革职"那条门槛
+   * 于是红在长度 2 上 —— 门槛本身是对的，是取样重复了。同一口径重扫 seed 1..120：
+   *   1 乡绅反目 / 6 破产（被改名那格）/ 9 流放边疆（革职两支之一）/ 14 士林唾弃 / 20 宦官构陷。
+   * 5 局 5 格，两个必须压住的口子各占一格，革职恰好一支。
    */
-  const SEEDS = [1, 5, 8, 9, 14]
+  const SEEDS = [1, 6, 9, 14, 20]
 
   it('引擎实际达成的每一局都在图鉴里有格子，且真的亮了', async () => {
     const outcomes = []

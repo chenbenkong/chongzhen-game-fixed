@@ -173,9 +173,25 @@ describe(`${POLICIES.join('/')} 组《亡命江湖》逐月开门实测（${GAME
       r.trace.some(s => s.derived.flags.includes('隐姓埋名') && s.derived.flags.includes('下落不明'))
     )
     expect(paired.length, '这一批里连一局成对票都没有 —— 下面那句"不许被抢"是空集上的真').toBeGreaterThan(0)
+    // 第六十一轮给《不知所踪》补了 国势≤25 与 notHas（转移资产/落草为寇/……）之后，
+    // "成过对"就不再等于"那一格成立"。第七十五轮量到两局（seed6408/6424）终局带着
+    // 「转移资产」—— 正是《不知所踪》的 notHas，它当时根本没开，判给《亡命江湖》是对的。
+    // 旧断言把这种"被自己的 notHas 挡住"也当成了抢，量的是"成对票"而不是"那一格成立"。
+    // 这里按那一格**真的成立过**筛，抢的判据就回到它本来的意思：
+    // 两格同时满足时，优先级更低的那一格不许收人（次序对不对，见下一条逐月测试）。
+    const unknownFate = (Object.values(boundaryEventManager.getAll()).filter(e => e.type === 'ending') as BoundaryEvent[]).find(
+      e => e.event.id === 'ending_unknown_fate'
+    )
+    const pairedWithGateOpen = paired.filter(r =>
+      r.trace.some(s => unknownFate?.check(buildParams(s.derived)))
+    )
     expect(
-      paired.filter(r => r.endingId === FUGITIVE).map(r => `seed${r.seed} → ${r.endingTitle}`),
-      '成对票在身、《不知所踪》又排在前面，这一格还是把人抢走了'
+      pairedWithGateOpen.length,
+      '成对票 ∧ 《不知所踪》成立的局一局都没有 —— 下面那句又成了空集上的真'
+    ).toBeGreaterThan(0)
+    expect(
+      pairedWithGateOpen.filter(r => r.endingId === FUGITIVE).map(r => `seed${r.seed} → ${r.endingTitle}`),
+      '《不知所踪》成立过、《亡命江湖》又排在它后面，这一格还是把人抢走了'
     ).toEqual([])
   })
 

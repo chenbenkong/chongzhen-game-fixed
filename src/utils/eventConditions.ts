@@ -182,6 +182,29 @@ export function checkEventConditions(
 }
 
 /**
+ * 这张卡是不是「过了这个月就永远没机会了」。
+ *
+ * 只读时间键（`year.max` / `month.max` / `turn.max`）—— 它们只随日历前进而变，
+ * 与玩家数值无关，所以「下个月还开不开」可以静态算出。其余条件（属性、flags）
+ * 下个月会不会变取决于玩家的抉择，不在这里猜。
+ *
+ * 只写了 `month.max` 而不写 `year.max` 的卡是**每年重来**的节令卡（例如「秋收」），
+ * 这个月错过明年还有，不算最后机会；只有年窗也在今年关上的才是。
+ */
+export function lastChanceThisMonth(event: GameEvent, state: GameStateValues): boolean {
+  const { year, month, turn } = event.conditions ?? {}
+  const wrapsYear = state.currentMonth >= 12
+  const nextMonth = wrapsYear ? 1 : state.currentMonth + 1
+  const nextYear = wrapsYear ? state.currentYear + 1 : state.currentYear
+  if (turn?.max !== undefined && state.turn + 1 > turn.max) return true
+  if (year?.max !== undefined) {
+    if (nextYear > year.max) return true
+    if (nextYear === year.max && month?.max !== undefined && nextMonth > month.max) return true
+  }
+  return false
+}
+
+/**
  * 从可用事件池中按"主优先"策略随机挑选 1 个事件
  * 策略：
  *  1. 30% 概率命中支线（emotion / gray），避免支线永远不出现

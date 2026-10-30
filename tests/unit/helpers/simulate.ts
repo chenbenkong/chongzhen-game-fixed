@@ -57,6 +57,16 @@ export interface SimOutcome {
   /** 这一局里真正播出来的事件 id（按播放顺序） */
   firedEventIds: string[]
   /**
+   * 这一局里**发到手**的事件 id（`eventHistory`，按发牌顺序）。
+   *
+   * 第七十五轮加它：`firedEventIds` 只记"玩家真的点了",而发牌与播放之间
+   * 还有一道剪枝 —— `handleChoice` 触发边界结局时会把当月剩下的
+   * `pendingEvents` 整批清空（§1.4 ㉛）。于是"排进队列了却没有播放"
+   * 有两种完全不同的成因：规则允许的截胡，和发牌根本没发出来。
+   * 想钉"这张卡到底有没有拿到自己的位子"，只能读发牌记录。
+   */
+  dealtEventIds: string[]
+  /**
    * 逐月抄下的**边界入参**（只有 `opts.traceMonths` 为真时非空）。
    *
    * 第二十五轮加它，是为了回答一个终局快照答不了的问题：
@@ -1225,6 +1235,7 @@ export async function simulateRun(opts: {
   const traceRows: MonthTrace[] = []
   const choiceLog: ChoiceLog[] = []
   let lastTraceTurn = -1
+  let dealtEventIds: string[] = []
   const declaredDelta: Record<string, number> = {}
   const actualDelta: Record<string, number> = {}
   let startThresholds: Record<string, number> = {}
@@ -1364,6 +1375,7 @@ export async function simulateRun(opts: {
   } catch (e) {
     error = e instanceof Error ? `${e.message}\n${e.stack?.split('\n')[1] || ''}` : String(e)
   } finally {
+    dealtEventIds = [...hook.result.current.eventHistory]
     hook.unmount()
     randomSpy.mockRestore()
     vi.useRealTimers()
@@ -1378,6 +1390,7 @@ export async function simulateRun(opts: {
     endingId,
     endingTitle,
     firedEventIds: fired,
+    dealtEventIds,
     firedTurns,
     trace: traceRows,
     choiceLog,

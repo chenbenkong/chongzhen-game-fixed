@@ -6,7 +6,7 @@ import { initialEvents, allGrayChoiceEvents } from '../../src/data/events'
 import { allEndingEvents } from '../../src/data/events/ending'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../../src/data/boundaryEvents'
-import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
+import { NARRATIVE_MIN_YEAR } from '../../src/data/boundaryEventCompiler'
 import { ZERO_THRESHOLDS, zeroWarnFlag } from '../../src/data/zeroWarningEvents'
 import type { Attributes, Character, GameStateValues } from '../../src/types/game'
 import type { EventConditions } from '../../src/types/event'
@@ -455,7 +455,14 @@ describe('选项断途提醒', () => {
         .filter(d => {
           if (!holds(before, d)) return false
           if (d.blockers.some(b => before.has(b))) return false
-          if (c.turn < NARRATIVE_MIN_TURN) return false
+          // 这里曾经有一条 `c.turn < NARRATIVE_MIN_TURN` 的排除，第七十五轮删掉。
+          // `NARRATIVE_MIN_TURN` 管的是「叙事结局什么时候**能触发**」，不是「路线有没有**被断**」：
+          // 1629 年多一个永久 blocker，1635 年开窗时那条路照样是死的。
+          // 它一直没暴露，是因为 seed 9500 此前没在 36 格前点过带 blocker 的选项；
+          // 第七十五轮多发末班车改了轨迹（`historical_003/c2` 力保袁崇焕 → 落「袁党」，
+          // 正是 `ending_scholar_martyr` 的 `notHas`），这条排除就把一次**真实且正确**的提醒
+          // 判成了误报。引擎侧的年窗判定本来就在（`windowStatus(...) === 'passed'` 才跳过），
+          // 量具这边只需要对齐它。
           if (d.window.max !== undefined && c.year > d.window.max) return false
           if (!holds(after, d)) return true
           const hit = d.blockers.filter(b => after.has(b))

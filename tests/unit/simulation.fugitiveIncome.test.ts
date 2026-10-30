@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { simulateRun, type SimOutcome, type SimPolicy } from './helpers/simulate'
 import { buildParams } from '../../scripts/audit-ending-reachability'
 import { boundaryEventManager } from '../../src/services/BoundaryEventManager'
-import { FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
+import { CORRUPTION_WARNING_EVENT_ID, FUGITIVE_FLAG } from '../../src/data/demotionWarningEvents'
 import type { BoundaryEvent } from '../../src/types/boundaryEvent'
 import type { OriginType } from '../../src/types/game'
 
@@ -133,14 +133,28 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
       })
       .filter((y): y is number => y !== null)
     const minTicketYear = Math.min(...years)
+    const ticketed = years.length
+    const tookFlee = fug.filter(r =>
+      r.choiceLog.some(c => c.eventId === CORRUPTION_WARNING_EVENT_ID && c.choiceId === 'c4')
+    ).length
     console.log(
       `《${fugitiveTile.event.title}》p${fugitiveTile.priority} 年窗 ${WINDOW_MIN_YEAR}–` +
-        `${fugitiveTile.event.conditions?.year?.max}；带票 ${years.length}/${GAMES} 局，` +
+        `${fugitiveTile.event.conditions?.year?.max}；带票 ${ticketed}/${GAMES} 局` +
+        `（点过【连夜束装，弃官南还】的 ${tookFlee} 局），` +
         `拿票最早在 ${minTicketYear} 年（比窗口早 ${WINDOW_MIN_YEAR - minTicketYear} 年）`
     )
     expect(WINDOW_MIN_YEAR, '年窗下界变了，下面所有"熬进窗口"的读数要重算').toBe(1635)
     expect(minTicketYear, '票源挪进了年窗 —— ⑲ 的问题本身变了，下面的基线要重抄').toBeLessThan(WINDOW_MIN_YEAR)
-    expect(years.length, '带票局数掉到 37 以下，说明这张票发不出来了').toBeGreaterThanOrEqual(37)
+    // 第七十五轮重抄：末班车多发一张之后随机流挪了一拍，带票 37+ → 35/40。
+    // 先查门再重抄：c4 的两道门（体质≥25、圣眷≥12）一个字没动，票源事件照发
+    // （40 局里 39 局播到《风闻入告》），少的两局是 圣眷 先见底、c4 直接点不动 ——
+    // 不是"发不出来"。同时量了一圈更宽的网格（同策略种子 6400–6519，120 局）：99 局带票 = 82.5%。
+    // 下界因此按 80%（32 局）取，比实测低 3 局：这条钉防的是"票源断掉"，不是逐位复读随机流。
+    expect(ticketed, '带票局数掉到 32 以下，说明这张票发不出来了').toBeGreaterThanOrEqual(32)
+    // 机制棘轮：票数会被随机流慢慢磨，写手本身坏掉却可以悄无声息。
+    // “有人真的点过 c4”是那条写手的直接读数 —— effects.flags.add 被删、门槛被改死，
+    // 上面那条计数只会一年挪一两局，这一条会当场变红。
+    expect(tookFlee, `这一批里只有 ${tookFlee} 局点过【连夜束装，弃官南还】—— c4 的写手或门槛断了`).toBeGreaterThanOrEqual(8)
   })
 
   it('门开着却死于破产的月份只许零星几个，而且逐月问得出该判给谁', () => {

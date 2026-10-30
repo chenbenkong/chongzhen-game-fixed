@@ -268,8 +268,13 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
   // p117 优先级本轮一字未动；再扫网格 6400–6700（vanish/缙绅，同 maxMonths），
   // 落在《不知所踪》且带成对票的有 6428／6437／6442／6452／6462／6465／6485／6498…共 25 局，
   // 收在 1637–1644 —— 供给比第六十一轮那句"1 局"宽得多，换的只是骰子。
-  it('《不知所踪》仍结得了案（反推存档：seed 6428 / vanish / 缙绅）', async () => {
-    const r = await simulateRun({ seed: 6428, policy: 'vanish', origin: '缙绅', maxMonths: MONTHS })
+  // 第七十五轮再抄（旧 6428）：末班车多发的过渡卡改了属性与选点，6428 现在结在别处。
+  // 先查门：`ending_unknown_fate` 的判据、年窗、p117 优先级本轮一字未动；
+  // 再扫同一片网格（6400–6700，vanish/缙绅）—— 落在《不知所踪》且带成对票的还有
+  // 6404／6465／6506／6550／6607／6614／6639／6669／6687 共 9 局，收在 1637–1642。
+  // 供给比第六十七轮那句"25 局"窄，但格子没做死。取最小的 6404。
+  it('《不知所踪》仍结得了案（反推存档：seed 6404 / vanish / 缙绅）', async () => {
+    const r = await simulateRun({ seed: 6404, policy: 'vanish', origin: '缙绅', maxMonths: MONTHS })
     expect(
       r.endingId,
       `反推存档没走到《不知所踪》—— 结在 ${r.endingTitle ?? '（未结案）'}，` +

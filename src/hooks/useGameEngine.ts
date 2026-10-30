@@ -19,7 +19,7 @@ import {
 import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
-import { checkEventConditions, pickEvent } from '../utils/eventConditions'
+import { checkEventConditions, lastChanceThisMonth, pickEvent } from '../utils/eventConditions'
 import { hasOpenChoice } from '../utils/choiceRequirements'
 
 // 身份类型
@@ -888,6 +888,18 @@ export function useGameEngine(props: UseGameEngineProps) {
   const undoHistoryRef = useRef(undoHistory)
   /** 推进月份的同步重入闸门（见 handleNextMonth） */
   const advanceInFlightRef = useRef(false)
+  /**
+   * 首帧发牌/读档恢复是否已经落定。
+   *
+   * React 的被动 effect 是**子组件先、父组件后**：EventDisplay 的
+   * 「没有事件就自动 onContinue」会在本文件末尾的初始化 effect 之前跑。
+   * 首帧若还没有事件（新开局、或存档里 currentEvent 为 null 的旧档），
+   * 那一次 onContinue 会先把月份 +1 并排好下个月的一批事件，随后初始化
+   * effect 才按当月发牌 —— 结果新局从 2 月 / 第 1 回合开始，旧档则显示
+   * 下个月的卡，还会把一批玩家没看过的 id 烧进 eventHistory。
+   * 初始化 effect 一开始就把它置真，此前的任何推进都按空操作处理。
+   */
+  const engineReadyRef = useRef(false)
   const identityTypeRef = useRef(identityType)
   const lifeRecordsRef = useRef(lifeRecords)
   const isProcessingRef = useRef(isProcessing)
@@ -1112,6 +1124,21 @@ export function useGameEngine(props: UseGameEngineProps) {
     )
     if (prelude) results.push(prelude)
 
+    // 2.5 「过了这个月就再也见不到」的过渡卡，同月多发一张。
+    //
+    // 选择器按 historical → transition 分层，而历史卡几乎月月不断档，
+    // 单月固定的一次性过渡卡整类被饿死：240 局实测 75 张过渡卡从未播出，
+    // 其中 50 张只开一个月（「冬至祭天」1628-11 恰好撞上「阉党覆灭」11–12 月）。
+    // 这类卡没有第二年 —— 错过不是"下次再来"，是永远看不到。
+    //
+    // 它只**追加**，不占别的槽位，也不改变历史卡在前、其余在后的次序：
+    // 主戏照旧先演，末班车排在同一个月的队列里（「进下一件」翻页）。
+    // 曾经试过让它顶掉「没有历史卡时的普通过渡补位」—— 结果 160 局医家线里
+    // 《悬壶之念》0 次：那些过渡卡本来就靠这一格发牌。补位一个字不改。
+    const lastChance = available.filter(
+      e => e.type === 'transition' && !seen.has(e.id) && lastChanceThisMonth(e, state)
+    )
+
     const pickedHistorical = weightedPick(historical, activeStoryline)
     if (pickedHistorical) {
       results.push(pickedHistorical)
@@ -1123,6 +1150,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         results.push(pickedTransition)
       }
     }
+
+    if (lastChance.length > 0) results.push(...lastChance)
 
     // 4. 若本月没有大事件/过渡事件，用随机事件填充（可重复，带冷却）
     if (results.length === 0) {
@@ -1726,6 +1755,9 @@ export function useGameEngine(props: UseGameEngineProps) {
   }, [])
 
   const handleNextMonth = useCallback(() => {
+    // 首帧发牌之前不许推进（见 engineReadyRef 的声明处）。
+    if (!engineReadyRef.current) return
+
     // 同步的重入闸门。isProcessing 是 state，要等渲染后才由 effect 回写进 ref，
     // 而真正的推进排在 300ms 定时器里 —— 双击或连按 Space 时两次调用都落在
     // 同一次 flush 之前，state 与 ref 都还是旧值，于是 turn +2、age += 2/12、
@@ -2324,6 +2356,8 @@ export function useGameEngine(props: UseGameEngineProps) {
   useEffect(() => {
     if (firstEventInitialisedRef.current) return
     firstEventInitialisedRef.current = true
+    // 初始化接管：在此之前 EventDisplay 的自动继续已被 handleNextMonth 挡掉。
+    engineReadyRef.current = true
 
     if (currentEventRef.current) return
     if (isProcessingRef.current) return
