@@ -1674,8 +1674,13 @@ export function useGameEngine(props: UseGameEngineProps) {
           // 错过之后没有任何一格还能收笔，人活到三千多年（§1.4 ㉛）。
           // `checkBoundary` 在月份推进时本来就是"命中即 return，本月普通事件不发"，
           // 这里与它对齐。
-          pendingEventsRef.current = []
-          setPendingEvents([])
+          //
+          // 请笔卡是例外（§1.4 54）：它不结案，玩家拒了笔还要接着过这个月，
+          // 队列必须原样留着 —— 清掉就是把当月历史卡与末班车一起吞了。
+          if (!triggeredEvent.event.declinable) {
+            pendingEventsRef.current = []
+            setPendingEvents([])
+          }
           setCurrentEvent(triggeredEvent.event)
         }
       } catch (e) {
@@ -1686,14 +1691,14 @@ export function useGameEngine(props: UseGameEngineProps) {
     return appliedEffects
   }, [])
 
-  const checkBoundary = useCallback((): boolean => {
+  const checkBoundary = useCallback((): GameEvent | null => {
     try {
       const currentCharacter = characterRef.current
       const currentGameState = gameStateRef.current
       const currentEvent = currentEventRef.current
 
-      if (!currentCharacter?.attributes || !currentGameState) return false
-      if (currentEvent?.id?.startsWith('boundary_')) return false
+      if (!currentCharacter?.attributes || !currentGameState) return null
+      if (currentEvent?.id?.startsWith('boundary_')) return null
 
       const params = {
         attributes: { ...currentCharacter.attributes } as Record<string, number>,
@@ -1721,18 +1726,20 @@ export function useGameEngine(props: UseGameEngineProps) {
         if (triggeredEvent.id === 'bankrupt') {
           setCurrentEvent(withEndingId(triggeredEvent.event))
           handleGameOver(withEndingId(triggeredEvent.event))
-          return true
+          return triggeredEvent.event
         }
         // 「史馆请笔」（§1.4 ⑬）：善终类结局命中时只把卡摆上桌，不替玩家结案。
         // 收笔与否由玩家在卡上选 —— 点【搁笔】就带着这个身份继续走到甲申之变。
-        // 仍然 return true：这张卡要吃掉本月的普通事件，否则「拒绝收笔」会变成白看一张卡。
+        // 第七十六轮起它**不再吃掉当月发牌**：拒笔之后这一个月照样要过，
+        // 把当月历史卡与末班车整批吞掉，等于用一张可拒绝的邀请换走了玩家的一个月
+        // （§1.4 54）。降临型结局与危机照旧命中即 return —— 那些是真的没有下个月。
         if (triggeredEvent.event.declinable) {
           setCurrentEvent(triggeredEvent.event)
-          return true
+          return triggeredEvent.event
         }
         setCurrentEvent(triggeredEvent.event)
         handleGameOver(triggeredEvent.event)
-        return true
+        return triggeredEvent.event
       }
 
       // crisis 类临界事件此前**只在挂载 effect 里查过一次**，而那个 effect 带一次性守卫、
@@ -1745,13 +1752,13 @@ export function useGameEngine(props: UseGameEngineProps) {
           // 记进月份轨迹：这条路径以前什么都不记，所以它挡不住下个月的原地重演。
           lastTurnByIdRef.current.set(crisisEvent.event.id, currentGameState.turn)
           setCurrentEvent(crisisEvent.event)
-          return true
+          return crisisEvent.event
         }
       }
     } catch (e) {
       console.error('checkBoundary error:', e)
     }
-    return false
+    return null
   }, [])
 
   const handleNextMonth = useCallback(() => {
@@ -1859,7 +1866,17 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     window.setTimeout(() => {
       advanceInFlightRef.current = false
-      if (checkBoundary()) {
+      const boundary = checkBoundary()
+      if (boundary) {
+        // 请笔卡只是"邀请"，不是"降临"：玩家拒了笔还要过完这一个月，
+        // 所以当月的普通事件不许被它吃掉（§1.4 54）。队列照发，卡先演。
+        if (boundary.declinable && allEvents.length > 0) {
+          setPendingEvents(allEvents)
+          setEventHistory(prevHistory => [...prevHistory, ...allEvents.map(e => e.id)])
+          setIsProcessing(false)
+          checkAchievements()
+          return
+        }
         setIsProcessing(false)
         return
       }

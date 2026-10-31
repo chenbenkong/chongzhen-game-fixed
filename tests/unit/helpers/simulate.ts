@@ -1306,6 +1306,11 @@ export async function simulateRun(opts: {
             endEventId = hook.result.current.currentEvent?.id ?? event.id
             break
           }
+          // 中月摆上来的「史馆请笔」（§1.4 54）：真 UI 里 EventDisplay 换 id 就重置
+          // eventResolved，「继续」在玩家答完这张之前按不动。这里也得先答它 ——
+          // 顺手 handleContinue 会把这张卡顶掉，它既没播、也没拒，直接消失。
+          const swapped = hook.result.current.currentEvent
+          if (swapped && swapped.id !== event.id) continue
         }
         // 玩家点「继 续」：先把当月剩下的待处理事件取出来，队列空了才进下月。
         // 这一步不能省 —— handleChoice **不会**清空 currentEvent，

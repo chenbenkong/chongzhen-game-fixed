@@ -4,6 +4,7 @@ import { flush, makeCharacter, makeGameState, makeSaveData, renderGameEngine } f
 import { lastChanceThisMonth } from '../../src/utils/eventConditions'
 import { simulateRun, type SimPolicy } from './helpers/simulate'
 import { allEvents } from '../../scripts/event-pools'
+import { DECLINABLE_ENDING_IDS } from '../../src/data/endingDecline'
 import type { GameEvent } from '../../src/types/event'
 
 /**
@@ -128,6 +129,12 @@ describe('第七十五轮：最后一次开窗的过渡卡不许被历史卡挤�
    *
    * 唯一保留的豁免是「那个月整月被边界卡截走」——`handleNextMonth` 的
    * `checkBoundary()` 命中即 return，本月普通事件根本不下发；那是引擎的另一条既有规则。
+   *
+   * 第七十六轮把这层豁免收窄：只有**降临型**结局（结了就不再有下个月）与危机警告
+   * 能整批吃掉当月发牌。带【搁笔】的请笔卡不算 —— 玩家拒绝之后照样继续做官，
+   * 下个月不是白捡的，凭什么把这一月的历史卡和末班车一起吞掉。
+   * 实测 1640-02/03/04 三格就是被这串请笔卡整月吃掉：144 局里有 24 局活过第 140 格，
+   * 而 139–142 四张卡的**发牌**记录是 27/0/0/0 —— 后三张不是没走到，是被请笔卡整月吞了。
    */
   it('样本里真的走到了最后窗口的过渡卡，一局都不许漏', async () => {
     const POLICIES: SimPolicy[] = ['warden', 'steady', 'ordinary', 'first', 'ambitious', 'random']
@@ -139,7 +146,9 @@ describe('第七十五轮：最后一次开窗的过渡卡不许被历史卡挤�
     const uniq = new Map<string, GameEvent>()
     for (const e of allEvents as GameEvent[]) if (e?.id && !uniq.has(e.id)) uniq.set(e.id, e)
     const ENDING_IDS = new Set(
-      [...uniq.values()].filter(e => e.type === 'ending').map(e => e.id)
+      [...uniq.values()]
+        .filter(e => e.type === 'ending' && !DECLINABLE_ENDING_IDS.includes(e.id))
+        .map(e => e.id)
     )
     const cards = [...uniq.values()].filter(e => {
       if (e.type !== 'transition' || !hasUngatedChoice(e)) return false
@@ -168,7 +177,7 @@ describe('第七十五轮：最后一次开窗的过渡卡不许被历史卡挤�
       for (const run of runs) {
         if (run.error || run.months <= lastTurn) continue
         // 整月被边界卡截走（handleNextMonth 的 checkBoundary 命中即 return）：
-        // 归零警告是 `boundary_warn_*`，史馆请笔是 `ending_*`（type='ending'）。
+        // 只有降临型结局（`ending_*` 里去掉请笔那一批）和危机警告有资格整月截走发牌。
         const cutByBoundary = run.firedTurns.some(
           (t, i) =>
             t === lastTurn &&
@@ -177,15 +186,18 @@ describe('第七十五轮：最后一次开窗的过渡卡不许被历史卡挤�
         if (cutByBoundary) continue
         checkedPairs++
         if (!run.dealtEventIds.includes(card.id)) {
+          const ate = run.firedEventIds
+            .filter((_, i) => run.firedTurns[i] === lastTurn)
+            .join(',')
           violations.push(
-            `${card.id}「${card.title}」最后窗口第 ${lastTurn} 格：seed=${run.seed}/${run.policy} 活到了 ${run.months} 格，却没发到手`
+            `${card.id}「${card.title}」最后窗口第 ${lastTurn} 格：seed=${run.seed}/${run.policy} 活到了 ${run.months} 格，却没发到手（当月已演：${ate || '空'}）`
           )
         }
       }
     }
 
     expect(checkedPairs, '一张卡都没走到，这条棘轮等于空转').toBeGreaterThan(40)
-    expect(violations.slice(0, 10), `共 ${violations.length} 处：\n${violations.slice(0, 10).join('\n')}`).toEqual([])
+    expect(violations, `共 ${violations.length} 处：\n${violations.slice(0, 10).join('\n')}`).toEqual([])
   }, 300000)
 
   it('这条规则只认「年窗也在今年关上」—— 每年重来的节令卡不算最后机会', async () => {

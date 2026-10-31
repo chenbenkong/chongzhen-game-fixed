@@ -290,3 +290,103 @@ describe('引擎层：判定命中只开卡，不替玩家结案', () => {
     expect(result.current.character.flags).toContain(SHIGUAN_DECLINE_FLAG)
   })
 })
+
+/**
+ * 第七十六轮：请笔卡是「邀请」，不是「降临」—— 它不许整月吃掉当月的发牌（§1.4 54）。
+ *
+ * 第十九轮把 `checkBoundary` 写成「命中即 return」，是为了让降临型结局（甲申国变那类
+ * 只有一个月窗口的）不被当月队列盖掉（§1.4 ㉛）；请笔卡沿用了同一条，理由是
+ * 「拒笔不能变成白看一张卡」。但请笔卡不收尾 —— 玩家拒了笔，这一个月照样要过，
+ * 于是这条规则的实际代价是：**可拒绝的邀请换走了玩家的一个月**。
+ *
+ * 实测（24 局 × 6 策略，seed 9700+）：请笔卡在 1635 年之后密集命中，
+ * 24 局里 34 处「过渡卡最后窗口月」被整月吞掉 —— 1640-02/03/04 三格最干净：
+ * 24 局全部走到第 140 格，transition_139–142 的发牌数是 27/0/0/0，四张卡里三张从未下发。
+ * 同月已演清一色是 `ending_*` 请笔卡（名臣垂范 / 天伦之乐 / 富甲一方 …）。
+ *
+ * 两条路径各钉一条，少一条都会漏：
+ *   1. 月初命中：300ms 定时器里 checkBoundary 摆出请笔卡时，本月普通事件要照发（进队列）。
+ *   2. 月中命中：答完历史卡后状态才越过门线，请笔卡当天摆上桌 —— 队列同样不许被清。
+ */
+describe('第七十六轮：请笔卡不许把当月的历史卡与末班车一起吞掉', () => {
+  it('月初摆上请笔卡时，当月队列照发；拒笔后同月就能演', async () => {
+    const { result } = renderGameEngine({ loadSaveData: makeReadyToSealSave() })
+    await flush()
+    await advanceMonths(result, 1)
+
+    const card = result.current.currentEvent
+    expect(card?.declinable, `1640-01 该先摆请笔卡，实际是 ${card?.id}`).toBe(true)
+
+    const queued = result.current.pendingEvents.map(e => e.id)
+    expect(
+      queued,
+      '请笔卡把 1640-01 的历史卡整批吞了 —— 拒笔的玩家白丢一个月'
+    ).toContain('historical_031')
+
+    await act(async () => {
+      result.current.handleChoice(DECLINE_CHOICE(card!)!)
+    })
+    await flush()
+    expect(result.current.gameState.currentYear, '拒笔不该跨年').toBe(1640)
+    expect(result.current.gameState.currentMonth, '拒笔不该跨月 —— 拒的是笔，不是这个月').toBe(1)
+
+    await act(async () => {
+      result.current.handleContinue()
+    })
+    await flush()
+    expect(
+      result.current.currentEvent?.id,
+      '拒完笔，「继续」没有接上当月队列里的历史卡'
+    ).toBe('historical_031')
+  })
+
+  it('月中的抉择把状态推过门线时，请笔卡同样不许清空当月的队列', async () => {
+    // 1640-01 月初：清议 60、圣眷 55、文韬 72 —— 名臣垂范（清议≥70 ∧ 圣眷≥35）还没开门。
+    // 当月历史卡《松锦之战》的【上疏问责】给 清议+30 / 圣眷−15 / 道德+15 / 文韬+8，
+    // 答完这一条，名臣垂范当场成立。实测里 1640-02 那一格正是这样被吃掉的。
+    const save = makeSaveData({
+      character: makeCharacter({
+        rank: '正六品·同知',
+        degree: '进士',
+        attributes: { 财帛: 60, 文韬: 72, 理政: 55, 武略: 50, 体质: 50 },
+        hidden: { 道德值: 90, 欲望值: 50, 野心值: 40, 机敏值: 50, 忠诚值: 50 },
+        // 名臣垂范还有一条 custom：至少两张清流票（东林党核心/清算阉党…）。
+        // 这两张票同时也开 清流骨鲠，但那一格要 文韬≥75 —— 月初 72，答完【上疏问责】
+        // 才到 80。名臣 priority 100 排在它前面，所以月中先摆出来的还是名臣。
+        flags: ['地方官任职', '东林党核心', '清算阉党']
+      }),
+      gameState: makeGameState({
+        currentYear: 1639,
+        currentMonth: 12,
+        turn: 143,
+        圣眷: 55,
+        中官: 50,
+        清议: 60,
+        士绅: 50,
+        民望: 45,
+        国势: 60
+      })
+    })
+    const { result } = renderGameEngine({ loadSaveData: save })
+    await flush()
+
+    await advanceMonths(result, 1)
+    const first = result.current.currentEvent
+    expect(first?.id, `1640-01 的第一张卡不是《松锦之战》，是 ${first?.id}`).toBe('historical_031')
+    expect(first?.declinable ?? false, '月初就已经是请笔卡，月中路径无从测起').toBe(false)
+
+    const c2 = first!.choices!.find(c => c.id === 'c2')!
+    await act(async () => {
+      result.current.handleChoice(c2)
+    })
+    await flush()
+
+    const offer = result.current.currentEvent
+    expect(offer?.declinable, `答完【上疏问责】该摆出名臣垂范，实际是 ${offer?.id}`).toBe(true)
+    const queued = result.current.pendingEvents.map(e => e.id)
+    expect(
+      queued,
+      '月中摆出的请笔卡把当月剩下的牌清空了 —— 1640-02/03/04 就是这样连丢三格'
+    ).toContain('transition_139')
+  })
+})
