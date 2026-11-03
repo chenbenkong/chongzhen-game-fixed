@@ -134,6 +134,142 @@ describe('migrateSave：畸形存档必须被安全拒绝或修复', () => {
   })
 })
 
+/**
+ * 第七十七轮：读档稳定性的数值面。
+ *
+ * 这些字段此前只做了「有没有」的检查，没做「是不是数」的检查：
+ *   · JSON 里 NaN 会变成 null，而 `Number(null) === 0` —— 五方态度被静默改成 0；
+ *   · currentYear / currentMonth / turn 原样透传：turn 是字符串时每月 `'5' + 1` 变成 '51'，
+ *     月份是 99 时界面直接显示「九月九」之外的怪月份，年份是 null 时自动存档
+ *     因为 `currentYear < 1628` 直接 return —— 整局从此不再落盘；
+ *   · 空 choices 的事件被当成正常卡恢复，玩家看到一张点不动的死卡；
+ *   · age 是字符串时 `+ skippedMonths/12` 变成 '221.08'，升贬次数是 NaN 时成就全乱。
+ */
+describe('第七十七轮：migrateSave 必须把核心数值规整成有限数', () => {
+  it('currentYear / currentMonth / turn 被规整（null 年份、越界月份、字符串 turn）', () => {
+    const out = migrateSaveForTest({
+      character: VALID_CHAR,
+      gameState: {
+        ...VALID_STATE,
+        currentYear: null,
+        currentMonth: 99,
+        turn: '5'
+      }
+    })
+    expect(out).not.toBeNull()
+    expect(out!.gameState.currentYear).toBe(1628)
+    expect(out!.gameState.currentMonth).toBe(12)
+    expect(out!.gameState.turn).toBe(5)
+  })
+
+  it('五方态度与国势遇到 null/字符串时回到默认值，而不是被 Number(null) 变成 0', () => {
+    const out = migrateSaveForTest({
+      character: VALID_CHAR,
+      gameState: {
+        ...VALID_STATE,
+        圣眷: null,
+        中官: 'abc',
+        清议: null,
+        士绅: null,
+        民望: null,
+        国势: null
+      }
+    })
+    expect(out).not.toBeNull()
+    const gs = out!.gameState
+    expect(gs.圣眷).toBe(50)
+    expect(gs.中官).toBe(50)
+    expect(gs.清议).toBe(50)
+    expect(gs.士绅).toBe(50)
+    expect(gs.民望).toBe(50)
+    expect(gs.国势).toBe(75)
+    for (const v of Object.values(gs)) expect(Number.isFinite(v)).toBe(true)
+  })
+
+  it('choices 为空或全不可用的事件不被恢复成「进行中」（否则读档即死卡）', () => {
+    const broken = {
+      id: 'broken_event',
+      title: '坏卡',
+      description: '这张卡没有任何可渲染的选项。',
+      conditions: {},
+      type: 'normal',
+      choices: []
+    }
+    const out = migrateSaveForTest({
+      character: VALID_CHAR,
+      gameState: VALID_STATE,
+      currentEvent: broken,
+      currentEventId: 'broken_event',
+      pendingEvents: [
+        broken,
+        {
+          id: 'good_event',
+          title: '好卡',
+          description: '至少有一个选项。',
+          conditions: {},
+          type: 'normal',
+          choices: [{ id: 'c1', text: '继续', effects: {}, result: { title: '继续', tags: [], echo: '' } }]
+        }
+      ]
+    })
+    expect(out).not.toBeNull()
+    expect(out!.currentEvent ?? null).toBeNull()
+    expect(out!.currentEventId ?? null).toBeNull()
+    expect(out!.pendingEvents!.map(e => e.id)).toEqual(['good_event'])
+  })
+
+  it('character.age 与升贬次数被规整成有限数（字符串 / null 不再污染增龄与成就）', () => {
+    const out = migrateSaveForTest({
+      character: {
+        ...VALID_CHAR,
+        age: '22',
+        promotionCount: '3',
+        demotionCount: null
+      },
+      gameState: VALID_STATE
+    })
+    expect(out).not.toBeNull()
+    expect(out!.character.age).toBe(22)
+    expect(out!.character.promotionCount).toBe(3)
+    expect(out!.character.demotionCount).toBe(0)
+    expect(Number.isFinite(out!.character.age)).toBe(true)
+  })
+
+  it('lifeRecords 里的 null / 字符串条目被丢弃（否则一进游戏就在筛选履历时崩）', () => {
+    // pickKeyLifeRecords 直接读 r.type；generateLifeSummary 在 GameScreen 每次渲染都调用它，
+    // 所以 null 条目不是"打开生平才崩"，而是读档进游戏的第一帧就崩。
+    const out = migrateSaveForTest({
+      character: VALID_CHAR,
+      gameState: VALID_STATE,
+      lifeRecords: [null, 'oops', 42, { id: 'r1', year: 1628, month: 1, type: 'choice', title: '上任', description: '到任' }]
+    })
+    expect(out).not.toBeNull()
+    expect(out!.lifeRecords).toHaveLength(1)
+    expect((out!.lifeRecords[0] as unknown as Record<string, unknown>).id).toBe('r1')
+  })
+
+  it('角色姓名的字符串字段不许是对象（否则 React 渲染直接抛 "Objects are not valid as a React child"）', () => {
+    const out = migrateSaveForTest({
+      character: {
+        ...VALID_CHAR,
+        name: { bad: true },
+        courtesyName: 42,
+        hometown: null,
+        rank: [],
+        degree: {}
+      },
+      gameState: VALID_STATE
+    })
+    expect(out).not.toBeNull()
+    expect(typeof out!.character.name).toBe('string')
+    expect(out!.character.name).toBe('')
+    expect(out!.character.courtesyName).toBe('')
+    expect(out!.character.hometown).toBe('')
+    expect(out!.character.rank).toBe('')
+    expect(out!.character.degree).toBe('')
+  })
+})
+
 describe('loadAutosave：坏存档不抛且不上抛', () => {
   beforeEach(() => {
     localStorage.clear()

@@ -731,6 +731,26 @@ function EventDisplay({
 
   const narrative = event.narrative
 
+  /**
+   * 全锁兜底：没有任何可点选项、也没有还能投的骰子时，面板必须自己给出向前的路。
+   *
+   * 引擎发牌前会用 hasOpenChoice 筛掉全锁的卡，但同月队列是按月初状态排好的：
+   * 前一张卡的抉择能把后一张卡的门一扇扇关上。投骰只对属性/状态门开放，
+   * 而且一个事件只能投一次 —— 投失败后同样无路可走。
+   * 此时底部「进 下 月」因 eventResolved=false 而禁用，玩家就卡死在这张卡上。
+   */
+  const availableCount = event.choices.filter(c => choiceChecks.get(c.id)?.available).length
+  const hasDiceLeft = event.choices.some(choice => {
+    const check = choiceChecks.get(choice.id)
+    return !!check &&
+      !check.available &&
+      check.difficulty !== undefined &&
+      check.conditionType !== 'flag' &&
+      choiceResults.get(choice.id) !== true &&
+      !eventDiceUsed
+  })
+  const showDeadEndEscape = !isGhostMode && availableCount === 0 && !hasDiceLeft
+
   const node = (
     <div className="dice-modal-overlay" onClick={handleDiceOverlayClick}>
       <div className="dice-modal" ref={diceDialogRef} {...getDiceModalProps()}>
@@ -1012,6 +1032,21 @@ function EventDisplay({
               title="从当前可选的选项中随机挑一个"
             >
               听 天 由 命
+            </button>
+          )}
+
+          {/* 全锁兜底：所有选项都关死、骰子也没得投时，只剩"让这一页翻过去"。
+              文案沿用失败回音里的"事已至此"，点它等同于点底部「继 续」——
+              引擎会接着发同月队列里的下一张卡，或推进到下个月。 */}
+          {showDeadEndEscape && (
+            <button
+              type="button"
+              className="random-choice-btn dead-end-escape-btn"
+              onClick={handleContinue}
+              aria-disabled={isProcessing}
+              title="所有选项都关死了，只能让这一页翻过去"
+            >
+              事已至此
             </button>
           )}
 

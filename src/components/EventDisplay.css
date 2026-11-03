@@ -464,6 +464,13 @@
   cursor: default;
 }
 
+/* 全锁兜底：这是玩家唯一的出路，给它一点实体感，别继续藏在灰卡下面。 */
+.dead-end-escape-btn {
+  border-style: solid;
+  border-color: rgba(197, 165, 90, 0.4);
+  color: rgba(197, 165, 90, 0.78);
+}
+
 /* 触屏设备上的点按目标下限 */
 @media (any-pointer: coarse) {
   .random-choice-btn {

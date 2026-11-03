@@ -54,28 +54,60 @@ export interface SaveData {
 }
 
 /**
+ * 从存档里取一个「有限数」；取不到时返回 null。
+ *
+ * 必须显式挡掉 null / 空串：`Number(null) === 0`、`Number('') === 0`，
+ * 而 JSON 把 NaN 序列化成 null —— 旧实现直接把这两种值当成 0，
+ * 于是坏档里的五方态度会静默变成「全部归零」，看起来像游戏数值被清空。
+ */
+function readFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value === 'string' && value.trim() !== '') {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
+
+/** 存档缺年份时的兜底：与引擎的 GAME_START_YEAR 一致（1628） */
+const SAVE_FALLBACK_YEAR = 1628
+
+function clamp01(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value))
+}
+
+/**
  * 把存档里的五方态度统一成现行键名。
  *
  * 必须由「首帧 useState 初始化器」与「读档 effect」共用同一张表：
  * 两处各写一遍时，初始化器曾把 `百姓口碑` 同时接给士绅与民望、
  * 又漏了 `安全 → 中官`，于是首帧读到的是错位局势（effect 跑完才修回来）。
+ *
+ * 第七十七轮补上数值面：年份 / 月份 / turn / 态度 / 国势全部收敛成有限数。
+ * 此前这些字段原样透传 —— turn 是字符串时每月 `'5' + 1` 变成 '51'；
+ * 月份是 99 时界面显示怪月份；年份是 null 时自动存档因 `currentYear < 1628`
+ * 直接 return，整局从此不再落盘。
  */
 export function normalizeLegacyGameState(raw: GameStateValues): GameStateValues {
   const rec = raw as unknown as Record<string, unknown>
-  const numOr = (value: unknown, fallback: number): number => {
-    const n = typeof value === 'number' ? value : Number(value)
-    return Number.isFinite(n) ? n : fallback
-  }
+  // 旧键优先，旧键不可用时退回新键；两者都不可用才用默认值
+  const legacyOr = (legacy: unknown, current: unknown, fallback: number): number =>
+    readFiniteNumber(legacy) ?? readFiniteNumber(current) ?? fallback
+  const numOr = (value: unknown, fallback: number): number =>
+    readFiniteNumber(value) ?? fallback
   return {
-    currentYear: raw.currentYear,
-    currentMonth: raw.currentMonth,
-    turn: raw.turn,
-    圣眷: numOr(rec.帝心 ?? raw.圣眷, 50),
-    中官: numOr(rec.安全 ?? raw.中官, 50),
-    清议: numOr(rec.派系立场 ?? raw.清议, 50),
-    士绅: numOr(rec.商贾 ?? raw.士绅, 50),
-    民望: numOr(rec.百姓口碑 ?? raw.民望, 50),
-    国势: numOr(raw.国势, 75)
+    currentYear: Math.max(
+      SAVE_FALLBACK_YEAR,
+      Math.floor(numOr(raw.currentYear, SAVE_FALLBACK_YEAR))
+    ),
+    currentMonth: clamp01(Math.floor(numOr(raw.currentMonth, 1)), 1, 12),
+    turn: Math.max(0, Math.floor(numOr(raw.turn, 0))),
+    圣眷: clamp01(legacyOr(rec.帝心, raw.圣眷, 50), 0, 100),
+    中官: clamp01(legacyOr(rec.安全, raw.中官, 50), 0, 100),
+    清议: clamp01(legacyOr(rec.派系立场, raw.清议, 50), 0, 100),
+    士绅: clamp01(legacyOr(rec.商贾, raw.士绅, 50), 0, 100),
+    民望: clamp01(legacyOr(rec.百姓口碑, raw.民望, 50), 0, 100),
+    国势: clamp01(numOr(raw.国势, 75), 0, 100)
   }
 }
 
@@ -201,11 +233,16 @@ function isPlainObject(value: unknown): value is Record<string, any> {
  *
  * 判据与 normalizeAttributes 一致：**兜底发生在数据层**，
  * 因为渲染组件是直接下标访问的，指望每个组件自己判空只会漏。
- * 无法救活（缺 id）时返回 null，读档后回到「没有进行中事件」的正常状态。
+ * 无法救活（缺 id / **一个可用选项都没有**）时返回 null，读档后回到
+ * 「没有进行中事件」的正常状态。
+ *
+ * 第七十七轮补上第二条判据：空 choices 的事件此前会被原样恢复成 currentEvent，
+ * EventDisplay 照常渲染一张没有任何选项、也没有骰子可投的卡 ——
+ * 底部「进 下 月」因 eventResolved=false 而禁用，读档即死卡。
  */
 function normalizeEvent(raw: unknown): GameEvent | null {
   if (!isPlainObject(raw)) return null
-  if (typeof raw.id !== 'string') return null
+  if (typeof raw.id !== 'string' || raw.id === '') return null
 
   const event = { ...raw }
   if (typeof event.title !== 'string') event.title = ''
@@ -213,13 +250,18 @@ function normalizeEvent(raw: unknown): GameEvent | null {
   if (!isPlainObject(event.conditions)) event.conditions = {}
   if (typeof event.type !== 'string') event.type = 'normal'
 
-  const choices = Array.isArray(event.choices) ? event.choices : []
-  event.choices = choices.filter(isPlainObject).map(choice => ({
-    ...choice,
-    id: typeof choice.id === 'string' ? choice.id : '',
-    text: typeof choice.text === 'string' ? choice.text : '',
-    effects: isPlainObject(choice.effects) ? choice.effects : {}
-  }))
+  const choices = (Array.isArray(event.choices) ? event.choices : [])
+    .filter(isPlainObject)
+    // 没有 id 的选项无法被快捷键、投骰与 choiceResults 追踪，
+    // 多个坏选项还会共用空字符串 key —— 直接丢弃。
+    .filter(choice => typeof choice.id === 'string' && choice.id !== '')
+    .map(choice => ({
+      ...choice,
+      text: typeof choice.text === 'string' ? choice.text : '',
+      effects: isPlainObject(choice.effects) ? choice.effects : {}
+    }))
+  if (choices.length === 0) return null
+  event.choices = choices
 
   return event as unknown as GameEvent
 }
@@ -250,16 +292,43 @@ function migrateSave(parsed: unknown): SaveData | null {
 
   // 角色字段兜底：旧存档可能缺少后来才加入的字段
   const character = raw.character as Character
+  const asText = (value: unknown): string => (typeof value === 'string' ? value : '')
+  // 姓名 / 官阶等会直接进 React 树；对象或数组会抛
+  // "Objects are not valid as a React child"，读档即白屏。
+  character.name = asText(character.name)
+  character.courtesyName = asText(character.courtesyName)
+  character.hometown = asText(character.hometown)
+  character.rank = asText(character.rank)
+  character.degree = asText(character.degree) as Character['degree']
+  character.origin = asText(character.origin) as Character['origin']
   if (!Array.isArray(character.flags)) character.flags = []
   if (!Array.isArray(character.history)) character.history = []
   if (!Array.isArray(character.wives)) character.wives = []
   if (!Array.isArray(character.lovers)) character.lovers = []
   if (!Array.isArray(character.examHistory)) character.examHistory = []
-  if (typeof character.promotionCount !== 'number') character.promotionCount = 0
-  if (typeof character.demotionCount !== 'number') character.demotionCount = 0
-  if (!character.faction) {
+  // 年龄参与每月增龄（`age + skippedMonths / 12`）。字符串会让它变成 '221.08'，
+  // NaN / null 则让年龄判定永久失真。升贬次数同理，会污染成就与史馆。
+  const age = readFiniteNumber(character.age)
+  character.age = age !== null && age > 0 ? age : 22
+  character.promotionCount = Math.max(0, Math.floor(readFiniteNumber(character.promotionCount) ?? 0))
+  character.demotionCount = Math.max(0, Math.floor(readFiniteNumber(character.demotionCount) ?? 0))
+  const faction = character.faction as unknown as Record<string, unknown> | null | undefined
+  if (!faction || typeof faction !== 'object' || Array.isArray(faction)) {
     character.faction = { 东林好感: 50, 阉党好感: 50, 立场: '未定', 党争烈度: 30 }
+  } else {
+    // 好感与烈度是数值运算的输入（加减后写回），字符串 / null 会算成 NaN，
+    // 而 NaN 一旦写进 faction 就再也回不来 —— 后续所有党派判定都变成 false。
+    character.faction = {
+      东林好感: clamp01(readFiniteNumber(faction.东林好感) ?? 50, 0, 100),
+      阉党好感: clamp01(readFiniteNumber(faction.阉党好感) ?? 50, 0, 100),
+      立场: typeof faction.立场 === 'string' ? (faction.立场 as Character['faction']['立场']) : '未定',
+      党争烈度: clamp01(readFiniteNumber(faction.党争烈度) ?? 30, 0, 100)
+    }
   }
+
+  // 第七十七轮：核心钟表与五方态度在数据层就规整，
+  // 所有读档入口（自动存档 / 槽位）共用同一套规则。
+  raw.gameState = normalizeLegacyGameState(raw.gameState as GameStateValues)
 
   // 三档难度是后来加入的，旧存档没有这个字段
   if (raw.difficulty !== 'easy' && raw.difficulty !== 'normal' && raw.difficulty !== 'hard') {
@@ -267,7 +336,9 @@ function migrateSave(parsed: unknown): SaveData | null {
   }
 
   if (!Array.isArray(raw.eventHistory)) raw.eventHistory = []
-  if (!Array.isArray(raw.lifeRecords)) raw.lifeRecords = []
+  // 履历条目会被 pickKeyLifeRecords 直接读 r.type —— generateLifeSummary 在
+  // GameScreen 每次渲染都调用它，null / 字符串条目会让读档第一帧就抛 TypeError。
+  raw.lifeRecords = (Array.isArray(raw.lifeRecords) ? raw.lifeRecords : []).filter(isPlainObject)
 
   raw.currentEvent = normalizeEvent(raw.currentEvent)
   // currentEvent 没救活却留着 id，会让「初始化第一个事件」的守卫以为已有事件而跳过，
@@ -280,6 +351,9 @@ function migrateSave(parsed: unknown): SaveData | null {
   // v2 -> v3：局内统计计数。旧存档没有 stats，这里补成全 0；
   // 已损坏的值（NaN / null / 负数）也一并规整，避免成就计数被污染成 NaN。
   raw.stats = normalizePlayerStats(raw.stats)
+
+  // 政绩加分参与升迁判定，NaN / 字符串会让整条评分链失效。
+  raw.meritBonus = readFiniteNumber(raw.meritBonus) ?? 0
 
   raw.schemaVersion = SAVE_SCHEMA_VERSION
   return raw as SaveData

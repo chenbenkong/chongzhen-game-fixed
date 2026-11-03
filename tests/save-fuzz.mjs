@@ -88,7 +88,15 @@ const CASES = [
   ['year 超出范围 1600', { ...LEGACY_V1, gameState: { ...LEGACY_V1.gameState, currentYear: 1600, currentMonth: 1 } }],
   ['year 超出范围 3000', { ...LEGACY_V1, gameState: { ...LEGACY_V1.gameState, currentYear: 3000, currentMonth: 99 } }],
   ['超大 eventHistory（5000 条）', { ...LEGACY_V1, eventHistory: Array.from({ length: 5000 }, (_, i) => 'ev_' + i) }],
-  ['深层嵌套 flags', { ...LEGACY_V1, character: { ...LEGACY_V1.character, flags: Array.from({ length: 3000 }, (_, i) => 'f' + i) } }]
+  ['深层嵌套 flags', { ...LEGACY_V1, character: { ...LEGACY_V1.character, flags: Array.from({ length: 3000 }, (_, i) => 'f' + i) } }],
+  ['lifeRecords 含 null/数字/字符串', { ...LEGACY_V1, lifeRecords: [null, 'oops', 42, { age: 22, title: 't', description: 'd' }] }],
+  ['character.name/rank 是对象与数组', {
+    character: { ...LEGACY_V1.character, name: { x: 1 }, rank: ['a'] },
+    gameState: LEGACY_V1.gameState
+  }],
+  ['currentEvent 空 id 且选择无 id', { ...LEGACY_V1, currentEvent: { id: '  ', title: 't', description: 'd', choices: [{ text: 'a' }] } }],
+  ['gameState.turn 是字符串', { ...LEGACY_V1, gameState: { ...LEGACY_V1.gameState, turn: '5' } }],
+  ['character.age 是字符串', { character: { ...LEGACY_V1.character, age: '22' }, gameState: LEGACY_V1.gameState }]
 ]
 
 const b = await chromium.launch({ headless: true })

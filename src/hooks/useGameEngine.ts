@@ -900,6 +900,17 @@ export function useGameEngine(props: UseGameEngineProps) {
    * 初始化 effect 一开始就把它置真，此前的任何推进都按空操作处理。
    */
   const engineReadyRef = useRef(false)
+  /**
+   * 引擎是否仍挂载。卸载后任何延时回调都不许再碰状态与成就。
+   *
+   * 成就数据是模块级单例（每个存档一份），`checkAchievements()` 会直接写它。
+   * `handleNextMonth` 的 300ms 定时器、升贬提示的 100ms/3000ms 定时器此前都没有
+   * 清理：玩家点「进 下 月」后立刻返回主菜单或切存档，它们照旧执行 ——
+   * 于是弃局的状态会被写进下一局的成就里（实测：卸载后 300ms 仍在判定并解锁）。
+   */
+  const engineMountedRef = useRef(true)
+  /** 「进 下 月」排下的 300ms 推进定时器；卸载时必须清掉 */
+  const monthAdvanceTimerRef = useRef<number | null>(null)
   const identityTypeRef = useRef(identityType)
   const lifeRecordsRef = useRef(lifeRecords)
   const isProcessingRef = useRef(isProcessing)
@@ -926,6 +937,18 @@ export function useGameEngine(props: UseGameEngineProps) {
   useEffect(() => { onReturnToMenuRef.current = onReturnToMenu }, [onReturnToMenu])
   useEffect(() => { currentStorylineRef.current = currentStoryline }, [currentStoryline])
   useEffect(() => { playerStatsRef.current = playerStats }, [playerStats])
+
+  // 卸载闸门：清掉仍在排队的月度推进，并让所有延时回调从此变成空操作。
+  useEffect(() => {
+    engineMountedRef.current = true
+    return () => {
+      engineMountedRef.current = false
+      if (monthAdvanceTimerRef.current !== null) {
+        window.clearTimeout(monthAdvanceTimerRef.current)
+        monthAdvanceTimerRef.current = null
+      }
+    }
+  }, [])
 
   /**
    * 游玩时长的**唯一**权威读取口：累计值 + 尚未折算进累计值的这一段（不足一个心跳）。
@@ -1263,6 +1286,8 @@ export function useGameEngine(props: UseGameEngineProps) {
   }, [])
 
   const checkAchievements = useCallback((hasEnded?: boolean, endingType?: string) => {
+    // 卸载后的延时回调不许再写模块级成就单例（见 engineMountedRef）
+    if (!engineMountedRef.current) return
     const stats = playerStatsRef.current
     const ctx: AchievementContext = {
       attributes: characterRef.current.attributes,
@@ -1864,7 +1889,10 @@ export function useGameEngine(props: UseGameEngineProps) {
       }
     })
 
-    window.setTimeout(() => {
+    monthAdvanceTimerRef.current = window.setTimeout(() => {
+      monthAdvanceTimerRef.current = null
+      // 卸载后不再发牌、不再判定成就（见 engineMountedRef）
+      if (!engineMountedRef.current) return
       advanceInFlightRef.current = false
       const boundary = checkBoundary()
       if (boundary) {
@@ -2547,8 +2575,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         const bonus = promotion.scoreBonus ?? 0
         // 升官后立即更新基准分，避免同一轮再次触发升降官或 immediate 贬官
         setPreviousMeritScore(adjustedScore + bonus)
-        setTimeout(() => checkAchievements(), 100)
-        setTimeout(() => setPromotionMessage(null), 3000)
+        setTimeout(() => { if (engineMountedRef.current) checkAchievements() }, 100)
+        setTimeout(() => { if (engineMountedRef.current) setPromotionMessage(null) }, 3000)
         return
       }
 
@@ -2592,8 +2620,8 @@ export function useGameEngine(props: UseGameEngineProps) {
           description: demotion.message,
           impact: `贬为${demotion.newRank}`
         })
-        setTimeout(() => checkAchievements(), 100)
-        setTimeout(() => setPromotionMessage(null), 3000)
+        setTimeout(() => { if (engineMountedRef.current) checkAchievements() }, 100)
+        setTimeout(() => { if (engineMountedRef.current) setPromotionMessage(null) }, 3000)
       }
     }
 
