@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { setupLongTaskObserver } from './utils/performance'
 import './index.css'
 import './theme.css'
+import './visual-refresh.css'
 
 // 启动性能监控（仅开发环境采样）
 setupLongTaskObserver()

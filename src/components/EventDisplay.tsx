@@ -961,7 +961,7 @@ function EventDisplay({
                     className={`choice-card ${!check.available ? 'locked' : ''}`}
                     onClick={() => handleSelectChoice(choice)}
                     aria-disabled={isProcessing || !check.available}
-                    aria-label={!check.available ? choice.text : undefined}
+                    aria-label={choice.text}
                     aria-describedby={describedBy}
                   >
                     <div className="choice-content">
