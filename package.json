@@ -1,7 +1,7 @@
 {
   "name": "chongzhen-game",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.4.0",
   "description": "崇祯·宦海浮沉模拟器 —— 明末宦海人生模拟器（Web / 桌面双端）",
   "type": "module",
   "engines": {
