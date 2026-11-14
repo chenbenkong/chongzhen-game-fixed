@@ -66,3 +66,63 @@
     padding: 10px 22px;
   }
 }
+
+/* ============================================================
+   游戏主包懒加载的占位层
+   只在「已进游戏、但主包还没到」这一瞬出现（通常发生在读档直达，
+   因为起名/选出身两屏已经被预取覆盖）。样式刻意与 index.html 的
+   启动层一致：同一个证件照，玩家不会觉得界面被换掉了。
+   ============================================================ */
+.game-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: #0a0807;
+  color: #f5e6c8;
+}
+
+.game-boot__title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  letter-spacing: 1rem;
+  text-indent: 1rem;
+  color: #c5a55a;
+}
+
+.game-boot__bar {
+  position: relative;
+  width: 200px;
+  height: 2px;
+  background: rgba(197, 165, 90, 0.2);
+  overflow: hidden;
+}
+
+.game-boot__bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: #c5a55a;
+  animation: boot-slide 1.4s ease-in-out infinite;
+}
+
+.game-boot__hint {
+  font-size: 0.85rem;
+  color: rgba(245, 230, 200, 0.45);
+  letter-spacing: 0.1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-boot__bar::after {
+    animation: none;
+    left: 0;
+    width: 100%;
+  }
+}

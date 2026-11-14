@@ -3,7 +3,6 @@ import './App.css'
 import NameInput, { NameInputResult } from './components/NameInput'
 import OriginSelect from './components/OriginSelect'
 import TitleScreen from './components/TitleScreen'
-import GameScreen from './components/GameScreen'
 import { BGMProvider } from './components/BGMContext'
 import StorageAlerts from './components/StorageAlerts'
 import { OriginType, DegreeType, Attributes } from './types/game'
@@ -11,6 +10,28 @@ import { SaveData, getAllSaveSlots, deleteAutosave, loadAutosave } from './types
 import { origins } from './data/origins'
 import { setAchievementData } from './types/achievement'
 import { DifficultyLevel, loadDifficulty, saveDifficulty } from './types/difficulty'
+
+/**
+ * 游戏主界面（引擎 + 全部事件数据）**懒加载**。
+ *
+ * 为什么：`events/index.ts` 是静态 import 全部年份的，而它挂在 useGameEngine 下面。
+ * 只要 App 静态 import 了 GameScreen，标题屏就会把 15 个事件分片一并预取 ——
+ * 实测（本地静态服务、未压缩字节）标题屏 9.35 MB，其中 2.47 MB 是玩家还没开局
+ * 就先付的事件数据（5.71 MB 是那口没人听的 bgm，见 BGMContext）。
+ *
+ * 标题屏只需要标题组件，所以这里按"玩家真的要走进去"为界切开。
+ */
+const GameScreen = lazy(() => import('./components/GameScreen'))
+
+/**
+ * 预取游戏主包。玩家一旦表现出"要玩"的意图（点标题屏任意位置、按任意键）就开始拉，
+ * 等真的进到游戏界面时通常已经就绪 —— 只有"打开看一眼、什么都没点"的访客不付这笔钱。
+ */
+let gameScreenWarm: Promise<unknown> | null = null
+function prefetchGameScreen() {
+  if (!gameScreenWarm) gameScreenWarm = import('./components/GameScreen')
+  return gameScreenWarm
+}
 
 // 懒加载模态组件
 const SaveSlotsModal = lazy(() => import('./components/SaveSlotsModal'))
@@ -49,6 +70,24 @@ function App() {
   useEffect(() => {
     window.dispatchEvent(new Event('app-ready'))
   }, [])
+
+  /**
+   * 标题屏上的第一次交互 = 玩家大概率要玩，此刻开始预取游戏主包。
+   *
+   * 为什么把信号放在"交互"而不是"挂载后空闲"：只是打开首页看一眼的访客
+   * 不该付 2.5 MB；而真要玩的人一定会点，点击到真正进游戏之间还隔着
+   * 起名与选出身两屏，正好把下载藏在这几秒里。
+   */
+  useEffect(() => {
+    if (phase !== 'title') return
+    const warm = () => prefetchGameScreen()
+    document.addEventListener('pointerdown', warm, { once: true, passive: true })
+    document.addEventListener('keydown', warm, { once: true })
+    return () => {
+      document.removeEventListener('pointerdown', warm)
+      document.removeEventListener('keydown', warm)
+    }
+  }, [phase])
 
   const handleDifficultyChange = useCallback((next: DifficultyLevel) => {
     setDifficulty(next)
@@ -90,6 +129,9 @@ function App() {
   }, [applySaveData])
 
   const handleStart = useCallback(() => {
+    // 点「开始仕途」就是最明确的意图信号：此刻就把游戏主包拉下来，
+    // 起名/选出身这两屏的几秒正好覆盖下载时间。
+    prefetchGameScreen()
     setLoadSaveData(null)
     // 这里不能删自动存档：玩家还停在起名屏，随时可以点「返回」回标题，
     // 而旧进度要能继续读。真正的「新局开始」是 handleOriginSelect。
@@ -191,60 +233,87 @@ function App() {
         )}
 
         {phase === 'playing' && selectedOrigin && (finalAttributes || loadSaveData) && (
-          <GameScreen
-            origin={selectedOrigin}
-            degree={finalDegree || loadSaveData?.character?.degree}
-            bonusAttributes={
-              finalAttributes || { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
+          // 懒加载边界：主包未就绪时先给一个与启动层同款的最小占位，
+          // 而不是让 #root 空着（空着就是黑屏）。
+          <Suspense
+            fallback={
+              <div className="game-boot" role="status" aria-live="polite">
+                <div className="game-boot__title">崇祯</div>
+                <div className="game-boot__bar" />
+                <div className="game-boot__hint">正在展开卷宗…</div>
+              </div>
             }
-            playerName={playerName || loadSaveData?.character?.name || ''}
-            playerCourtesyName={playerCourtesyName || loadSaveData?.character?.courtesyName || ''}
-            playerHometown={playerHometown || loadSaveData?.character?.hometown || ''}
-            playerCustomAge={playerCustomAge ?? loadSaveData?.character?.age ?? null}
-            loadSaveData={loadSaveData ?? undefined}
-            difficulty={difficulty}
-            onReturnToMenu={handleReturnToMenu}
-          />
+          >
+            <GameScreen
+              origin={selectedOrigin}
+              degree={finalDegree || loadSaveData?.character?.degree}
+              bonusAttributes={
+                finalAttributes || { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
+              }
+              playerName={playerName || loadSaveData?.character?.name || ''}
+              playerCourtesyName={playerCourtesyName || loadSaveData?.character?.courtesyName || ''}
+              playerHometown={playerHometown || loadSaveData?.character?.hometown || ''}
+              playerCustomAge={playerCustomAge ?? loadSaveData?.character?.age ?? null}
+              loadSaveData={loadSaveData ?? undefined}
+              difficulty={difficulty}
+              onReturnToMenu={handleReturnToMenu}
+            />
+          </Suspense>
         )}
 
-        {/* 存档槽位选择弹窗 */}
-        <Suspense fallback={null}>
-          <SaveSlotsModal
-            isOpen={isSaveSlotsOpen}
-            mode={saveSlotsMode}
-            onSelect={handleSelectSaveSlot}
-            onLoadAutosave={handleLoadAutosave}
-            onClose={() => setIsSaveSlotsOpen(false)}
-          />
-        </Suspense>
+        {/* 存档槽位选择弹窗。
+            **只在打开时挂载**：这四个弹窗此前是无条件渲染的，组件内部用
+            `if (!isOpen) return null` 收尾 —— 看起来"什么都没渲染"，
+            但 React.lazy 的 import 是在**元素创建时**就发起的，
+            于是标题屏一口气把 4 个弹窗分片全下了，还顺带把
+            events-ending（205 KB）与 events-transition-misc（133 KB）拖进来。
+            它们的关闭态本来就没有退场动画（组件直接 return null），
+            所以条件挂载不会丢任何过渡效果。 */}
+        {isSaveSlotsOpen && (
+          <Suspense fallback={null}>
+            <SaveSlotsModal
+              isOpen={isSaveSlotsOpen}
+              mode={saveSlotsMode}
+              onSelect={handleSelectSaveSlot}
+              onLoadAutosave={handleLoadAutosave}
+              onClose={() => setIsSaveSlotsOpen(false)}
+            />
+          </Suspense>
+        )}
 
         {/* 成就面板 */}
-        <Suspense fallback={null}>
-          <AchievementPanel
-            isOpen={isAchievementPanelOpen}
-            onClose={() => setIsAchievementPanelOpen(false)}
-          />
-        </Suspense>
+        {isAchievementPanelOpen && (
+          <Suspense fallback={null}>
+            <AchievementPanel
+              isOpen={isAchievementPanelOpen}
+              onClose={() => setIsAchievementPanelOpen(false)}
+            />
+          </Suspense>
+        )}
 
-        <Suspense fallback={null}>
-          <EndingCodex isOpen={isCodexOpen} onClose={() => setIsCodexOpen(false)} />
-        </Suspense>
+        {isCodexOpen && (
+          <Suspense fallback={null}>
+            <EndingCodex isOpen={isCodexOpen} onClose={() => setIsCodexOpen(false)} />
+          </Suspense>
+        )}
 
         {/* 教程弹窗 */}
-        <Suspense fallback={null}>
-          <TutorialModal
-            isOpen={showTutorial}
-            onClose={() => setShowTutorial(false)}
-            onComplete={() => {
-              try {
-                localStorage.setItem('chongzhen_tutorial_seen', 'true')
-              } catch {
-                // 隐私模式下写入失败，不影响继续游戏
-              }
-              setShowTutorial(false)
-            }}
-          />
-        </Suspense>
+        {showTutorial && (
+          <Suspense fallback={null}>
+            <TutorialModal
+              isOpen={showTutorial}
+              onClose={() => setShowTutorial(false)}
+              onComplete={() => {
+                try {
+                  localStorage.setItem('chongzhen_tutorial_seen', 'true')
+                } catch {
+                  // 隐私模式下写入失败，不影响继续游戏
+                }
+                setShowTutorial(false)
+              }}
+            />
+          </Suspense>
+        )}
       </div>
     </BGMProvider>
   )

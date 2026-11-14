@@ -2133,6 +2133,120 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 
 回归测试共 **837 例**，分 **100 个文件**，全部在 `tests/unit/`（836 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
 
+### 第七十九轮（2026-11-15）：标题屏不再替玩家先付整局游戏的带宽 —— 本地 9.35 MB → 0.89 MB
+
+**本轮不动布局（项目所有者的明确边界：「不要动布局」）。**
+没有改任何既有选择器与样式。唯一新增的是 `.game-boot` 占位层，
+它只在"游戏包还没到"的那一瞬间出现 —— 正常网速下玩家看不到，
+因为预取在「起名 / 择出身」两屏（人手输入 + 犹豫）就已经跑完了。
+
+**一、先有尺子，再谈优化。**
+
+新增 `tests/perf-budget.mjs`：自带静态服务 + 真实 Chromium，统计口径是
+**服务端实际发出的字节数**（不信 `Content-Length`，也不看构建报告里的估算），
+并空转 2.5 秒把空闲预取、延迟 import、音频预载都钓出来。
+`--base=` 可对着线上站点量（此时改用 Resource Timing 的 `encodedBodySize`，
+即含 gzip 的真实过线字节 —— 与本地未压缩口径不同，两边不要混着比）。
+
+**二、四条成因，全部先量到再改。**
+
+1. **标题屏把整局游戏的事件数据一起下了（2.47 MB / 15 个分片）。**
+   `App.tsx` 静态 import `GameScreen`，而 `GameScreen` 下面是 `useGameEngine`，
+   `events/index.ts` 又是静态 import 全部年份 —— 玩家只是打开首页看一眼，
+   就先付了 2.47 MB 的事件数据。
+   改法：`lazy(() => import('./components/GameScreen'))`，
+   并在**意图信号**处预取（标题屏第一次 `pointerdown` / `keydown`、点「开始仕途」），
+   未就绪时才显示 `.game-boot`。
+   分界线放在"手有没有动"上：只打开看一眼、什么都没点的访客不付这笔钱。
+
+2. **四个"懒加载"弹窗其实一直挂着。**
+   `SaveSlotsModal` / `AchievementPanel` / `EndingCodex` / `TutorialModal` 都是
+   `React.lazy`，却都**无条件渲染**，靠组件内部 `if (!isOpen) return null` 挡住界面 ——
+   那只能挡住渲染，挡不住 `lazy()` 的 import：**元素一创建就发起请求**。
+   于是 `events-ending`（205 KB）+ `events-transition-misc`（133 KB）+
+   `services`（28 KB）+ `Icon`（14 KB）全被拖进首屏。
+   改法：`{isOpen && <Suspense>…</Suspense>}`。它们关闭态本来就没有退场动画，不丢过渡。
+
+3. **`manualChunks` 的"按目录切"把懒加载边界抹平了。**
+   三条独立的漏：
+   - `/src/components/` → `ui-components`：GameScreen 一改懒加载，
+     标题屏静态 import 的那**一个**组件就会把整个游戏界面（连同事件数据）拖下来。
+   - `/src/utils/` + `/src/types/` → `utils-types`：这个 70 KB 的桶里装着 `routeTrail`，
+     而 `routeTrail` 为了抄结局门票静态 import 了 `boundaryEvents` ——
+     于是"入口只要一个 3 KB 的工具函数"就要下 205 KB 结局数据。
+     **一个桶里只要有一条重依赖，整桶都会变成首屏负载。**
+   - 还有两处 Rollup 自作主张：`utils/naming.ts` 被并进 `events-historical-1628`，
+     `types/game.ts`（读档要用的 `normalizeAttributes/normalizeHidden`）同样被并进那一片 ——
+     起名屏要写字辈，先下 50 KB 的 1628 年事件。
+   改法：删掉 `ui-components` / `utils-types` 两个桶，事件数据仍按年份分片，
+   另外显式钉住 `utils-naming`（3.5 KB）与 `core-types`（30 KB）。
+
+4. **默认「音乐关」也在下载 5.71 MB 的 bgm.mp3。**
+   `BGMContext` 挂载即 `new Audio()` + `preload='auto'`，`on` 是 false 也照下。
+   改法：惰性创建 —— 只在 `on===true` 时建元素；`on=false` 只 `pause`；
+   `readyState>=3` 直接 `play`，否则等 `canplay` 一次；卸载时回收 `src` 并 `load()`。
+   原有的 `BGM_KEY` 持久化、错误态重试、首次交互重试全部保留。
+
+**三、读数（同一台机器、同一份 Chromium、1440×900）。**
+
+本地口径（静态服务实际发出字节，未压缩）：
+
+| 指标 | 改前 | 改后 |
+| --- | --- | --- |
+| 请求数 | 32 | **15** |
+| 总字节 | 9.35 MB | **0.89 MB（−90.5%）** |
+| JS | ≈3.0 MB | **213 KB** |
+| 事件分片（首屏） | 15 个 / 2.47 MB | **0** |
+| 音频 | 5.71 MB | **0** |
+| CSS | 305 KB | 299 KB |
+| 字体 | 379 KB | 379 KB |
+| FCP | 264 ms | 268 ms |
+
+FCP 只差噪声级 —— 本地带宽不是瓶颈，改前改后都在 0.3 秒内挂载完。
+真正的收益在**传输**：线上（GitHub Pages，gzip 后实际过线）改前是
+**31 请求 / 1.47 MB / FCP 1584 ms**，网络是那里的瓶颈，不是 CPU。
+
+**四、闸门：这类回归类型检查和单测都看不见，所以补了一把尺子并接进 CI。**
+
+`tests/perf-budget.mjs` 四条断言：标题屏不得请求任何 `events-*.js`、
+JS ≤ 700 KB、请求 ≤ 45、音乐关不得请求音频，外加"标题屏无 console error"。
+退出码 0/1/2 = 达标/超预算/环境起不来。接进 `deploy.yml`，
+**2 只告警不拦发布** —— 那是量具坏了，不是站点坏了。
+
+**五、行为没被改动（每一屏都在真实浏览器里复验）。**
+
+冒烟（开局链路 / 存档往返 / 无 console error）、9 档视口布局回归、
+弹窗可达性 15 档（含 200% 字号下每个可交互元素都点得着）、交互契约 17 项、
+崩溃压力（含 localStorage 写满、反复开关弹窗）、37 个畸形存档 —— 全过。
+单测 837 例里唯一一条需要改的是 `app.saveSetup.test.tsx`：
+它假定 GameScreen 同步交出 props，改懒加载后要等一个微任务，
+断言改成 `waitFor` 但**没有放宽**（仍要求交给引擎的是存档里那份身份）。
+
+**六、顺手修掉的两个真缺陷。**
+
+1. `public/robots.txt` 的 `Sitemap:` 指向 `…/chongzhen-game/sitemap.xml`
+   （少了 `-fixed`）。抓取方按该地址取站点地图会 404 —— **整张 sitemap 等于不存在**，
+   而 `public/sitemap.xml` 一直是好的。已改为 `-fixed` 并加注释。
+2. `main.tsx` 的性能采样注释与这一行都写着"仅开发环境"，实现却是无条件调用：
+   生产构建也在跑常驻 `PerformanceObserver`，玩家每次超过 50 ms 的渲染都往控制台
+   丢一条 `[长任务] xxxms`（崩溃压力测试的警告样本里全是它）。已按注释的本意加上 `import.meta.env.DEV` 门。
+
+**七、评估过但**没有做**的两件事（记下来，免得下次又从头想）。**
+
+- **Service Worker 离线缓存**：收益是复访近乎零流量，但 GitHub Pages 是滚动部署，
+  一旦 SW 缓存了旧 `index.html` 而它指向已删除的 hash 资源，玩家会白屏在"离线可用"的壳里。
+  为了一个复访收益，换一个"客户端状态可能与线上不一致"的长期风险，不值。
+- **事件数据按年份真正懒加载**：需要把引擎选事件的同步接口改成异步，
+  牵动 `BoundaryEventManager` 的同步判定。收益是开局首屏再少 2.4 MB，
+  但那 2.4 MB 现在已经在「起名 / 择出身」两屏里预取完了 —— 玩家感知不到。风险远大于收益。
+
+**八、别把它顺手改回去。**
+
+- 不要在标题屏挂载时"空闲预取"游戏包：那等于把 2.4 MB 又塞回给"只打开看一眼"的访客。
+  意图信号（第一次点击 / 按键）才是那条线。
+- 不要为了"少四个 Suspense"把弹窗改回无条件挂载 —— 那会让结局数据重新进首屏。
+- 不要加回 `ui-components` / `utils-types` 这类"按目录"的桶。
+
 ### 第七十八轮（2026-11-14）：行为层六项修复 —— 看不见却吃键的确认框、被快捷键劫持的 Enter、跨标签页静默覆盖
 
 **任务 #102。本轮不动风格与布局（项目所有者的明确边界：「风格和布局不要改我的」），只修行为。**

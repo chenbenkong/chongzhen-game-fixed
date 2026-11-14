@@ -311,9 +311,13 @@ npm install
 npx playwright install chromium   # 首次需要下载浏览器
 npm test                          # 冒烟：口令门移除 / 启动 / 字体 / 难度 / 开局 / 存档 / 无报错
 npm run test:layout               # 9 档视口 × 标题屏+主玩法：横向溢出 / 关键控件是否在视口内
+node perf-budget.mjs              # 首屏预算：标题屏不许预取事件数据 / 不许下 bgm / JS 与请求数上限
 node font-check.mjs               # 自托管字体的分片按需加载诊断
 node store-assets.mjs             # 生成 Steam 商店页物料到 store-assets/
 ```
+
+`perf-budget.mjs` 自带静态服务（无需先起 preview，只需先 `npm run build`），
+统计口径是**服务端实际发出的字节数**，CI 里也会跑（退出码 2 = 环境起不来，只告警）。
 
 根目录也有等价脚本：`npm run test:e2e` / `test:layout` / `test:crash` / `test:fuzz` / `test:mem`。
 
@@ -326,6 +330,7 @@ node store-assets.mjs             # 生成 Steam 商店页物料到 store-assets
 | `npm run test:mem` | 60 次弹窗开关后的堆占用；不同长度 `eventHistory` 下的帧间隔 |
 | `npm run test:deadend` | **死锁检查**：每次状态转换后断言至少存在一个可推进入口（选项 / 骰子 / 继续 / 下月）。曾用它确认「所有选项锁定」的事件有骰子兜底，不会卡死 |
 | `npm run test:ux` | **交互契约**（13 项）：主按钮三种状态的可用性与文案、禁用提示不得指向不存在的按钮、数字键能选选项、Space 能推进、底栏无重复的「丹青」入口而事件面板内仍有、序号徽标存在、输入框内数字键不被截走、纯键盘连玩 40 步无死锁、全程 0 未捕获错误 |
+| `npm run test:perf` | **首屏预算**：标题屏（还没开局）不得请求任何 `events-*.js`、音乐默认关时不得请求 `bgm.mp3`、JS 体积与请求数不得超上限。改前 9.35 MB，现 0.89 MB |
 
 也可以直接对着线上地址跑：
 

@@ -126,17 +126,35 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('/src/services/')) {
             return 'services'
           }
-          if (id.includes('/src/components/AIAdvisor')) {
-            return 'feature-ai'
+          // 这里**故意不再有**两条"按目录切"的规则 —— 它们把懒加载边界抹平了：
+          //   `/src/components/` → 'ui-components'：GameScreen 还是静态 import 时
+          //   看不出问题；一改 lazy，"把所有组件塞进同一个 chunk"就等于让标题屏
+          //   静态 import 的那一个组件，把整个游戏界面连同事件数据一起拖下来。
+          //   `/src/utils/` + `/src/types/` → 'utils-types'：那个 70 KB 的桶里装着
+          //   routeTrail，而 routeTrail 为了抄结局门票静态 import 了 boundaryEvents ——
+          //   于是"入口只要一个 3 KB 的工具函数"就要下 205 KB 的结局数据。
+          //   一个桶里只要有一条重依赖，整桶就都变成首屏负载；这正是"按目录切"
+          //   最容易骗人的地方。
+          //
+          // 现在交给 Rollup 按真实 import 关系切：标题屏的组件留在入口附近，
+          // 游戏界面的组件跟着 GameScreen 的 dynamic import 一起走，
+          // AIAdvisor / ImageGenerator 这两个本来就 lazy 的仍然是独立分片。
+          //
+          // 只留两条"显式钉住"的例外，都是实测漏出来才补的：
+
+          // 例外一：`utils/naming` 是纯数据、且只有起名屏用它。
+          // 不单独钉住时，Rollup 会把它并进某一年的历史事件分片里，
+          // 于是起名屏要写字辈，就得先下 50 KB 的 1628 年事件 —— 实测就是这样漏的。
+          if (id.includes('/src/utils/naming')) {
+            return 'utils-naming'
           }
-          if (id.includes('/src/components/ImageGenerator')) {
-            return 'feature-image'
-          }
-          if (id.includes('/src/components/')) {
-            return 'ui-components'
-          }
-          if (id.includes('/src/utils/') || id.includes('/src/types/')) {
-            return 'utils-types'
+          // 例外二：`src/types/` 是**所有人**都依赖的那层（types/game 的
+          // normalizeAttributes / normalizeHidden 连读档都要用）。
+          // 不钉住的话，Rollup 会把这个共享模块随手并进某个 50 KB 的年份分片，
+          // 结果"标题屏要规范化一个属性"变成"先下 1628 年全部事件"。
+          // 它体积稳定、几乎不变，正好适合单独一片长期缓存。
+          if (id.includes('/src/types/')) {
+            return 'core-types'
           }
         },
         entryFileNames: 'assets/[name]-[hash].js',

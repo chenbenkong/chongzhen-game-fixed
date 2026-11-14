@@ -1,7 +1,7 @@
 {
   "name": "chongzhen-game",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "崇祯·宦海浮沉模拟器 —— 明末宦海人生模拟器（Web / 桌面双端）",
   "type": "module",
   "engines": {
@@ -17,6 +17,7 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "npm --prefix tests run test",
+    "test:perf": "node tests/perf-budget.mjs",
     "test:layout": "npm --prefix tests run test:layout",
     "test:choices": "npm --prefix tests run test:choices",
     "test:modals": "npm --prefix tests run test:modals",

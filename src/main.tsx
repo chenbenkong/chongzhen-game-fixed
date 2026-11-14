@@ -10,7 +10,12 @@ import './index.css'
 import './theme.css'
 
 // 启动性能监控（仅开发环境采样）
-setupLongTaskObserver()
+//
+// 这里以前是无条件调用，而 performance.ts 的注释和这一行都写着"仅开发环境" ——
+// 于是生产构建也在跑一个常驻 PerformanceObserver，玩家每次超过 50ms 的渲染
+// 都会往控制台丢一条 `[长任务] xxxms`（崩溃压力测试的警告样本里全是它）。
+// 采样是给开发者看的，不该占用玩家的 CPU，也不该污染玩家的控制台。
+if (import.meta.env.DEV) setupLongTaskObserver()
 
 // 懒加载根组件，让启动占位更早可见；占位层在 #root 之外，由 app-ready 事件与
 // index.html 里的 MutationObserver 共同负责移除。

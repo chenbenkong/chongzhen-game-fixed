@@ -1,7 +1,11 @@
 # robots.txt — 崇祯·宦海浮沉模拟器
-# https://chenbenkong.github.io/chongzhen-game/
+# https://chenbenkong.github.io/chongzhen-game-fixed/
+#
+# 注意：这两行此前写的是 /chongzhen-game/（没有 -fixed），
+# 指向的是另一个（旧的）Pages 站点。抓取方按这个地址去取 sitemap 会拿到 404，
+# 于是 sitemap 里登记的这些页面永远不会被索引 —— 一个字节的路径差别，整张地图作废。
 
 User-agent: *
 Allow: /
 
-Sitemap: https://chenbenkong.github.io/chongzhen-game/sitemap.xml
+Sitemap: https://chenbenkong.github.io/chongzhen-game-fixed/sitemap.xml

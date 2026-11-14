@@ -84,6 +84,26 @@ jobs:
         env:
           VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
 
+      - name: 首屏预算（标题屏不许替玩家先付整局游戏的带宽）
+        # 用真实浏览器量标题屏，三条硬断言：
+        #   1. 玩家还没点「开始仕途」时，不得请求任何 events-*.js
+        #      —— 事件数据必须等真正开局才取（第七十九轮把 GameScreen 改成了懒加载）
+        #   2. 音乐默认关时不得请求 bgm.mp3（5.7 MB）
+        #   3. 标题屏 JS 体积与请求数不得超预算
+        #
+        # 退出码约定：0 达标 / 1 超预算 / 2 环境起不来（例如 runner 上没有可用浏览器）。
+        # 2 只告警不拦发布 —— 那是量具坏了，不是站点坏了，不该因为量具拦住发版。
+        run: |
+          npm ci --no-audit --no-fund --prefix tests
+          node tests/perf-budget.mjs || {
+            code=$?
+            if [ "$code" -eq 2 ]; then
+              echo "::warning::perf-budget 无法拉起浏览器（环境问题），本次跳过首屏预算检查"
+              exit 0
+            fi
+            exit "$code"
+          }
+
       - name: Guard — fail if the access gate ever comes back
         # 早期版本在 index.html 里有一道客户端口令门（明文口令 chongzhen）。
         # 它是纯前端逻辑、毫无安全性，且会把玩家挡在门外，已彻底移除。

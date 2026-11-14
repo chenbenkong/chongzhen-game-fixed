@@ -1,4 +1,4 @@
-import { render, fireEvent, act } from '@testing-library/react'
+import { render, fireEvent, act, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../../src/App'
 import { origins } from '../../src/data/origins'
@@ -8,6 +8,11 @@ import { AUTOSAVE_KEY, saveAutosave, type SaveData } from '../../src/types/save'
 // 下一局身份的是 App 保存的 setup 状态（姓名 / 出身 / 起始属性）。
 // 这里把 GameScreen 换成一个只记录 props 的桩，就能在不启动引擎的情况下
 // 钉住「App 交给引擎的那份重新开局档案到底是谁」。
+//
+// 第七十九轮起 GameScreen 是 `lazy()` 的（标题屏不再预取事件数据），
+// 因此「切到 playing」到「桩真正拿到 props」之间隔着一个微任务 ——
+// 断言必须走 waitFor，不能像以前那样点完立刻读。契约本身没有放宽：
+// 仍然要求 App 交给引擎的是存档里那份身份，只是承认它是**异步**送达的。
 
 vi.mock('../../src/components/GameScreen', () => ({
   default: (props: Record<string, unknown>) => {
@@ -96,36 +101,36 @@ describe('第七十三轮：App 的读档 → 重新开局档案', () => {
     delete (globalThis as Record<string, any>).__lastGameScreenProps
   })
 
-  it('从标题读档后，交给引擎的起始属性是存档出身的初始属性，不是全零', () => {
+  it('从标题读档后，交给引擎的起始属性是存档出身的初始属性，不是全零', async () => {
     render(<App />)
 
     act(() => {
       window.dispatchEvent(new CustomEvent('loadSave', { detail: makeSave() }))
     })
 
+    await waitFor(() => expect(lastGameScreenProps()).toBeTruthy())
     const props = lastGameScreenProps()
-    expect(props).toBeTruthy()
     // 没有这句，重新开局的角色是「财帛 0 / 文韬 0 / 理政 0 / 武略 0」
     expect(props.bonusAttributes).toEqual(origins['军户'].initialAttributes)
     expect(props.playerName).toBe('沈砚')
     expect(props.playerCustomAge).toBe(45)
   })
 
-  it('先开过一局再读另一份存档，重新开局档案要换成存档里的身份', () => {
+  it('先开过一局再读另一份存档，重新开局档案要换成存档里的身份', async () => {
     render(<App />)
 
     fireEvent.click(document.querySelector('.title-btn') as HTMLButtonElement) // 开始仕途
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：起名确认
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：选出身
-    expect(lastGameScreenProps()?.playerName).toBe('张三')
+    await waitFor(() => expect(lastGameScreenProps()?.playerName).toBe('张三'))
 
     act(() => {
       window.dispatchEvent(new CustomEvent('loadSave', { detail: makeSave() }))
     })
 
-    const props = lastGameScreenProps()
     // 读档后重开，必须还是「沈砚 / 军户」，不能沿用上一局的「张三 / 寒门」
-    expect(props?.playerName).toBe('沈砚')
+    await waitFor(() => expect(lastGameScreenProps()?.playerName).toBe('沈砚'))
+    const props = lastGameScreenProps()
     expect(props?.bonusAttributes).toEqual(origins['军户'].initialAttributes)
   })
 
