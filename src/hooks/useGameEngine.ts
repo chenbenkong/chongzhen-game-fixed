@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Character, GameStateValues, OriginType, DegreeType, Attributes, LifeRecord, LifeSummary, PlayerFaction, HiddenAttributes, HIDDEN_DEFAULTS, normalizeHidden } from '../types/game'
 import { GameEvent, EventChoice, AppliedChoiceEffects } from '../types/event'
-import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosave, loadAutosave, deleteAutosave, normalizeLegacyGameState, autosaveFingerprint } from '../types/save'
+import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosaveDetailed, loadAutosave, deleteAutosave, normalizeLegacyGameState, autosaveFingerprint } from '../types/save'
 import { checkAndUnlockAchievements, loadAchievements, Achievement, AchievementContext } from '../types/achievement'
 import { DifficultyLevel, getDifficultyConfig } from '../types/difficulty'
 import { initialEvents, allGrayChoiceEvents } from '../data/events/index'
@@ -2522,14 +2522,16 @@ export function useGameEngine(props: UseGameEngineProps) {
       window.clearTimeout(autosaveTimerRef.current)
     }
     autosaveTimerRef.current = window.setTimeout(() => {
-      const ok = saveAutosave(data)
-      if (!ok) {
-        // 写入失败（多为 localStorage 配额耗尽）。以前这里静默失败，
-        // 玩家会在毫无提示的情况下丢掉整局进度，现在明确告知。
+      const result = saveAutosaveDetailed(data)
+      if (!result.ok) {
+        // 写入失败。以前这里静默失败，玩家会在毫无提示的情况下丢掉整局进度。
+        // 两种失败原因给两种说法：配额满要清理空间；跨标签页要收拢到一个页里玩。
         setSaveNotification({
           isOpen: true,
-          message: '自动存档失败',
-          subMessage: '浏览器本地存储已满，请删除旧存档或清理站点数据，否则进度可能丢失'
+          message: result.reason === 'stale' ? '本页已停止自动存档' : '自动存档失败',
+          subMessage: result.reason === 'stale'
+            ? '另一个标签页正在继续这一局。请只在一个标签页里游玩，否则两边的进度会互相覆盖。'
+            : '浏览器本地存储已满，请删除旧存档或清理站点数据，否则进度可能丢失'
         })
       }
       setLastAutosaveFingerprint(fingerprint)

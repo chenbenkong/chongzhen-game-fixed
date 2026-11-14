@@ -37,6 +37,12 @@ interface EventDisplayProps {
    * 实际游玩 120 步里可点状态出现 0 次，成了死 UI。
    */
   onResolvedChange?: (resolved: boolean) => void
+  /**
+   * 投骰弹窗（勉力一试）开合状态上报。
+   * 它开在 EventDisplay 内部，GameScreen 的 modalOpen 原先看不见它 ——
+   * 实测弹窗开着时按 S / A 会在其上层叠开存档面板与成就面板。
+   */
+  onDiceModalOpenChange?: (open: boolean) => void
   /** 是否启用 1-9 数字键选选项（弹窗打开时应关掉） */
   shortcutsEnabled?: boolean
   isGhostMode?: boolean
@@ -243,7 +249,8 @@ function EventDisplay({
   showResult: externalShowResult,
   selectedChoiceId: externalSelectedChoiceId,
   onBackToChoices,
-  onDeathEnding
+  onDeathEnding,
+  onDiceModalOpenChange
 }: EventDisplayProps) {
   // 无事件时自动触发继续（进入下月），避免显示空界面
   const autoAdvancedRef = useRef(false)
@@ -332,6 +339,12 @@ function EventDisplay({
     showPenalty: false,
     attemptCount: 0
   })
+
+  // 骰子弹窗开合上报给 GameScreen（它据此把快捷键整体让路，
+  // 免得弹窗开着按 S/A 会叠出存档面板与成就面板）
+  useEffect(() => {
+    onDiceModalOpenChange?.(diceModal.show)
+  }, [diceModal.show, onDiceModalOpenChange])
 
   // 记录每个选项的独立尝试状态
   const [attemptedChoices, setAttemptedChoices] = useState<Set<string>>(new Set())

@@ -67,12 +67,29 @@ export function useGameShortcuts({
       switch (e.key) {
         case ' ':
         case 'Spacebar':
-        case 'Enter':
+        case 'Enter': {
           // 推进单独受 blockedAdvance 管控，其余快捷键不受它影响
           if (blockedAdvance) return
+          // 焦点正落在可激活元素（按钮/链接/摘要）上时，Enter/Space 属于那个元素：
+          // 结果态下「进下一件」可点时，玩家 Tab 到「存 档」按 Enter，
+          // 原实现在 window 上 preventDefault 把它吃掉并转发成推进 ——
+          // 存档弹窗没打开，事件反而跳走（实测焦点确认在按钮上，click 计数 0）。
+          const el = e.target as HTMLElement | null
+          if (el && typeof el.closest === 'function' &&
+              el.closest('button, a[href], summary, [role="button"], [role="radio"], input, select, textarea')) {
+            return
+          }
+          // Enter 落在其它可聚焦元素（可滚动的面板容器等）上时，
+          // 浏览器本不会触发任何激活；这里若照旧推进，等于把"什么都不该发生"
+          // 的按键变成跳月。Space 保留推进语义（面板获得焦点后空一格就该继续走）。
+          if (e.key === 'Enter' && el && typeof el.closest === 'function' &&
+              el.closest('[tabindex], [role="dialog"], [role="alert"]')) {
+            return
+          }
           e.preventDefault()
           onAdvance()
           return
+        }
         case 's':
         case 'S':
           e.preventDefault()

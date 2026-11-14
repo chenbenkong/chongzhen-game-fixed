@@ -42,6 +42,11 @@ function getTabbable(root: HTMLElement): HTMLElement[] {
   })
 }
 
+/* ---------- 模态框栈：ESC 只关最上层（跨实例共享） ----------
+   此前每个实例都在 window 上各挂一个 ESC 监听且互不知情，
+   存档槽位 + 焚档确认框叠着时一次 ESC 把两层全关掉（实测剩余 0 个、焦点掉 BODY）。 */
+const openDialogStack: HTMLElement[] = []
+
 /* ---------- body 滚动锁：计数实现，支持嵌套/并发模态框 ---------- */
 let scrollLockCount = 0
 let savedBodyOverflow = ''
@@ -162,10 +167,17 @@ export function useModal({
     }
     // 2) 加锁 body 滚动
     acquireScrollLock()
+    // 2.5) 入栈（effect 运行时 portal 已同步挂载，dialogRef 必然就位）
+    const dialog = dialogRef.current
+    if (dialog) openDialogStack.push(dialog)
     // 3) 延迟一帧把焦点移入对话框（等 portal 挂载 / transition 开始）
     const timer = window.setTimeout(() => focusDialog(), 0)
 
     return () => {
+      if (dialog) {
+        const i = openDialogStack.indexOf(dialog)
+        if (i >= 0) openDialogStack.splice(i, 1)
+      }
       window.clearTimeout(timer)
       releaseScrollLock()
       // 4) 还原焦点
@@ -185,6 +197,8 @@ export function useModal({
 
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
+        // 只关最上层：栈顶不是自己就让位给上面的模态框
+        if (openDialogStack[openDialogStack.length - 1] !== dialogRef.current) return
         e.preventDefault()
         e.stopPropagation()
         onCloseRef.current()

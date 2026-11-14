@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, memo, useTransition, useDeferredValue } from 'react'
 import { createPortal } from 'react-dom'
 import { streamChat, setApiKey, hasApiKey, type ChatMessage, type GameContext } from '../services/aiService'
+import { useModal } from '../hooks/useModal'
 import './AIAdvisor.css'
 
 interface AIAdvisorProps {
@@ -258,6 +259,14 @@ export default function AIAdvisor({ isOpen, onClose, gameContext }: AIAdvisorPro
     }
   }
 
+  // 谋士抽屉此前是裸 div：打开后焦点根本没进来（实测仍在背景的按钮上），
+  // ESC 无效、Tab 15 次逃逸 11 次，键盘玩家只能靠鼠标点「关」。接 useModal 补齐。
+  const {
+    getModalProps: aiModalProps,
+    dialogRef: aiDialogRef,
+    handleOverlayClick: aiOverlayClick
+  } = useModal({ open: isOpen, onClose })
+
   if (!isOpen) return null
 
   // 关键：每次 render 都从 ref 读取最新流式文本（避开 useState 异步问题）
@@ -265,8 +274,8 @@ export default function AIAdvisor({ isOpen, onClose, gameContext }: AIAdvisorPro
   const showStreamingBubble = deferredIsStreaming || (isStreaming && streamingText.length > 0)
 
   const node = (
-    <div className="ai-advisor-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="ai-advisor-panel">
+    <div className="ai-advisor-overlay" onClick={aiOverlayClick}>
+      <div className="ai-advisor-panel" ref={aiDialogRef} aria-label="谋士对谈" {...aiModalProps()}>
         <div className="ai-header">
           <div className="ai-header-title">
             <span className="ai-header-icon">策</span>

@@ -555,20 +555,57 @@ export function getAllSaveSlots(): SaveSlot[] {
 
 export const AUTOSAVE_KEY = 'chongzhen_autosave'
 
+/** 自动存档的全局写序号（与存档本体分开存，避免动 SaveData 结构与迁移） */
+const AUTOSAVE_SEQ_KEY = 'chongzhen_autosave_seq'
+
 /**
- * 保存到自动存档槽（覆盖式）。
- * 返回是否写入成功——调用方应据此提示玩家，而不是像以前那样静默吞掉
- * QuotaExceededError，让玩家在毫无察觉的情况下丢掉整局进度。
+ * 本标签页最后一次成功落盘时的序号。null = 本页还没写过（刚打开 / 刚读档）。
+ * 只要存储里的序号不是这个值，就说明**别的标签页在本页之后写过**。
  */
-export function saveAutosave(data: SaveData): boolean {
+let lastWrittenSeq: number | null = null
+
+function readAutosaveSeq(): number {
+  try {
+    const v = Number(localStorage.getItem(AUTOSAVE_SEQ_KEY))
+    return Number.isFinite(v) && v > 0 ? v : 0
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * 写自动存档，并说明失败原因。
+ *
+ * - 'quota'：localStorage 写满（原有语义）
+ * - 'stale'：另一个标签页在本页之后写过 —— 此时**不写**。
+ *   原来两个标签页玩同一局时后落盘的直接覆盖前者，被覆盖那一边
+ *   这一整月的抉择、属性、事件进度静默归零，而两边屏幕上都显示"存档正常"。
+ *   现在落后的一方停止覆盖并明确告知玩家，不再制造无声丢档。
+ */
+export function saveAutosaveDetailed(data: SaveData): { ok: boolean; reason?: 'quota' | 'stale' } {
+  const currentSeq = readAutosaveSeq()
+  if (lastWrittenSeq !== null && currentSeq !== lastWrittenSeq) {
+    return { ok: false, reason: 'stale' }
+  }
   try {
     const json = serializeSave(data)
     localStorage.setItem(AUTOSAVE_KEY, json)
-    return true
+    localStorage.setItem(AUTOSAVE_SEQ_KEY, String(currentSeq + 1))
+    lastWrittenSeq = currentSeq + 1
+    return { ok: true }
   } catch (e) {
     reportStorageError('自动存档', e)
-    return false
+    return { ok: false, reason: 'quota' }
   }
+}
+
+export function saveAutosave(data: SaveData): boolean {
+  return saveAutosaveDetailed(data).ok
+}
+
+/** 仅供测试：重置跨标签页守卫的内部状态 */
+export function resetAutosaveSeqGuardForTest(): void {
+  lastWrittenSeq = null
 }
 
 /** 读取自动存档（不存在 / 解析失败时返回 null） */
@@ -590,7 +627,11 @@ export function loadAutosave(): SaveData | null {
     const migrated = migrateSave(JSON.parse(raw))
     if (!migrated) {
       reportStorageReadError('自动存档', '结构不完整（缺 character 或 gameState）')
+      return null
     }
+    // 读到存档 = 本页接管这一局的当前状态：以此刻的序号为基线，
+    // 之后别的标签页再写，本页写入时就会被判为"落后"并停止覆盖。
+    lastWrittenSeq = readAutosaveSeq()
     return migrated
   } catch (e) {
     console.error('[autosave] 解析失败：', e)
@@ -613,9 +654,12 @@ export function getAutosavePreview(): SavePreview | null {
 export function deleteAutosave(): void {
   try {
     localStorage.removeItem(AUTOSAVE_KEY)
+    localStorage.removeItem(AUTOSAVE_SEQ_KEY)
   } catch {
     // ignore
   }
+  // 存档被删 = 序号失去意义，守卫一并归零，否则新游戏第一次写入会被误判为"落后"
+  lastWrittenSeq = null
 }
 
 /**

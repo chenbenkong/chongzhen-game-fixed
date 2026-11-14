@@ -13,8 +13,13 @@ import './theme.css'
 setupLongTaskObserver()
 
 // 懒加载根组件，让启动占位更早可见；占位层在 #root 之外，由 app-ready 事件与
-// index.html 里的 MutationObserver 共同负责移除
-const App = lazy(() => import('./App'))
+// index.html 里的 MutationObserver 共同负责移除。
+//
+// 用 let + 工厂重建：React.lazy 会缓存**失败的那个 promise**，
+// 主包一旦加载失败，原样重渲染永远同步再抛回错误页 ——
+// 这正是 ErrorBoundary「继续游戏」成为死按钮的根因（实测连点 3 次零新请求）。
+// 重试时必须换一个全新的 lazy 实例，才会真正重发请求。
+let AppLazy = lazy(() => import('./App'))
 
 // 全局未捕获错误处理
 window.addEventListener('error', (e) => {
@@ -37,17 +42,37 @@ if (window.self !== window.top && window.top) {
 }
 
 const container = document.getElementById('root')
+const root = container ? ReactDOM.createRoot(container) : null
 
-if (container) {
-  ReactDOM.createRoot(container).render(
+// 每次重试都换 key：React 元素一旦创建，它的 type 就固定为当时那个 lazy 实例，
+// 光靠 setState 重渲染拿不到新实例；换 key 让 ErrorBoundary 连同其 hasError 状态
+// 一起重建，新实例渲染的是新元素（新 lazy），才会真正重发请求。
+let renderAttempt = 0
+
+function renderTree() {
+  if (!root) return
+  renderAttempt++
+  root.render(
     <React.StrictMode>
-      <ErrorBoundary>
+      {/* key 必须打在 ErrorBoundary 自己身上：打在 StrictMode 上不会重建子树，
+          hasError 会残留，重试后仍停在错误页 */}
+      <ErrorBoundary key={renderAttempt} onRetryChunk={retryChunk}>
         <Suspense fallback={null}>
-          <App />
+          <AppLazy />
         </Suspense>
       </ErrorBoundary>
     </React.StrictMode>
   )
+}
+
+/** 换一个全新的 lazy 实例再渲染：绕开 React.lazy 对失败 promise 的缓存 */
+function retryChunk() {
+  AppLazy = lazy(() => import('./App'))
+  renderTree()
+}
+
+if (root) {
+  renderTree()
 } else {
   console.error('[启动失败] 未找到 #root 挂载点')
 }

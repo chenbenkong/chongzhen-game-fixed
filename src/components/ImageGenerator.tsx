@@ -16,6 +16,7 @@ import { saveImage,
 } from '../services/imageStorage'
 import { generateEventPrompt } from '../services/eventPromptGenerator'
 import { useConfirm } from '../hooks/useConfirm'
+import { useModal } from '../hooks/useModal'
 import './ImageGenerator.css'
 
 interface ImageGeneratorProps {
@@ -104,21 +105,13 @@ function ImageViewer({
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgError, setImgError] = useState(false)
 
-  // Esc 关闭（绑定 window）
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  // 打开时锁 body 滚动（避免背景也跟着滚）
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [])
+  // 原先自带 window ESC + 直接覆写 body.overflow，既没有 dialog 语义也没有焦点陷阱，
+  // 而且它和丹青面板叠着时一次 ESC 会把两层一起关掉。
+  // 改接 useModal：进模态框栈（ESC 只关最上层）、role=dialog、Tab 陷阱、焦点归还、计数式滚动锁。
+  const { getModalProps, dialogRef, titleId, handleOverlayClick } = useModal({
+    open: true,
+    onClose
+  })
 
   // 关闭按钮的 click handler（用 ref 确保总是最新）
   const onCloseRef = useRef(onClose)
@@ -128,14 +121,11 @@ function ImageViewer({
   const node = (
     <div
       className="ig-viewer-overlay"
-      onClick={(e) => {
-        // 只在点 overlay 自身时关闭，点子元素不关闭
-        if (e.target === e.currentTarget) handleClose()
-      }}
+      onClick={handleOverlayClick}
     >
-      <div className="ig-viewer-panel">
+      <div className="ig-viewer-panel" ref={dialogRef} aria-label="画卷查看器" {...getModalProps()}>
         <div className="ig-viewer-header">
-          <div className="ig-viewer-title">
+          <div className="ig-viewer-title" id={titleId}>
             {eventTitle && <span className="ig-viewer-event">{eventTitle}</span>}
             <span className="ig-viewer-prompt">{prompt.slice(0, 60)}{prompt.length > 60 ? '…' : ''}</span>
           </div>
@@ -401,6 +391,14 @@ export default function ImageGenerator({ isOpen, onClose, context }: ImageGenera
 
   const { confirm, dialog: confirmDialog } = useConfirm()
 
+  // 此前丹青面板是裸 div：无 dialog 语义、无 ESC、无焦点陷阱（实测 Tab 20 次逃逸 14 次）。
+  // 接 useModal 后与其余弹窗同一套契约，并进入模态框栈 —— 叠着焚画确认框时一次 ESC 只关确认框。
+  const {
+    getModalProps: igModalProps,
+    dialogRef: igDialogRef,
+    handleOverlayClick: igOverlayClick
+  } = useModal({ open: isOpen, onClose })
+
   const handleDelete = useCallback(async (item: SavedImage) => {
     const ok = await confirm({
       title: '焚毁此画',
@@ -435,8 +433,8 @@ export default function ImageGenerator({ isOpen, onClose, context }: ImageGenera
   const currentSrc = current?.url || ''
 
   const node = (
-    <div className="ig-overlay" onClick={onClose}>
-      <div className="ig-panel" onClick={e => e.stopPropagation()}>
+    <div className="ig-overlay" onClick={igOverlayClick}>
+      <div className="ig-panel" ref={igDialogRef} aria-label="丹青画卷" {...igModalProps()} onClick={e => e.stopPropagation()}>
         <div className="ig-header">
           <div className="ig-header-title">
             <span className="ig-header-icon">绘</span>

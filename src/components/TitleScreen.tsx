@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, type KeyboardEvent } from 'react'
 import { BGMFixedButton } from './BGM'
 import { SaveData, getAllSaveSlots, getAutosavePreview } from '../types/save'
 import {
@@ -40,6 +40,29 @@ function TitleScreenImpl({
 
   const currentDifficulty: DifficultyConfig = DIFFICULTY_CONFIGS[difficulty]
 
+  // role="radiogroup" 的 WAI-ARIA 键盘契约：方向键切换并移动焦点。
+  // 此前只有 onClick —— 键盘玩家按遍方向键/Home/End 都无效，永远只能玩「普通」。
+  const handleDifficultyKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next: number | undefined
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      next = (index + 1) % DIFFICULTY_ORDER.length
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      next = (index - 1 + DIFFICULTY_ORDER.length) % DIFFICULTY_ORDER.length
+    } else if (e.key === 'Home') {
+      next = 0
+    } else if (e.key === 'End') {
+      next = DIFFICULTY_ORDER.length - 1
+    }
+    if (next === undefined) return
+
+    e.preventDefault()
+    onDifficultyChange(DIFFICULTY_ORDER[next])
+    const options = e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+      '.title-difficulty__option'
+    )
+    options?.[next]?.focus()
+  }
+
   return (
     <div className="title-screen paper-bg">
       <BGMFixedButton />
@@ -80,7 +103,7 @@ function TitleScreenImpl({
             难 度
           </span>
           <div className="title-difficulty__options" role="radiogroup" aria-labelledby="difficulty-label">
-            {DIFFICULTY_ORDER.map(id => {
+            {DIFFICULTY_ORDER.map((id, index) => {
               const cfg = DIFFICULTY_CONFIGS[id]
               const active = difficulty === id
               return (
@@ -92,6 +115,7 @@ function TitleScreenImpl({
                   tabIndex={active ? 0 : -1}
                   className={`title-difficulty__option${active ? ' is-active' : ''}`}
                   onClick={() => onDifficultyChange(id)}
+                  onKeyDown={(e) => handleDifficultyKeyDown(e, index)}
                   title={cfg.description}
                 >
                   {cfg.name.replace('模式', '')}

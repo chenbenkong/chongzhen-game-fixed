@@ -54,6 +54,11 @@ function ConfirmDialogImpl({
         // 仅在无 input focus 时按 Enter 确认
         e.preventDefault()
         onConfirm()
+      } else if (e.key === 'Escape') {
+        // 文件头注释写着"ESC 由自定义监听统一处理"，但原实现只处理了 Enter ——
+        // 确认框对 ESC 其实完全无反应。补上：ESC = 取消。
+        e.preventDefault()
+        onCancel()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -61,7 +66,7 @@ function ConfirmDialogImpl({
     return () => {
       window.removeEventListener('keydown', onKey)
     }
-  }, [open, onConfirm])
+  }, [open, onConfirm, onCancel])
 
   if (!open) return null
 

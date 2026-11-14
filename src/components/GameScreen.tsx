@@ -183,6 +183,9 @@ function GameScreen(props: GameScreenProps) {
    */
   const [eventResolved, setEventResolved] = useState(false)
 
+  /** 投骰弹窗（勉力一试）开合。它长在 EventDisplay 内部，不上报就看不见。 */
+  const [diceModalOpen, setDiceModalOpen] = useState(false)
+
   // 无需在此额外复位：EventDisplay 的 onResolvedChange 依赖 event?.id，
   // 事件一变（包括读档、重开）就会自动上报 false。
 
@@ -210,6 +213,7 @@ function GameScreen(props: GameScreenProps) {
   /** 是否有弹窗 / 面板处于打开状态。打开时不该响应游戏快捷键 */
   const modalOpen =
     isCheatModeOpen ||
+    diceModalOpen ||
     isSaveSlotsOpen ||
     showTutorial ||
     showHelp ||
@@ -369,6 +373,7 @@ function GameScreen(props: GameScreenProps) {
               onChoice={handleChoice}
               onContinue={handleContinue}
               onResolvedChange={setEventResolved}
+              onDiceModalOpenChange={setDiceModalOpen}
               shortcutsEnabled={!modalOpen}
               onUndo={handleUndo}
               onGameOver={handleGameOver}

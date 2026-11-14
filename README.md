@@ -92,8 +92,9 @@
 
 - **结局图鉴**按八卷分类收藏：仕林卷、忠烈卷、隐逸卷、贰臣卷、浮沉卷、朝局卷、个志卷、异闻卷
 - **生平回顾**汇总出生、科举、升迁、贬官、婚姻、抉择、死亡等 `LifeRecord`
-- **成就系统**内置 **100 个**成就定义 —— 正好卡在 Steam 单 App 的成就上限内，
-  游戏内定义与 `desktop/steam.cjs` 的映射表由 `npm run check:steam` 逐条对拍
+- **成就系统**内置 **115 个**成就定义 —— 结局图鉴每一格都有判据指着。
+  游戏内定义与 `desktop/steam.cjs` 的映射表由 `npm run check:steam` 逐条对拍；
+  115 已超过 Steam 单 App 的 100 上限，这是「本作暂不上 Steam」的明确决定（见 `desktop/steam.cjs` 头部注释）
 - **死亡结局**独立呈现
 
 ### 系统与体验
@@ -181,7 +182,7 @@
 | 持久化 | `localStorage`（带 schema 版本与迁移） |
 | 桌面端 | Electron + electron-builder（见 `desktop/`） |
 | Steam 接入 | steamworks.js，带完整 mock 驱动（无 AppID 也能跑） |
-| 测试 | vitest（**90 例**）+ Playwright（真实 Chromium 冒烟、9 档视口 × 两屏布局回归、崩溃压力、存档模糊、内存检查） |
+| 测试 | vitest（**100 文件 / 837 例**）+ Playwright（真实 Chromium 冒烟、13 档视口布局回归、选项可达性 12 组、弹窗可达性 15 档、崩溃压力、存档模糊、内存检查） |
 | 部署 | GitHub Actions → GitHub Pages |
 
 ## 目录结构
@@ -413,8 +414,10 @@ AI Key 通过仓库 Secret `VITE_AI_API_KEY` 注入（未设置则线上 AI 功�
   两者都有自动化测试防止回归。
 - **调试面板「幽灵模式」**：默认值由构建模式决定 —— 演示站开启、发行物关闭，
   无需改代码。`?debug=0` / `?debug=1` 可临时覆盖。
-- **成就数 100**：正好等于 Steam 单 App 上限。原来是 110 个（且其中 5 个漏了
-  Steam 侧登记），裁剪过程与理由见 `achievement.ts` 里 `RETIRED_ACHIEVEMENT_IDS`。
+- **成就数 115**：已超过 Steam 单 App 的 100 上限，因为本作暂不上 Steam，
+  名额不再是约束（决定与来龙去脉见 `desktop/steam.cjs` 头部注释、
+  `docs/KNOWN_ISSUES.md` 第五十二轮）。日后真要上 Steam，必须先裁到 100 以内 ——
+  API Name 一经创建不可改，只能删重建。裁剪历史见 `achievement.ts` 里 `RETIRED_ACHIEVEMENT_IDS`。
 - **AI 功能会消耗第三方额度**：谋士对谈与插图生成依赖外部 OpenAI 兼容接口。
   插图生成单次通常需要 30–120 秒（客户端超时设为 120s）。
 - **历史内容以叙事为主**：事件基于明末史实改编，但为了游戏性做了简化与虚构，

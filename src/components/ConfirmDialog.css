@@ -8,8 +8,10 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.75);
-  /* Portal 后是顶层，最高 z-index */
-  z-index: 11000;
+  /* Portal 后是顶层，最高 z-index —— 必须压过 ErrorBoundary 的 99999。
+     此前 11000 < 99999：错误页上点「清除存档」，确认框整个看不见却持有焦点，
+     按一次 Enter 就把全部存档删光（实测 chongzhen_save_1/2 消失、无任何反馈）。 */
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;

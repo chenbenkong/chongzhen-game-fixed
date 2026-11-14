@@ -4,6 +4,12 @@ import './ErrorBoundary.css'
 
 interface Props {
   children: ReactNode
+  /**
+   * 主包（懒加载的 App）加载失败时，重新发起一次加载。
+   * 没有它，「继续游戏」就只是个清 state 的空动作 —— React.lazy 缓存了失败的
+   * promise，重渲染会同步再抛回本页（实测连点 3 次，零新请求）。
+   */
+  onRetryChunk?: () => void
 }
 
 interface State {
@@ -52,6 +58,9 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = (): void => {
+    // 先换掉失败的 lazy 实例（内部会重新渲染整棵树），再清本页错误态。
+    // 没有重试通道时退化为原来的"清 state"，行为不比以前更差。
+    this.props.onRetryChunk?.()
     this.setState({ hasError: false, error: null, errorInfo: null })
   }
 
