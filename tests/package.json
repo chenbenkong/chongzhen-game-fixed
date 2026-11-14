@@ -15,7 +15,8 @@
     "test:mem": "node mem-check.mjs",
     "assets:store": "node store-assets.mjs",
     "test:deadend": "node diag-deadend.mjs",
-    "test:ux": "node verify-ux.mjs"
+    "test:ux": "node verify-ux.mjs",
+    "test:chunk": "node chunk-failure.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.0"

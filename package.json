@@ -26,6 +26,7 @@
     "test:mem": "npm --prefix tests run test:mem",
     "test:deadend": "npm --prefix tests run test:deadend",
     "test:ux": "npm --prefix tests run test:ux",
+    "test:chunk": "npm --prefix tests run test:chunk",
     "check:node": "node scripts/check-node-engine.cjs",
     "check:steam": "node desktop/smoke-test.cjs",
     "audit:shape": "vite-node scripts/audit-event-shape.ts",

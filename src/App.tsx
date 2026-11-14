@@ -4,6 +4,7 @@ import NameInput, { NameInputResult } from './components/NameInput'
 import OriginSelect from './components/OriginSelect'
 import TitleScreen from './components/TitleScreen'
 import { BGMProvider } from './components/BGMContext'
+import ErrorBoundary from './components/ErrorBoundary'
 import StorageAlerts from './components/StorageAlerts'
 import { OriginType, DegreeType, Attributes } from './types/game'
 import { SaveData, getAllSaveSlots, deleteAutosave, loadAutosave } from './types/save'
@@ -20,16 +21,30 @@ import { DifficultyLevel, loadDifficulty, saveDifficulty } from './types/difficu
  * 就先付的事件数据（5.71 MB 是那口没人听的 bgm，见 BGMContext）。
  *
  * 标题屏只需要标题组件，所以这里按"玩家真的要走进去"为界切开。
+ *
+ * 为什么是 `let` 而不是 `const`：`React.lazy` 会把**失败的那个 promise** 缓存住，
+ * 分片一旦加载失败（弱网、运营商劫持、部署瞬间换了 hash），重渲染只会把同一个
+ * 失败的 promise 再抛回来 —— 第七十八轮在 App 上踩过这个坑（「继续游戏」是死按钮）。
+ * 现在这条懒加载边界是新的，同样的坑必须同样堵上：重试时换一个全新的 lazy 实例。
  */
-const GameScreen = lazy(() => import('./components/GameScreen'))
+const loadGameScreen = () => import('./components/GameScreen')
+let GameScreenLazy = lazy(loadGameScreen)
 
 /**
  * 预取游戏主包。玩家一旦表现出"要玩"的意图（点标题屏任意位置、按任意键）就开始拉，
  * 等真的进到游戏界面时通常已经就绪 —— 只有"打开看一眼、什么都没点"的访客不付这笔钱。
+ *
+ * 单独包一层 `gameScreenWarm`：预取失败时把缓存清掉，
+ * 免得一次弱网失败把后面所有的重试都钉死在那个 reject 的 promise 上。
  */
 let gameScreenWarm: Promise<unknown> | null = null
 function prefetchGameScreen() {
-  if (!gameScreenWarm) gameScreenWarm = import('./components/GameScreen')
+  if (!gameScreenWarm) {
+    gameScreenWarm = loadGameScreen().catch(err => {
+      gameScreenWarm = null
+      throw err
+    })
+  }
   return gameScreenWarm
 }
 
@@ -51,7 +66,11 @@ function App() {
   const [finalDegree, setFinalDegree] = useState<DegreeType>('进士')
   const [finalAttributes, setFinalAttributes] = useState<Attributes | null>(null)
   const [loadSaveData, setLoadSaveData] = useState<SaveData | null>(null)
+  // 难度选择状态
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(() => loadDifficulty())
+
+  // 游戏主包重试计数：换 lazy 实例之外再换 key，确保子树真的重挂载
+  const [gameScreenTry, setGameScreenTry] = useState(0)
 
   // 存档槽位弹窗状态
   const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false)
@@ -77,10 +96,16 @@ function App() {
    * 为什么把信号放在"交互"而不是"挂载后空闲"：只是打开首页看一眼的访客
    * 不该付 2.5 MB；而真要玩的人一定会点，点击到真正进游戏之间还隔着
    * 起名与选出身两屏，正好把下载藏在这几秒里。
+   *
+   * 预取失败要自己咽下去（catch 空实现）：它是**顺手**行为，失败时真正该报错的地方
+   * 是 GameScreen 渲染的那一刻（由 ErrorBoundary 接住）。否则弱网下玩家还没进游戏，
+   * 控制台就先多一条"未捕获的错误"，看着像游戏已经崩了。
    */
   useEffect(() => {
     if (phase !== 'title') return
-    const warm = () => prefetchGameScreen()
+    const warm = () => {
+      prefetchGameScreen().catch(() => {})
+    }
     document.addEventListener('pointerdown', warm, { once: true, passive: true })
     document.addEventListener('keydown', warm, { once: true })
     return () => {
@@ -88,6 +113,19 @@ function App() {
       document.removeEventListener('keydown', warm)
     }
   }, [phase])
+
+  /**
+   * 游戏主包分片加载失败后重建 lazy 实例。
+   *
+   * `React.lazy` 缓存的是失败的那个 promise，只清 ErrorBoundary 的 state 没用：
+   * 重渲染会把同一个 reject 再抛回来。必须换一个全新的 lazy 实例（新 promise），
+   * 再靠 key 变化让子树重挂载。这与 main.tsx 里对 App 的处理是同一套办法。
+   */
+  const retryGameScreen = useCallback(() => {
+    GameScreenLazy = lazy(loadGameScreen)
+    gameScreenWarm = null
+    setGameScreenTry(t => t + 1)
+  }, [])
 
   const handleDifficultyChange = useCallback((next: DifficultyLevel) => {
     setDifficulty(next)
@@ -131,7 +169,8 @@ function App() {
   const handleStart = useCallback(() => {
     // 点「开始仕途」就是最明确的意图信号：此刻就把游戏主包拉下来，
     // 起名/选出身这两屏的几秒正好覆盖下载时间。
-    prefetchGameScreen()
+    // 同上：预取失败在这里不报，交给渲染时的 ErrorBoundary。
+    prefetchGameScreen().catch(() => {})
     setLoadSaveData(null)
     // 这里不能删自动存档：玩家还停在起名屏，随时可以点「返回」回标题，
     // 而旧进度要能继续读。真正的「新局开始」是 handleOriginSelect。
@@ -235,6 +274,10 @@ function App() {
         {phase === 'playing' && selectedOrigin && (finalAttributes || loadSaveData) && (
           // 懒加载边界：主包未就绪时先给一个与启动层同款的最小占位，
           // 而不是让 #root 空着（空着就是黑屏）。
+          //
+          // 内层 ErrorBoundary 只为了一件事：这个分片加载失败时，
+          // 「继续游戏」能真的换一个新 lazy 实例重发请求（见 loadGameScreen 上方的注释）。
+          // 它沿用同一个 ErrorBoundary 组件，失败时的界面与全局错误页完全一致。
           <Suspense
             fallback={
               <div className="game-boot" role="status" aria-live="polite">
@@ -244,20 +287,23 @@ function App() {
               </div>
             }
           >
-            <GameScreen
-              origin={selectedOrigin}
-              degree={finalDegree || loadSaveData?.character?.degree}
-              bonusAttributes={
-                finalAttributes || { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
-              }
-              playerName={playerName || loadSaveData?.character?.name || ''}
-              playerCourtesyName={playerCourtesyName || loadSaveData?.character?.courtesyName || ''}
-              playerHometown={playerHometown || loadSaveData?.character?.hometown || ''}
-              playerCustomAge={playerCustomAge ?? loadSaveData?.character?.age ?? null}
-              loadSaveData={loadSaveData ?? undefined}
-              difficulty={difficulty}
-              onReturnToMenu={handleReturnToMenu}
-            />
+            <ErrorBoundary onRetryChunk={retryGameScreen}>
+              <GameScreenLazy
+                key={gameScreenTry}
+                origin={selectedOrigin}
+                degree={finalDegree || loadSaveData?.character?.degree}
+                bonusAttributes={
+                  finalAttributes || { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
+                }
+                playerName={playerName || loadSaveData?.character?.name || ''}
+                playerCourtesyName={playerCourtesyName || loadSaveData?.character?.courtesyName || ''}
+                playerHometown={playerHometown || loadSaveData?.character?.hometown || ''}
+                playerCustomAge={playerCustomAge ?? loadSaveData?.character?.age ?? null}
+                loadSaveData={loadSaveData ?? undefined}
+                difficulty={difficulty}
+                onReturnToMenu={handleReturnToMenu}
+              />
+            </ErrorBoundary>
           </Suspense>
         )}
 
