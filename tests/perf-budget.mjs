@@ -91,6 +91,7 @@ const server = createServer(async (req, res) => {
 
 const failures = []
 const pass = msg => console.log(`  \u2713 ${msg}`)
+const warn = msg => console.log(`  \u00b7 ${msg}`)
 const fail = msg => {
   failures.push(msg)
   console.log(`  \u2717 ${msg}`)
@@ -194,8 +195,8 @@ async function main() {
       })
     : null
 
-  await browser.close()
-  if (!REMOTE_BASE) await new Promise(r => server.close(r))
+  // 注意：浏览器**先别关** —— 第二相（点开始 → 首卡）还要用它，见下方。
+  // （第七十九轮加这一相时就是忘了这行，量出来永远"首卡没出现"。）
 
   // ---- 归类统计 ----
   const titlePhase = resources
@@ -214,6 +215,8 @@ async function main() {
   const audioReqs = titlePhase.filter(r => kindOf(r) === 'audio')
 
   if (AS_JSON) {
+    await browser.close()
+    if (!REMOTE_BASE) await new Promise(r => server.close(r))
     console.log(
       JSON.stringify(
         {
@@ -283,6 +286,119 @@ async function main() {
     fail(`标题屏出现 ${consoleErrors.length} 条 console error：\n        ${consoleErrors.join('\n        ')}`)
   }
 
+  // ---- 第二相：点「开始仕途」→ 第一张事件卡（第七十九轮之后新增）----
+  //
+  // 标题屏之后还有一笔账：开局要下什么。事件数据按年切成了两批
+  // （`src/data/events/future.ts`），第一批只有 1628，其余在首卡上屏之后才补。
+  // 这里量的是"首卡之前"那一截：它不许包含 1632 年以后的任何事件分片，
+  // 也不许超过 3 MB —— 否则说明某个组件又把全量 barrel 拖回了静态图
+  // （第七十九轮的教训：`GameScreen` 静态 import `CheatMode`，就这么漏的）。
+  if (REMOTE_BASE) {
+    console.log('\n（线上模式：跳过「开局首卡」这一相，Resource Timing 记不到首卡的瞬间）')
+  } else {
+    const beforeGame = served.length
+    const startAt = Date.now()
+    let reachedCard = false
+    let cardMs = 0
+    try {
+      await page.locator('.title-btn', { hasText: '开' }).first().click({ timeout: 10000 })
+      await page.waitForTimeout(400)
+      const inputs = page.locator('.setup-screen input[type="text"], .setup-screen input:not([type])')
+      const n = await inputs.count()
+      for (let i = 0; i < n; i++) {
+        await inputs.nth(i).fill(['测试', '字明', '苏州府'][i] ?? '测').catch(() => {})
+      }
+      await page.locator('.setup-screen .confirm-btn').first().click({ timeout: 10000 })
+      await page.waitForTimeout(600)
+      const cards = page.locator('.origin-card')
+      if ((await cards.count()) > 0) {
+        await cards.first().click().catch(() => {})
+      }
+      await page.waitForSelector('.event-title', { timeout: 60000 })
+      reachedCard = true
+      cardMs = Date.now() - startAt
+    } catch (e) {
+      warn(`首卡没有出现：${e.message?.split('\n')[0] ?? e}`)
+    }
+
+    const cardPhase = served.slice(beforeGame)
+    const cardBytes = cardPhase.reduce((s, r) => s + (r.bytes || 0), 0)
+    const cardJs = cardPhase.filter(r => kindOf(r) === 'js')
+    const cardJsBytes = cardJs.reduce((s, r) => s + (r.bytes || 0), 0)
+
+    console.log('\n=== 开局首卡（点「开始仕途」→ 第一张卡上屏）===')
+    console.log(`  用时：${reachedCard ? `${cardMs} ms` : '未到达'}`)
+    console.log(`  首卡之前付出：${cardPhase.length} 请求 / ${fmtMB(cardBytes)}（JS ${fmtKB(cardJsBytes)}）`)
+    const biggest = cardJs.slice().sort((a, b) => b.bytes - a.bytes).slice(0, 6)
+    for (const r of biggest) console.log(`    ${fmtKB(r.bytes).padStart(7)}  ${r.url}`)
+
+    // 1632 年及以后的事件分片（含 route_guide / inner_court / preludes 那一片 misc）
+    const deferredPattern = /\/events-(historical|transition)-(\d{4}|misc)-[^/]*\.js$/
+    const leaked = cardPhase.filter(r => {
+      const m = r.url.match(deferredPattern)
+      if (!m) return false
+      if (m[2] === 'misc') return true
+      return Number(m[2]) >= 1632
+    })
+
+    if (!reachedCard) {
+      fail('首卡没有出现（开局路径断了，或事件数据取不到）')
+    } else if (leaked.length === 0) {
+      pass('首卡之前没有请求 1632 年以后的事件分片（分批生效）')
+    } else {
+      fail(
+        `首卡之前就下了 ${leaked.length} 个"以后年份"的事件分片（${fmtKB(
+          leaked.reduce((s, r) => s + r.bytes, 0)
+        )}）：` +
+          leaked.map(r => `\n        ${r.url} (${fmtKB(r.bytes)})`).join('')
+      )
+    }
+
+    const BUDGET_CARD_MB = 3.0
+    if (reachedCard && cardBytes / 1024 / 1024 <= BUDGET_CARD_MB) {
+      pass(`首卡之前 ${fmtMB(cardBytes)} ≤ 预算 ${BUDGET_CARD_MB} MB`)
+    } else if (reachedCard) {
+      fail(`首卡之前 ${fmtMB(cardBytes)} 超预算 ${BUDGET_CARD_MB} MB`)
+    }
+
+    if (consoleErrors.length === 0) {
+      pass('开局阶段无 console error')
+    } else {
+      fail(`开局阶段出现 console error：\n        ${consoleErrors.join('\n        ')}`)
+    }
+
+    // 「幽灵模式」：面板静态 import 全量 barrel（2.4 MB），必须是懒加载。
+    // 这条断言防的是把它改回 `import CheatMode from './CheatMode'` ——
+    // 那样开局就会重新背上 1632 年以后的全部事件，而其它闸门都看不见。
+    const cheatChunks = served.slice(beforeGame).filter(r => /\/CheatMode-[^/]*\.js$/.test(r.url))
+    if (cheatChunks.length === 0) {
+      pass('开局阶段没有请求 CheatMode 分片（面板仍是懒加载）')
+    } else {
+      fail(`开局就请求了 ${cheatChunks.length} 个 CheatMode 分片：${cheatChunks.map(r => r.url).join(', ')}`)
+    }
+
+    if (reachedCard) {
+      const cheatBtn = page.locator('.cheat-button').first()
+      if ((await cheatBtn.count()) === 0) {
+        warn('找不到 .cheat-button，跳过调试面板开合检查')
+      } else {
+        await cheatBtn.click({ timeout: 15000 }).catch(() => {})
+        const opened = await page
+          .locator('.cheat-modal-overlay')
+          .first()
+          .waitFor({ state: 'visible', timeout: 20000 })
+          .then(() => true)
+          .catch(() => false)
+        if (opened) pass('点「幽灵模式」后面板正常出现（懒加载没把入口点死）')
+        else fail('点「幽灵模式」后面板没出现（懒加载把入口点死了）')
+        await page.keyboard.press('Escape').catch(() => {})
+      }
+    }
+  }
+
+  await browser.close()
+  if (!REMOTE_BASE) await new Promise(r => server.close(r))
+
   finish()
 }
 
@@ -299,3 +415,17 @@ main().catch(e => {
   console.error(e)
   process.exit(2)
 })
+
+/**
+ * 基线记录（本地 dist，未压缩口径，Chrome headless 1440×900，禁缓存）
+ *
+ *   第七十九轮前：标题屏 32 请求 / 9.35 MB；开局首卡前 3.83 MB
+ *   第七十九轮后：标题屏 15 请求 / 0.89 MB（JS 213 KB、字体 379 KB、CSS 299 KB）
+ *                开局首卡 8348 ms → 6688 ms（2 Mbps / 150 ms 限速，tests 里的临时量具）
+ *   第八十轮后：  标题屏 15 请求 / 0.89 MB（不变）
+ *                开局首卡前 31 请求 / 2.54 MB（JS 1508 KB），首卡前不再有 1632+ 分片
+ *                第二批（future + 9 个分片）在首卡后 +36 ms 才发起
+ *
+ * 预算留了余量，不是把实测值当阈值：
+ *   BUDGET_JS_KB 700（实测 213）、BUDGET_REQUESTS 45（实测 15）、首卡 3.0 MB（实测 2.54）
+ */

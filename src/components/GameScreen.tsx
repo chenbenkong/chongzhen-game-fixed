@@ -11,7 +11,6 @@ import StatusPanel from './StatusPanel'
 import EventDisplay from './EventDisplay'
 import ActionBar from './ActionBar'
 import GameOverScreen from './GameOverScreen'
-import CheatMode from './CheatMode'
 import LifeReview from './LifeReview'
 import DeathEnding from './DeathEnding'
 import SaveNotification from './SaveNotification'
@@ -27,6 +26,16 @@ import './GameScreen.css'
 
 const AIAdvisor = lazy(() => import('./AIAdvisor'))
 const ImageGenerator = lazy(() => import('./ImageGenerator'))
+/**
+ * 「幽灵模式」必须懒加载。
+ *
+ * 它静态 import 了 `data/events/index` 这个**全量 barrel**（面板要浏览全部事件），
+ * 而那 22 个年份分片合计 2.4 MB。以前这行是 `import CheatMode from './CheatMode'`，
+ * 于是"打开游戏界面"就等于"把以后十一年的卡全下完" ——
+ * 第七十九轮把标题屏的事件预取掐掉之后，这笔钱其实只是挪到了开局，
+ * 账一直在，只是换了个付款人。
+ */
+const CheatMode = lazy(() => import('./CheatMode'))
 /**
  * inert 属性在 React 18 的 JSX 类型里还没有声明，这里用条件展开绕过类型限制
  * （返回的是收窄的联合类型，可安全展开到 JSX 上），运行时就是原生属性。
@@ -74,6 +83,7 @@ function GameScreen(props: GameScreenProps) {
     deathEndingState,
     biography,
     isProcessing,
+    awaitingEventData,
     openCheatMode,
     closeCheatMode,
     openAchievementPanel,
@@ -291,6 +301,20 @@ function GameScreen(props: GameScreenProps) {
 
   return (
     <div className={`game-screen ${isGameOver ? 'game-screen--ended' : ''}`}>
+      {/*
+        跨年取数：开局只装了 1628 年的事件，下一批在后台补（见 data/events/store.ts）。
+        只有在"补给还没到、玩家已经要点进下一年"那一刻才会出现 ——
+        它的作用是**挡住**，否则引擎会以为那一年一张卡都没有，
+        直接把月份连跳到有卡为止（年份会无声地飞过去）。
+        复用标题屏那张 .game-boot 启动层，尺寸与样式不变，不新增布局。
+      */}
+      {awaitingEventData && (
+        <div className="game-boot" role="status" aria-live="polite">
+          <div className="game-boot__title">崇祯 · 宦海浮沉</div>
+          <div className="game-boot__bar" />
+          <div className="game-boot__hint">正在展开案卷…</div>
+        </div>
+      )}
       {isGameOver && (
         <div ref={endingContainerRef} tabIndex={-1}>
           <GameOverScreen
@@ -332,20 +356,22 @@ function GameScreen(props: GameScreenProps) {
           eventCount={eventHistory.length}
         />
 
-        <Suspense fallback={null}>
-          <CheatMode
-            isOpen={isCheatModeOpen}
-            onClose={closeCheatMode}
-            currentGameState={{
-              currentYear: gameState.currentYear,
-              currentMonth: gameState.currentMonth,
-              turn: 0,
-              eventHistory: []
-            }}
-            currentCharacter={character}
-            currentGameStateValues={gameState}
-          />
-        </Suspense>
+        {isCheatModeOpen && (
+          <Suspense fallback={null}>
+            <CheatMode
+              isOpen={isCheatModeOpen}
+              onClose={closeCheatMode}
+              currentGameState={{
+                currentYear: gameState.currentYear,
+                currentMonth: gameState.currentMonth,
+                turn: 0,
+                eventHistory: []
+              }}
+              currentCharacter={character}
+              currentGameStateValues={gameState}
+            />
+          </Suspense>
+        )}
 
         <div className="game-main">
           <aside className="sidebar">

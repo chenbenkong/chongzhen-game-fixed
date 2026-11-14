@@ -127,6 +127,10 @@
   与 `prefers-contrast`
 - **PWA**：可安装，含 maskable 图标与 manifest
 - **首屏兜底**：启动占位层独立于 `#root`，并带 20 秒失败兜底界面
+- **按年装卷**：开局只装 1628 年那 165 条事件（约 1 张卡的量），1629 年以后
+  在**第一张卡上屏之后**才在后台补（`data/events/future.ts` + `store.ts`）。
+  跨年推进时若数据还没到，会等它就位再走，并显示「正在展开案卷…」——
+  宁可卡一下，不许静默跳年
 - **听天由命**：选项列表下方的随机选择入口，从**可选**的选项中随机挑一个
   （锁定项不会被选中），供选择困难时使用
 - **统一推进入口**：底部主按钮**不再是死 UI**。此前它只在 `!currentEvent` 时可点，
@@ -182,7 +186,7 @@
 | 持久化 | `localStorage`（带 schema 版本与迁移） |
 | 桌面端 | Electron + electron-builder（见 `desktop/`） |
 | Steam 接入 | steamworks.js，带完整 mock 驱动（无 AppID 也能跑） |
-| 测试 | vitest（**100 文件 / 837 例**）+ Playwright（真实 Chromium 冒烟、13 档视口布局回归、选项可达性 12 组、弹窗可达性 15 档、崩溃压力、存档模糊、内存检查） |
+| 测试 | vitest（**101 文件 / 841 例**）+ Playwright（真实 Chromium 冒烟、13 档视口布局回归、选项可达性 12 组、弹窗可达性 15 档、崩溃压力、存档模糊、内存检查、性能预算两相） |
 | 部署 | GitHub Actions → GitHub Pages |
 
 ## 目录结构
@@ -206,6 +210,8 @@ chongzhen-game/
 │   │   └── TutorialModal / CheatMode / ErrorBoundary / ConfirmDialog ...
 │   ├── data/
 │   │   ├── events/               # 事件库：historical/transition/gray/emotion/origin/faction/ending
+│   │   │   ├── store.ts           # 分批仓库：1628 先装，其余在首卡后补（getGameEvents/eventDataCovers）
+│   │   │   └── future.ts          # 第二批：1629–1644 全量（合并顺序必须与 index.ts 逐项一致）
 │   │   ├── origins.ts            # 八种出身
 │   │   ├── storylines.ts         # 15 条故事线
 │   │   ├── boundaryEvents.ts     # 属性临界事件
@@ -311,7 +317,7 @@ npm install
 npx playwright install chromium   # 首次需要下载浏览器
 npm test                          # 冒烟：口令门移除 / 启动 / 字体 / 难度 / 开局 / 存档 / 无报错
 npm run test:layout               # 9 档视口 × 标题屏+主玩法：横向溢出 / 关键控件是否在视口内
-node perf-budget.mjs              # 首屏预算：标题屏不许预取事件数据 / 不许下 bgm / JS 与请求数上限
+node perf-budget.mjs              # 性能预算：标题屏不许预取事件数据 / 开局首卡前不许下 1632 年以后的分片 / 不许下 bgm / 体积与请求数上限
 node font-check.mjs               # 自托管字体的分片按需加载诊断
 node store-assets.mjs             # 生成 Steam 商店页物料到 store-assets/
 ```
@@ -330,7 +336,7 @@ node store-assets.mjs             # 生成 Steam 商店页物料到 store-assets
 | `npm run test:mem` | 60 次弹窗开关后的堆占用；不同长度 `eventHistory` 下的帧间隔 |
 | `npm run test:deadend` | **死锁检查**：每次状态转换后断言至少存在一个可推进入口（选项 / 骰子 / 继续 / 下月）。曾用它确认「所有选项锁定」的事件有骰子兜底，不会卡死 |
 | `npm run test:ux` | **交互契约**（13 项）：主按钮三种状态的可用性与文案、禁用提示不得指向不存在的按钮、数字键能选选项、Space 能推进、底栏无重复的「丹青」入口而事件面板内仍有、序号徽标存在、输入框内数字键不被截走、纯键盘连玩 40 步无死锁、全程 0 未捕获错误 |
-| `npm run test:perf` | **首屏预算**：标题屏（还没开局）不得请求任何 `events-*.js`、音乐默认关时不得请求 `bgm.mp3`、JS 体积与请求数不得超上限。改前 9.35 MB，现 0.89 MB |
+| `npm run test:perf` | **性能预算**：标题屏（还没开局）不得请求任何 `events-*.js`、音乐默认关时不得请求 `bgm.mp3`、JS 体积与请求数不得超上限。**第二相**再量「点开始 → 第一张卡」：首卡前不得出现 1632 年以后的事件分片、不得请求 `CheatMode` 分片、点「幽灵模式」面板必须真能开。改前标题屏 9.35 MB、开局 3.83 MB；现 0.89 MB / 2.54 MB |
 | `npm run test:chunk` | **分片失败的逃生通道**：abort 掉 `GameScreen` 分片 → 走开局流程必须落到错误页 → 解除拦截点「继续游戏」必须真的重新拉取成功，且不留未捕获错误（`React.lazy` 缓存失败 promise，只清 state 是死按钮） |
 
 也可以直接对着线上地址跑：

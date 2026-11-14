@@ -4,7 +4,7 @@ import { GameEvent, EventChoice, AppliedChoiceEffects } from '../types/event'
 import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosaveDetailed, loadAutosave, deleteAutosave, normalizeLegacyGameState, autosaveFingerprint } from '../types/save'
 import { checkAndUnlockAchievements, loadAchievements, Achievement, AchievementContext } from '../types/achievement'
 import { DifficultyLevel, getDifficultyConfig } from '../types/difficulty'
-import { initialEvents, allGrayChoiceEvents } from '../data/events/index'
+import { getGameEvents, eventDataCovers, whenEventDataReady, subscribeEventData, startEventDataLoad } from '../data/events/store'
 import { origins } from '../data/origins'
 import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
@@ -724,6 +724,15 @@ export function useGameEngine(props: UseGameEngineProps) {
     () => loadSaveData?.pendingEvents ?? []
   )
   const [isProcessing, setIsProcessing] = useState(false)
+  /**
+   * 「后续年份的事件还没到齐」——只有在跨年那一刻、且后台那一批还没下完时才会为 true。
+   * 屏幕上要因此盖一张「正在展开案卷」，否则玩家会看到整整一个月没有卡。
+   */
+  const [awaitingEventData, setAwaitingEventData] = useState(false)
+  // 后续年份补齐后必须重渲染一次：`getGameEvents()` 会换成一份新数组，
+  // 而 React 不知道这件事 —— 没有这行，第二批事件要等下一次别的状态变化才进候选池。
+  const [eventDataTick, setEventDataTick] = useState(0)
+  useEffect(() => subscribeEventData(() => setEventDataTick(t => t + 1)), [])
   const [eventHistory, setEventHistory] = useState<string[]>(() => loadSaveData ? loadSaveData.eventHistory : [])
   // 悔棋快照。字段必须覆盖一次抉择改动的**全部**东西 ——
   // 此前只存了 character / gameState / eventHistory，于是悔棋之后
@@ -889,6 +898,11 @@ export function useGameEngine(props: UseGameEngineProps) {
   /** 推进月份的同步重入闸门（见 handleNextMonth） */
   const advanceInFlightRef = useRef(false)
   /**
+   * 跨年闸门被数据挡住时，等补齐后要能再叫一次 handleNextMonth。
+   * 用 ref 而不是在 promise 里闭包 handleNextMonth：那个闭包会抓着旧 props。
+   */
+  const advanceRef = useRef<(() => void) | null>(null)
+  /**
    * 首帧发牌/读档恢复是否已经落定。
    *
    * React 的被动 effect 是**子组件先、父组件后**：EventDisplay 的
@@ -997,21 +1011,23 @@ export function useGameEngine(props: UseGameEngineProps) {
     setPlayerStats(next)
   }, [])
 
-  // 全量事件池 —— 模块级构建一次。
+  // 全量事件池 —— 由 `data/events/store` 管，见那边的注释。
   //
-  // 改造前这里在 4 个函数体内各写了一遍 `const allEvents = [...initialEvents, ...allGrayChoiceEvents]`。
-  // 每次调用都要新建一个约 2000 项的数组并逐个拷贝，而这几个函数是**每月推进都会跑**
-  // 的热路径（findAvailableEvent / findAvailableEventWithState / findAllEventsForState /
-  // getCurrentStoryline），一局 17 年下来是数千次无谓的 2000 元素数组分配。
-  const ALL_EVENTS: GameEvent[] = [...initialEvents, ...allGrayChoiceEvents]
+  // 第七十九轮之后这里改成"读仓库"而不是"读常量数组"：
+  //   1. 开局只需要 1628 年那一片，其余 2.3 MB 在后台补（`future.ts` 文件头写着账）；
+  //   2. 数据补齐后要**换一份新数组**，下面的四个热路径每次都要重新取，
+  //      否则闭包里抓着的是开局那一份 —— 表现就是"第二年一整个 1632 年播不出卡"。
+  // 取引用本身是 O(1)（仓库内部只在补齐时重建一次），月度热路径没有新增分配。
+  const allGameEvents = () => getGameEvents()
 
-  // 推断当前剧情线：优先使用玩家选择后持久化的剧情线，否则从历史事件反推
+  /** 推断当前剧情线：优先使用玩家选择后持久化的剧情线，否则从历史事件反推 */
   const getCurrentStoryline = useCallback((): string | undefined => {
     if (currentStorylineRef.current) return currentStorylineRef.current
     const history = eventHistoryRef.current
+    const events = allGameEvents()
     for (let i = history.length - 1; i >= Math.max(0, history.length - 8); i--) {
       const id = history[i]
-      const ev = ALL_EVENTS.find(e => e.id === id)
+      const ev = events.find(e => e.id === id)
       if (ev?.storyline) return ev.storyline
     }
     return undefined
@@ -1031,14 +1047,14 @@ export function useGameEngine(props: UseGameEngineProps) {
    * 不会因为两份实现而漂移。
    */
   const findAvailableEvent = useCallback((): GameEvent | null => {
-    const available = ALL_EVENTS
+    const available = allGameEvents()
       .filter(e => checkEventConditions(e, characterRef.current, gameStateRef.current))
       .filter(e => hasOpenChoice(e, characterRef.current, gameStateRef.current))
     return pickEvent(available, eventHistoryRef.current, getCurrentStoryline())
   }, [])
 
   const findAvailableEventWithState = useCallback((state: GameStateValues): GameEvent | null => {
-    const available = ALL_EVENTS
+    const available = allGameEvents()
       .filter(e => checkEventConditions(e, characterRef.current, state))
       .filter(e => hasOpenChoice(e, characterRef.current, state))
     return pickEvent(available, eventHistoryRef.current, getCurrentStoryline())
@@ -1094,7 +1110,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     const history = eventHistoryRef.current
     // 与 findAvailableEvent 同一把尺子：事件级条件 + 「至少一个选项点得动」。
     // 放在这一步是因为只有过了条件的少数事件才需要算选项门，全池 400 条不必都算。
-    const available = ALL_EVENTS
+    const available = allGameEvents()
       .filter(e => checkEventConditions(e, characterRef.current, state))
       .filter(e => hasOpenChoice(e, characterRef.current, state))
     if (available.length === 0) return []
@@ -1796,6 +1812,41 @@ export function useGameEngine(props: UseGameEngineProps) {
     // 两批事件 id 各写一次历史、pendingEvents 被第二次覆盖。
     // ActionBar 那边又把 isProcessing 当成「可点」，所以按钮在这 300ms 里根本不禁用。
     if (advanceInFlightRef.current) return
+
+    // ── 跨年数据闸门 ────────────────────────────────────────────────────
+    // 开局只装了 1628 年那一片（见 data/events/store.ts）。如果此刻正要从
+    // 12 月跨进下一年，而下一年的数据还没补齐，**绝不能让下面那段空月跳过跑起来**：
+    // 它会在"候选池里没有那一年的事件"的情况下连跳最多 24 个月，
+    // 表现是玩家点一下【进下月】，屏幕上的年份直接飞过一两年 —— 而且无声。
+    const nextYearIfAdvance = gameStateRef.current.currentMonth >= 12
+      ? gameStateRef.current.currentYear + 1
+      : gameStateRef.current.currentYear
+    if (!eventDataCovers(nextYearIfAdvance)) {
+      setIsProcessing(true)
+      setAwaitingEventData(true)
+      // 闸门期间不放行重入，但要允许数据到了以后重新进来
+      advanceInFlightRef.current = false
+      let attempt = 0
+      const resumeWhenReady = (): void => {
+        whenEventDataReady().then(() => {
+          if (eventDataCovers(nextYearIfAdvance)) {
+            setAwaitingEventData(false)
+            setIsProcessing(false)
+            advanceRef.current?.()
+            return
+          }
+          // 还是没到 —— 说明分片真的拉不下来（离线、CDN 抖）。隔 1.5 秒再试，最多 5 次。
+          // **不在这里放行**：放行就等于让"空月连跳"把年份推过去，静默改档比卡住更坏。
+          if (++attempt < 5) {
+            window.setTimeout(resumeWhenReady, 1500)
+          } else {
+            console.error('[事件数据] 跨年所需分片连续 5 次加载失败，已停在此月，刷新页面可重试')
+          }
+        })
+      }
+      resumeWhenReady()
+      return
+    }
     advanceInFlightRef.current = true
 
     setIsProcessing(true)
@@ -1920,6 +1971,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     }, 300)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 跨年闸门用到的"再叫一次"入口（见 handleNextMonth 顶部的数据闸门）
+  advanceRef.current = handleNextMonth
 
   const handleContinue = useCallback(() => {
     const currentPending = pendingEventsRef.current
@@ -2407,6 +2461,32 @@ export function useGameEngine(props: UseGameEngineProps) {
     if (currentEventRef.current) return
     if (isProcessingRef.current) return
 
+    // ── 读档进来的跨年数据闸门 ──────────────────────────────────────
+    // 存档停在 1639，而第二批事件（1629 以后）还在下：此时发牌只会发到空手，
+    // 然后被下面那段"最多连跳 24 个月"的补位循环把年份一路推过去 —— 静默改档。
+    // 所以先等数据，等到之后把一次性守卫放开、耦合 `eventDataTick` 让本 effect 再跑一遍。
+    if (!eventDataCovers(gameStateRef.current.currentYear)) {
+      firstEventInitialisedRef.current = false
+      setAwaitingEventData(true)
+      let attempt = 0
+      const resumeWhenReady = (): void => {
+        whenEventDataReady().then(() => {
+          if (eventDataCovers(gameStateRef.current.currentYear)) {
+            setAwaitingEventData(false)
+            setEventDataTick(t => t + 1)
+            return
+          }
+          if (++attempt < 5) {
+            window.setTimeout(resumeWhenReady, 1500)
+          } else {
+            console.error('[事件数据] 读档所需分片连续 5 次加载失败，已停在此月，刷新页面可重试')
+          }
+        })
+      }
+      resumeWhenReady()
+      return
+    }
+
     checkAchievements()
 
     const params = {
@@ -2481,8 +2561,23 @@ export function useGameEngine(props: UseGameEngineProps) {
         age: prev.age + attempts / 12
       }))
     }
+    // eventDataTick：第二批事件到齐后要重跑一遍（见上面的跨年数据闸门）。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [eventDataTick])
+
+  /**
+   * 第二批事件（1629 以后）的点火点。
+   *
+   * 为什么不在初始化 effect 里直接开跑：那一刻第一张卡还没上屏，
+   * 而这 1.2 MB 会和"首卡要的那几片"抢同一条带宽 —— 分批就白分了。
+   * 这里等首卡一出现，再延后 200ms 点火：paint 已经发生，玩家正在读第一行字，
+   * 下载完全藏在阅读时间里。
+   */
+  useEffect(() => {
+    if (!currentEvent) return
+    const timer = window.setTimeout(() => startEventDataLoad(), 200)
+    return () => window.clearTimeout(timer)
+  }, [currentEvent])
 
   // 自动存档
   const autosaveTimerRef = useRef<number | null>(null)
@@ -2674,6 +2769,8 @@ export function useGameEngine(props: UseGameEngineProps) {
     biography,
     lastAutosaveFingerprint,
     isProcessing,
+    /** 跨年时后续年份的事件还没下完（见 handleNextMonth 顶部的数据闸门） */
+    awaitingEventData,
 
     // UI 开关
     openCheatMode,

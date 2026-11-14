@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { whenEventDataReady } from '../../src/data/events/store'
 
 /**
  * 单元测试全局环境准备。
@@ -108,6 +109,13 @@ if (!window.matchMedia) {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {}
 }
+
+beforeAll(async () => {
+  // 事件仓库在线上是"开局只装 1628，其余后台补"（见 src/data/events/store.ts）。
+  // 单测没有"后台"这一说：每个用例都假定全量 483 条已经就位，
+  // 否则同一颗种子跑出来的路径会和线上"走满整局"的路径不是同一条。
+  await whenEventDataReady()
+})
 
 beforeEach(() => {
   // 每个用例从干净的存储开始：存档/难度/教程标记都不该跨用例泄漏

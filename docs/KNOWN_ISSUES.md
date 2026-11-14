@@ -501,6 +501,14 @@ declares 'allEndingEvents' locally, but it is not exported` 直接拦住部署
 flag 可达性查的是"这条条件能不能凑齐"，它查的是"这个键名引擎认不认"，
 两类问题互相覆盖不到。详见第三节第七轮。
 
+**第八十轮状态更新：这条已关闭。**
+上面说"要真正做到按需加载，必须把事件挑选改成异步，那会大改 `useGameEngine` 核心" ——
+第七十九轮先砍掉了标题屏那一半（`GameScreen` 改懒加载），第八十轮把剩下的
+"开局也要下全量"解决了：事件仓改成两批（`data/events/future.ts` + `store.ts`），
+1628 年只装 165 条，1629 年以后在**第一张卡上屏之后**才补。
+没有动引擎的异步模型：`getGameEvents()` 仍是同步返回数组，只是补齐时会重建并通知订阅者。
+详见第三节第八十轮。残留的粗糙处（跨年拦截等的是"整批就绪"而非"那一年"）也写在那一节。
+
 ### 1.2 · 第三十四轮已实测关闭 · 长周目性能
 
 原来这条写的是：热路径从 O(n×m) 改成 O(n+m)（见 STEAM_RELEASE §2.6）之后，
@@ -2132,6 +2140,105 @@ root 完好、无 ErrorBoundary、无未捕获异常 —— 那是**正确行为
 ## 三、已修复的问题（按轮次索引）
 
 回归测试共 **837 例**，分 **100 个文件**，全部在 `tests/unit/`（836 通过、1 跳过；另有 1 条默认关闭的槽位探针，`SIM_PROBE_SLOTS=1` 才跑）。
+
+### 第八十轮（2026-11-15）：开局那 3.83 MB 也砍了 —— 事件按年份分两批，首卡 8348 → 6688 ms
+
+**本轮同样不动布局。** 新增的只有一个复用第七十九轮 `.game-boot` 的遮罩
+（`{awaitingEventData && …}`，文案「正在展开案卷…」），没有新选择器、没有改样式。
+
+**一、先把账摊开。**
+
+第七十九轮把标题屏的 2.47 MB 事件预取掐掉了，但那笔钱只是**挪到了开局**：
+点「开始仕途」之后、第一张卡出现之前，还要再付 3.83 MB（2.83 MB JS + 1.1 MB
+17 个 `Ma Shan Zheng` 字体分片），其中 `events-gray` 404 KB、`events-transition-1637`
+379 KB、`-1632` 348 KB、`-1627` 262 KB、`GameScreen` 281 KB、`events-ending` 205 KB。
+
+量法：`tests/_tmp-timeline.mjs`（Playwright + CDP，2 Mbps / 150 ms 限速），
+打的是每个请求的 start/end/字节，再对齐 `.event-title` 出现的时刻 ——
+只有"首卡之前"和"首卡之后"两截分开算，才看得出哪些字节是玩家**必须等的**。
+
+**二、判定：按年切分成立，且不是拍脑袋。**
+
+先让脚本回答一个问题：`src/data/events/*` 每个文件里的事件，年窗是不是都在
+自己那一年之内？结论：
+
+- 是。唯一例外是 `transition_127_pirate_seed`（1638–1644，皮岛经营要跨年）——
+  它在 1637 桶里，跟着第一批走，不影响切分。
+- **没有任何"无 year 条件"的野事件**（这类事件一旦漏到第二批，1628 年就会少卡）。
+- 真的需要跨年的只有五组：`route_guide`(1632–1643)、`inner_court`(1630–1644)、
+  `preludes`(1643+)、`1643b`(1643–1644)、`figures`(1629+) —— 全部归第二批。
+- `gray` 59/62 无年窗、`emotion` 全带年窗 ⇒ gray 留第一批（它是"填充卡"，
+  1628 年随时可能抽到），emotion 跟着年份走。
+
+**三、实现（三件事，一条都不能省）。**
+
+1. `src/data/events/future.ts`：1629–1644 历史 + figures、1629–1643 过渡 +
+   1643b + `1644_critical` + `route_guide` + `inner_court` + `preludes`。
+2. `src/data/events/store.ts`：
+   - `buildMerged()` 的拼接顺序与 `index.ts` 原 barrel **逐项相同**
+     （`h1628, futureH, t1628, futureT, emotion, faction, origin, echo, gray`），
+     顺序变了就是另一套发牌器，测试会红。
+   - `import('./future')` **不自动开跑**，由 `startEventDataLoad()` 点火 ——
+     否则它和第一张卡抢同一根水管，首卡反而更慢。
+   - `eventDataCovers(year)` / `ensureEventData()`（失败留待重试）/ `getGameEvents()`
+     （同一份数组引用，仅补齐时重建）/ `subscribeEventData`。
+3. `src/hooks/useGameEngine.ts` 三处拦截：
+   - `handleNextMonth` 顶部：目标年未覆盖 → 置 `awaitingEventData`、放开重入、
+     等 `whenEventDataReady()` 后经 `advanceRef.current()` 再叫一次。
+   - 初始化 effect 同理 —— 否则"最多连跳 24 个月"会把 1639 年的存档静默推走。
+   - 首张卡出现后 `setTimeout(…, 200)` 才点火，把第二批让到玩家读第一张卡的时间里去。
+
+**四、顺手抓到第二处真病灶：`GameScreen` 静态 import `CheatMode`。**
+
+`CheatMode` 为了浏览全部事件，静态 import 了 `data/events/index`（全量 barrel）。
+它一直挂在 `GameScreen` 的静态图里 —— 也就是说，**「打开游戏界面」等于
+「把以后十一年的卡全下完」**，2.4 MB，第七十九轮之后这笔钱正好落在了开局。
+改成 `lazy(() => import('./CheatMode'))` + `{isCheatModeOpen && <Suspense>}` 之后，
+首卡前的事件分片只剩 1628 那一片和 gray/emotion/origin。
+
+**五、量到的结果（2 Mbps / 150 ms，同一台机器同一套脚本）。**
+
+| 指标 | 改前 | 改后 |
+| --- | --- | --- |
+| 首卡出现 | 8348 ms | **6688 ms** |
+| 首卡之前付出 | 3.75 MB | **2.54 MB**（31 请求 / JS 1508 KB） |
+| 首卡前是否含 1632+ 分片 | 是（1632/1637/1642 全在） | **否** |
+| 第二批（`future` + 9 个分片） | 随开局一起下 | 首卡后 **+36 ms** 才发起 |
+| 首屏（未点开始） | 0.89 MB / 15 请求 | 不变 |
+
+**六、闸门固化（否则下轮一定复发）。**
+
+- `scripts/audit-event-split.ts` + `tests/unit/audit.eventSplit.test.ts`：
+  钉死四条事实 —— 第二批没有无 year 事件、第二批年窗不触及 1628、
+  两批拼起来的 id 序列与 barrel 完全一致（不重不漏）、首批 <45%。
+  实测：全池 434 条，首批 165 / 第二批 269，四项 0 处。
+- `tests/perf-budget.mjs` 加**第二相**（点开始 → 首卡）：
+  首卡前不得出现 `events-(historical|transition)-(≥1632|misc)` 分片、
+  首卡前字节 ≤ 3 MB、开局阶段不得请求 `CheatMode-*.js`、
+  点「幽灵模式」面板必须真的能开（防"懒加载把入口点成死按钮"）。
+
+**七、代价（写在这里，不装作没有）。**
+
+- 单测 `tests/unit/setup.ts` 现在要 `await whenEventDataReady()`（单测没有"后台"，
+  不补齐就测不到 1629 年以后），setup 从原来的量级涨到 **≈202 s**，
+  全量 101 文件 / 841 用例总时长 **≈310 s**。要压缩就把这行挪进 engine 相关的
+  helper，别放在全局 setup。
+- 跨年拦截是**粗粒度**的：它等的是"第二批整体就绪"，不是"1629 那一片"。
+  如果 `future` 分片一直拉不下来，玩家会停在 1628-12 看遮罩（每 1.5 秒自动重试，
+  共 5 次；全失败就停在这个月并留一条 console error，刷新可再来），
+  而不是静默跳年 —— 这是有意的取舍：宁可卡住，不许偷偷跳过十一年。
+
+**八、这轮看过但**没有**动的（审计结论，留档）。**
+
+仓库现成 17 个审计脚本全绿（exit=0），三处"需人工看"的信息属于内容/平衡判断，
+一改就变可达面，不在"不动布局"的范围里硬塞：
+
+- `audit-route-gates`：6 个命途入口事件只靠数值/隐藏值开门（`route_family_man`、
+  `route_duty_death`、`route_ordinary_life`、`route_unknown_fate`、
+  `route_honorable_retirement`、`route_clean_retire`）。
+- `audit-flag-reachability`：197 个"被 add 但无门槛引用"的 flag，其中 90 个
+  既无门槛读也未上履历 —— 对玩家等于"这件事发生过，但游戏从不承认"。
+- `audit-state-economy`：13/32 格需人工看。
 
 ### 第七十九轮（2026-11-15）：标题屏不再替玩家先付整局游戏的带宽 —— 本地 9.35 MB → 0.89 MB
 

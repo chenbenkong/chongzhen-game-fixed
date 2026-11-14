@@ -1,7 +1,7 @@
 {
   "name": "chongzhen-game",
   "private": true,
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "崇祯·宦海浮沉模拟器 —— 明末宦海人生模拟器（Web / 桌面双端）",
   "type": "module",
   "engines": {
@@ -54,7 +54,8 @@
     "desktop:pack": "npm --prefix desktop run pack",
     "desktop:dist": "npm --prefix desktop run dist",
     "steam:upload": "node desktop/steam/upload.mjs",
-    "audit:prose": "vite-node scripts/audit-prose.ts"
+    "audit:prose": "vite-node scripts/audit-prose.ts",
+    "audit:split": "vite-node scripts/audit-event-split.ts"
   },
   "dependencies": {
     "@fontsource/ma-shan-zheng": "^5.3.1",
