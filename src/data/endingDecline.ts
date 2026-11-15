@@ -69,11 +69,12 @@ export const declineGateOf = (title: string) => `搁笔·${title}`
  * 这一张表就是"哪些结局算该由玩家自己盖棺"的唯一答案 —— 引擎与体检脚本都从这里读，
  * 不在 26 条数据里散落标记，是为了让这一轮的取舍可以一眼看完、一眼改完。
  */
-const DECLINE_COPY: Record<string, { text: string; description: string; title: string; echo: string }> = {
+const DECLINE_COPY: Record<string, { text: string; description: string; title: string; echo: string; settle: string }> = {
   ending_famous_minister: {
     text: '【搁笔】传未成，且再任几年',
     description: '史馆且慢落笔',
     title: '名臣垂范 · 搁笔',
+    settle: '史官的册子又合上了。你回到值房，把那一页空白留给下一场硬仗。',
     echo: `史官捧着笔等你，你摇头。
 
 「流寇未平，辽东未靖，某传且慢写。」
@@ -84,6 +85,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】山里住不惯，再出山一趟',
     description: '茅屋才盖两间',
     title: '归隐田园 · 搁笔',
+    settle: '篱门重新推开，行李搁回堂屋，山里的锄头还挂在檐下。',
     echo: `你走到篱门前，回头看了一眼那两间新茅屋，又把包袱放回了屋里。
 
 「山中日月长，城里的事还没完。」
@@ -94,6 +96,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】书未刻成，稿还在案上',
     description: '著述只写了半部',
     title: '大儒传世 · 搁笔',
+    settle: '弟子把散稿重新码齐，砚里的墨又磨了一池 —— 书还差三篇。',
     echo: `弟子来问：先生的书，可以定稿了么？
 
 你翻开案上那册，中间还缺三篇序、两卷答问。
@@ -104,6 +107,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】仓里的米还没发完',
     description: '散财未竟',
     title: '富甲一方 · 搁笔',
+    settle: '账房的粥棚又支起来了。你把账本翻到下一页，写上再赈一季。',
     echo: `账房把最后一笔摊上时，你只批了两个字：再赈。
 
 史官在旁记「某公富甲一时」，你把他请出门，说：
@@ -114,6 +118,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】香未烧尽，山下还有人等',
     description: '剃度且缓一日',
     title: '遁入空门 · 搁笔',
+    settle: '剃刀收回匣中。你披衣下山，那斗米的信还得亲手送到。',
     echo: `师父把剃刀搁在案上，你合十：
 
 「弟子尚有一事未了 —— 山下那几家，还等这斗米的信。」
@@ -124,6 +129,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】儿孙尚小，撑不起这个家',
     description: '族谱留白一页',
     title: '天伦之乐 · 搁笔',
+    settle: '你把孙儿从膝上放下来，说等他们能自己端碗吃饭，再谈别的。',
     echo: `祠堂新砌，族谱才修到一半。你看着阶下那几个还在抢果子的孩子，把笔放下了。
 
 「这宅子要有人守，功名要有人续。今日不是收束的日子。」`
@@ -132,6 +138,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】疫势未平，药炉还不能冷',
     description: '方书再补一卷',
     title: '悬壶济世 · 搁笔',
+    settle: '药炉的火重新拨旺，门外排队的病家又多了两排 —— 这一季还走不得。',
     echo: `徒弟问：先生的方书可要进呈史馆？
 
 你指着窗外那队抬伤者的门板：
@@ -142,6 +149,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】朝廷未许，骸骨且留',
     description: '乞休疏被挽留',
     title: '致仕善终 · 搁笔',
+    settle: '原疏被奉还，你把官帽重新戴正，骸骨还得再留几年。',
     echo: `你上疏乞骸骨，旨意下来却是「温旨留公，以慰舆望」。
 
 司礼监的太监把原疏奉还，你只好再拜受职。
@@ -152,6 +160,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】城未筑完，兵未练成',
     description: '边务在手，未可言归',
     title: '边关大将 · 搁笔',
+    settle: '城墙的夯土还没干透，你把手按在垛口上，等这一圈合龙再说。',
     echo: `幕将请你上疏刻石纪功，你摇头：
 
 「大城才合了夯，新兵还在发饷。此时勒石，是把没打完的仗交给人家讲。」
@@ -162,6 +171,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】疏稿在袖中，尚未上',
     description: '言路未开，不敢自定结案',
     title: '清流骨鲠 · 搁笔',
+    settle: '疏稿还在袖中，你把笔尖重新蘸墨，等这道折子递进去再谈归期。',
     echo: `同僚抄了弹章副本，说史馆已备立传。
 
 你把袖中那份还没递的稿子抽出来，摊在灯下：
@@ -172,6 +182,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】日子还长，且不必写定',
     description: '寻常人不当场结案',
     title: '平凡终老 · 搁笔',
+    settle: '你把院里的柴劈完，抬头看了看天色 —— 日子还长，不急着写定。',
     echo: `史官查了半天告身，提笔要写「某某，寻常一官，无甚奇异」。
 
 你在旁听着，笑了：
@@ -192,6 +203,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】案头公文没批完，传且慢写',
     description: '最后一日还没到',
     title: '殉职任上 · 搁笔',
+    settle: '案头的公文还剩半摞，你把灯芯挑亮，说批完这一批再讲。',
     echo: `史官捧着册子来，说已经备下「鞠躬尽瘁，死而后已」八个字。
 
 你抬头看了看案上那叠还没批完的公文，又看了看窗外等着发赈的名册。
@@ -204,6 +216,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】船钱已付，人且留下',
     description: '行装才打了一半',
     title: '流亡海外 · 搁笔',
+    settle: '船钱退了，人留下来，海船在码头又泊了一年。',
     echo: `管事来问：船已雇定，今日可动身？
 
 你看着那两只箱子——一箱是账册，一箱是给灾民买的米，都还没落锁。
@@ -230,6 +243,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】印还在匣里，明日的折子还得自己递',
     description: '内相之名，不敢自定',
     title: '内廷外相 · 搁笔',
+    settle: '印信还在匣里，你把明日的折子抽出来，先看了第一页。',
     echo: `文书房的小太监来问：史馆要立传，题上「内廷外相」四个字，大人可认？
 
 你把最后一本奏疏合上，摇头：
@@ -242,6 +256,7 @@ const DECLINE_COPY: Record<string, { text: string; description: string; title: s
     text: '【搁笔】行李收了，船钱还没付',
     description: '乡里未必容得下一个告病的人',
     title: '抽身而去 · 搁笔',
+    settle: '行李重新摊开，你数了数盘缠，觉得还不是走的时候。',
     echo: `史官在城门外的茶棚里追上你，问：「大人这一去，可要写『卷怀归田』？」
 
 你回头看了一眼城门：
@@ -293,7 +308,7 @@ function asOffer(e: GameEvent): GameEvent {
     text: copy.text,
     description: copy.description,
     effects: { flags: { add: [SHIGUAN_DECLINE_FLAG, gate] } },
-    resultDescription: '你把史官的笔搁回了案上 —— 传未成，人还在宦海里。',
+    resultDescription: copy.settle,
     result: {
       title: copy.title,
       tags: ['搁笔', '传未成'],
