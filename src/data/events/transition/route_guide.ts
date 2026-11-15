@@ -253,7 +253,7 @@ export const eventsRouteGuide: GameEvent[] = [
     narrative: {
       speaker: { name: '老友', title: '同年进士' },
       quote: '某兄，你最近怎么了？整天闷闷不乐的。',
-      background: `你在官场已经十几年了。
+      background: `你在官场已经这些年了。
 
 这十几年里，你看过太多人起高楼、宴宾客、楼塌了。你看过清官被陷害，贪官飞黄腾达；看过忠臣下狱，奸臣加官进爵。
 
@@ -981,14 +981,14 @@ export const eventsRouteGuide: GameEvent[] = [
     id: 'route_grand_scholar',
     storyline: 'hermit',
     title: '辞官之念',
-    description: '官场沉浮数十载，你开始想：是不是该换一种活法？',
+    description: '官场沉浮十余载，你开始想：是不是该换一种活法？',
     type: 'transition',
     narrative: {
       speaker: { name: '同年进士', title: '致仕老友' },
       quote: '某兄，五十而知天命。你我这一辈子，到底图的是什么？',
       background: `你入仕已近二十年。
 
-这二十年里，你经历过贬谪、起复、几乎下狱的风浪，也经历过被擢升、被信任、被倚重的辉煌。你已经做过侍郎、做过巡抚，做过许多别人一辈子做不到的事。
+这二十年里，你见过人因一句话贬到岭南，也见过人戴罪起复；见过诏狱的门开开合合，也见过有人一夜间擢到侍郎、巡抚。至于你自己，从一县一职走到今天，已经做过许多旁人一辈子做不到的事。
 
 但最近几年，你开始感到疲倦。朝堂上的倾轧、党争中的算计、奏疏里的言不由衷——你累了。
 

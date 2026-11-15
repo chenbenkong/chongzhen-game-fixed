@@ -90,14 +90,24 @@ describe('履历表与数据层的对账', () => {
     const coveredDead = Object.keys(FLAG_MEMOIRS).filter(f => wo.has(f))
     // 白存 = 有履历的白存 + 仍然隐形的，一条不许少算
     expect(coveredDead.length + report.invisible.length).toBe(report.writeOnly.length)
+    /**
+     * 第八十一轮把这条棘轮从「≤113」收紧到「0」。
+     *
+     * 上一轮的口径是"给从没被随身带过的经历写文案是自欺" —— 那句话在当时对，
+     * 但它把**可达**和**常被带走**混成了一件事：`迎闯`、`死守宣府` 这类 1644 年的抉择
+     * 在 200 局模拟里当然罕见，可玩家真走到那一步时，它是那一生最重的一笔。
+     * 于是这一轮逐条数了 `npm run audit:flags` 的 `invisible` 名单（90 条），
+     * 按每个选项当场做的事各写一句，补进履历表。现在一条不剩。
+     *
+     * 从今往后，**任何新写的 flag 都必须要么被门槛读、要么上履历** ——
+     * 否则这条会红。这就是"玩家做过的事，游戏必须承认"的可执行版本。
+     */
     expect(
       report.invisible.length,
-      `既没门槛读、又没上履历的经历仍然有 ${report.invisible.length} 条` +
-        '（2026-10-16 实测：这 113 条里除了 `动用关系`、`贪声已著` 是第二波回响自己的产出' +
-        '（为守住"这一池写出的都看得见"而补的文案），其余正是 warden+steady 各 100 局里' +
-        '一次都没被随身带过的那一批 —— 给它们写文案是自欺；' +
-        '这条棘轮钉的是"别再往这一堆里添新的"）'
-    ).toBeLessThanOrEqual(113)
+      `既没门槛读、又没上履历的经历还有 ${report.invisible.length} 条：` +
+        `${report.invisible.slice(0, 8).join(', ')}${report.invisible.length > 8 ? ' 等' : ''}` +
+        '。新写的经历必须要么被某处门槛读，要么在 src/data/flagBiography.ts 里有一句人话。'
+    ).toBe(0)
   })
 })
 

@@ -51,9 +51,11 @@ describe('生平回顾 ·「这一生」', () => {
   })
 
   it('没登记文案的 flag 一条都不显示', () => {
-    openMemoirs(['忠臣', 'xianv_unknown_id', 'liushi_dead', 'blackmailed'])
+    // 第八十一轮把 90 条只写不读的经历全部补上了履历（100% 可见），
+    // 所以这里不能再拿真 flag 当"没登记"的样本 —— 改用三个纯机器 id 占位。
+    openMemoirs(['忠臣', 'xianv_unknown_id', 'some_internal_marker', 'unknown_flag_zz'])
     expect(document.querySelectorAll('.memoirs-item')).toHaveLength(1)
-    for (const raw of ['xianv_unknown_id', 'liushi_dead', 'blackmailed']) {
+    for (const raw of ['xianv_unknown_id', 'some_internal_marker', 'unknown_flag_zz']) {
       expect(document.body.textContent).not.toContain(raw)
     }
   })
