@@ -147,7 +147,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若当年纵容私欲',
-        description: '一个对照走向',
+        description: '若当年收受贿赂、纵容私欲，终将身败名裂的另一番下场。',
         effects: {
           hidden: {
             道德值: -40,
@@ -296,7 +296,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若降贼求生',
-        description: '一个对照走向',
+        description: '若城破之日放下武器归降，苟全性命却背负千古骂名的另一条路。',
         effects: {
           hidden: {
             道德值: -50,
@@ -473,7 +473,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若及早抽身',
-        description: '一个对照走向',
+        description: '若见风便辞官归里，躲过此劫却留下终身遗憾的另一局。',
         effects: {
           hidden: {
             道德值: 10,
@@ -644,7 +644,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若在阵前脱逃',
-        description: '一个对照走向',
+        description: '若阵前保命脱逃，虽免一死却背负一世怯战骂名的对照。',
         effects: {
           hidden: {
             道德值: -30,
@@ -958,7 +958,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若随崇祯殉国',
-        description: '一个对照走向',
+        description: '若未南下而随君殉国，名垂忠义传的另一番结局。',
         effects: {
           hidden: {
             道德值: 40,
@@ -1116,7 +1116,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若阻止国变',
-        description: '一个对照走向',
+        description: '若君臣协力阻止国变，大明得以延续百年的假设走向。',
         effects: {
           attributes: {
             武略: 30,
@@ -1276,7 +1276,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若当年刚愎自用',
-        description: '一个对照走向',
+        description: '若当年刚愎自用、强测出关，流寇复炽、大明再陷绝境的对照。',
         effects: { hidden: { 道德值: -25, 机敏值: -20 }, gameState: { 国势: -30, 清议: -20, 圣眷: -25 } },
         resultDescription: '若你当年自恃才高、不纳忠言、强行出战，流寇将卷土重来，大明将再陷绝境。',
         result: {
@@ -1429,7 +1429,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若投降前自刎殉国',
-        description: '一个对照走向',
+        description: '若称臣前自刎殉国，家人百姓俱遭屠戮的另一番惨局。',
         effects: { hidden: { 道德值: 30, 机敏值: -10 }, gameState: { 国势: -15, 圣眷: 10, 清议: 25 } },
         resultDescription: '若你在甲申之变时选择自刎殉国，家人将惨遭屠戮，辖区百姓更无幸免。',
         result: {
@@ -1584,7 +1584,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若被强行起复',
-        description: '一个对照走向',
+        description: '若归隐后被强召起复、再入官场，身败名裂、抑郁而终的对照。',
         effects: { hidden: { 道德值: -20, 野心值: 15 }, gameState: { 圣眷: 10, 清议: -15 } },
         resultDescription: '若你归隐后被朝廷强行起复、再入官场，恐将身败名裂、抑郁而终。',
         result: {
@@ -1942,7 +1942,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若乱世中破产',
-        description: '一个对照走向',
+        description: '若战乱中遇劫、家产尽失，从首富沦为负债之人的另一局。',
         effects: { hidden: { 道德值: 20, 野心值: -30 }, gameState: { 民望: 10, 清议: 5 } },
         resultDescription: '若你战乱中遇劫、家产尽失，从首富沦为乞丐，将如何面对这一切？',
         result: {
@@ -2095,7 +2095,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若海上遇难',
-        description: '一个对照走向',
+        description: '若出海途中遭遇风暴海盗，葬身鱼腹、魂断异乡的对照。',
         effects: { hidden: { 道德值: -10, 机敏值: -15 }, gameState: { 国势: -10 } },
         resultDescription: '若你在出海途中遭遇风暴或海盗，恐将葬身鱼腹、魂断异乡。',
         result: {
@@ -2241,7 +2241,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若红尘难断',
-        description: '一个对照走向',
+        description: '若出家后仍牵挂俗事、卷入红尘，破戒败德、为人不齿的另一番。',
         effects: { hidden: { 道德值: -20, 野心值: 25, 欲望值: 15 }, gameState: { 圣眷: -10, 清议: -20 } },
         resultDescription: '若你出家后仍牵挂红尘、卷入俗事，将破戒败德、为世人所不齿。',
         result: {
@@ -2377,7 +2377,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若家族内斗',
-        description: '一个对照走向',
+        description: '若归乡后卷入兄弟阋墙、家产散尽，晚景凄凉的对照。',
         effects: { hidden: { 道德值: -25, 野心值: 20 }, gameState: { 民望: -15 } },
         resultDescription: '若你归乡后卷入家族内斗、兄弟阋墙，将家产散尽、晚景凄凉。',
         result: {
@@ -2671,7 +2671,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若被人寻得下落',
-        description: '一个对照走向',
+        description: '若真实下落被人寻得，赞誉诋毁齐至、再难隐姓埋名的另一局。',
         effects: { hidden: { 道德值: -10, 机敏值: 15 }, gameState: { 清议: -10 } },
         resultDescription: '若你被人寻得真实下落，谜团揭开，赞誉与诋毁同时涌来，你将无法再安享隐姓埋名的生活。',
         result: {
@@ -2819,7 +2819,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若贪恋权位',
-        description: '一个对照走向',
+        description: '若贪恋权位、拒绝致仕，终被革职查办的对照结局。',
         effects: {
           hidden: {
             道德值: -30,
@@ -3005,7 +3005,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若明哲保身',
-        description: '一个对照走向',
+        description: '若最后关头抽身自保，百姓口中的老大人只剩一个空名的另一番。',
         effects: { hidden: { 道德值: -20, 野心值: 10 }, gameState: { 民望: -15 } },
         resultDescription: '若你在最后关头选择明哲保身、不入火场，百姓口中"老大人"便只剩一个空名。',
         result: {
@@ -3634,7 +3634,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若早早收手',
-        description: '一个对照走向',
+        description: '若早些年悬崖勒马、散财归乡，至少可保家人平安的对照。',
         effects: { hidden: { 道德值: 15, 野心值: -15 }, gameState: { 清议: 20, 民望: 10 } },
         resultDescription: '若你早些年悬崖勒马、散财归乡，至少可保家人平安。',
         result: {
@@ -4235,7 +4235,7 @@ const rawEndingEvents: GameEvent[] = [
       {
         id: 'c2',
         text: '【反事实】若隐忍不发',
-        description: '一个对照走向',
+        description: '若当年隐忍回乡、熬过党争，或能等到崇祯醒悟的另一局。',
         effects: { hidden: { 道德值: -20, 野心值: 15 }, gameState: { 圣眷: 10, 清议: -15 } },
         resultDescription: '若你当年学会隐忍，熬过这波党争，或许能熬到崇祯醒悟的那天。',
         result: {
