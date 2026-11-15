@@ -188,7 +188,7 @@
 | 持久化 | `localStorage`（带 schema 版本与迁移） |
 | 桌面端 | Electron + electron-builder（见 `desktop/`） |
 | Steam 接入 | steamworks.js，带完整 mock 驱动（无 AppID 也能跑） |
-| 测试 | vitest（**101 文件 / 841 例**）+ Playwright（真实 Chromium 冒烟、13 档视口布局回归、选项可达性 12 组、弹窗可达性 15 档、崩溃压力、存档模糊、内存检查、性能预算两相） |
+| 测试 | vitest（**102 文件 / 845 例**）+ Playwright（真实 Chromium 冒烟、13 档视口布局回归、选项可达性 12 组、弹窗可达性 15 档、崩溃压力、存档模糊、内存检查、性能预算两相） |
 | 部署 | GitHub Actions → GitHub Pages |
 
 ## 目录结构
@@ -242,6 +242,7 @@ chongzhen-game/
 │   └── font-check.mjs            # 自托管字体分片加载诊断
 ├── scripts/
 │   ├── audit-events.ts           # 事件审计
+│   ├── audit-narrative-claims.ts # 正文"被革职/下狱/抄家"必须与存档对得上（第 21 张网）
 │   ├── audit-narrative-quality.ts
 │   ├── validate-events.ts        # 事件校验
 │   ├── generate-icons.py         # PWA 图标生成（仅依赖 Pillow）
