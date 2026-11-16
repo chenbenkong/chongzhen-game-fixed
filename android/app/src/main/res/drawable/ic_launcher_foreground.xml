@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  自适应图标前景：印章风格。
+  中央白框 + 几道横折笔画，构成极简"崇"字意象；不引用任何网络图片。
+  前景安全区约位于中间 66dp。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 印章内框 -->
+    <path
+        android:strokeColor="#F3E9D2"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M30,30 L78,30 L78,78 L30,78 Z" />
+
+    <!-- 上部竖画 -->
+    <path
+        android:strokeColor="#F3E9D2"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,38 L54,50" />
+    <!-- 中部三横 -->
+    <path
+        android:strokeColor="#F3E9D2"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M42,44 L66,44" />
+    <path
+        android:strokeColor="#F3E9D2"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M42,54 L66,54" />
+    <!-- 下部折画 -->
+    <path
+        android:strokeColor="#F3E9D2"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M42,62 L66,62 L66,70 L42,70" />
+</vector>

@@ -417,6 +417,16 @@ https://chenbenkong.github.io/chongzhen-game-fixed/
 推送到 `main` 分支后，`.github/workflows/deploy.yml` 会执行构建并发布到 Pages；
 AI Key 通过仓库 Secret `VITE_AI_API_KEY` 注入（未设置则线上 AI 功能不可用）。
 
+## 手机横屏版与原生 Android 版
+
+- **手机横屏 Web 版**（v0.5.0）：手机自动进入独立横屏牌桌，竖屏出「请旋转手机」遮罩；
+  `?mobile=1` 可强制预览、`?mobile=0` 强制桌面版。代码在 `src/mobile/`，
+  复用同一套引擎与 `EventDisplay`，桌面布局零改动。详见 [docs/MOBILE_WEB.md](docs/MOBILE_WEB.md)。
+- **原生 Android 单机版**：`android/` 下的 Kotlin + Jetpack Compose 原生客户端，
+  无 WebView / 无网页套壳、不申请 `INTERNET` 权限，事件数据随包内置。
+  引擎口径、构建命令与已知缺口见 [docs/ANDROID_NATIVE.md](docs/ANDROID_NATIVE.md)。
+
+
 > 本仓库是 [chenbenkong/chongzhen-game](https://github.com/chenbenkong/chongzhen-game)
 > 的修复分支：原仓库保持只读、未接收任何推送。
 > 六轮缺陷整改的完整清单（含每条缺陷的表现与回归测试）见
