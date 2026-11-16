@@ -17,3 +17,8 @@ app/build/
 captures/
 .externalNativeBuild/
 .cxx/
+.kotlin/
+
+# 构建过程日志（agent/人工调试留下的，不是交付物）
+*-log.txt
+*.log
