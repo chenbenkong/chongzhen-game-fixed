@@ -11,6 +11,7 @@ import { SaveData, getAllSaveSlots, deleteAutosave, loadAutosave } from './types
 import { origins } from './data/origins'
 import { setAchievementData } from './types/achievement'
 import { DifficultyLevel, loadDifficulty, saveDifficulty } from './types/difficulty'
+import { detectMobileMode } from './mobile/detect'
 
 /**
  * 游戏主界面（引擎 + 全部事件数据）**懒加载**。
@@ -29,6 +30,9 @@ import { DifficultyLevel, loadDifficulty, saveDifficulty } from './types/difficu
  */
 const loadGameScreen = () => import('./components/GameScreen')
 let GameScreenLazy = lazy(loadGameScreen)
+
+// 手机横屏版整包懒加载：与桌面 GameScreen 同一条分包线，桌面标题屏不背游戏主包。
+const MobileAppLazy = lazy(() => import('./mobile/MobileApp'))
 
 /**
  * 预取游戏主包。玩家一旦表现出"要玩"的意图（点标题屏任意位置、按任意键）就开始拉，
@@ -229,6 +233,27 @@ function App() {
     setLoadSaveData(null)
     setPhase('title')
   }, [])
+
+  // 手机横屏版入口：检测命中时整棵子树切到 MobileApp。
+  // 桌面分支的 JSX / className / 导入顺序保持逐字等价，下面的 return 不再改动。
+  if (detectMobileMode()) {
+    return (
+      <BGMProvider>
+        <StorageAlerts />
+        <Suspense
+          fallback={
+            <div className="game-boot" role="status" aria-live="polite">
+              <div className="game-boot__title">崇祯</div>
+              <div className="game-boot__bar" />
+              <div className="game-boot__hint">正在展开卷宗…</div>
+            </div>
+          }
+        >
+          <MobileAppLazy />
+        </Suspense>
+      </BGMProvider>
+    )
+  }
 
   return (
     <BGMProvider>
