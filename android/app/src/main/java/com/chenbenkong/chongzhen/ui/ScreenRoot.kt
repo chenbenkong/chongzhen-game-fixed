@@ -16,12 +16,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.safeDrawing
 import com.chenbenkong.chongzhen.ui.theme.BoardTheme
+import com.chenbenkong.chongzhen.ui.theme.InkBlack
 import kotlinx.coroutines.delay
 
 /**
@@ -34,30 +37,49 @@ fun AppRoot(viewModel: BoardViewModel) {
 
     BoardTheme {
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.systemBars),
-            color = MaterialTheme.colorScheme.background
+            modifier = Modifier.fillMaxSize(),
+            color = InkBlack
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (state.screen) {
-                    Screen.Loading -> LoadingScreen()
-                    Screen.Title -> TitleScreen(state, viewModel)
-                    Screen.NameForm -> NameSetupScreen(state, viewModel)
-                    Screen.Origin -> OriginSelectScreen(state, viewModel)
-                    Screen.Board -> BoardScreen(state, viewModel)
-                    Screen.Ending -> EndingScreen(state, viewModel)
-                    Screen.FatalError -> ErrorScreen(state, viewModel)
-                }
-
-                state.toast?.let { toast ->
-                    ToastOverlay(
-                        text = toast,
-                        modifier = Modifier.align(Alignment.BottomCenter)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                InkBlack,
+                                Color(0xFF1C1610),
+                                Color(0xFF2A1E14),
+                                Color(0xFF0A0806)
+                            )
+                        )
                     )
-                    LaunchedEffect(toast) {
-                        delay(1800)
-                        viewModel.consumeToast()
+            ) {
+                // 渐变铺满整块屏幕（包括刘海/挖孔侧），内容再让出安全区；
+                // 这样横屏时左侧挖孔不会留下一条纯黑竖带。
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                ) {
+                    when (state.screen) {
+                        Screen.Loading -> LoadingScreen()
+                        Screen.Title -> TitleScreen(state, viewModel)
+                        Screen.NameForm -> NameSetupScreen(state, viewModel)
+                        Screen.Origin -> OriginSelectScreen(state, viewModel)
+                        Screen.Board -> BoardScreen(state, viewModel)
+                        Screen.Ending -> EndingScreen(state, viewModel)
+                        Screen.FatalError -> ErrorScreen(state, viewModel)
+                    }
+
+                    state.toast?.let { toast ->
+                        ToastOverlay(
+                            text = toast,
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        )
+                        LaunchedEffect(toast) {
+                            delay(1800)
+                            viewModel.consumeToast()
+                        }
                     }
                 }
             }

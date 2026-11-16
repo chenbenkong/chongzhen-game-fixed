@@ -24,7 +24,7 @@
 | `…/engine/ranks/` | 政绩分、升迁门槛、15 条贬官判据（含宽限期） |
 | `…/engine/boundary/BoundaryEngine.kt` | 边界判定：49 条结局 + 58 条边界事件，其中 22 条手写规则全部显式移植（`unportedCount = 0`） |
 | `…/engine/save/` | 存档序列化（JSON、原子写）与槽位：自动 1 + 手动 3 |
-| `…/ui/` | 原生 Compose 界面：标题 / 取名 / 选出身 / 牌桌（HUD + 事件卡 + 抉择 + 抽屉）/ 结局 / 错误态 |
+| `…/ui/` | 原生 Compose 界面：标题 / 取名 / 选出身 / 牌桌（Web 式顶栏 + 左能力栏 + 中事件栏 + 右态度栏 + 底部操作条 + 卷宗抽屉）/ 结局 / 错误态 |
 | `app/src/test/` | JVM 单测：条件、效果、发牌、边界、结局、撤销、投骰、存档、控制器流程 |
 
 ## 关键实现口径
@@ -37,6 +37,22 @@
   禁止用"叙事最小年"常量顶包。
 - **可搁笔结局**：只摆牌不结算（`gameOver` 不置位），文案用逐格 `settle`。
 - **存档**：每回合写自动档，原子替换；读档恢复姓名/出身/功名/年月/回合/属性/隐藏/flags/flagTurns/履历/当前事件。
+
+## 手机尺寸适配（2026-11-16）
+
+目标真机：**2772×1280、6.83 英寸**，横屏宽高比 **2.165:1**，与设计基准 844×390（2.164:1）同比例。
+按 Android 密度换算后视口约为 844–924dp 宽、366–390dp 高；布局全部用 `dp/sp` 和约束，不写死像素。
+
+- **三栏按宽度比例**：`sideWidth = maxWidth × 0.21`，夹在 `150–220dp`；`≥600dp` 才出三栏。
+  这样 844dp 宽时左右栏约 177dp、中间事件栏约 454dp；924dp 宽时左右栏约 194dp、中间约 520dp。
+- **字号上移一档**：正文 14sp / 21sp 行高，事件标题 22sp，侧栏标签 11.5sp；不再用默认 Roboto。
+- **触控目标**：底部按钮 ≥44dp，抉择卡 ≥46dp；横屏短边只有约 366dp，不做 56dp 大按钮堆叠。
+- **系统栏 / 挖孔**：`MainActivity` 隐藏 systemBars、`LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`；
+  `ScreenRoot` 的渐变铺满整屏，内容再让 `safeDrawing`，横屏挖孔侧不会留黑竖条。
+- **视觉对齐 Web**：墨黑 `#0A0806` / 面板 `#161210→#0D0A08` / 旧金 `#C5A55A` / 宣纸 `#F5E6C8` /
+  细线 `#2A2015`；系统衬线字体（宋体族）；面板 3dp 方角、1dp 金线；按钮暗底金边，不用朱砂圆角块。
+- **字体风险**：不打包字体文件，依赖系统 `serif` 的 CJK 字面；没有 CJK 衬线字体的设备会回退到系统默认字，
+  真机字形未验证（本机无设备/AVD）。
 
 ## 构建
 
@@ -68,7 +84,7 @@
 ## 本轮实测（2026-11-16）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- clean 后 `assembleDebug`：`app-debug.apk` **11,257,016 字节**，debug v2 签名有效（`CN=Android Debug`）。
+- clean 后 `assembleDebug`：`app-debug.apk` **11,459,024 字节**，debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`assets/game-data.json` **3,927,111 字节**在位；APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用。
 - 未验证项：真机安装、启动、横屏显示、触控与存档落盘（本机 `adb devices` 为空，SDK 无 emulator/AVD）。
 

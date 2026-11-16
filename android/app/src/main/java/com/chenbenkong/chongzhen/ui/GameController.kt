@@ -354,11 +354,11 @@ class GameController(
         val event = eng.currentEvent
 
         val choices = event?.choices.orEmpty().map { choice ->
-            val open = ConditionEvaluator.evaluateChoice(choice, ctx, eng.random)
+            val availability = ConditionEvaluator.evaluateChoiceDetailed(choice, ctx, eng.random)
             ChoiceView(
                 choice = choice,
-                open = open,
-                disabledReason = if (open) null else "条件未满足，暂不可选（引擎未返回具体门槛）"
+                open = availability.available,
+                disabledReason = if (availability.available) null else availability.reasonText
             )
         }
 

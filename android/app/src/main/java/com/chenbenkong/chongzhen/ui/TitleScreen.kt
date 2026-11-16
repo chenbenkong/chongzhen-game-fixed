@@ -27,10 +27,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.chenbenkong.chongzhen.ui.theme.CinnabarBright
+import com.chenbenkong.chongzhen.ui.theme.CardInk
+import com.chenbenkong.chongzhen.ui.theme.CardInkDeep
 import com.chenbenkong.chongzhen.ui.theme.Gold
+import com.chenbenkong.chongzhen.ui.theme.GoldDark
+import com.chenbenkong.chongzhen.ui.theme.PanelBorder
 import com.chenbenkong.chongzhen.ui.theme.ParchmentDim
 
 // ============================================================================
@@ -55,7 +60,17 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
             text = "崇祯·宦海浮沉",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            color = Gold
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.42f)
+                .heightIn(min = 1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(Color.Transparent, GoldDark, Color.Transparent)
+                    )
+                )
         )
         Text(
             text = "「名以正体，字以表德。」",
@@ -130,24 +145,31 @@ private fun DifficultyOption(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 44.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .clip(RoundedCornerShape(3.dp))
+            .background(
+                if (selected) {
+                    Brush.verticalGradient(listOf(Color(0xFF221A10), CardInkDeep))
+                } else {
+                    Brush.verticalGradient(listOf(CardInk, CardInkDeep))
+                }
+            )
             .border(
                 1.dp,
-                if (selected) CinnabarBright else MaterialTheme.colorScheme.outline,
-                RoundedCornerShape(10.dp)
+                if (selected) GoldDark else PanelBorder,
+                RoundedCornerShape(3.dp)
             )
             .clickable(onClick = onClick)
-            .padding(14.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
             modifier = Modifier
-                .width(16.dp)
-                .heightIn(min = 16.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(if (selected) CinnabarBright else MaterialTheme.colorScheme.surfaceVariant)
+                .width(14.dp)
+                .heightIn(min = 14.dp)
+                .clip(RoundedCornerShape(1.dp))
+                .border(1.dp, if (selected) Gold else PanelBorder, RoundedCornerShape(1.dp))
+                .background(if (selected) Gold.copy(alpha = 0.35f) else Color.Transparent)
         )
         Column {
             Text(

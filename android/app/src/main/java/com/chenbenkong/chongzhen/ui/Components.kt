@@ -15,18 +15,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.chenbenkong.chongzhen.ui.theme.Cinnabar
-import com.chenbenkong.chongzhen.ui.theme.CinnabarBright
+import androidx.compose.ui.unit.sp
+import com.chenbenkong.chongzhen.ui.theme.CardInk
+import com.chenbenkong.chongzhen.ui.theme.CardInkDeep
 import com.chenbenkong.chongzhen.ui.theme.Gold
+import com.chenbenkong.chongzhen.ui.theme.GoldDark
+import com.chenbenkong.chongzhen.ui.theme.PanelBorder
+import com.chenbenkong.chongzhen.ui.theme.Parchment
 import com.chenbenkong.chongzhen.ui.theme.ParchmentDim
+import com.chenbenkong.chongzhen.ui.theme.ParchmentFaint
 
-// ============================================================================
-// 牌桌公共小件：按钮 / 胶囊 / 分区标题。触控目标统一 ≥44dp，主操作 ≥48dp。
-// ============================================================================
+private val ButtonShape = RoundedCornerShape(3.dp)
 
-/** 主按钮（朱砂底）。 */
+/** 主按钮：暗底 + 旧金描边，对齐 Web 的 ActionBar 主操作。 */
 @Composable
 fun PrimaryButton(
     text: String,
@@ -36,28 +42,35 @@ fun PrimaryButton(
 ) {
     Box(
         modifier = modifier
-            .heightIn(min = 48.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (enabled) CinnabarBright else MaterialTheme.colorScheme.surfaceVariant)
+            .heightIn(min = 44.dp)
+            .clip(ButtonShape)
+            .background(
+                if (enabled) {
+                    Brush.verticalGradient(listOf(CardInk, CardInkDeep))
+                } else {
+                    Brush.verticalGradient(listOf(Color(0xFF15120E), Color(0xFF0D0B08)))
+                }
+            )
             .border(
                 1.dp,
-                if (enabled) Cinnabar else MaterialTheme.colorScheme.outline,
-                RoundedCornerShape(10.dp)
+                if (enabled) GoldDark else PanelBorder,
+                ButtonShape
             )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 12.dp),
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = if (enabled) MaterialTheme.colorScheme.onPrimary else ParchmentDim
+            letterSpacing = 2.sp,
+            color = if (enabled) Gold else ParchmentFaint
         )
     }
 }
 
-/** 次要描边按钮。 */
+/** 次要描边按钮：Web 低对比金线按钮。 */
 @Composable
 fun GhostButton(
     text: String,
@@ -68,20 +81,21 @@ fun GhostButton(
     Box(
         modifier = modifier
             .heightIn(min = 44.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(ButtonShape)
             .border(
                 1.dp,
-                if (enabled) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.surfaceVariant,
-                RoundedCornerShape(10.dp)
+                if (enabled) PanelBorder else Color(0xFF1A1410),
+                ButtonShape
             )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else ParchmentDim
+            style = MaterialTheme.typography.bodyMedium,
+            letterSpacing = 1.sp,
+            color = if (enabled) ParchmentDim else ParchmentFaint
         )
     }
 }
@@ -119,25 +133,26 @@ fun StatCapsule(
 /** 增减结果 chip。 */
 @Composable
 fun DeltaChip(text: String, positive: Boolean, modifier: Modifier = Modifier) {
-    val color = if (positive) Gold else MaterialTheme.colorScheme.primary
+    val color = if (positive) Gold else Color(0xFFD08A73)
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .border(1.dp, if (positive) PanelBorder else Color(0xFF3A2018), RoundedCornerShape(2.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(text = text, style = MaterialTheme.typography.labelLarge, color = color)
     }
 }
 
-/** 抽屉 / 卡片内分区标题。 */
+/** 面板内分区标题：居中、旧金、字距拉开，模仿 Web 的 section-title。 */
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        modifier = modifier.padding(vertical = 6.dp),
+        modifier = modifier.padding(vertical = 4.dp),
         style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 2.sp,
         color = Gold
     )
 }

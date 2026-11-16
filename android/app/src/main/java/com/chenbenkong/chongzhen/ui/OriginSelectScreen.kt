@@ -83,9 +83,20 @@ private fun OriginCard(origin: OriginConfig, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .heightIn(min = 220.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(3.dp))
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    listOf(
+                        com.chenbenkong.chongzhen.ui.theme.CardInk,
+                        com.chenbenkong.chongzhen.ui.theme.CardInkDeep
+                    )
+                )
+            )
+            .border(
+                1.dp,
+                com.chenbenkong.chongzhen.ui.theme.PanelBorder,
+                RoundedCornerShape(3.dp)
+            )
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -112,8 +123,9 @@ private fun OriginCard(origin: OriginConfig, onClick: () -> Unit) {
             origin.tags.take(3).forEach { tag ->
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
+                        .clip(RoundedCornerShape(2.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, com.chenbenkong.chongzhen.ui.theme.PanelBorder, RoundedCornerShape(2.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(text = tag, style = MaterialTheme.typography.labelSmall, color = ParchmentDim)
