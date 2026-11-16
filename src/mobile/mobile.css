@@ -494,3 +494,61 @@ body.mobile-applied textarea {
   overflow-y: auto;
   background: var(--bg-deep, #0a0807);
 }
+
+/* ============================================================
+   Web 视觉对齐（2026-11-16）：手机壳也沿用桌面主题的
+   墨黑渐变 / 旧金细线 / 方角面板，不再是一块纯黑平铺。
+   全部限定在 .mobile-shell 作用域内，桌面样式零改动。
+   ============================================================ */
+.mobile-shell .mobile-hud {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border, #2a2015);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #18120a 0%, #12100c 100%);
+}
+
+.mobile-shell .mobile-state-capsule {
+  border-radius: 2px;
+  border-color: var(--color-border, #2a2015);
+  background: rgba(197, 165, 90, 0.04);
+}
+
+.mobile-shell .mobile-state-capsule__label {
+  color: rgba(197, 165, 90, 0.55);
+}
+
+.mobile-shell .mobile-state-capsule__value {
+  color: var(--gold, #c5a55a);
+}
+
+.mobile-shell .mobile-event-host {
+  border: 1px solid var(--color-border, #2a2015);
+  border-radius: 3px;
+  background: linear-gradient(165deg, #161210 0%, #0d0a08 100%);
+}
+
+.mobile-shell .mobile-actionbar {
+  border: 1px solid var(--color-border, #2a2015);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #18130d 0%, #12100c 100%);
+  padding: 6px 10px;
+}
+
+.mobile-shell .mobile-bar-btn {
+  border-radius: 2px;
+  border-color: var(--color-border, #2a2015);
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+  color: #8b7540;
+  letter-spacing: 1px;
+}
+
+.mobile-shell .mobile-bar-btn--primary {
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+  border-color: #4a3820;
+  color: var(--gold, #c5a55a);
+}
+
+.mobile-shell .mobile-bar-btn:disabled {
+  opacity: 0.35;
+}
