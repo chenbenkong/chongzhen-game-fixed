@@ -2231,6 +2231,10 @@ export function useGameEngine(props: UseGameEngineProps) {
     const restoredPending = [...checkpoint.pendingEvents]
     const restoredStats: PlayerStats = { ...checkpoint.playerStats }
     const restoredLifeRecords = [...checkpoint.lifeRecords]
+    // 必须换一个新的 event 引用：EventDisplay 的复位 effect 依赖 event 对象本身，
+    // 若原样 setCurrentEvent(event)，React 会认为事件没变，旧的「已抉择/结算」状态
+    // 会留在牌桌上，重选时连选项都点不出来。
+    const retryDisplayEvent: GameEvent = { ...event }
 
     characterRef.current = restoredCharacter
     gameStateRef.current = restoredState
@@ -2244,7 +2248,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     playerStatsRef.current = restoredStats
     lifeRecordsRef.current = restoredLifeRecords
     identityTypeRef.current = checkpoint.identityType
-    currentEventRef.current = event
+    currentEventRef.current = retryDisplayEvent
 
     setCharacter(restoredCharacter)
     setGameState(restoredState)
@@ -2257,7 +2261,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     setPlayerStats(restoredStats)
     setLifeRecords(restoredLifeRecords)
     setIdentityType(checkpoint.identityType)
-    setCurrentEvent(event)
+    setCurrentEvent(retryDisplayEvent)
     setUndoHistory([])
     setBiography('')
     setDeathEndingState({
