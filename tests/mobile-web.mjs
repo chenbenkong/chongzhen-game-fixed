@@ -89,9 +89,9 @@ async function main() {
 
     check('底部操作条默认收起', (await page.locator('.mobile-actionbar').count()) === 0)
 
-    const handle = page.locator('.mobile-actionbar-handle')
+    const handle = page.locator('.mobile-hud__action')
     const handleBox = await handle.boundingBox()
-    check('有浮动的操作入口', !!handleBox,
+    check('顶栏有操作入口', !!handleBox,
       handleBox ? `${handleBox.width.toFixed(1)}×${handleBox.height.toFixed(1)}` : 'no box')
     check('操作入口触控目标 ≥44px', !!handleBox && Math.min(handleBox.width, handleBox.height) >= 44,
       handleBox ? `min=${Math.min(handleBox.width, handleBox.height).toFixed(1)}` : 'n/a')

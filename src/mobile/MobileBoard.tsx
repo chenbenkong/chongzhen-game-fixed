@@ -158,11 +158,21 @@ export default function MobileBoard(props: MobileBoardProps) {
           ))}
         </div>
 
-        {pendingEvents.length > 0 && (
-          <div className="mobile-hud__extra">
-            <span className="mobile-hud__pending">待办 {pendingEvents.length}</span>
-          </div>
-        )}
+        <button
+          type="button"
+          className="mobile-hud__action"
+          onClick={() => setIsActionbarOpen(true)}
+          aria-label="展开操作栏"
+          aria-expanded={isActionbarOpen}
+        >
+          <span className="mobile-hud__action-icon" aria-hidden="true">☰</span>
+          <span>操作</span>
+          {pendingEvents.length > 0 && (
+            <span className="mobile-hud__pending" aria-label={`待办 ${pendingEvents.length}`}>
+              {pendingEvents.length}
+            </span>
+          )}
+        </button>
       </header>
 
       {/* 主区：中央事件卡 */}
@@ -187,19 +197,7 @@ export default function MobileBoard(props: MobileBoardProps) {
         </div>
       </main>
 
-      {/* 底部操作条：默认收起，点右下角「操作」才展开；展开后不再挤压事件区。 */}
-      {!isActionbarOpen && !modalOpen && (
-        <button
-          type="button"
-          className="mobile-actionbar-handle"
-          onClick={() => setIsActionbarOpen(true)}
-          aria-label="展开操作栏"
-        >
-          <span className="mobile-actionbar-handle__icon" aria-hidden="true">☰</span>
-          <span>操作</span>
-        </button>
-      )}
-
+      {/* 底部操作条：默认收起，点顶栏「操作」才展开；展开后不再挤压事件区。 */}
       {isActionbarOpen && !modalOpen && (
         <footer className="mobile-actionbar" aria-label="牌桌操作">
           <button
@@ -254,7 +252,7 @@ export default function MobileBoard(props: MobileBoardProps) {
             onClick={() => setIsActionbarOpen(false)}
             aria-label="收起操作栏"
           >
-            收起
+            ×
           </button>
         </footer>
       )}

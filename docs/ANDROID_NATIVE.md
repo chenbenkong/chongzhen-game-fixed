@@ -48,9 +48,9 @@
 - **按需面板**：顶栏只留「国势 + 面板」；点「面板」从右侧弹出抽屉，页签为
   **能力 / 态度 / 卷宗**。面板宽为屏宽 64%，点遮罩、关闭按钮或系统返回键都会收起。
   `卷宗` 页签含票签、履历、结局图鉴；不再把三栏信息常驻在牌桌上。
-- **底部操作条默认收起**：牌桌不再常驻四按钮底栏；右下角只留一个 44dp 的「操作」入口，
+- **底部操作条默认收起**：牌桌不再常驻四按钮底栏；顶栏「面板」右侧只留一个 44dp 的「操作」入口，
   点开才以浮层展开「标题 / 撤销 / 存档 / 进下月 / ×」，点遮罩、× 或系统返回键收起。
-  事件区因此拿回约 56dp 高度。
+  事件区因此拿回整块高度，收起态没有底部遮挡。
 - **三栏只给大屏**：≥600dp 高的平板/桌面仍按 Web 三栏骨架显示，侧栏宽 `maxWidth × 0.21`
   夹在 `170–230dp`；手机不再触发。
 - **强横屏**：Manifest `android:screenOrientation="sensorLandscape"`，
@@ -59,7 +59,7 @@
   把牌桌转成竖屏；`sensorLandscape` 允许左右两个横屏方向。
 - **字号按手机收一档**：事件描述 12.5sp / 19sp 行高，引语 12.5sp / 18sp，选项正文
   12.5sp / 17sp，选项说明 12sp / 16sp；事件标题 22sp，侧栏标签 11.5sp。不再用桌面 14sp 正文硬塞。
-- **触控目标**：操作条按钮 ≥44dp，浮动「操作」入口 ≥44dp，抉择卡 ≥46dp；横屏短边只有约 366dp，
+- **触控目标**：操作条按钮 ≥44dp，顶栏「操作」入口 ≥44dp，抉择卡 ≥46dp；横屏短边只有约 366dp，
   不做 56dp 大按钮堆叠。
 - **系统栏 / 挖孔**：`MainActivity` 隐藏 systemBars、`LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`；
   `ScreenRoot` 的渐变铺满整屏，内容再让 `safeDrawing`，横屏挖孔侧不会留黑竖条。
@@ -101,7 +101,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,461,475 字节**，SHA-256 `E56C9902284459731BCF794DFF200AD44DCF61ACBE3B479074FC47FC8FEA614C`，
+- `assembleDebug`：`app-debug.apk` **11,461,759 字节**，SHA-256 `1DD3ACA51F55E64406A31BB37DFEA4FC320EB47032C6A5A8594486D78A3A91F4`，
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。

@@ -435,7 +435,11 @@ body.mobile-applied textarea {
   bottom: 8px;
   z-index: 40;
   display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 8px;
+  height: 56px;
+  box-sizing: border-box;
   padding: 6px 8px;
   border: 1px solid var(--color-border, #2a2015);
   border-radius: 3px;
@@ -443,34 +447,34 @@ body.mobile-applied textarea {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
 .mobile-shell .mobile-bar-btn {
-  flex: 1;
+  flex: 1 1 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 .mobile-shell .mobile-bar-btn--primary {
-  flex: 2;
+  flex: 2 1 0;
   background: var(--gold, #c5a55a);
   color: #1a1a1a;
   font-weight: 700;
 }
 .mobile-shell .mobile-actionbar__close {
-  flex: 0 0 54px;
-  min-width: 54px;
-  padding-left: 8px;
-  padding-right: 8px;
+  flex: 0 0 44px;
+  min-width: 44px;
+  padding: 0;
   color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
 }
 
-/* 收起态只留右下角一个 44px 的「操作」入口，不再占整行高度。 */
-.mobile-shell .mobile-actionbar-handle {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 41;
+/* 顶栏「操作」入口：44px 触控，不占底部正文空间；点开才浮出底部操作条。 */
+.mobile-shell .mobile-hud__action {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-height: 44px;
   min-width: 64px;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 1px solid var(--color-border-strong, rgba(197, 165, 90, 0.4));
   border-radius: 3px;
   background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
@@ -479,12 +483,24 @@ body.mobile-applied textarea {
   font-size: 13px;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
-.mobile-shell .mobile-actionbar-handle__icon {
+.mobile-shell .mobile-hud__action-icon {
   font-size: 15px;
   line-height: 1;
   color: rgba(197, 165, 90, 0.75);
+}
+.mobile-shell .mobile-hud__pending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(197, 165, 90, 0.18);
+  color: var(--gold, #c5a55a);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 /* 升迁提示条 */

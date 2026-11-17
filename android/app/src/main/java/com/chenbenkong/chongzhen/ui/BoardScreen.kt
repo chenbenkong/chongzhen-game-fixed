@@ -106,15 +106,6 @@ fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
                     .padding(6.dp),
                 onClose = { viewModel.setActionBarOpen(false) }
             )
-        } else if (board != null) {
-            // 收起态只留右下角一个 44dp 的「操作」入口，事件区拿回整块高度。
-            GhostButton(
-                text = "操作",
-                onClick = { viewModel.setActionBarOpen(true) },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(10.dp)
-            )
         }
 
         if (state.boardPanel != null && board != null) {
@@ -212,6 +203,10 @@ private fun WebStatusBar(
         GhostButton(
             text = "面板",
             onClick = { viewModel.openBoardPanel(BoardPanel.Attributes) }
+        )
+        GhostButton(
+            text = "操作",
+            onClick = { viewModel.setActionBarOpen(true) }
         )
     }
 }
