@@ -196,6 +196,12 @@ private fun WebStatusBar(
         }
         Spacer(Modifier.weight(1f))
         Text(
+            text = "财帛 ${(board.attributes["财帛"] ?: 0.0).toInt()} · 体质 ${(board.attributes["体质"] ?: 0.0).toInt()}",
+            style = MaterialTheme.typography.labelMedium,
+            color = ParchmentFaint,
+            maxLines = 1
+        )
+        Text(
             text = "国势 ${(board.court["国势"] ?: 0.0).toInt()}",
             style = MaterialTheme.typography.labelMedium,
             color = if ((board.court["国势"] ?: 0.0) < 35) CinnabarBright else Gold

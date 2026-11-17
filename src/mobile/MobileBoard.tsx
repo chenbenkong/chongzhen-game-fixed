@@ -14,6 +14,8 @@ import { useGameEngine } from '../hooks/useGameEngine'
 import { toMingEraYear } from '../utils/endingSystem'
 
 import EventDisplay from '../components/EventDisplay'
+import AttributePanel from '../components/AttributePanel'
+import StatusPanel from '../components/StatusPanel'
 import GameOverScreen from '../components/GameOverScreen'
 import LifeReview from '../components/LifeReview'
 import DeathEnding from '../components/DeathEnding'
@@ -86,8 +88,11 @@ export default function MobileBoard(props: MobileBoardProps) {
   const [eventResolved, setEventResolved] = useState(false)
   // 骰子弹窗开合（EventDisplay 内部，portal 到 body）。
   const [diceModalOpen, setDiceModalOpen] = useState(false)
-  // 手机寸土寸金：底部操作条默认收起，只留一个浮动「操作」入口。
+  // 底部操作条默认收起，只留顶栏「操作」入口。
   const [isActionbarOpen, setIsActionbarOpen] = useState(false)
+  // 人物面板默认收起；能力 / 态度 / 卷宗三页签，补回财帛等桌面侧栏参数。
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [panelTab, setPanelTab] = useState<'能力' | '态度' | '卷宗'>('能力')
 
   const lifeSummary = useMemo(() => generateLifeSummary(), [generateLifeSummary])
 
@@ -147,6 +152,9 @@ export default function MobileBoard(props: MobileBoardProps) {
           <span className="mobile-hud__meta">
             {character.age}岁 · {character.rank || identityType} · {character.origin}
           </span>
+          <span className="mobile-hud__vitals">
+            财帛 {Math.round(character.attributes.财帛)} · 体质 {Math.round(character.attributes.体质)}
+          </span>
         </div>
 
         <div className="mobile-hud__states" aria-label="五方态度与国势">
@@ -160,8 +168,24 @@ export default function MobileBoard(props: MobileBoardProps) {
 
         <button
           type="button"
+          className="mobile-hud__panel"
+          onClick={() => {
+            setIsActionbarOpen(false)
+            setIsPanelOpen(true)
+          }}
+          aria-label="打开人物面板"
+          aria-expanded={isPanelOpen}
+        >
+          面板
+        </button>
+
+        <button
+          type="button"
           className="mobile-hud__action"
-          onClick={() => setIsActionbarOpen(true)}
+          onClick={() => {
+            setIsPanelOpen(false)
+            setIsActionbarOpen(true)
+          }}
           aria-label="展开操作栏"
           aria-expanded={isActionbarOpen}
         >
@@ -198,7 +222,7 @@ export default function MobileBoard(props: MobileBoardProps) {
       </main>
 
       {/* 底部操作条：默认收起，点顶栏「操作」才展开；展开后不再挤压事件区。 */}
-      {isActionbarOpen && !modalOpen && (
+      {isActionbarOpen && !modalOpen && !isPanelOpen && (
         <footer className="mobile-actionbar" aria-label="牌桌操作">
           <button
             type="button"
@@ -255,6 +279,72 @@ export default function MobileBoard(props: MobileBoardProps) {
             ×
           </button>
         </footer>
+      )}
+
+      {/* 人物面板：默认收起；能力 / 态度 / 卷宗三页签，补回财帛等桌面侧栏参数。 */}
+      {isPanelOpen && (
+        <>
+          <button
+            type="button"
+            className="mobile-panel__scrim"
+            onClick={() => setIsPanelOpen(false)}
+            aria-label="关闭人物面板"
+          />
+          <aside className="mobile-panel" role="dialog" aria-modal="true" aria-label="人物面板">
+            <div className="mobile-panel__head">
+              <span className="mobile-panel__title">人物面板</span>
+              <button
+                type="button"
+                className="mobile-panel__close"
+                onClick={() => setIsPanelOpen(false)}
+                aria-label="关闭人物面板"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mobile-panel__tabs" role="tablist" aria-label="人物面板页签">
+              {(['能力', '态度', '卷宗'] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={panelTab === tab}
+                  className={`mobile-panel__tab ${panelTab === tab ? 'is-active' : ''}`}
+                  onClick={() => setPanelTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            <div className="mobile-panel__body">
+              {panelTab === '能力' && (
+                <AttributePanel
+                  attributes={character.attributes}
+                  hidden={character.hidden}
+                />
+              )}
+              {panelTab === '态度' && <StatusPanel gameState={gameState} />}
+              {panelTab === '卷宗' && (
+                <div className="mobile-records">
+                  {lifeRecords.length === 0 ? (
+                    <p className="mobile-records__empty">尚无履历。</p>
+                  ) : (
+                    [...lifeRecords].reverse().slice(0, 30).map(record => (
+                      <div key={record.id} className="mobile-record">
+                        <div className="mobile-record__title">
+                          {toMingEraYear(record.year)} · {record.month}月 · {record.title}
+                        </div>
+                        <div className="mobile-record__body">{record.description}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </aside>
+        </>
       )}
 
       {/* 结局屏（复用 GameOverScreen，作用域样式见 mobile.css） */}

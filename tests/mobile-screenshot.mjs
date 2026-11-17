@@ -2,8 +2,9 @@
  * 手机 Web 牌桌截图（按真机 2772×1280 的等效 CSS 视口 924×426、DPR 3）。
  *
  * 输出：
- *   release/手机网页版-924x426.png            收起态（默认，右下角只有「操作」入口）
- *   release/手机网页版-操作条展开-924x426.png  展开态（底部浮层操作条）
+ *   release/手机网页版-924x426.png            收起态（默认，顶栏「面板 / 操作」）
+ *   release/手机网页版-人物面板-924x426.png    能力页（财帛/文韬/理政/武略/体质 + 隐藏属性）
+ *   release/手机网页版-操作条展开-924x426.png  操作条展开态（底部浮层）
  *
  * 运行：先起 preview（dist），再
  *   $env:BASE_URL="http://localhost:4180/"; node tests/mobile-screenshot.mjs
@@ -45,6 +46,11 @@ await page.goto(BASE_URL + '?mobile=1', { waitUntil: 'load', timeout: 60000 })
 await playToBoard(page)
 
 await page.screenshot({ path: `${OUT_DIR}手机网页版-924x426.png`, fullPage: false })
+await page.locator('.mobile-hud__panel').click()
+await page.waitForTimeout(250)
+await page.screenshot({ path: `${OUT_DIR}手机网页版-人物面板-924x426.png`, fullPage: false })
+await page.locator('.mobile-panel__close').click()
+await page.waitForTimeout(150)
 await page.locator('.mobile-hud__action').click()
 await page.waitForTimeout(300)
 await page.screenshot({ path: `${OUT_DIR}手机网页版-操作条展开-924x426.png`, fullPage: false })

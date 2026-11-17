@@ -3,7 +3,7 @@
  *
  * 用途：在真实浏览器里验证「手机自动进横屏版、竖屏出旋转遮罩、?mobile=1 可强制预览、
  * 桌面视口仍走原版」四条入口规则，并检查牌桌最小可用性（HUD 六项状态齐全、
- * 操作条默认收起/可展开/可收起、正文 ≤14px、无横向溢出、无 console.error）。
+ * 操作条默认收起/可展开/可收起、财帛/体质速览、人物面板三页签、正文 ≤14px、无横向溢出、无 console.error）。
  *
  * 运行：先起 preview（dist），再
  *   $env:BASE_URL="http://localhost:4180"; node tests/mobile-web.mjs
@@ -79,6 +79,26 @@ async function main() {
 
     const states = await page.locator('.mobile-hud__states .mobile-state-capsule').count()
     check('HUD 六项状态齐全', states === 6, `count=${states}`)
+    check('HUD 显示财帛与体质', (await page.locator('.mobile-hud__vitals').innerText()).includes('财帛'),
+      await page.locator('.mobile-hud__vitals').innerText())
+
+    await page.locator('.mobile-hud__panel').click()
+    await page.waitForTimeout(200)
+    check('人物面板可打开', (await page.locator('.mobile-panel').count()) === 1)
+    const panelAttrs = await page.locator('.mobile-panel .attr-name').allInnerTexts()
+    check('面板含财帛/文韬/理政/武略/体质', ['财帛', '文韬', '理政', '武略', '体质'].every(k => panelAttrs.includes(k)),
+      panelAttrs.join('/'))
+    check('面板含隐藏属性', ['道德值', '欲望值', '野心值', '机敏值', '忠诚值'].every(k => panelAttrs.includes(k)),
+      panelAttrs.join('/'))
+    await page.locator('.mobile-panel__tab', { hasText: '态度' }).click()
+    await page.waitForTimeout(150)
+    check('面板态度页可打开', (await page.locator('.mobile-panel .status-panel').count()) === 1)
+    await page.locator('.mobile-panel__tab', { hasText: '卷宗' }).click()
+    await page.waitForTimeout(150)
+    check('面板卷宗页可打开', (await page.locator('.mobile-panel .mobile-records').count()) === 1)
+    await page.locator('.mobile-panel__close').click()
+    await page.waitForTimeout(150)
+    check('面板可收起', (await page.locator('.mobile-panel').count()) === 0)
 
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

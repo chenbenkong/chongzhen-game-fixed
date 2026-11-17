@@ -18,7 +18,7 @@
 | `src/mobile/MobileTitle.tsx` | 标题、开始、继续上次、难度三选 |
 | `src/mobile/MobileNameSetup.tsx` | 姓/名/字/年岁/籍贯；字与籍贯复用 `utils/naming.ts`，不复制生成规则 |
 | `src/mobile/MobileOriginSetup.tsx` | 出身卡网格，数据复用 `data/origins` |
-| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD + 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
+| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD（六项朝堂状态 + 财帛/体质速览 + 可开合人物面板）+ 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
 | `src/mobile/mobile.css` | 全部选择器限定在 `.mobile-shell` / `.mobile-board` / `body.mobile-applied` 下，无全局覆盖 |
 | `tests/mobile-web.mjs` | 入口四规则 + 牌桌最小可用性的浏览器冒烟（退出码即结论） |
 
@@ -44,6 +44,17 @@
 - **不挤压事件区**：操作条是 `position:absolute`，不参与 flex 高度分配；收起态没有任何底部覆盖，
   事件区拿到整块高度。
 
+## 人物面板：财帛等参数补回（2026-11-17）
+
+手机 HUD 原先只放六项朝堂态度，个人能力整块缺失。现在：
+
+- **默认收起**：顶栏「面板」按钮打开右侧抽屉，遮罩 / × 收起；点「操作」时面板自动关闭，两者不叠。
+- **能力页**：直接复用桌面 `AttributePanel`，含 **财帛 / 文韬 / 理政 / 武略 / 体质** 与
+  **道德值 / 欲望值 / 野心值 / 机敏值 / 忠诚值**；不另写一套数值逻辑。
+- **态度页**：复用 `StatusPanel`，六项朝堂态度完整可见（HUD 仍保留速览）。
+- **卷宗页**：`lifeRecords` 最近 30 条履历，标题 + 正文。
+- **速览**：HUD 身份栏追加「财帛 25 · 体质 60」，不用打开面板也能看到两个致命项。
+
 ## 强制横屏（2026-11-17）
 
 - **PWA manifest**：`public/manifest.webmanifest` 的 `orientation` 已从 `any` 改为 `landscape`；
@@ -58,6 +69,8 @@
 ## 已验证（本地 preview，844×390）
 
 - 进入手机版、HUD 六项状态齐全、PWA manifest 为 `orientation: landscape`、无横向溢出；
+- HUD 显示「财帛 25 · 体质 60」；点「面板」可打开人物面板，能力页含财帛/文韬/理政/武略/体质 +
+  道德值/欲望值/野心值/机敏值/忠诚值，态度页与卷宗页均可切换，× 可收起；
 - 底部操作条默认不出现；顶部 HUD 右侧有「☰ 操作」入口 92.5×44.0px（≥44）；点开后操作条
   在视口内（y=326.0 + h=56.0 ≈ 390），5 个按钮最小边 44.0px；点「×」后操作条消失；
 - 正文 `.narrative-paragraph` 实测 13.0px（≤14px）；
@@ -68,7 +81,6 @@
 
 ## 后续可迭代（不是缺陷隐藏）
 
-- 手机 Web 的属性/态度可开合面板（当前 HUD 已常驻六项，尚无抽屉）；
 - 三档横屏像素级适配（932×430、740×360）；
 - 骰子弹窗与各 portal 弹窗在窄高屏的观感；
 - 视觉纹理与卡面装饰继续打磨。
