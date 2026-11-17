@@ -1110,7 +1110,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     const history = eventHistoryRef.current
     // 与 findAvailableEvent 同一把尺子：事件级条件 + 「至少一个选项点得动」。
     // 放在这一步是因为只有过了条件的少数事件才需要算选项门，全池 400 条不必都算。
-    const available = allGameEvents()
+    const allEvents = allGameEvents()
+    const eventById = new Map(allEvents.map(e => [e.id, e]))
+    const available = allEvents
       .filter(e => checkEventConditions(e, characterRef.current, state))
       .filter(e => hasOpenChoice(e, characterRef.current, state))
     if (available.length === 0) return []
@@ -1124,10 +1126,24 @@ export function useGameEngine(props: UseGameEngineProps) {
     // 改成 Set 之后全是 O(1) 查询，语义与原来完全一致。
     const seen = new Set(history)
 
+    // 换皮事件互斥：`exclusiveGroup` 相同的卡，一局只发一次。
+    // 必须从 eventHistory 反查（而不是只看 lastTurnById），这样读档后仍然认得旧局里
+    // 已经发过的同组事件；否则读档清空冷却表，换皮卡会立刻再撞一次。
+    const seenExclusiveGroups = new Set<string>()
+    for (const id of history) {
+      const group = eventById.get(id)?.exclusiveGroup
+      if (group) seenExclusiveGroups.add(group)
+    }
+    const isExclusiveGroupBlocked = (e: GameEvent) =>
+      !!e.exclusiveGroup && seenExclusiveGroups.has(e.exclusiveGroup)
+
     const withCooldown = (pool: GameEvent[], type: string): GameEvent[] => {
       const minGap = EVENT_COOLDOWN_MONTHS[type] || 0
-      if (minGap <= 0) return pool
-      return pool.filter(e => !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current))
+      if (minGap <= 0) return pool.filter(e => !isExclusiveGroupBlocked(e))
+      return pool.filter(e =>
+        !isExclusiveGroupBlocked(e) &&
+        !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current)
+      )
     }
 
     const results: GameEvent[] = []
@@ -1202,7 +1218,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
 
     // 5. 支线事件：emotion 一次性，gray/character/national/faction 可重复但带冷却
-    const branchEmotion = available.filter(e => e.type === 'emotion' && !seen.has(e.id))
+    const branchEmotion = available.filter(
+      e => e.type === 'emotion' && !seen.has(e.id) && !isExclusiveGroupBlocked(e)
+    )
     const branchRepeatable = branchRepeatableEventTypes.flatMap(type =>
       withCooldown(available.filter(e => e.type === type), type)
     )
@@ -1214,6 +1232,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       w: activeStoryline && e.storyline === activeStoryline ? 4 : 1
     }))
     const branchSelected: GameEvent[] = []
+    const selectedExclusiveGroups = new Set<string>()
     const remaining = [...branchWeighted]
     while (branchSelected.length < 2 && remaining.length > 0) {
       const total = remaining.reduce((a, b) => a + b.w, 0)
@@ -1227,7 +1246,14 @@ export function useGameEngine(props: UseGameEngineProps) {
         }
       }
       if (selectedIndex === -1) selectedIndex = remaining.length - 1
-      branchSelected.push(remaining[selectedIndex].e)
+      const candidate = remaining[selectedIndex].e
+      // 同一批里也可能同时抽到两张换皮卡：前一张已选中时，后一张直接丢掉。
+      if (candidate.exclusiveGroup && selectedExclusiveGroups.has(candidate.exclusiveGroup)) {
+        remaining.splice(selectedIndex, 1)
+        continue
+      }
+      branchSelected.push(candidate)
+      if (candidate.exclusiveGroup) selectedExclusiveGroups.add(candidate.exclusiveGroup)
       remaining.splice(selectedIndex, 1)
     }
     results.push(...branchSelected)

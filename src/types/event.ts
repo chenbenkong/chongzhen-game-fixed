@@ -262,4 +262,12 @@ export interface GameEvent {
   declinable?: boolean
   /** 所属剧情线 ID（用于事件管理器加权推荐，见 src/data/storylines.ts） */
   storyline?: string
+  /**
+   * 同组互斥标记：同一局里只要发过该组的任意一张，本组其它事件就不再进池。
+   *
+   * 只用于“换了人名/换了措辞，其实是同一件事”的换皮事件；正常的年度同名卡
+   * （新年朝会、秋收赋税）和各剧情线的同名结局不要填。Web 与 Android 的
+   * 事件池都按 eventHistory 里的 id 反查该字段，因此读档后仍然生效。
+   */
+  exclusiveGroup?: string
 }

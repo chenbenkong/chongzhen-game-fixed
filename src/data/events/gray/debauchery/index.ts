@@ -23,6 +23,9 @@ export const allGrayBranchEvents: GameEvent[] = [
   ...trapDebaucheryEvents,
   ...spyDebaucheryEvents,
   ...gratitudeDebaucheryEvents,
+  // `gray_debauchery_020` 与 `gray_debauchery_001` 是同一件“下属献妻”的换皮卡：
+  // 同为柳如烟、同为四选项结构，只换了主簿/县丞的官名。两张都保留在池里，
+  // 由 `exclusiveGroup: 'subordinate_wife_offer'` 保证一局只出现其中一张。
   ...powersexDebaucheryEvents,
   ...temptationDebaucheryEvents,
   ...consequenceDebaucheryEvents

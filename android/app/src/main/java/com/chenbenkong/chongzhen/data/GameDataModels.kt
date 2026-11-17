@@ -152,7 +152,9 @@ data class GameEvent(
     val isPreEnding: Boolean? = null,
     val linksToEndingId: String? = null,
     val declinable: Boolean? = null,
-    val storyline: String? = null
+    val storyline: String? = null,
+    /** 同组换皮事件互斥；同一局里发过任意一张，本组其它卡不再进池。 */
+    val exclusiveGroup: String? = null
 )
 
 /** 结局登记表：别名映射 / 可搁笔结局 / 全部结局 id。 */

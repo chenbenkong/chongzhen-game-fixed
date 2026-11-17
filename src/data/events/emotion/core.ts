@@ -15,7 +15,7 @@ export const coreEmotionEvents: GameEvent[] = [
   {
     id: 'emotion_core_001',
     storyline: 'female',
-    title: '东窗事发',
+    title: '正妻捉奸',
     description: '屋内一片狼藉，妾室衣衫不整地缩在床角，你赤裸着上身站在地上。',
     narrative: {
       speaker: { title: '正妻', name: '夫人' },

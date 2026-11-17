@@ -186,7 +186,8 @@ export const powersexDebaucheryEvents: GameEvent[] = [
   {
     id: 'gray_debauchery_020',
     storyline: 'gray',
-    title: '下属献妻',
+    title: '县丞献妻',
+    exclusiveGroup: 'subordinate_wife_offer',
     description: '王德明设宴招待你，席间让妻子柳如烟出来敬酒。',
     narrative: {
       speaker: {

@@ -93,8 +93,8 @@
   说明只显示当前选中一条；标题 36sp→28sp，外边距 28dp→18/10dp，按钮与图鉴入口同宽居中；
   存档预览压成单行 11sp。
 - 校验：`testDebugUnitTest` **12 个套件 / 53 个用例 / 0 失败**；`assembleDebug` 成功；
-  新 APK **17,677,805 字节**，SHA-256
-  `4A2A1995FB58259D9E1D41297FCEA9A5AC6550ADDD295BBD89A0F55C464B5BAA`。
+  新 APK **18,880,144 字节**，SHA-256
+  `F8AFC959356B8D4C720CB05F13048BC2E7F6E1C47C066ABF416FBA575767DFCF`。
 - 未验证：本机无真机/AVD，上述三屏的真机触控与字形仍只能静态编译通过，不能宣称已看过实机效果。
 
 ## 结算只显示已选选项与回音（2026-11-17）
@@ -118,7 +118,7 @@
 - `TitleScreen.kt` 的开始/继续按钮旁、`BoardScreen.kt` 底部操作条（默认收起）各放
   一枚 44dp 的「乐 / 静」开关；开关写 `SharedPreferences("chongzhen").bgm_on`，
   下次启动沿用，默认仍是开。
-- 代价：APK 从 11.47 MB 增到 **17,677,805 字节**（+5.98 MB 音频），仍无 WebView、
+- 代价：APK 从 11.47 MB 增到 **18,880,144 字节**（含 5.98 MB 音频与更新后的事件数据），仍无 WebView、
   无网络依赖。
 - **未验证**：本机无真机/AVD，MediaPlayer 的真实出声、音频焦点在 ROM 上的表现
   只能静态编译 + APK 资源在位确认，不能宣称实机听过。
@@ -153,12 +153,15 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **17,677,805 字节**，SHA-256 `4A2A1995FB58259D9E1D41297FCEA9A5AC6550ADDD295BBD89A0F55C464B5BAA`，
+- `assembleDebug`：`app-debug.apk` **18,880,144 字节**，SHA-256 `F8AFC959356B8D4C720CB05F13048BC2E7F6E1C47C066ABF416FBA575767DFCF`，
   复制到 `release/崇祯直聘-0.5.0-debug.apk`；
   debug v2 签名有效（`CN=Android Debug`）。
-- APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**、
+- APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,505 字节**、
   `res/raw/bgm.mp3` **5,984,756 字节**在位；APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor /
   Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
+- 换皮事件互斥：`GameEvent.exclusiveGroup` 已同步到 Kotlin 模型与 `EventPool`；历史 id
+  反查同组，抽支线时同批也只允许一张。《下属献妻》/《县丞献妻》《秦淮画舫》/《盐商画舫》
+  两组的 `exclusiveGroup` 已进入 `game-data.json`。
 - 未验证项：真机安装、启动、强制横屏实际表现、面板抽屉触控、操作条浮层与遮罩触控、存档落盘
   （本机 `adb devices` 为空，SDK 无 emulator/AVD）。
 

@@ -134,7 +134,7 @@ export const fortuneGrayEvents: GameEvent[] = [
   {
     id: 'gray_fortune_002',
     storyline: 'gray',
-    title: '天命所归',
+    title: '妖道献谶',
     description: '张真人神秘兮兮地登门拜访。',
     narrative: {
       speaker: {

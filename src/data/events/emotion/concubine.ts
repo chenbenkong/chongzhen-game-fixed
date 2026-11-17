@@ -720,7 +720,7 @@ export const concubineEvents: GameEvent[] = [
   {
     id: 'emotion_concubine_007',
     storyline: 'female',
-    title: '东窗事发',
+    title: '外室事发',
     description: '"大人，"他从袖中掏出一叠纸张，"这是您每月去那处宅院的记录，还有……一些不便明说的证据。',
     narrative: {
       speaker: { title: '政敌', name: '刘御史' },

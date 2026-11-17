@@ -12,6 +12,7 @@ export const subordinateDebaucheryEvents: GameEvent[] = [
     id: 'gray_debauchery_001',
     storyline: 'gray',
     title: '下属献妻',
+    exclusiveGroup: 'subordinate_wife_offer',
     description: '今日黄昏，周文德带着他的妻子柳如烟前来拜访。',
     narrative: {
       speaker: {

@@ -44,6 +44,15 @@ class EventPool(
         if (available.isEmpty()) return emptyList()
 
         val seen = history.toSet()
+        // 换皮事件互斥：eventId → exclusiveGroup，再用历史 id 反查已发过的组。
+        // 历史不随读档丢失，所以读档后同组换皮卡也不会立刻再撞一次。
+        val exclusiveGroupByEventId = data.events.mapNotNull { event ->
+            event.exclusiveGroup?.let { event.id to it }
+        }.toMap()
+        val seenExclusiveGroups = history.mapNotNull { exclusiveGroupByEventId[it] }.toSet()
+        val isGroupBlocked: (GameEvent) -> Boolean = { event ->
+            event.exclusiveGroup?.let { it in seenExclusiveGroups } == true
+        }
         val activeStoryline = resolveStoryline(history)
         val results = mutableListOf<GameEvent>()
 
@@ -74,17 +83,31 @@ class EventPool(
 
         // 4. 本月无主戏时，random 冷却填充
         if (results.isEmpty()) {
-            val randomPool = withCooldown(available.filter { it.type == "random" }, "random", court.turn, lastTurnById)
+            val randomPool = withCooldown(
+                available.filter { it.type == "random" },
+                "random",
+                court.turn,
+                lastTurnById,
+                isGroupBlocked
+            )
             weightedPick(randomPool, activeStoryline, mainTierWeights)?.let { results.add(it) }
         }
 
         // 5. 支线：emotion 一次性；gray/character/national/faction 可重复带冷却
-        val branchEmotion = available.filter { it.type == "emotion" && !seen.contains(it.id) }
+        val branchEmotion = available.filter {
+            it.type == "emotion" && !seen.contains(it.id) && !isGroupBlocked(it)
+        }
         val branchRepeatable = listOf("gray", "character", "national", "faction").flatMap { type ->
-            withCooldown(available.filter { it.type == type }, type, court.turn, lastTurnById)
+            withCooldown(
+                available.filter { it.type == type },
+                type,
+                court.turn,
+                lastTurnById,
+                isGroupBlocked
+            )
         }
         val branchPool = branchEmotion + branchRepeatable
-        results.addAll(weightedBranch(branchPool, activeStoryline, max = 2))
+        results.addAll(weightedBranch(branchPool, activeStoryline, max = 2, seenExclusiveGroups = seenExclusiveGroups))
 
         // 去重
         val picked = results.distinctBy { it.id }
@@ -120,11 +143,17 @@ class EventPool(
         return pool.last()
     }
 
-    /** 支线无放回抽样，最多 [max] 张；同剧情线权重 4。 */
-    private fun weightedBranch(pool: List<GameEvent>, activeStoryline: String?, max: Int): List<GameEvent> {
+    /** 支线无放回抽样，最多 [max] 张；同剧情线权重 4，同组换皮卡只取一张。 */
+    private fun weightedBranch(
+        pool: List<GameEvent>,
+        activeStoryline: String?,
+        max: Int,
+        seenExclusiveGroups: Set<String>
+    ): List<GameEvent> {
         if (pool.isEmpty()) return emptyList()
         val remaining = pool.map { it to if (activeStoryline != null && it.storyline == activeStoryline) 4 else 1 }.toMutableList()
         val selected = mutableListOf<GameEvent>()
+        val selectedExclusiveGroups = mutableSetOf<String>()
         while (selected.size < max && remaining.isNotEmpty()) {
             val total = remaining.sumOf { it.second }
             var r = random.nextDouble() * total
@@ -134,7 +163,14 @@ class EventPool(
                 if (r <= 0) { index = i; break }
             }
             if (index < 0) index = remaining.lastIndex
-            selected.add(remaining[index].first)
+            val candidate = remaining[index].first
+            val group = candidate.exclusiveGroup
+            if (group != null && (group in seenExclusiveGroups || group in selectedExclusiveGroups)) {
+                remaining.removeAt(index)
+                continue
+            }
+            selected.add(candidate)
+            if (group != null) selectedExclusiveGroups.add(group)
             remaining.removeAt(index)
         }
         return selected
@@ -144,10 +180,12 @@ class EventPool(
         pool: List<GameEvent>,
         type: String,
         turn: Int,
-        lastTurnById: Map<String, Int>
+        lastTurnById: Map<String, Int>,
+        isGroupBlocked: (GameEvent) -> Boolean
     ): List<GameEvent> {
-        val minGap = cooldownMonths[type] ?: return pool
+        val minGap = cooldownMonths[type] ?: return pool.filter { !isGroupBlocked(it) }
         return pool.filter { e ->
+            if (isGroupBlocked(e)) return@filter false
             val last = lastTurnById[e.id]
             if (last == null || last > turn) return@filter true
             turn - last >= minGap

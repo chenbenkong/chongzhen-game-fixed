@@ -388,7 +388,8 @@ export const publicDebaucheryEvents: GameEvent[] = [
   {
     id: 'gray_debauchery_027',
     storyline: 'gray',
-    title: '画舫春宵',
+    title: '盐商画舫',
+    exclusiveGroup: 'painted_boat_spring',
     description: '今日，潘巧云举办了一场游船宴会，邀请了众多达官贵人。',
     narrative: {
       speaker: {

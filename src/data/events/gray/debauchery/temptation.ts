@@ -12,7 +12,8 @@ export const temptationDebaucheryEvents: GameEvent[] = [
   {
     id: 'gray_debauchery_021',
     storyline: 'gray',
-    title: '画舫春宵',
+    title: '秦淮画舫',
+    exclusiveGroup: 'painted_boat_spring',
     description: '你因公事途经秦淮河畔，被当地知府邀请夜游。',
     narrative: {
       speaker: {
