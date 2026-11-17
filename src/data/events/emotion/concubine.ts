@@ -253,7 +253,7 @@ export const concubineEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '不速之客', name: '赵公子' },
       quote: '哟，这不是红袖吗？怎么，攀上高枝就把老朋友忘了？',
-      background: '红袖入府已有一年。某日，一个锦衣华服的年轻男子竟直接闯入了你的府邸，声称是红袖的"旧识"。',
+      background: '红袖入府之后，某日，一个锦衣华服的年轻男子竟直接闯入了你的府邸，声称是红袖的"旧识"。',
       situation: '此人名叫赵公子，是江南盐商之子，红袖未入你府前的常客。他醉醺醺地嚷道："红袖当初可是答应过我的！说只要我攒够钱就来赎她！你怎么能半路截胡？"'
     },
     conditions: {
@@ -970,7 +970,7 @@ export const concubineEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '妾室', name: '赵灵儿' },
       quote: '夫君……哥哥来信说，最近县里的漕运差事好像缺人……',
-      background: '赵灵儿入府已半年，与你的关系日渐亲密。今日她"无意间"提到了她"哥哥"赵县丞的一些事情。',
+      background: '赵灵儿入府之后，与你的关系日渐亲密。今日她"无意间"提到了她"哥哥"赵县丞的一些事情。',
       situation: '你敏锐地察觉到了——这不是闲聊，而是在替赵县丞说情。赵县丞最近正在争取一个肥缺，希望你能在上级面前为他美言几句。'
     },
     conditions: {

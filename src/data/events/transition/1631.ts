@@ -182,7 +182,7 @@ export const events1631: GameEvent[] = [
     },
     conditions: {
       year: { min: 1631, max: 1631 },
-      month: { min: 2, max: 2 }
+      month: { min: 11, max: 11 }
     },
     choices: [
       {
@@ -332,7 +332,7 @@ export const events1631: GameEvent[] = [
         title: '山东巡抚'
       },
       quote: '大人，登莱兵变愈演愈烈！孔有德叛军已攻陷登州，孙元化被俘！叛军声势浩大，沿途裹挟百姓，已聚众数万。山东全境震动，各地告急！朝廷若再不增兵，只怕整个山东都要沦陷！',
-      background: `崇祯四年三月，登莱兵变蔓延；登州城破在次年正月初三。
+      background: `崇祯五年三月，登莱兵变蔓延；登州城破在今年正月初三。
 
 孔有德率叛军攻陷登州，巡抚孙元化被俘。叛军沿途裹挟百姓，已聚众数万，声势浩大。山东全境震动，各地告急。
 
@@ -344,7 +344,7 @@ export const events1631: GameEvent[] = [
       situation: '兵变蔓延，登州失守。你将如何抉择？'
     },
     conditions: {
-      year: { min: 1631, max: 1631 },
+      year: { min: 1632, max: 1632 },
       month: { min: 3, max: 3 }
     },
     choices: [
@@ -1671,7 +1671,7 @@ export const events1631: GameEvent[] = [
         title: '兵部'
       },
       quote: '大人，登莱兵变终于要平定了！朝廷调集大军围攻叛军，孔有德部已退守登州城中，负隅顽抗。然而，叛军火器精良，攻城伤亡惨重。有人提议招抚孔有德，有人主张继续围攻。大人以为如何？',
-      background: `崇祯四年十一月，登莱兵变进入尾声。
+      background: `崇祯五年十一月，登莱兵变进入尾声。
 
 朝廷调集大军围攻叛军，孔有德部已退守登州城中，负隅顽抗。然而，叛军缴获了大量西洋火器，火力凶猛，官军攻城伤亡惨重。
 
@@ -1685,7 +1685,7 @@ export const events1631: GameEvent[] = [
       situation: '登莱平叛，攻城惨烈。你将如何抉择？'
     },
     conditions: {
-      year: { min: 1631, max: 1631 },
+      year: { min: 1632, max: 1632 },
       month: { min: 11, max: 11 }
     },
     choices: [

@@ -186,7 +186,7 @@ export const events1639: GameEvent[] = [
     },
     conditions: {
       year: { min: 1639, max: 1639 },
-      month: { min: 2, max: 2 }
+      month: { min: 8, max: 8 }
     },
     choices: [
       {

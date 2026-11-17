@@ -332,7 +332,7 @@ export const events1632: GameEvent[] = [
       situation: '孔有德据登州，山东大乱。皮岛事件的蝴蝶效应正在显现...'
     },
     conditions: {
-      year: { min: 1632, max: 1633 },
+      year: { min: 1632, max: 1632 },
       month: { min: 9, max: 12 },
       flags: { has: ['安抚皮岛'] },
       origin: ['没落世家', '缙绅']

@@ -577,8 +577,12 @@ describe('真引擎跑完一局：从 handleChoice 到格子亮', () => {
    *   exile 15 局（5,10,53,…）/ bankrupt 33 局（7,8,9,…）/ gentry 24 局 / scholar 30 局 /
    *   eunuch 12 局 / emperor_hate 6 局，`ending_demotion` 在这一档仍是 0 局（与本例注释一致）。
    * 取 1/4/5/7/20：5 格不重复，破产一格、革职恰好一支（流放）。
+   * 第九十轮（历史日期校正后重扫）：日期与年窗修正挪动了随机流，旧 5/7 都变成
+   * `ending_exile`，取样里出现两支革职。重扫 1..24 后取 1/4/6/7/20：
+   * 1 exile、4 scholar、6 bankrupt、7 bankrupt、20 eunuch —— 仍是 5 局 4 格，
+   * 革职恰好一支，破产仍被压住。
    */
-  const SEEDS = [1, 4, 5, 7, 20]
+  const SEEDS = [1, 4, 6, 7, 20]
 
   it('引擎实际达成的每一局都在图鉴里有格子，且真的亮了', async () => {
     const outcomes = []

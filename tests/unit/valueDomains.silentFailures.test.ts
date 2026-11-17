@@ -56,10 +56,10 @@ describe('真实数据的值域体检', () => {
 
   it('第十轮逮到的两处撞号已改名，被压住的那个事件回到池子里', () => {
     // 撞号时引擎按 id 去重（useGameEngine 的 findIndex 去重 + eventConditions 的 seen），
-    // 「孙传庭殉国」「新年朝会」正是被压住的那一个。
+    // 「孙传庭出师」「新年朝会」正是被压住的那一个。
     const byId = valueDomains.vocab.eventsById
     expect(byId.get('historical_014')?.title, 'historical_014 现在只该是洪承畴降清').toBe('洪承畴降清')
-    expect(byId.get('historical_1643_sunchuanting')?.title).toBe('孙传庭殉国')
+    expect(byId.get('historical_1643_sunchuanting')?.title).toBe('孙传庭出师')
     expect(byId.get('transition_163')?.title).toBe('松锦战报与辽东密议')
     expect(byId.get('transition_1642_newyear')?.title).toBe('新年朝会')
     // 同名不同 id 的事件本来就该有（每年一场新年朝会），那是内容设计，不是撞号

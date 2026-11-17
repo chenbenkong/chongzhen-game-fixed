@@ -36,7 +36,7 @@ export const eventsRouteGuide: GameEvent[] = [
     description: '朝堂之上，你面临一个进言的机会。',
     type: 'transition',
     narrative: {
-      speaker: { name: '内阁首辅', title: '温体仁' },
+      speaker: { name: '某位阁老', title: '内阁首辅' },
       quote: '某公，你这道奏疏……是在指桑骂槐吗？',
       background: `你在衙门里批阅公文时，发现了一份让人不安的账册——某位权贵在赈灾中中饱私囊，灾民饿殍遍野，而他的府邸却金碧辉煌。
 
@@ -1111,7 +1111,7 @@ export const eventsRouteGuide: GameEvent[] = [
       situation: '同僚屏住呼吸，手握弹劾奏疏的副本，等你的回答，仿佛在等待朝堂上又一声惊雷。'
     },
     conditions: {
-      year: { min: 1635, max: 1642 },
+      year: { min: 1635, max: 1637 },
       attributes: { 文韬: { min: 55 } },
       hidden: { 道德值: { min: 60 } },
       gameState: { 清议: { min: 50 } }
@@ -1136,7 +1136,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 奏疏递上去的那天，朝堂为之震动。温体仁面如死灰，连夜求见皇帝"辩诬"。
 
-皇帝没有表态。温体仁继续做他的首辅。
+皇帝没有表态。温体仁没有立刻倒台。
 
 但清议对你的评价陡然升高。同科进士们私下称你为"铁骨御史"。东林党的元老听说此事后，亲自托人带话："某公有古大臣之风。"
 
@@ -1148,7 +1148,7 @@ export const eventsRouteGuide: GameEvent[] = [
       {
         id: 'c2',
         storyline: 'ordinary',
-        text: '【弹劾杨嗣昌】上疏弹劾这位兵部尚书',
+        text: '【弹劾杨嗣昌】上疏弹劾这位兵部堂官',
         description: '弹劾杨嗣昌（主和派，催饷激变）',
         effects: {
           attributes: { 文韬: 5 },
@@ -1168,7 +1168,7 @@ export const eventsRouteGuide: GameEvent[] = [
 
 但民间的反应出乎意料——许多百姓听说你弹劾杨嗣昌，自发到衙门外送来一块匾，上面写着"敢言"。有人甚至哭道："某公是好人啊！"
 
-你仍在京里做你的官。三年后杨嗣昌因兵败自杀，你的名声反而更高了。
+你仍在京里做你的官。后来杨嗣昌因兵败自杀，你的名声反而更高了。
 
 【这一段记在案：弹劾杨嗣昌、言官 —— 《清流骨鲠》一路便有了凭据】`
         }
@@ -1176,7 +1176,7 @@ export const eventsRouteGuide: GameEvent[] = [
       {
         id: 'c3',
         storyline: 'ordinary',
-        text: '【弹劾陈新甲】上疏弹劾这位兵部尚书',
+        text: '【弹劾陈新甲】上疏弹劾这位兵部堂官',
         description: '弹劾陈新甲（议和泄密）',
         showConditions: { hidden: { 道德值: { min: 65 } } },
         effects: {
@@ -1191,7 +1191,7 @@ export const eventsRouteGuide: GameEvent[] = [
           tags: ['弹劾陈新甲', '言官'],
           echo: `你弹劾陈新甲"私议和约、泄密于外"。
 
-陈新甲随即下狱，朝野震动。皇帝震怒之余也无可奈何——和议之事本就是他默许的，但如今被揭开遮羞布，他也只能将陈新甲当作替罪羊。
+奏疏递上后，朝中议论纷纷。陈新甲并未立刻倒台，但"议和"二字从此成了他甩不掉的把柄；数年后，他终因议和泄密下狱。
 
 你因此在朝野中声名大振。清议派视你为"同道"，东林党人对你刮目相看。
 
@@ -2063,18 +2063,18 @@ export const eventsRouteGuide: GameEvent[] = [
     id: 'route_duty_death',
     storyline: 'ordinary',
     title: '积劳之念',
-    description: '你已年过六旬，但案头的公文还堆得像山一样。',
+    description: '你已不再年轻，但案头的公文还堆得像山一样。',
     type: 'transition',
     narrative: {
       speaker: { name: '属官', title: '你的幕僚' },
       quote: '老大人，您歇一歇吧。这些事，下官们能做。',
-      background: `崇祯某年，你已年过六旬。
+      background: `崇祯某年，你已不再年轻。
 
 你做了一辈子的官。从知县到知府，从知府到按察使，从按察使到布政使——一路走来，你一直是那个"最可靠"的人。
 
 别人不愿意做的麻烦事，你做；别人不愿意接的烫手山芋，你接；别人不愿意下的乡，你下。
 
-如今你六十二岁，案头的公文还堆得像山一样。属官们劝你："老大人，您歇一歇吧。这些事，下官们能做。"
+如今你案头的公文还堆得像山一样。属官们劝你："老大人，您歇一歇吧。这些事，下官们能做。"
 
 你笑了笑："你们做，我不放心。"
 

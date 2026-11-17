@@ -130,7 +130,7 @@ export const wifeEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '丫鬟', name: '小翠' },
       quote: '老爷……夫人她……她和翠屏姐姐……',
-      background: '成婚三年，你与王婉儿始终相敬如宾。某日，丫鬟小翠神色慌张地来向你禀报。',
+      background: '成婚之后，你与王婉儿始终相敬如宾。某日，丫鬟小翠神色慌张地来向你禀报。',
       situation: '小翠支支吾吾地说："老爷……夫人她……她有时候会和陪嫁丫鬟翠屏……在一起……做些……那种事……"'
     },
     conditions: {
@@ -257,7 +257,7 @@ export const wifeEvents: GameEvent[] = [
       situation: '李府张灯结彩，嫁妆清单足足列了三页：黄金百两、珍珠十斗、苏杭绸缎五十匹、良田三百亩……同僚们私下议论："这哪是娶媳妇，分明是娶了一座钱庄！"'
     },
     conditions: {
-      year: { min: 1628, max: 1635 },
+      year: { min: 1628, max: 1629 },
       month: { min: 1, max: 12 },
       attributes: { 财帛: { max: 40 } },
       flags: { notHas: ['married_wang', 'married_liu', 'married_zhang', 'married_lishi'] }
@@ -375,7 +375,7 @@ export const wifeEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '岳父', name: '李员外' },
       quote: '贤婿，你如今也是朝廷命官了，这件小事……应该不难办吧？',
-      background: '你与李明珠成婚三年，依靠岳父的财力支持，仕途颇为顺利。今日李员外突然登门拜访，神色有些不自然。',
+      background: '你与李明珠成婚之后，依靠岳父的财力支持，仕途颇为顺利。今日李员外突然登门拜访，神色有些不自然。',
       situation: '"贤婿啊，"李员外搓着手，"你姐夫的商队被税关扣了，说是有什么走私的嫌疑……其实都是误会！你能不能跟税监那边打个招呼……？"'
     },
     conditions: {
@@ -636,7 +636,7 @@ export const wifeEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '大夫', name: '陈郎中' },
       quote: '大人，夫人这是……积劳成疾，加之思虑过重，需用珍贵药材调理，费用……恐怕不少。',
-      background: '你与柳如烟成婚五年，她一直默默支持你的事业。近日她突然病倒了，大夫诊断后神色凝重。',
+      background: '你与柳如烟成婚以来，她一直默默支持你的事业。近日她突然病倒了，大夫诊断后神色凝重。',
       situation: '大夫开出的药单让你倒吸一口凉气：人参、灵芝、鹿茸……每味药材都需要数十两银子，整个疗程下来至少需要一百两。而你全部的家当加起来也不过三十两。'
     },
     conditions: {
@@ -881,7 +881,7 @@ export const wifeEvents: GameEvent[] = [
     narrative: {
       speaker: { title: '正妻', name: '张清婉' },
       quote: '你我之间，不过是各取所需罢了。你想靠我父亲升官，我想靠你丈夫的身份立足。何必假装恩爱？',
-      background: '你与张清婉成婚三年，始终是有名无实的夫妻。今日她终于打破了沉默。',
+      background: '你与张清婉成婚之后，始终是有名无实的夫妻。今日她终于打破了沉默。',
       situation: '张清婉端坐在太师椅上，神情淡漠如水。她说："我已经和我父亲谈过了。如果你愿意，我们可以维持现状——你在外面做什么我不管，我也自有我的去处。"'
     },
     conditions: {
