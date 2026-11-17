@@ -2778,6 +2778,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     currentEvent,
     pendingEvents,
     eventHistory,
+    currentStoryline,
     undoHistory,
     meritScore,
     previousMeritScore,

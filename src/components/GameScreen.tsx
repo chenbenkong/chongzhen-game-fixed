@@ -63,6 +63,7 @@ function GameScreen(props: GameScreenProps) {
     currentEvent,
     pendingEvents,
     eventHistory,
+    currentStoryline,
     undoHistory,
     meritScore,
     promotionMessage,
@@ -119,7 +120,10 @@ function GameScreen(props: GameScreenProps) {
     generateLifeSummary
   } = useGameEngine(props)
 
-  const currentStorylineKey = useMemo(() => getCurrentStoryline(), [getCurrentStoryline])
+  const currentStorylineKey = useMemo(
+    () => currentStoryline ?? getCurrentStoryline(),
+    [currentStoryline, eventHistory, getCurrentStoryline]
+  )
 
   const saveSlotsCurrentData = useMemo(() => ({
     name: character.name || '无名氏',
