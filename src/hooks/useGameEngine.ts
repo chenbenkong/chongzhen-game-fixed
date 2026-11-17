@@ -194,8 +194,11 @@ export function crisisEventMayShow(
   ruleId: string,
   event: GameEvent,
   turn: number,
-  lastTurnById: Map<string, number>
+  lastTurnById: Map<string, number>,
+  seenIds: Set<string> = new Set()
 ): boolean {
+  // 本局已经播过的事件（包括危机卡）不再发第二遍；读档后 eventHistory 仍在，照样生效。
+  if (seenIds.has(event.id)) return false
   if (isZeroWarningRegistryId(ruleId) || isCorruptionWarningRegistryId(ruleId)) return true
   if (isCoolingDown(event.id, event.type, turn, lastTurnById)) return false
   return Math.random() < CRISIS_EVENT_PROBABILITY
@@ -1137,14 +1140,11 @@ export function useGameEngine(props: UseGameEngineProps) {
     const isExclusiveGroupBlocked = (e: GameEvent) =>
       !!e.exclusiveGroup && seenExclusiveGroups.has(e.exclusiveGroup)
 
-    const withCooldown = (pool: GameEvent[], type: string): GameEvent[] => {
-      const minGap = EVENT_COOLDOWN_MONTHS[type] || 0
-      if (minGap <= 0) return pool.filter(e => !isExclusiveGroupBlocked(e))
-      return pool.filter(e =>
-        !isExclusiveGroupBlocked(e) &&
-        !isCoolingDown(e.id, type, state.turn, lastTurnByIdRef.current)
-      )
-    }
+    // 本局经历过的事件不再发第二次：包括 random / gray / character / national / faction。
+    // 以前这几类是可重复池、按冷却月数重演；现在的口径和 historical / transition 一样，
+    // 以 eventHistory 为唯一判据，读档后也不会因为 lastTurnById 为空而把旧卡重新发出来。
+    const unseenOnly = (pool: GameEvent[]): GameEvent[] =>
+      pool.filter(e => !seen.has(e.id) && !isExclusiveGroupBlocked(e))
 
     const results: GameEvent[] = []
 
@@ -1208,23 +1208,21 @@ export function useGameEngine(props: UseGameEngineProps) {
 
     if (lastChance.length > 0) results.push(...lastChance)
 
-    // 4. 若本月没有大事件/过渡事件，用随机事件填充（可重复，带冷却）
+    // 4. 若本月没有大事件/过渡事件，用随机事件填充（本局一次性）
     if (results.length === 0) {
-      const random = withCooldown(available.filter(e => e.type === 'random'), 'random')
+      const random = unseenOnly(available.filter(e => e.type === 'random'))
       const pickedRandom = weightedPick(random, activeStoryline)
       if (pickedRandom) {
         results.push(pickedRandom)
       }
     }
 
-    // 5. 支线事件：emotion 一次性，gray/character/national/faction 可重复但带冷却
-    const branchEmotion = available.filter(
-      e => e.type === 'emotion' && !seen.has(e.id) && !isExclusiveGroupBlocked(e)
+    // 5. 支线事件：本局一次性，经历过的不再发
+    const branchEmotion = unseenOnly(available.filter(e => e.type === 'emotion'))
+    const branchOnce = branchRepeatableEventTypes.flatMap(type =>
+      unseenOnly(available.filter(e => e.type === type))
     )
-    const branchRepeatable = branchRepeatableEventTypes.flatMap(type =>
-      withCooldown(available.filter(e => e.type === type), type)
-    )
-    const branchPool = [...branchEmotion, ...branchRepeatable]
+    const branchPool = [...branchEmotion, ...branchOnce]
 
     // 按剧情线加权的无放回抽样，最多 2 个
     const branchWeighted = branchPool.map(e => ({
@@ -1815,9 +1813,15 @@ export function useGameEngine(props: UseGameEngineProps) {
       // 这里补上同一条检查，概率门与挂载路径共用 CRISIS_EVENT_PROBABILITY。
       const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
       if (crisisEvent) {
-        if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, currentGameState.turn, lastTurnByIdRef.current)) {
-          // 记进月份轨迹：这条路径以前什么都不记，所以它挡不住下个月的原地重演。
+        if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, currentGameState.turn, lastTurnByIdRef.current, new Set(eventHistoryRef.current))) {
+          // 记进月份轨迹，同时把危机卡写进事件历史：这张卡走的是边界路径，
+          // 不会经过 findAllEventsForState 的「发牌即入历史」，漏记就会在几个月后重演。
           lastTurnByIdRef.current.set(crisisEvent.event.id, currentGameState.turn)
+          if (!eventHistoryRef.current.includes(crisisEvent.event.id)) {
+            const nextHistory = [...eventHistoryRef.current, crisisEvent.event.id]
+            eventHistoryRef.current = nextHistory
+            setEventHistory(nextHistory)
+          }
           setCurrentEvent(crisisEvent.event)
           return crisisEvent.event
         }
@@ -2554,8 +2558,14 @@ export function useGameEngine(props: UseGameEngineProps) {
     const crisisEvent = boundaryEventManager.checkByType(params, 'crisis')
     if (crisisEvent) {
       // 与 checkBoundary 同一条规则（读档时月份轨迹是空的，所以这里等价于只过概率门）。
-      if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, gameStateRef.current.turn, lastTurnByIdRef.current)) {
+      if (crisisEventMayShow(crisisEvent.id, crisisEvent.event, gameStateRef.current.turn, lastTurnByIdRef.current, new Set(eventHistoryRef.current))) {
+        // 与 checkBoundary 同一条规则：边界卡不经过普通发牌路径，必须在这里入历史。
         lastTurnByIdRef.current.set(crisisEvent.event.id, gameStateRef.current.turn)
+        if (!eventHistoryRef.current.includes(crisisEvent.event.id)) {
+          const nextHistory = [...eventHistoryRef.current, crisisEvent.event.id]
+          eventHistoryRef.current = nextHistory
+          setEventHistory(nextHistory)
+        }
         setCurrentEvent(crisisEvent.event)
         return
       }

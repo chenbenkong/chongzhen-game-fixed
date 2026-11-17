@@ -58,14 +58,15 @@ class BoundaryEngine(
     val unportedCount: Int get() = unportedRules.size
 
     fun checkEnding(ctx: ConditionContext, character: CharacterState, court: GameStateValues): BoundaryHit? =
-        checkByType("ending", ctx, character, court, emptyMap())
+        checkByType("ending", ctx, character, court, emptyMap(), emptySet())
 
     fun checkCrisis(
         ctx: ConditionContext,
         character: CharacterState,
         court: GameStateValues,
-        lastTurnById: Map<String, Int>
-    ): BoundaryHit? = checkByType("crisis", ctx, character, court, lastTurnById)
+        lastTurnById: Map<String, Int>,
+        seenEventIds: Set<String> = emptySet()
+    ): BoundaryHit? = checkByType("crisis", ctx, character, court, lastTurnById, seenEventIds)
 
     // ------------------------------------------------------------------ 内部
 
@@ -74,10 +75,13 @@ class BoundaryEngine(
         ctx: ConditionContext,
         character: CharacterState,
         court: GameStateValues,
-        lastTurnById: Map<String, Int>
+        lastTurnById: Map<String, Int>,
+        seenEventIds: Set<String>
     ): BoundaryHit? {
         val sorted = data.boundaryEvents.filter { it.type == type }.sortedBy { it.priority }
         for (entry in sorted) {
+            // 本局已经播过的危机卡不再发；读档后 eventHistory 仍在，照样生效。
+            if (type == "crisis" && entry.eventId in seenEventIds) continue
             when (val verdict = evaluateEntry(entry, ctx, character, court, lastTurnById)) {
                 is EntryVerdict.Matched -> return hit(entry, matched = true)
                 is EntryVerdict.Unported -> return BoundaryHit(

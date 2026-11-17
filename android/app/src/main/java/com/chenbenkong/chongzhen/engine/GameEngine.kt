@@ -300,7 +300,13 @@ class GameEngine(
         val ctx = ctxAfter()
 
         // 危机事件（低位救济类）
-        val crisis = boundary.checkCrisis(ctx, state.character, state.court, state.lastTurnById)
+        val crisis = boundary.checkCrisis(
+            ctx,
+            state.character,
+            state.court,
+            state.lastTurnById,
+            state.seenEventIds.toSet()
+        )
         lastCrisis = crisis
         if (crisis != null && crisis.event != null) {
             pendingEvents.add(0, crisis.event)

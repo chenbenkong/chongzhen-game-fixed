@@ -11,8 +11,7 @@ import kotlin.random.Random
 // ============================================================================
 // 事件池：与 Web findAllEventsForState 同口径的月度发牌分层。
 // 次序：prelude 前奏 → historical/chain 一次性 → 普通过渡补位 → 末班车过渡 →
-//       random 冷却填充 → 支线（emotion 一次性 + gray/character/national/faction 冷却），
-//       支线无放回最多 2 张；同剧情线加权。
+//       random 一次性填充 → 支线（全部本局一次性），支线无放回最多 2 张；同剧情线加权。
 // 随机源为可注入的 seeded Random，同种子结果可复现。
 // ============================================================================
 class EventPool(
@@ -20,15 +19,10 @@ class EventPool(
     private val random: Random
 ) {
 
-    private val cooldownMonths: Map<String, Int> = mapOf(
-        "random" to 8, "gray" to 6, "character" to 6,
-        "national" to 6, "faction" to 6, "emotion" to 12
-    )
-
     /**
      * 本月发牌。
-     * @param history 已播出事件 id 序列（一次性判重 + 剧情线回溯）
-     * @param lastTurnById 事件 id → 最后播出月份（冷却尺子；缺记录视为未冷却）
+     * @param history 已播出事件 id 序列（本局一次性判重 + 剧情线回溯）
+     * @param lastTurnById 事件 id → 最后播出月份（仍写存档，供边界危机等旧数据读取）
      * @return 本月事件序列（第一张为当前事件，其余进 pending 队列）
      */
     fun drawMonth(
@@ -52,6 +46,11 @@ class EventPool(
         val seenExclusiveGroups = history.mapNotNull { exclusiveGroupByEventId[it] }.toSet()
         val isGroupBlocked: (GameEvent) -> Boolean = { event ->
             event.exclusiveGroup?.let { it in seenExclusiveGroups } == true
+        }
+        // 本局经历过的事件不再发第二次：random / gray / character / national / faction
+        // 与 historical / transition 用同一把尺子，读档后 eventHistory 仍在，不会重发。
+        val isUnseen: (GameEvent) -> Boolean = { event ->
+            !seen.contains(event.id) && !isGroupBlocked(event)
         }
         val activeStoryline = resolveStoryline(history)
         val results = mutableListOf<GameEvent>()
@@ -81,32 +80,20 @@ class EventPool(
         }
         results.addAll(lastChance)
 
-        // 4. 本月无主戏时，random 冷却填充
+        // 4. 本月无主戏时，random 一次性填充
         if (results.isEmpty()) {
-            val randomPool = withCooldown(
-                available.filter { it.type == "random" },
-                "random",
-                court.turn,
-                lastTurnById,
-                isGroupBlocked
-            )
+            val randomPool = available.filter { it.type == "random" && isUnseen(it) }
             weightedPick(randomPool, activeStoryline, mainTierWeights)?.let { results.add(it) }
         }
 
-        // 5. 支线：emotion 一次性；gray/character/national/faction 可重复带冷却
+        // 5. 支线：全部本局一次性；抽过的不再回池
         val branchEmotion = available.filter {
-            it.type == "emotion" && !seen.contains(it.id) && !isGroupBlocked(it)
+            it.type == "emotion" && isUnseen(it)
         }
-        val branchRepeatable = listOf("gray", "character", "national", "faction").flatMap { type ->
-            withCooldown(
-                available.filter { it.type == type },
-                type,
-                court.turn,
-                lastTurnById,
-                isGroupBlocked
-            )
+        val branchOnce = listOf("gray", "character", "national", "faction").flatMap { type ->
+            available.filter { it.type == type && isUnseen(it) }
         }
-        val branchPool = branchEmotion + branchRepeatable
+        val branchPool = branchEmotion + branchOnce
         results.addAll(weightedBranch(branchPool, activeStoryline, max = 2, seenExclusiveGroups = seenExclusiveGroups))
 
         // 去重
@@ -174,22 +161,6 @@ class EventPool(
             remaining.removeAt(index)
         }
         return selected
-    }
-
-    private fun withCooldown(
-        pool: List<GameEvent>,
-        type: String,
-        turn: Int,
-        lastTurnById: Map<String, Int>,
-        isGroupBlocked: (GameEvent) -> Boolean
-    ): List<GameEvent> {
-        val minGap = cooldownMonths[type] ?: return pool.filter { !isGroupBlocked(it) }
-        return pool.filter { e ->
-            if (isGroupBlocked(e)) return@filter false
-            val last = lastTurnById[e.id]
-            if (last == null || last > turn) return@filter true
-            turn - last >= minGap
-        }
     }
 
     /** 末班车判定：只读时间键，下个月年窗 / 月窗就关上。 */

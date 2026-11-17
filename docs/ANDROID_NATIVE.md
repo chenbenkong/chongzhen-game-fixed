@@ -37,6 +37,10 @@
   持票之后才可能命中对应死线结局，**不许跳过 warning 直接死**。
 - **三条党派结局年下限各自独立**：`faction_donglin_martyr` 1644 / `faction_tyrant_fall` 1637 / `faction_sacrifice` 1635；
   禁止用"叙事最小年"常量顶包。
+- **本局事件一次性**：`random / gray / character / national / faction / emotion`
+  与历史、过渡事件统一按 `seenEventIds` 判重，本局已经播过的卡不会再因冷却到期而重演；
+  危机卡走边界路径，触发时也写入历史（`BoundaryEngine.checkCrisis` 接收 `seenEventIds`）。
+  Web 侧以 `eventHistory` 为唯一判据，两边同口径，读档后仍生效。
 - **可搁笔结局**：只摆牌不结算（`gameOver` 不置位），文案用逐格 `settle`。
 - **存档**：每回合写自动档，原子替换；读档恢复姓名/出身/功名/年月/回合/属性/隐藏/flags/flagTurns/履历/当前事件。
 

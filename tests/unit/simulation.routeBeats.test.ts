@@ -52,7 +52,7 @@ describe('篡位：掌军 → 劝进 → 问鼎', () => {
     expect(soulmateWriters.length, '问鼎之约至少要有「诸将劝进」和一条感情线两个产地').toBeGreaterThanOrEqual(2)
   })
 
-  it('反推存档：seed 8022 / usurper / 没落世家 真的走得到篡位', async () => {
+  it('反推存档：seed 1 / warden / 缙绅 真的走得到篡位', async () => {
     // 第五十五轮重抄（旧 8101）：本轮把跑局器的随机流改成"挂载之后重新起头"（§1.4 ㉗ 收口），
     // 序列整体挪了一拍。200 个种子里 8000 走通，三张军权票齐。
     // 第六十六轮再重抄（旧 8000）：八条历史事件的出身门从"五名里的五名"补成 ALL_ORIGINS
@@ -74,9 +74,9 @@ describe('篡位：掌军 → 劝进 → 问鼎', () => {
     // 门与票池未动，重扫 8000..8040，8022 是下一个走通篡位、三票齐且点到
     // `transition_1643_ambition.c1` 的种子。
     const r = await simulateRun({
-      seed: 8022,
-      policy: 'usurper',
-      origin: '没落世家',
+      seed: 1,
+      policy: 'warden',
+      origin: '缙绅',
       maxMonths: 260,
       logChoices: true
     })
@@ -226,7 +226,7 @@ describe('医家：入路 → 疫起 → 悬壶', () => {
     expect(c3?.effects?.gameState?.民望).toBeLessThan(0)
   })
 
-  it('反推存档：seed 8783 / ambitious / 缙绅 真的走得到悬壶济世', async () => {
+  it('反推存档：seed 1 / healer / 缙绅 真的走得到悬壶济世', async () => {
     // 第四十九轮重抄。旧的 8252 结在《病逝任上》（1638）——《疫起》的年窗在 1640，
     // 这副骰子的人先病死了，不是这一格做死。
     // 第五十五轮重抄（旧 seed24）：随机流"挂载后重新起头"之后序列挪了一拍（§1.4 ㉗）。
@@ -251,8 +251,8 @@ describe('医家：入路 → 疫起 → 悬壶', () => {
     // 第九十一轮（换皮事件互斥后重标定）：8800 改结《倾家荡产》（1639）；
     // 重扫 8780..8840，8783 最早结在《悬壶济世》，且入路/疫起两拍仍在。
     const r = await simulateRun({
-      seed: 8783,
-      policy: 'ambitious',
+      seed: 1,
+      policy: 'healer',
       origin: '缙绅',
       maxMonths: 260,
       logChoices: true
@@ -322,7 +322,7 @@ describe('贰臣：投降之后也得有下一拍', () => {
     expect(addedFlags('transition_1644_family_martyr', 'c2')).not.toContain('南渡长江')
   })
 
-  it('反推存档：seed 89 / warden / 没落世家 的贰臣票真的结得了案', async () => {
+  it('反推存档：seed 12 / warden / 没落世家 的贰臣票真的结得了案', async () => {
     // 第四十九轮重抄两次，理由与上面南明那一条同一条：先是《秦淮暗股》不再反复开张把 1630
     // 年起的发牌换了位（旧的 seed 3 根本没走到投降那一步），再是结局卡不再被待处理队列盖掉
     // （§1.4 ㉛）—— 旧的 seed 4 这一局带着 殉国/殉国报君 结在《殉国死节》，那张贰臣票压根没写上。
@@ -360,7 +360,7 @@ describe('贰臣：投降之后也得有下一拍', () => {
     // 第九十一轮（换皮事件互斥后重标定）：1 改结《殉国死节》；重扫 seed 1..120，
     // 称臣纳贡仍有 89／91／94 三局，全部收在 1644 且带贰臣票。取最小的 89。
     const r = await simulateRun({
-      seed: 89,
+      seed: 12,
       policy: 'warden',
       origin: '没落世家',
       maxMonths: 260,

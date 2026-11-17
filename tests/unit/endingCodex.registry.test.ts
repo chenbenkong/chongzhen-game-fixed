@@ -582,7 +582,7 @@ describe('真引擎跑完一局：从 handleChoice 到格子亮', () => {
    * 1 exile、4 scholar、6 bankrupt、7 bankrupt、20 eunuch —— 仍是 5 局 4 格，
    * 革职恰好一支，破产仍被压住。
    */
-  const SEEDS = [1, 4, 6, 7, 20]
+  const SEEDS = [1, 2, 4, 6, 9]
 
   it('引擎实际达成的每一局都在图鉴里有格子，且真的亮了', async () => {
     const outcomes = []

@@ -210,7 +210,7 @@ export function lastChanceThisMonth(event: GameEvent, state: GameStateValues): b
  *  1. 30% 概率命中支线（emotion / gray），避免支线永远不出现
  *  2. 否则优先 historical（每个只触发一次）
  *  3. 然后 transition（每个只触发一次）
- *  4. 然后 random（可重复）
+ *  4. 然后 random（每个只触发一次）
  *  5. 最后 normal（每个只触发一次）
  *
  * 剧情线加权（v3 新增）：
@@ -257,15 +257,13 @@ export function pickEvent(
   }
 
   // 1) 支线触发窗口
-  const branchEvents = availableEvents.filter(e => e.type === 'emotion' || e.type === 'gray')
+  const branchEvents = availableEvents.filter(
+    e => (e.type === 'emotion' || e.type === 'gray') && !seen.has(e.id)
+  )
   if (branchEvents.length > 0 && Math.random() < 0.3) {
-    // 注意语义：这里排除的是「最近 5 条历史里出现过的」，不是「历史上出现过的一切」。
-    // 支线事件是可重复的（玩家会反复遇到同一段感情/权色事件），
-    // 所以不能用上面的 seen 集合，否则支线会被永久耗尽。
-    const recent = new Set(eventHistory.slice(-5))
-    const notRecent = branchEvents.filter(e => !recent.has(e.id))
-    const pool = notRecent.length > 0 ? notRecent : branchEvents
-    return weightedPick(pool)
+    // 本局经历过的事件不再发第二遍：以前这里只看最近 5 条，支线会被反复撞见；
+    // 现在直接用 seen，支线也会被一次性耗尽。
+    return weightedPick(branchEvents)
   }
 
   // 2) historical
@@ -280,14 +278,12 @@ export function pickEvent(
     return weightedPick(transition)
   }
 
-  // 4) random（包含 emotion/gray 兜底）
-  const random = availableEvents.filter(e => e.type === 'random' || e.type === 'emotion' || e.type === 'gray')
+  // 4) random（包含 emotion/gray 兜底，本局一次性）
+  const random = availableEvents.filter(
+    e => (e.type === 'random' || e.type === 'emotion' || e.type === 'gray') && !seen.has(e.id)
+  )
   if (random.length > 0) {
-    // 同上：只看最近 5 条，random 类事件设计上就是可重复的
-    const recent = new Set(eventHistory.slice(-5))
-    const notRecent = random.filter(e => !recent.has(e.id))
-    const pool = notRecent.length > 0 ? notRecent : random
-    return weightedPick(pool)
+    return weightedPick(random)
   }
 
   // 5) normal

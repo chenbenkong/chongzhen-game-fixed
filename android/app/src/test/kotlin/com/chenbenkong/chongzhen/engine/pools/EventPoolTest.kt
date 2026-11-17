@@ -60,6 +60,25 @@ class EventPoolTest {
         }
     }
 
+    @Test fun `全池同局一次性：任何已发出的卡不会再发第二次`() {
+        val pool = EventPool(TestFixture.data, Random(11))
+        val court = TestFixture.defaultCourt()
+        val char = TestFixture.defaultCharacter()
+        val history = mutableListOf<String>()
+        val lastTurn = mutableMapOf<String, Int>()
+        val seen = mutableSetOf<String>()
+
+        repeat(40) { month ->
+            val picked = pool.drawMonth(court, char, history, lastTurn)
+            for (event in picked) {
+                assertTrue("第 $month 月重复发出了已发出的卡 ${event.id}", seen.add(event.id))
+            }
+            // 发出的第一张会真正播放；pending 卡也视为已发，不能重新抽一遍。
+            history.addAll(picked.map { it.id })
+            court.turn += 1
+        }
+    }
+
     @Test fun `prelude 前奏在可用时排本月第一张`() {
         val pool = EventPool(TestFixture.data, Random(5))
         val court = TestFixture.defaultCourt()

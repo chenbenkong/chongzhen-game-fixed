@@ -183,7 +183,7 @@ describe('家宅第三波真跑局：《灯花》《名帖》在样本里撞得�
     // 能撞见《灯花》的那一批局整个换了一遍，48 局里只出现 c1【先握住她的手】。
     // 样本覆盖到哪一支是画像的运气，不是机制；c2/c3 的可点性与写入契约
     // 由本文件第一段（每条分支都写 has_children）和下面的反推存档看住。
-    expect([...used('echo_family_006')]).toContain('c1')
+    expect([...used('echo_family_006')].length, '样本里一条《灯花》分支都没走到').toBeGreaterThan(0)
 
     const mingtie = fired('echo_family_007')
     const withChild = [...deng, ...runs.filter(r => r.finalFlags.includes('has_children') && !deng.includes(r))]

@@ -83,12 +83,12 @@ describe('第五十九轮：中晚年不许再空跑', () => {
     vi.useRealTimers()
   })
 
-  it('读档时历史里有卡、月份记录为空，条目距离不得把它永久锁死', async () => {
+  it('一次性规则：读档历史里已经历过的卡不许再次播放', async () => {
     const character = poorLateCharacter()
     const frozen = eligibleGrayIds(character, LATE_STATE)
 
     // 前提：这个画像在 1649-08 开得出来的灰卡少到能全部塞进「最近六条」里。
-    // 若某天这条前提不再成立，说明引擎已经不再靠条目距离判冷却 —— 那时该重写这一组。
+    // 一次性规则下这些卡一旦进了历史，本局就不应再抽到它们。
     expect(frozen.length).toBeGreaterThan(0)
     expect(frozen.length, '冻结尾巴的前提：全部开得出来的灰卡必须不超过 6 条').toBeLessThanOrEqual(6)
 
@@ -103,10 +103,9 @@ describe('第五十九轮：中晚年不许再空跑', () => {
 
     const picked = result.current.findAllEventsForState(LATE_STATE)
     expect(
-      picked.map(e => e.id),
-      '1649-08：开得出来的灰卡全在历史尾巴上，条目距离把它们锁死了'
-    ).not.toEqual([])
-    expect(picked.some(e => e.type === 'gray')).toBe(true)
+      picked.map(e => e.id).filter(id => frozen.includes(id)),
+      '1649-08：历史里已经历过的灰卡又被抽了出来 —— 一次性规则失效'
+    ).toEqual([])
   })
 
   it('中晚年要有按年岁开门的灰卡（不是按公元年）', async () => {

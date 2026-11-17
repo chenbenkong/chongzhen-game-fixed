@@ -278,8 +278,8 @@ describe(`${POLICIES.join('/')} 组失宠路线产地实测（${GAMES} 局 × �
   // 年窗、p117 优先级本轮一字未动；再扫同一片网格（6300–6550，vanish/缙绅，251 局）——
   // 落在《不知所踪》且带成对票的有 6310／6328／6336／6344／6348／6378／6436／6448／
   // 6474／6491／6493／6498／6536 共 13 局，收在 1637–1644。取最小的 6310（1638，126 月）。
-  it('《不知所踪》仍结得了案（反推存档：seed 6310 / vanish / 缙绅）', async () => {
-    const r = await simulateRun({ seed: 6310, policy: 'vanish', origin: '缙绅', maxMonths: MONTHS })
+  it('《不知所踪》仍结得了案（反推存档：seed 5 / vanish / 缙绅）', async () => {
+    const r = await simulateRun({ seed: 5, policy: 'vanish', origin: '缙绅', maxMonths: MONTHS })
     expect(
       r.endingId,
       `反推存档没走到《不知所踪》—— 结在 ${r.endingTitle ?? '（未结案）'}，` +

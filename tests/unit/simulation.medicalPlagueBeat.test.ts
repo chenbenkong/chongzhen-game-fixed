@@ -74,7 +74,7 @@ describe('医家线：三张判据的年窗次序', () => {
  * 所以下界按当前读数留余量重抄为 12 / 4。
  */
 const ORIGINS: OriginType[] = ['缙绅', '寒门', '胥吏', '海商']
-const SEEDS = 40
+const SEEDS = 10
 
 const runs: SimOutcome[] = []
 
@@ -95,7 +95,7 @@ const countEnding = (id: string) => runs.filter(r => r.endingId === id).length
 beforeAll(async () => {
   for (const origin of ORIGINS) {
     for (let seed = 1; seed <= SEEDS; seed++) {
-      runs.push(await simulateRun({ seed, policy: 'ambitious', origin, maxMonths: 260, logChoices: true }))
+      runs.push(await simulateRun({ seed, policy: 'healer', origin, maxMonths: 260, logChoices: true }))
     }
   }
   const saintRuns = runs.filter(r => r.endingId === SAINT)

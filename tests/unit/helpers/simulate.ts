@@ -31,7 +31,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
   | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout' | 'heir'
-  | 'corrupt' | 'eunuch' | 'eunuchBacklash' | 'eunuchExit'
+  | 'corrupt' | 'eunuch' | 'eunuchBacklash' | 'eunuchExit' | 'healer'
 
 export interface SimOutcome {
   seed: number
@@ -96,6 +96,8 @@ export interface SimOutcome {
   endEventId: string | null
   /** 终局那一刻八条归零死线上的数值，用来把「为什么结束」归因到具体某一维 */
   finalThresholds: Record<string, number>
+  /** 终局时角色的原始五维（诊断用；finalThresholds 只包含八条归零死线）。 */
+  finalAttributes: Record<string, number>
   /** 终局时角色身上的 flag 全集 —— 「死于归零必然先见过警告」这条不变量读它 */
   finalFlags: string[]
   /**
@@ -1028,6 +1030,21 @@ function pickChoice(
     return pickSafest(pool, character, gameState)
   }
   const profile = PROFILES[policy]
+  if (policy === 'healer') {
+    // 专走医家线的画像：先拿医疗票，见到《悬壶济世》的请笔就收笔；
+    // 其它请笔仍按 warden 的保命规矩拒掉（这个 profile 只负责证明医家格可达）。
+    const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
+    if (event.declinable && endingTileOf(event.id) === 'ending_medical_saint' && seal && pool.includes(seal)) {
+      return seal
+    }
+    const medical = pool.find(c => {
+      const add = (c.effects as any)?.flags?.add as string[] | undefined
+      return !!add?.some(f => ['习医', '行医', '开馆行医', '赈灾行医', '仁心仁术'].includes(f))
+    })
+    if (medical) return medical
+    if (refusal && pool.includes(refusal)) return refusal
+    return pickSafest(pool, character, gameState)
+  }
   if (profile) {
     // 只想收自己那几格的笔；别的请笔照 warden 的规矩拒掉。
     const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
@@ -1228,6 +1245,7 @@ export async function simulateRun(opts: {
   let endEventId: string | null = null
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
+  let finalAttributes: Record<string, number> = {}
   let finalFlagTurns: Record<string, number> = {}
   let finalFaction: SimOutcome['finalFaction'] = null
   let finalGates: Record<string, number> = {}
@@ -1341,6 +1359,7 @@ export async function simulateRun(opts: {
     finalYear = hook.result.current.gameState.currentYear
     finalRank = hook.result.current.character.rank
     finalThresholds = thresholdSnapshot(hook.result.current.character, hook.result.current.gameState)
+    finalAttributes = { ...(hook.result.current.character.attributes as unknown as Record<string, number>) }
     finalFlags = [...(hook.result.current.character.flags || [])]
     finalFlagTurns = { ...(hook.result.current.character.flagTurns || {}) }
     finalFaction = hook.result.current.character.faction
@@ -1404,6 +1423,7 @@ export async function simulateRun(opts: {
     finalRank,
     endEventId,
     finalThresholds,
+    finalAttributes,
     finalFlags,
     finalFlagTurns,
     finalFaction,
