@@ -638,12 +638,14 @@ export function explainUnmet(
   }
 
   if (conditions.age) {
-    // 与顶栏「年方X岁」同一个说法：玩家看得见的量，缺口也才看得懂
-    const cur = params.characterAge ?? 0
-    if (conditions.age.min !== undefined && cur < conditions.age.min) {
+    // 与顶栏「年方X岁」同一个说法：玩家看得见的量，缺口也才看得懂。
+    // 比较用内部浮点年龄，显示前取整；否则 22 岁零 1 个月会写成 22.083333 岁。
+    const rawAge = params.characterAge ?? 0
+    const cur = Math.floor(rawAge)
+    if (conditions.age.min !== undefined && rawAge < conditions.age.min) {
       gaps.push(`年方 ${cur}（需 ${conditions.age.min} 岁）`)
     }
-    if (conditions.age.max !== undefined && cur > conditions.age.max) {
+    if (conditions.age.max !== undefined && rawAge > conditions.age.max) {
       gaps.push(`年方 ${cur}（需 ≤${conditions.age.max} 岁）`)
     }
   }

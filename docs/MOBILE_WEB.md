@@ -99,8 +99,26 @@
 `.event-header` 和 `.narrative-section`（人物引语、背景正文、处境提示）在手机作用域内
 `display:none`，不再把整篇事件正文重播一遍。桌面 `EventDisplay.css` 仍按原样显示，一行未改。
 
-`tests/mobile-web.mjs` 新增四条断言：结算无正文、无事件标题、已选选项可见、回音框存在；
-截图见 `release/手机网页版-结算-924x426.png`。
+`tests/mobile-web.mjs` 新增六条断言：结算无正文、无事件标题、已选选项可见、回音框存在、
+初始岁数为整数、跨月后岁数仍为整数；截图见 `release/手机网页版-结算-924x426.png`。
+
+## 岁数只显示整数（2026-11-17）
+
+引擎为了按月增龄，内部把年龄存成浮点（每月 `+1/12`），所以直接渲染 `character.age` 会在
+过一个月后显示 `22.083333333333332岁`。**内部浮点年龄不动**——月度增龄、年龄门和结局判定都依赖它；
+只在展示层取整：
+
+- 手机 HUD `src/mobile/MobileBoard.tsx`：`Math.floor(character.age)`；
+- 桌面 `StatusBar`、`LifeReview`、`endingSystem` 原本就是 `Math.floor`，本轮继续对齐；
+- `GameScreen` 的 AI 顾问 / 画像提示词上下文也改成整数岁，避免提示词里出现小数；
+- 命途缺口解释用浮点年龄做比较、`Math.floor` 后的整数做显示，兼顾门判定与可读性。
+
+必须 `floor` 而不是 `round`：22 岁 6 个月仍是 22 岁，不能提前显示 23。原生
+`GameController` 的 `BoardSnapshot.age` / `SavePreview.age` 本来就是 `Int`（`.toInt()`），
+`BoardScreen` 显示 `年方${board.age}岁`，不受此问题影响。
+
+`tests/mobile-web.mjs` 新增断言：HUD 文字匹配 `/^\d+岁/`；结算后点「继续」跨月再读 HUD，
+仍匹配 `/^\d+岁/`。
 
 ## 强制横屏（2026-11-17）
 

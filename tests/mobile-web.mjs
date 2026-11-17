@@ -105,6 +105,8 @@ async function main() {
       `h=${headerBox?.height}`)
 
     const choicesFab = await page.locator('.mobile-choices-fab').boundingBox()
+    const hudMeta = await page.locator('.mobile-hud__meta').innerText()
+    check('岁数只显示整数', /^\d+岁/.test(hudMeta), hudMeta)
     check('选项入口常驻且可触控', !!choicesFab && Math.min(choicesFab.width, choicesFab.height) >= 44,
       choicesFab ? `${choicesFab.width}×${choicesFab.height}` : 'missing')
     const choicesFabText = await page.locator('.mobile-choices-fab').innerText()
@@ -212,6 +214,10 @@ async function main() {
       check('结算不再重播事件标题', !(await page.locator('.mobile-event-host .event-header').isVisible()))
       check('结算保留已选选项', await page.locator('.mobile-event-host .selected-choice').isVisible())
       check('结算保留回音', (await page.locator('.mobile-event-host .echo-box').count()) > 0)
+      await page.locator('.continue-btn').click()
+      await page.waitForTimeout(250)
+      const hudMetaAfterMonth = await page.locator('.mobile-hud__meta').innerText()
+      check('跨月后岁数仍为整数', /^\d+岁/.test(hudMetaAfterMonth), hudMetaAfterMonth)
       await page.screenshot({ path: `${SHOT_DIR}/mobile-web-result-844x390.png`, fullPage: false })
     }
 

@@ -166,7 +166,7 @@ export default function MobileBoard(props: MobileBoardProps) {
             {character.courtesyName && <em>字{character.courtesyName}</em>}
           </span>
           <span className="mobile-hud__meta">
-            {character.age}岁 · {character.rank || identityType} · {character.origin}
+            {Math.floor(character.age)}岁 · {character.rank || identityType} · {character.origin}
           </span>
         </div>
 
