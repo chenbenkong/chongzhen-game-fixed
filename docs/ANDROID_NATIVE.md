@@ -38,13 +38,22 @@
 - **可搁笔结局**：只摆牌不结算（`gameOver` 不置位），文案用逐格 `settle`。
 - **存档**：每回合写自动档，原子替换；读档恢复姓名/出身/功名/年月/回合/属性/隐藏/flags/flagTurns/履历/当前事件。
 
-## 手机尺寸适配（2026-11-16）
+## 手机尺寸适配与单栏抽屉（2026-11-17）
 
 目标真机：**2772×1280、6.83 英寸**，横屏宽高比 **2.165:1**，与设计基准 844×390（2.164:1）同比例。
 按 Android 密度换算后视口约为 844–924dp 宽、366–390dp 高；布局全部用 `dp/sp` 和约束，不写死像素。
 
-- **三栏按宽度比例**：`sideWidth = maxWidth × 0.21`，夹在 `150–220dp`；`≥600dp` 才出三栏。
-  这样 844dp 宽时左右栏约 177dp、中间事件栏约 454dp；924dp 宽时左右栏约 194dp、中间约 520dp。
+- **手机默认单栏**：`MainArea` 只有 `maxWidth ≥ 1000.dp` 才常驻左右栏；844/924dp 上不再把
+  能力栏、态度栏硬挤在事件两侧，事件卡独占整块宽度。
+- **按需面板**：顶栏只留「国势 + 面板」；点「面板」从右侧弹出抽屉，页签为
+  **能力 / 态度 / 卷宗**。面板宽为屏宽 64%，点遮罩、关闭按钮或系统返回键都会收起。
+  `卷宗` 页签含票签、履历、结局图鉴；不再把三栏信息常驻在牌桌上。
+- **三栏只给大屏**：≥1000dp 的平板/桌面仍按 Web 三栏骨架显示，侧栏宽 `maxWidth × 0.21`
+  夹在 `170–230dp`；手机不再触发。
+- **强横屏**：Manifest `android:screenOrientation="sensorLandscape"`，
+  `MainActivity.onCreate` / `onResume` 再设 `SCREEN_ORIENTATION_SENSOR_LANDSCAPE`。
+  正常 Android 上应用请求的方向优先于系统「自动旋转」开关，用户把手机锁在竖屏也不会
+  把牌桌转成竖屏；`sensorLandscape` 允许左右两个横屏方向。
 - **字号上移一档**：正文 14sp / 21sp 行高，事件标题 22sp，侧栏标签 11.5sp；不再用默认 Roboto。
 - **触控目标**：底部按钮 ≥44dp，抉择卡 ≥46dp；横屏短边只有约 366dp，不做 56dp 大按钮堆叠。
 - **系统栏 / 挖孔**：`MainActivity` 隐藏 systemBars、`LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`；
@@ -53,6 +62,9 @@
   细线 `#2A2015`；系统衬线字体（宋体族）；面板 3dp 方角、1dp 金线；按钮暗底金边，不用朱砂圆角块。
 - **字体风险**：不打包字体文件，依赖系统 `serif` 的 CJK 字面；没有 CJK 衬线字体的设备会回退到系统默认字，
   真机字形未验证（本机无设备/AVD）。
+- **系统级例外**：标准 Android 的 Activity 方向请求会覆盖系统竖屏锁；个别 ROM 若提供
+  「锁定当前应用方向」这类系统级开关，应用无法绕过，只能由用户关闭该开关。原生 APK 本身不做任何
+  依赖系统设置的降级。
 
 ## 构建
 
@@ -78,15 +90,16 @@
 & "C:\Users\cckj\Android\Sdk\build-tools\35.0.0\aapt.exe" list <apk>          # 应含 assets/game-data.json
 ```
 
-包名 `com.chenbenkong.chongzhen`，minSdk 26 / target 35，`screenOrientation="landscape"`，
-权限只有 1 条 AndroidX 内部权限（`…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`），**无 `INTERNET` / 无 `ACCESS_NETWORK_STATE`**。
+包名 `com.chenbenkong.chongzhen`，minSdk 26 / target 35，`screenOrientation="sensorLandscape"`（aapt 值 0x6），
+`MainActivity` 运行时再次请求同一方向；权限只有 1 条 AndroidX 内部权限（`…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`），**无 `INTERNET` / 无 `ACCESS_NETWORK_STATE`**。
 
-## 本轮实测（2026-11-16）
+## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- clean 后 `assembleDebug`：`app-debug.apk` **11,273,400 字节**，debug v2 签名有效（`CN=Android Debug`）。
-- APK 静态复核：`assets/game-data.json` **3,927,111 字节**在位；APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用。
-- 未验证项：真机安装、启动、横屏显示、触控与存档落盘（本机 `adb devices` 为空，SDK 无 emulator/AVD）。
+- clean 后 `assembleDebug`：`app-debug.apk` **11,459,609 字节**，debug v2 签名有效（`CN=Android Debug`）。
+- APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
+  APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
+- 未验证项：真机安装、启动、强制横屏实际表现、面板抽屉触控与存档落盘（本机 `adb devices` 为空，SDK 无 emulator/AVD）。
 
 ## 未验证 / 已知缺口
 

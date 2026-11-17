@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,9 +34,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.BackHandler
 import com.chenbenkong.chongzhen.ui.theme.CardInk
 import com.chenbenkong.chongzhen.ui.theme.CardInkDeep
-import com.chenbenkong.chongzhen.ui.theme.Cinnabar
 import com.chenbenkong.chongzhen.ui.theme.CinnabarBright
 import com.chenbenkong.chongzhen.ui.theme.Gold
 import com.chenbenkong.chongzhen.ui.theme.GoldDark
@@ -49,16 +47,16 @@ import com.chenbenkong.chongzhen.ui.theme.ParchmentDim
 import com.chenbenkong.chongzhen.ui.theme.ParchmentFaint
 
 // ============================================================================
-// 横屏牌桌：按 Web 版的三栏骨架重排。
+// 横屏牌桌：手机默认单栏，能力 / 态度 / 卷宗收进可开合抽屉。
 //
-//   顶部状态栏（年月 / 姓名 / 官职 / 回合）
-//   ├─ 左栏：个人能力 + 隐藏属性 + 官职出身
-//   ├─ 中栏：事件卡（标题 / 叙事 / 选项 / 结算）
-//   └─ 右栏：五方态度 + 国势 + 政绩
+//   顶部状态栏（年月 / 姓名 / 官职 / 国势 / 面板）
+//   中栏：事件卡（标题 / 叙事 / 选项 / 结算）独占宽度
 //   底部操作栏（返回 / 撤销 / 存档 / 进下月）
+//   点「面板」→ 右侧抽屉，三个页签：能力 / 态度 / 卷宗
 //
-// 视觉也按 Web 版 theme.css 收敛：墨黑渐变底、宋体、旧金细线、
-// 方角低圆角面板；不再用 Material 默认的 Roboto 与圆角胶囊。
+// 只有 ≥1000dp 的平板 / 桌面才常驻左右栏；手机寸土寸金，
+// 默认把侧栏收起来，事件正文拿回整块宽度。
+// 视觉仍按 Web 版 theme.css：墨黑渐变、宋体、旧金细线、方角面板。
 // ============================================================================
 
 private val PanelShape = RoundedCornerShape(3.dp)
@@ -67,9 +65,13 @@ private val PanelBg = Brush.verticalGradient(listOf(CardInk, CardInkDeep))
 @Composable
 fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
     val board = state.board
+    // 面板打开时，系统返回键只收起面板，不退游戏。
+    BackHandler(enabled = state.boardPanel != null) {
+        viewModel.closeBoardPanel()
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            WebStatusBar(board, state, viewModel)
+            WebStatusBar(board, viewModel)
             state.banner?.let { BannerBar(it) }
 
             if (board != null) {
@@ -95,9 +97,13 @@ fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
             BottomBar(state, viewModel)
         }
 
-        if (state.drawerOpen) {
-            DrawerScrim(onClose = { viewModel.toggleDrawer(false) })
-            BoardDrawer(state, viewModel, modifier = Modifier.align(Alignment.CenterEnd))
+        if (state.boardPanel != null && board != null) {
+            PanelScrim(onClose = { viewModel.closeBoardPanel() })
+            BoardPanelSheet(
+                state = state,
+                viewModel = viewModel,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
         }
     }
 }
@@ -107,7 +113,6 @@ fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
 @Composable
 private fun WebStatusBar(
     board: BoardSnapshot?,
-    state: UiState,
     viewModel: BoardViewModel
 ) {
     Row(
@@ -124,7 +129,10 @@ private fun WebStatusBar(
         if (board == null) {
             Text("崇祯·宦海浮沉", style = MaterialTheme.typography.titleMedium, color = Gold)
             Spacer(Modifier.weight(1f))
-            GhostButton(text = "卷宗", onClick = { viewModel.toggleDrawer(true) })
+            GhostButton(
+                text = "面板",
+                onClick = { viewModel.openBoardPanel(BoardPanel.Attributes) }
+            )
             return@Row
         }
 
@@ -177,18 +185,14 @@ private fun WebStatusBar(
         }
         Spacer(Modifier.weight(1f))
         Text(
-            text = "第${board.turn}回合",
+            text = "国势 ${(board.court["国势"] ?: 0.0).toInt()}",
             style = MaterialTheme.typography.labelMedium,
-            color = ParchmentFaint
+            color = if ((board.court["国势"] ?: 0.0) < 35) CinnabarBright else Gold
         )
-        if (board.pendingCount > 0) {
-            Text(
-                text = "待办 ${board.pendingCount + 1}",
-                style = MaterialTheme.typography.labelMedium,
-                color = Gold
-            )
-        }
-        GhostButton(text = "卷宗", onClick = { viewModel.toggleDrawer(true) })
+        GhostButton(
+            text = "面板",
+            onClick = { viewModel.openBoardPanel(BoardPanel.Attributes) }
+        )
     }
 }
 
@@ -206,7 +210,7 @@ private fun VerticalRule() {
     )
 }
 
-// ---------------------------------------------------------------------- 主体三栏
+// ---------------------------------------------------------------------- 主体区域
 
 @Composable
 private fun MainArea(
@@ -216,9 +220,10 @@ private fun MainArea(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier) {
-        val showSidebars = maxWidth >= 600.dp
-        if (showSidebars) {
-            val sideWidth = (maxWidth * 0.21f).coerceIn(150.dp, 220.dp)
+        // 手机 / 小屏一律单栏，侧栏从顶部「面板」按需打开。
+        // 只有 ≥1000dp 的平板或桌面才常驻三栏，避免 844/924dp 上把事件区挤窄。
+        if (maxWidth >= 1000.dp) {
+            val sideWidth = (maxWidth * 0.21f).coerceIn(170.dp, 230.dp)
             Row(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -244,25 +249,11 @@ private fun MainArea(
                 )
             }
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
-                EventColumn(
-                    state = state,
-                    viewModel = viewModel,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 92.dp)
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    AttributeSidebar(board = board, modifier = Modifier.width(220.dp))
-                    StatusSidebar(board = board, modifier = Modifier.width(220.dp))
-                }
-            }
+            EventColumn(
+                state = state,
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
@@ -270,12 +261,21 @@ private fun MainArea(
 // ---------------------------------------------------------------------- 左栏
 
 @Composable
-private fun AttributeSidebar(board: BoardSnapshot, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
+private fun AttributeSidebar(
+    board: BoardSnapshot,
+    modifier: Modifier = Modifier,
+    chrome: Boolean = true
+) {
+    val panelModifier = if (chrome) {
+        modifier
             .clip(PanelShape)
             .background(PanelBg)
             .border(1.dp, PanelBorder, PanelShape)
+    } else {
+        modifier
+    }
+    Column(
+        modifier = panelModifier
             .padding(horizontal = 10.dp, vertical = 8.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -321,12 +321,21 @@ private fun AttributeSidebar(board: BoardSnapshot, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun StatusSidebar(board: BoardSnapshot, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
+private fun StatusSidebar(
+    board: BoardSnapshot,
+    modifier: Modifier = Modifier,
+    chrome: Boolean = true
+) {
+    val panelModifier = if (chrome) {
+        modifier
             .clip(PanelShape)
             .background(PanelBg)
             .border(1.dp, PanelBorder, PanelShape)
+    } else {
+        modifier
+    }
+    Column(
+        modifier = panelModifier
             .padding(horizontal = 10.dp, vertical = 8.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -820,10 +829,10 @@ private fun formatDelta(v: Double): String {
     return if (n >= 0) "+$n" else n.toString()
 }
 
-// ---------------------------------------------------------------------- 抽屉
+// ---------------------------------------------------------------------- 面板抽屉
 
 @Composable
-private fun DrawerScrim(onClose: () -> Unit) {
+private fun PanelScrim(onClose: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -832,64 +841,150 @@ private fun DrawerScrim(onClose: () -> Unit) {
     )
 }
 
+/** 手机牌桌的按需面板：能力 / 态度 / 卷宗，三个页签共用一块抽屉。 */
 @Composable
-private fun BoardDrawer(
+private fun BoardPanelSheet(
     state: UiState,
     viewModel: BoardViewModel,
     modifier: Modifier = Modifier
 ) {
-    val board = state.board
-    Box(
+    val board = state.board ?: return
+    val selected = state.boardPanel ?: BoardPanel.Attributes
+    Column(
         modifier = modifier
             .fillMaxHeight()
-            .fillMaxWidth(0.52f)
+            .fillMaxWidth(0.64f)
+            .clip(PanelShape)
             .background(PanelBg)
-            .border(1.dp, PanelBorderStrong)
-            .padding(12.dp)
+            .border(1.dp, PanelBorderStrong, PanelShape)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "卷宗",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Gold,
-                        letterSpacing = 2.sp
-                    )
-                    GhostButton(text = "关闭", onClick = { viewModel.toggleDrawer(false) })
-                }
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "面板",
+                style = MaterialTheme.typography.titleMedium,
+                color = Gold,
+                letterSpacing = 2.sp
+            )
+            GhostButton(text = "关闭", onClick = { viewModel.closeBoardPanel() })
+        }
 
-            if (board != null) {
-                item { SectionLabel("显性属性") }
-                items(board.attributes.entries.toList()) { (k, v) ->
-                    DrawerRow(k, v.toInt().toString())
-                }
-                item { SectionLabel("朝堂态度") }
-                items(board.court.entries.toList()) { (k, v) ->
-                    DrawerRow(k, v.toInt().toString())
-                }
-                item { SectionLabel("隐情") }
-                items(board.hidden.entries.toList()) { (k, v) ->
-                    DrawerRow(k, v.toInt().toString())
-                }
-                item { SectionLabel("履历（倒序）") }
-                items(board.history) { record ->
-                    Text(text = record, style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
-                }
-            }
-
-            item { SectionLabel("结局图鉴") }
-            items(state.codex) { entry ->
-                DrawerRow(
-                    label = if (entry.unlocked) entry.title ?: entry.id else "？？？",
-                    value = if (entry.unlocked) "已得" else "未得"
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            BoardPanel.values().forEach { panel ->
+                PanelTab(
+                    text = boardPanelLabel(panel),
+                    selected = panel == selected,
+                    onClick = { viewModel.openBoardPanel(panel) },
+                    modifier = Modifier.weight(1f)
                 )
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(top = 6.dp)
+        ) {
+            when (selected) {
+                BoardPanel.Attributes -> AttributeSidebar(
+                    board = board,
+                    modifier = Modifier.fillMaxSize(),
+                    chrome = false
+                )
+                BoardPanel.Status -> StatusSidebar(
+                    board = board,
+                    modifier = Modifier.fillMaxSize(),
+                    chrome = false
+                )
+                BoardPanel.Records -> RecordsPanel(
+                    board = board,
+                    codex = state.codex,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PanelTab(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+            Box(
+        modifier = modifier
+            .heightIn(min = 40.dp)
+            .clip(PanelShape)
+            .background(if (selected) Color(0xFF221A10) else Color.Transparent)
+            .border(
+                1.dp,
+                if (selected) GoldDark else PanelBorder,
+                PanelShape
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) Gold else ParchmentDim,
+            letterSpacing = 1.sp
+        )
+    }
+}
+
+private fun boardPanelLabel(panel: BoardPanel): String = when (panel) {
+    BoardPanel.Attributes -> "能力"
+    BoardPanel.Status -> "态度"
+    BoardPanel.Records -> "卷宗"
+}
+
+@Composable
+private fun RecordsPanel(
+    board: BoardSnapshot,
+    codex: List<CodexEntry>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SectionLabel("票签")
+        if (board.flags.isEmpty()) {
+            Text("暂无票签。", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
+        } else {
+            board.flags.forEach { flag ->
+                Text("· $flag", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
+            }
+        }
+
+        SectionLabel("履历")
+        if (board.history.isEmpty()) {
+            Text("尚无履历。", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
+        } else {
+            board.history.forEach { record ->
+                Text(record, style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
+            }
+        }
+
+        SectionLabel("结局图鉴")
+        codex.forEach { entry ->
+            DrawerRow(
+                label = if (entry.unlocked) entry.title ?: entry.id else "？？？",
+                value = if (entry.unlocked) "已得" else "未得"
+            )
         }
     }
 }

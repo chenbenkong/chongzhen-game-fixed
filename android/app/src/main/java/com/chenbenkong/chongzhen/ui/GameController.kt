@@ -307,6 +307,16 @@ class GameController(
         _state.update { it.copy(drawerOpen = open) }
     }
 
+    /** 打开手机牌桌面板（能力 / 态度 / 卷宗）。 */
+    fun openBoardPanel(panel: BoardPanel) {
+        _state.update { it.copy(boardPanel = panel) }
+    }
+
+    /** 关闭手机牌桌面板。 */
+    fun closeBoardPanel() {
+        _state.update { it.copy(boardPanel = null) }
+    }
+
     /** 返回标题（保留自动存档）。 */
     fun backToTitle() {
         engine = null

@@ -146,6 +146,9 @@ data class BoardSnapshot(
     val pendingCount: Int
 )
 
+/** 手机牌桌的临时面板：默认收起，点顶部「面板」再打开。 */
+enum class BoardPanel { Attributes, Status, Records }
+
 /** 全局 UI 状态。 */
 data class UiState(
     val screen: Screen = Screen.Loading,
@@ -168,6 +171,8 @@ data class UiState(
     val outcome: OutcomeView? = null,
     val outcomeVisible: Boolean = false,
     val banner: BannerView? = null,
+    /** null = 面板收起；手机默认单栏，避免左右栏白占宽度。 */
+    val boardPanel: BoardPanel? = null,
     val drawerOpen: Boolean = false,
     val codex: List<CodexEntry> = emptyList(),
     val ending: EndingView? = null,

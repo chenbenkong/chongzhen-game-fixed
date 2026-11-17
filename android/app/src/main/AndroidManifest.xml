@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   应用清单：
-  - 锁定横屏（landscape）；
+  - 强制横屏（sensorLandscape：始终横屏，允许左右两个方向）；
   - configChanges 覆盖旋转 / 屏尺寸 / 键盘 / 屏幕方向等，避免重建 Activity；
   - 不申请 INTERNET、不申请 ACCESS_NETWORK_STATE（纯本地原生应用）；
   - 主题仅保留一个无ActionBar的基座，视觉全部由 Compose 渲染。
@@ -20,7 +20,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="landscape"
+            android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|density|uiMode|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

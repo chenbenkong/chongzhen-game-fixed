@@ -106,6 +106,10 @@ class BoardViewModel(app: Application) : AndroidViewModel(app) {
 
     fun toggleDrawer(open: Boolean) = controller?.toggleDrawer(open)
 
+    fun openBoardPanel(panel: BoardPanel) = controller?.openBoardPanel(panel)
+
+    fun closeBoardPanel() = controller?.closeBoardPanel()
+
     fun consumeToast() = controller?.consumeToast()
 
     companion object {

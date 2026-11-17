@@ -1,5 +1,6 @@
 package com.chenbenkong.chongzhen
 
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 运行时再声明一次强制横屏：不依赖系统「自动旋转」开关，
+        // 也不管用户把手机锁在竖屏；Manifest 的 sensorLandscape 是第二道保险。
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         enableEdgeToEdge()
         // 横屏游戏壳：隐藏系统状态栏/导航栏，避免顶部出现一条纯黑空栏；
         // 从屏幕边缘上滑可临时呼出系统栏，不把返回手势彻底堵死。
@@ -46,6 +50,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: BoardViewModel = viewModel()
             AppRoot(viewModel)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 个别 ROM 会在切后台/回前台时把方向改回竖屏，这里再钉一次横屏。
+        if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         }
     }
 }

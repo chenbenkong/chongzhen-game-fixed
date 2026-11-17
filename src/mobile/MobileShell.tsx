@@ -84,6 +84,19 @@ export default function MobileShell({ children }: MobileShellProps) {
   const [status, setStatus] = useState<OrientationStatus | null>(null)
   const [isRequesting, setIsRequesting] = useState(false)
   const statusRef = useRef<OrientationStatus | null>(null)
+  const requestInFlightRef = useRef(false)
+  const autoAttemptedRef = useRef(false)
+
+  const requestOrientation = useCallback(async () => {
+    if (requestInFlightRef.current) return
+    requestInFlightRef.current = true
+    setIsRequesting(true)
+    const result = await enterFullscreenAndLock()
+    statusRef.current = result
+    setStatus(result)
+    setIsRequesting(false)
+    requestInFlightRef.current = false
+  }, [])
 
   // 把手机版作用域类名挂到 body 上：portal 到 body 的复用组件（骰子弹窗、
   // 存档槽位、死亡结局、生平回顾等）只能靠这个类名被 mobile.css 作用域选择器覆盖。
@@ -109,13 +122,22 @@ export default function MobileShell({ children }: MobileShellProps) {
     }
   }, [])
 
+  // 手机网页版的限制：screen.orientation.lock 通常只允许在「全屏 + 用户手势」里调用。
+  // 首次触摸时静默尝试一次全屏+锁横屏；失败也不阻塞游戏，竖屏时仍有显式按钮兜底。
+  useEffect(() => {
+    if (autoAttemptedRef.current) return
+    const onFirstGesture = () => {
+      if (autoAttemptedRef.current) return
+      autoAttemptedRef.current = true
+      void requestOrientation()
+    }
+    window.addEventListener('pointerdown', onFirstGesture, { once: true, capture: true })
+    return () => window.removeEventListener('pointerdown', onFirstGesture, true)
+  }, [requestOrientation])
+
   const handleEnterFullscreen = useCallback(async () => {
-    setIsRequesting(true)
-    const result = await enterFullscreenAndLock()
-    statusRef.current = result
-    setStatus(result)
-    setIsRequesting(false)
-  }, [])
+    await requestOrientation()
+  }, [requestOrientation])
 
   return (
     <div className="mobile-shell">
@@ -133,7 +155,7 @@ export default function MobileShell({ children }: MobileShellProps) {
             {isRequesting ? '正在请求…' : '全屏并锁定横屏'}
           </button>
           {status && <p className="mobile-rotate-status" role="status">{status.message}</p>}
-          <p className="mobile-rotate-hint">若按钮无效，可在浏览器菜单中手动全屏并旋转设备。</p>
+          <p className="mobile-rotate-hint">网页版的横屏锁定受浏览器限制：若按钮无效，请关闭系统竖屏锁定，或安装为 PWA 后从桌面启动；原生 APK 已在应用层强制横屏，不受系统锁定影响。</p>
         </div>
       ) : (
         children

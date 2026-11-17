@@ -70,6 +70,11 @@ async function main() {
     const { ctx, page } = await openPage(browser, { width: 844, height: 390 }, BASE_URL + '?mobile=1')
     await page.waitForSelector('.mobile-shell', { timeout: 15000 })
     check('进入手机版外壳', (await page.locator('.mobile-shell').count()) === 1)
+    const manifest = await page.evaluate(async () => {
+      const res = await fetch('./manifest.webmanifest')
+      return res.json()
+    })
+    check('PWA manifest 声明横屏', manifest.orientation === 'landscape', `orientation=${manifest.orientation}`)
     await playToBoard(page)
 
     const states = await page.locator('.mobile-hud__states .mobile-state-capsule').count()
