@@ -96,7 +96,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- clean 后 `assembleDebug`：`app-debug.apk` **11,459,603 字节**，debug v2 签名有效（`CN=Android Debug`）。
+- `assembleDebug`：`app-debug.apk` **11,459,603 字节**，debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
 - 未验证项：真机安装、启动、强制横屏实际表现、面板抽屉触控与存档落盘（本机 `adb devices` 为空，SDK 无 emulator/AVD）。
