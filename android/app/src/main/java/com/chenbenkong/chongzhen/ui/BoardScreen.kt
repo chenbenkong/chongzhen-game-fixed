@@ -494,18 +494,8 @@ private fun EventCard(
             )
         }
 
-        if (!state.outcomeVisible) {
-            Spacer(Modifier.height(2.dp))
-            state.choices.forEachIndexed { index, view ->
-                ChoiceCard(
-                    index = index + 1,
-                    view = view,
-                    onClick = { viewModel.choose(view.choice.id) }
-                )
-            }
-            if (state.choices.isEmpty()) {
-                Text("本事件暂无可选项。", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
-            }
+        if (!state.outcomeVisible && state.choices.isEmpty()) {
+            Text("本事件暂无可选项。", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
         }
     }
 

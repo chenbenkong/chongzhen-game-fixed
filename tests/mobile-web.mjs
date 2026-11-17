@@ -168,6 +168,9 @@ async function main() {
       .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
     check('手机正文 ≤14px', bodyFont <= 14, `font=${bodyFont.toFixed(1)}px`)
 
+    check('正文底部不再重复显示选项', !(await page.locator('.choices-section').isVisible()))
+    await page.locator('.mobile-choices-fab').click()
+    await page.waitForTimeout(150)
     const choices = await page.locator('button.choice-card:not(.locked)').count()
     check('有可选项', choices > 0, `choices=${choices}`)
     if (choices > 0) {

@@ -470,6 +470,12 @@ body.mobile-applied textarea {
   font-weight: 700;
 }
 
+/* 右上角已有「选项 N」入口：正文底部不再重复铺开选项列表；
+   只有在全屏抉择面板打开时才显示 choices-section。 */
+.mobile-shell .mobile-board:not(.is-choices-open) .choices-section {
+  display: none;
+}
+
 /* 全屏抉择面板：把原本埋在正文底部的 choices-section 提到最前，
    不改变选项组件/判定逻辑，只改变手机上的位置。 */
 .mobile-shell .mobile-board.is-choices-open .mobile-event-host,
@@ -481,6 +487,7 @@ body.mobile-applied textarea {
   transform: none;
 }
 .mobile-shell .mobile-board.is-choices-open .choices-section {
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 60;

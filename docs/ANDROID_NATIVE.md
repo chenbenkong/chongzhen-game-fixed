@@ -51,7 +51,7 @@
 - **财帛/体质速览**：顶栏「国势」左侧直接显示「财帛 N · 体质 N」；完整五能力与隐藏属性仍在
   「面板 → 能力」页。
 - **抉择不埋底**：事件标题压成单行，右侧「选项 N」直接打开全屏抉择面板，选项卡片一次展示；
-  待办数字只保留在顶栏「操作 N」角标，不再占事件区一行。
+  **正文底部不再重复铺选项**，收起态只剩正文。待办数字只保留在顶栏「操作 N」角标，不再占事件区一行。
 - **底部操作条默认收起**：牌桌不再常驻四按钮底栏；顶栏「面板」右侧只留一个 44dp 的「操作」入口，
   点开才以浮层展开「标题 / 撤销 / 存档 / 进下月 / ×」，点遮罩、× 或系统返回键收起。
   事件区因此拿回整块高度，收起态没有底部遮挡。
@@ -105,7 +105,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,468,992 字节**，SHA-256 `F51F855CDCC44FA0B93F9CB3A7CD5F680CD64DB95D3A5DB321B63A0E885F4683`，
+- `assembleDebug`：`app-debug.apk` **11,468,326 字节**，SHA-256 `B14B23CBA6D0568A789DA2BABD494D8FE4A24B532A512B3D9E8EC763AFA3A1FA`，
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
