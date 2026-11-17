@@ -75,12 +75,32 @@ async function main() {
       return res.json()
     })
     check('PWA manifest 声明横屏', manifest.orientation === 'landscape', `orientation=${manifest.orientation}`)
+
+    // 手机版过去只有 BGMProvider、没有开关；这里把「有没有入口 / 默认是否开 / 资源能不能拿到」钉住。
+    const titleBgm = page.locator('.mobile-title__actions .bgm-toggle--inline')
+    check('标题屏有音乐开关', (await titleBgm.count()) === 1)
+    const titleBgmBox = await titleBgm.boundingBox()
+    check('标题屏音乐开关 ≥44px', !!titleBgmBox && Math.min(titleBgmBox.width, titleBgmBox.height) >= 44, titleBgmBox ? `${titleBgmBox.width}×${titleBgmBox.height}` : 'missing')
+    check('手机版默认开音乐', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '1'))
+    await titleBgm.click()
+    await page.waitForTimeout(100)
+    check('音乐开关可关闭', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '0'))
+    await titleBgm.click()
+    await page.waitForTimeout(100)
+    check('音乐开关可重新开启', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '1'))
+    const bgmHead = await page.request.head(BASE_URL.replace(/[?&]mobile=1$/, '') + 'bgm.mp3')
+    check('BGM 资源可达', bgmHead.ok(), `status=${bgmHead.status()}`)
+
     await playToBoard(page)
 
     const states = await page.locator('.mobile-hud__states .mobile-state-capsule').count()
     check('HUD 六项状态齐全', states === 6, `count=${states}`)
     const personal = await page.locator('.mobile-hud__personal .mobile-state-capsule').allInnerTexts()
     check('HUD 五项个人能力齐全', personal.length === 5, `count=${personal.length}`)
+    const hudBgm = page.locator('.mobile-hud .bgm-toggle--inline')
+    check('牌桌 HUD 有音乐开关', (await hudBgm.count()) === 1)
+    const hudBgmBox = await hudBgm.boundingBox()
+    check('牌桌音乐开关 ≥44px', !!hudBgmBox && Math.min(hudBgmBox.width, hudBgmBox.height) >= 44, hudBgmBox ? `${hudBgmBox.width}×${hudBgmBox.height}` : 'missing')
     check(
       '五项是财帛/文韬/理政/武略/体质',
       ['财帛', '文韬', '理政', '武略', '体质'].every(k => personal.some(t => t.includes(k))),

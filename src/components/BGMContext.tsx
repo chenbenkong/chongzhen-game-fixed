@@ -24,16 +24,19 @@ function bgmSrc() {
   return base.endsWith('/') ? `${base}bgm.mp3` : `${base}/bgm.mp3`
 }
 
-export function BGMProvider({ children }: { children: ReactNode }) {
+export function BGMProvider({ children, defaultOn = false }: { children: ReactNode; defaultOn?: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // 默认关，避免浏览器 autoplay 策略导致用户迷惑（以为点不动）
+  // 默认关，避免浏览器 autoplay 策略导致用户迷惑（以为点不动）。
+  // 手机版传 defaultOn：首次进入就尝试起播，首次用户手势后重试；
+  // 玩家已有的显式开关选择仍然优先。
   const [on, setOn] = useState<boolean>(() => {
     try {
-      // 老用户保留上次选择；新用户默认关
-      return localStorage.getItem(BGM_KEY) === '1'
+      const stored = localStorage.getItem(BGM_KEY)
+      if (stored !== null) return stored === '1'
+      return defaultOn
     } catch {
-      return false
+      return defaultOn
     }
   })
   const [status, setStatus] = useState<BGMCtx['status']>('idle')

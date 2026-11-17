@@ -238,7 +238,7 @@ function App() {
   // 桌面分支的 JSX / className / 导入顺序保持逐字等价，下面的 return 不再改动。
   if (detectMobileMode()) {
     return (
-      <BGMProvider>
+      <BGMProvider defaultOn>
         <StorageAlerts />
         <Suspense
           fallback={

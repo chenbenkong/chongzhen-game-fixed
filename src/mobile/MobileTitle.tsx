@@ -8,6 +8,7 @@ import { useMemo } from 'react'
 import { getAllSaveSlots, getAutosavePreview } from '../types/save'
 import { DIFFICULTY_CONFIGS, type DifficultyLevel } from '../types/difficulty'
 import { APP_VERSION_LABEL } from '../utils/version'
+import { BGMInlineButton } from '../components/BGM'
 
 /** 难度展示顺序：简单 / 普通 / 困难，与桌面一致。 */
 const DIFFICULTY_ORDER: DifficultyLevel[] = ['easy', 'normal', 'hard']
@@ -72,6 +73,7 @@ export default function MobileTitle({
             读 取 存 档
           </button>
         )}
+        <BGMInlineButton />
       </div>
     </div>
   )

@@ -22,6 +22,7 @@ import DeathEnding from '../components/DeathEnding'
 import SaveNotification from '../components/SaveNotification'
 import SaveSlotsModal from '../components/SaveSlotsModal'
 import ResignConfirmDialog from '../components/ResignConfirmDialog'
+import { BGMInlineButton } from '../components/BGM'
 
 export interface MobileBoardProps {
   origin: OriginType
@@ -188,6 +189,8 @@ export default function MobileBoard(props: MobileBoardProps) {
             ))}
           </div>
         </div>
+
+        <BGMInlineButton />
 
         <button
           type="button"

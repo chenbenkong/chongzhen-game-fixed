@@ -15,13 +15,14 @@
 | `src/mobile/detect.ts` | 入口检测，只读浏览器特征，无副作用 |
 | `src/mobile/MobileShell.tsx` | 横屏壳：竖屏遮罩、首次手势尝试全屏+`screen.orientation.lock('landscape')`（try/catch，失败给降级文案，不假装成功）、`body.mobile-applied` 作用域开关 |
 | `src/mobile/MobileApp.tsx` | 阶段机：标题 → 取名 → 出身 → 牌桌；存档/难度/成就口径复用既有工具 |
-| `src/mobile/MobileTitle.tsx` | 标题、开始、继续上次、难度三选 |
+| `src/mobile/MobileTitle.tsx` | 标题、开始、继续上次、难度三选、44px 音乐开关 |
 | `src/mobile/MobileNameSetup.tsx` | 姓/名/字/年岁同一排，籍贯 + 随机抽同排，两个按钮同排；不重复预览、返回键移到标题行 |
 | `src/mobile/MobileOriginSetup.tsx` | 出身卡网格；默认只露名称/官阶/「详情·选此」，背景、标签、玩法与五围默认收起，属性用紧凑值块 |
-| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD（六项朝堂状态 + 五项个人能力第二排 + 可开合人物面板）+ 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
-| `src/mobile/mobile.css` | 全部选择器限定在 `.mobile-shell` / `.mobile-board` / `body.mobile-applied` 下，无全局覆盖 |
-| `tests/mobile-web.mjs` | 入口四规则 + 牌桌最小可用性的浏览器冒烟（退出码即结论） |
+| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD（六项朝堂状态 + 五项个人能力第二排 + 44px 音乐开关 + 可开合人物面板）+ 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
+| `src/mobile/mobile.css` | 全部选择器限定在 `.mobile-shell` / `.mobile-board` / `body.mobile-applied` 下，无全局覆盖；含骰子弹窗手机作用域紧凑规则 |
+| `tests/mobile-web.mjs` | 入口四规则 + 牌桌最小可用性 + BGM 开关/资源可达的浏览器冒烟（退出码即结论） |
 | `tests/mobile-onboarding.mjs` | 标题/取名/出身三屏的几何断言 + 四张开局截图 |
+| `tests/mobile-dice.mjs` | 骰子弹窗在 844×390 / 924×426 的几何断言 + 截图 |
 
 ## 复用与边界
 
@@ -120,7 +121,22 @@
 `tests/mobile-web.mjs` 新增断言：HUD 文字匹配 `/^\d+岁/`；结算后点「继续」跨月再读 HUD，
 仍匹配 `/^\d+岁/`。
 
-## 强制横屏（2026-11-17）
+## 骰子弹窗紧凑 + 手机 BGM（2026-11-17）
+
+- **骰子弹窗**：它是 portal 到 `body` 的，桌面 32/40px 内边距 + 90px 骰子在
+  844×390 下会把内容顶成滚动区。手机作用域 `body.mobile-applied` 把面板宽度封在
+  520px、内边距压到 8/14px、骰子 64px、标题 0.98rem、说明 10–11px，底部「投掷」
+  固定 44px。844×390 实测：弹窗 top=56.8 / bottom=333.2 / 内容
+  `scrollHeight=clientHeight=178`，无需滚动；924×426 同样一屏。
+- **BGM 根因**：`BGMProvider` 早就包在手机分支里，但手机标题屏和牌桌都没有开关，
+  且默认关——等于没有入口。现在手机版 `BGMProvider defaultOn`，标题屏操作排与
+  牌桌 HUD 各放一枚 44px 音乐开关（乐 / 静），首次用户手势会重试 `play()`；
+  桌面仍保持原来的默认关。
+- `public/bgm.mp3` 实测 `HEAD 200`；`tests/mobile-web.mjs` 增加标题屏开关、
+  44px 触控、默认开、关/开切换、资源可达五类断言。
+- `tests/mobile-dice.mjs` 独立跑骰子几何，输出
+  `release/手机网页版-骰子-924x426.png`。
+
 
 - **PWA manifest**：`public/manifest.webmanifest` 的 `orientation` 已从 `any` 改为 `landscape`；
   安装为 PWA 后从桌面启动，系统会按 manifest 以横屏打开。
@@ -146,6 +162,10 @@
 - **开局三屏（924×426）**：标题/取名/出身三屏均 `scrollHeight=clientHeight`，取名四字段同一排、
   无重复预览；出身详情默认 0 展开、无属性横条、收起态最高 85px；展开后五围齐全；点「选此出身」进牌桌；
 - 可点抉择并出结算；
+- 手机标题屏有 44×50.8px 音乐开关，默认开；牌桌 HUD 有 44×44px 音乐开关；
+  `public/bgm.mp3` `HEAD 200`；开关关/开后 `localStorage` 正确写 `0/1`；
+- 骰子弹窗 844×390：top=56.8、bottom=333.2、内容无需滚动、投掷按钮 44px；
+  924×426：top=74.8、bottom=351.2、内容无需滚动、投掷按钮 44px；
 - 390×844 竖屏：只出"请旋转手机"遮罩，不渲染牌桌交互；
 - `?mobile=1` + 1440×900：仍渲染手机版（强制预览生效）；无参数 + 1440×900：仍走桌面原版；
 - 全程无 `console.error` / `pageerror`。
@@ -153,7 +173,6 @@
 ## 后续可迭代（不是缺陷隐藏）
 
 - 三档横屏像素级适配（932×430、740×360）；
-- 骰子弹窗与各 portal 弹窗在窄高屏的观感；
 - 视觉纹理与卡面装饰继续打磨。
 
 ## 运行
@@ -163,4 +182,5 @@ node .\node_modules\vite\bin\vite.js build
 node .\node_modules\vite\bin\vite.js preview --port 4180
 $env:BASE_URL="http://localhost:4180/"; node tests\mobile-web.mjs
 $env:BASE_URL="http://localhost:4180/"; node tests\mobile-onboarding.mjs
+$env:BASE_URL="http://localhost:4180/"; node tests\mobile-dice.mjs
 ```
