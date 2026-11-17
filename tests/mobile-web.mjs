@@ -79,8 +79,19 @@ async function main() {
 
     const states = await page.locator('.mobile-hud__states .mobile-state-capsule').count()
     check('HUD 六项状态齐全', states === 6, `count=${states}`)
-    check('HUD 显示财帛与体质', (await page.locator('.mobile-hud__vitals').innerText()).includes('财帛'),
-      await page.locator('.mobile-hud__vitals').innerText())
+    const personal = await page.locator('.mobile-hud__personal .mobile-state-capsule').allInnerTexts()
+    check('HUD 五项个人能力齐全', personal.length === 5, `count=${personal.length}`)
+    check(
+      '五项是财帛/文韬/理政/武略/体质',
+      ['财帛', '文韬', '理政', '武略', '体质'].every(k => personal.some(t => t.includes(k))),
+      personal.join(' | ')
+    )
+    const stateBox = await page.locator('.mobile-hud__states').boundingBox()
+    const personalBox = await page.locator('.mobile-hud__personal').boundingBox()
+    check('五项能力排在圣眷下面一排', !!stateBox && !!personalBox &&
+      personalBox.y >= stateBox.y + stateBox.height - 1 &&
+      Math.abs(personalBox.x - stateBox.x) <= 1,
+      stateBox && personalBox ? `states=${stateBox.x},${stateBox.y} personal=${personalBox.x},${personalBox.y}` : 'missing')
     check('事件区不重复待办提示', !(await page.locator('.mobile-event-host .event-pending-hint').isVisible()))
     const pendingBadge = await page.locator('.mobile-hud__pending').innerText()
     check('待办数字在顶栏操作入口', pendingBadge.trim() === '2', pendingBadge)

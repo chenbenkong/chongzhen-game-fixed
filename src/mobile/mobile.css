@@ -378,16 +378,25 @@ body.mobile-applied textarea {
   font-size: 12px;
   color: var(--color-text-secondary, #9a8870);
 }
-.mobile-shell .mobile-hud__vitals {
-  font-size: 11px;
-  color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
-  letter-spacing: 0.5px;
+.mobile-shell .mobile-hud__meters {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-left: auto;
 }
 .mobile-shell .mobile-hud__states {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-left: auto;
+}
+.mobile-shell .mobile-hud__personal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mobile-shell .mobile-hud__personal .mobile-state-capsule--personal {
+  border-color: rgba(197, 165, 90, 0.28);
+  background: rgba(197, 165, 90, 0.04);
 }
 .mobile-shell .mobile-state-capsule {
   display: inline-flex;

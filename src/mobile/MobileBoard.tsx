@@ -41,6 +41,9 @@ const SIX_STATES: Array<keyof GameStateValues> = [
   '圣眷', '中官', '清议', '士绅', '民望', '国势'
 ]
 
+/** 个人五项能力，排在六项朝堂状态下面一行。 */
+const PERSONAL_ATTRIBUTES = ['财帛', '文韬', '理政', '武略', '体质'] as const
+
 export default function MobileBoard(props: MobileBoardProps) {
   const engine = useGameEngine(props)
   const {
@@ -165,18 +168,25 @@ export default function MobileBoard(props: MobileBoardProps) {
           <span className="mobile-hud__meta">
             {character.age}岁 · {character.rank || identityType} · {character.origin}
           </span>
-          <span className="mobile-hud__vitals">
-            财帛 {Math.round(character.attributes.财帛)} · 体质 {Math.round(character.attributes.体质)}
-          </span>
         </div>
 
-        <div className="mobile-hud__states" aria-label="五方态度与国势">
-          {SIX_STATES.map(key => (
-            <span key={key} className="mobile-state-capsule">
-              <span className="mobile-state-capsule__label">{key}</span>
-              <span className="mobile-state-capsule__value">{gameState[key]}</span>
-            </span>
-          ))}
+        <div className="mobile-hud__meters">
+          <div className="mobile-hud__states" aria-label="五方态度与国势">
+            {SIX_STATES.map(key => (
+              <span key={key} className="mobile-state-capsule">
+                <span className="mobile-state-capsule__label">{key}</span>
+                <span className="mobile-state-capsule__value">{gameState[key]}</span>
+              </span>
+            ))}
+          </div>
+          <div className="mobile-hud__personal" aria-label="个人能力">
+            {PERSONAL_ATTRIBUTES.map(key => (
+              <span key={key} className="mobile-state-capsule mobile-state-capsule--personal">
+                <span className="mobile-state-capsule__label">{key}</span>
+                <span className="mobile-state-capsule__value">{Math.round(character.attributes[key])}</span>
+              </span>
+            ))}
+          </div>
         </div>
 
         <button
