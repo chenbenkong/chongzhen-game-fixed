@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Character, GameStateValues } from '../types/game'
 import { GameEvent } from '../types/event'
 import { getUnlockedAchievements, Achievement } from '../types/achievement'
@@ -45,7 +45,6 @@ export default function GameOverScreen({
   const counterfactuals = useMemo(() => {
     return endingEvent ? extractCounterfactuals(endingEvent) : []
   }, [endingEvent])
-  const [isCounterfactualOpen, setIsCounterfactualOpen] = useState(false)
 
   const {
     endingType, score, finalRank, posthumousTitle, historicalRank
@@ -64,99 +63,85 @@ export default function GameOverScreen({
   // 13 个属性分 3 组
   const attrGroups = useMemo(() => buildAttrGroups(character, gameState), [character, gameState])
 
+  const endingTitle = endingEvent?.title.replace(/【?结局】?\s*/g, '').trim() || '结局'
+  const archetype = endingEvent ? getArchetype(endingEvent.endingConfig?.category) : undefined
+  const endingSummary = buildEndingSummary(endingEvent)
+  const endingDate = `${toMingEraYear(gameState.currentYear)} ${getChineseMonth(gameState.currentMonth)}月`
+
   return (
     <div className={`ending-screen ending-${endingType}`}>
       <div className="ending-bg-pattern"></div>
       <div className="ending-vignette"></div>
 
-      <div className="ending-container">
-        {/* ====== 顶部：2 段（卷首 | 核心评价）====== */}
-        <header className="ending-top">
-          {/* 卷首：印戳 + 标题 + 人物列传 */}
-          <div className="top-left">
-            <div className="dynasty-stamp">
-              <div className="stamp-row">大</div>
-              <div className="stamp-row">明</div>
-              <div className="stamp-divider"></div>
-              <div className="stamp-row">崇</div>
-              <div className="stamp-row">祯</div>
+      <div className="ending-container ending-container--compact">
+        {/* 只留结局本身：卷首、人物、评价，不再铺陈通用卷名。 */}
+        <header className="ending-hero">
+          <div className="ending-hero-copy">
+            <div className="ending-eyebrow">
+              {archetype && (
+                <>
+                  <span className="ending-archetype" title={archetype.intro}>{archetype.name}</span>
+                  <span className="ending-eyebrow-dot">·</span>
+                </>
+              )}
+              <span>{endingDate}</span>
             </div>
-            <div className="title-block">
-              <h1 className="ending-title">宦 海 浮 沉 录</h1>
-              <div className="ending-subtitle">崇祯朝官员列传</div>
-              {endingEvent && (() => {
-                const arch = getArchetype(endingEvent.endingConfig?.category)
-                return (
-                  <div className={`archetype-badge tone-${arch.tone}`} title={arch.intro}>
-                    <span className="archetype-icon"><Icon name={arch.iconName} size={12} /></span>
-                    <span className="archetype-name">{arch.name}</span>
-                    <span className="archetype-sep">·</span>
-                    <span className="archetype-variant">{endingEvent.title.replace(/【?结局】?\s*/g, '').trim()}</span>
-                  </div>
-                )
-              })()}
-              <div className="profile-name-large">{character.name}</div>
-              <div className="profile-ranks">
-                <span className="rank-tag">{character.rank || '布衣'}</span>
-                <span className="rank-sep">·</span>
-                <span className="rank-final">{finalRank}</span>
-              </div>
-              <div className="profile-posthumous">
-                <span className="posthumous-label">谥</span>
-                <span className="posthumous-name">{posthumousTitle}</span>
-              </div>
+            <h1 className="ending-hero-title">{endingTitle}</h1>
+            <div className="ending-hero-meta">
+              <span className="ending-hero-name">{character.name || '无名氏'}</span>
+              <span className="ending-meta-dot">·</span>
+              <span>{finalRank}</span>
+              <span className="ending-meta-dot">·</span>
+              <span className="ending-posthumous">谥 {posthumousTitle}</span>
             </div>
           </div>
-
-          {/* 核心评价：综合分 + 评语 + 史馆定位（去掉 5 星冗余） */}
-          <div className="top-right">
-            <div className="rating-compact">
-              <div className="score-block">
-                <span className="score-num">{score}</span>
-                <span className="score-label">分</span>
-              </div>
-              <div className="rank-block">{historicalRank}</div>
+          <div className="ending-score" aria-label={`功过 ${score} 分，${historicalRank}`}>
+            <div className="ending-score-value">
+              {score}<small>分</small>
             </div>
+            <div className="ending-score-rank">{historicalRank}</div>
           </div>
         </header>
 
-        {/* ====== 中部：2 列（史馆传略 | 功过 + 留名）====== */}
-        <div className="ending-middle">
-          {/* 左列：史馆传略（明史列传风格） */}
-          <div className="middle-col">
-            <div className="col-title">史 馆 传 略</div>
-            <div className="col-content">
-              <pre className="comment-biography">{biography}</pre>
-            </div>
+        {endingSummary && (
+          <p className="ending-summary">{endingSummary}</p>
+        )}
+
+        <div className="ending-facts" aria-label="一生概要">
+          <div className="ending-fact">
+            <span>宦海</span>
+            <strong>{totalYearsText}</strong>
           </div>
+          <div className="ending-fact">
+            <span>历任</span>
+            <strong>{getPositionCount(character)} 职</strong>
+          </div>
+          <div className="ending-fact">
+            <span>经历</span>
+            <strong>{eventCount} 事</strong>
+          </div>
+          <div className="ending-fact">
+            <span>成就</span>
+            <strong>{unlockedAchievements.length} 项</strong>
+          </div>
+        </div>
 
-          {/* 右列：合并"一生功过 + 青史留名"为一个时间+评价的复合区 */}
-          <div className="middle-col">
-            <div className="col-title">一 生 功 过</div>
-            <div className="col-content">
-              {/* 4 格统计 */}
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-value">{totalYearsText}</div>
-                  <div className="stat-label">宦海时长</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{getPositionCount(character)}</div>
-                  <div className="stat-label">历任官职</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{eventCount}</div>
-                  <div className="stat-label">经历事件</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{unlockedAchievements.length}</div>
-                  <div className="stat-label">获得成就</div>
-                </div>
-              </div>
+        {/* 详细内容默认收起：不给玩家一上来塞满两栏文字和十三格属性。 */}
+        <details className="ending-details">
+          <summary className="ending-details-summary">
+            <span>完整史传与功过</span>
+            <span className="ending-details-hint">展开查看</span>
+          </summary>
 
-              <div className="micro-divider"></div>
+          <div className="ending-details-body">
+            <section className="ending-detail-section ending-detail-biography">
+              <h2 className="ending-detail-title">史 馆 传 略</h2>
+              <pre className="comment-biography">{biography || '史传未成。'}</pre>
+            </section>
 
-              {/* 三组属性（无进度条，紧凑 4 列） */}
+            <section className="ending-detail-section">
+              <h2 className="ending-detail-title">属 性 与 成 就</h2>
+
               {attrGroups.map((group) => (
                 <div key={group.title} className="attr-group">
                   <div className="attr-group-title">
@@ -177,7 +162,6 @@ export default function GameOverScreen({
 
               <div className="micro-divider"></div>
 
-              {/* 青史留名 - 与功过合并在同一列底部 */}
               <div className="merit-subtitle">青 史 留 名</div>
               {unlockedAchievements.length > 0 ? (
                 <div className="achievements-grid">
@@ -193,64 +177,70 @@ export default function GameOverScreen({
               ) : (
                 <div className="empty-state-mini">未曾留下青史之名</div>
               )}
-            </div>
-          </div>
-        </div>
+            </section>
 
-        {/* ====== 反事实分支：若当年……则…… ====== */}
-        {counterfactuals.length > 0 && (
-          <section className="counterfactual-section">
-            <button
-              className="counterfactual-toggle"
-              onClick={() => setIsCounterfactualOpen(o => !o)}
-              aria-expanded={isCounterfactualOpen}
-            >
-              <span className="counterfactual-icon" aria-label="分支" />
-              <span className="counterfactual-label">
-                {isCounterfactualOpen ? '收起' : '查看'}其他可能（{counterfactuals.length}）
-              </span>
-              <span className={`counterfactual-chevron ${isCounterfactualOpen ? 'open' : ''}`}>▾</span>
-            </button>
-            {isCounterfactualOpen && (
-              <div className="counterfactual-list">
-                {counterfactuals.map((cf, i) => (
-                  <div key={i} className="counterfactual-item">
-                    <div className="counterfactual-title">{cf.endingTitle}</div>
-                    <p className="counterfactual-text">{cf.text}</p>
-                  </div>
-                ))}
-              </div>
+            {counterfactuals.length > 0 && (
+              <section className="ending-detail-section ending-detail-wide">
+                <h2 className="ending-detail-title">其 他 可 能</h2>
+                <div className="counterfactual-list">
+                  {counterfactuals.map((cf, i) => (
+                    <div key={i} className="counterfactual-item">
+                      <div className="counterfactual-title">{cf.endingTitle}</div>
+                      <p className="counterfactual-text">{cf.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
-        )}
+          </div>
+        </details>
 
-        {/* ====== 底部：按钮 + 落款（一行）====== */}
-        <footer className="ending-bottom">
-          <div className="bottom-left">
-            <span className="footer-time">{toMingEraYear(gameState.currentYear)} {getChineseMonth(gameState.currentMonth)}月</span>
-            <span className="footer-sep">·</span>
-            <span className="footer-author">史馆修撰</span>
-          </div>
-          <div className="ending-actions">
-            {onViewLifeReview && (
-              <button className="end-btn secondary" onClick={onViewLifeReview}>
-                <span className="btn-icon"><Icon name="scroll" size={14} color="#c9a227" /></span>
-                <span>查看生平</span>
-              </button>
-            )}
-            <button className="end-btn secondary" onClick={onReturnToMenu}>
-              <span className="btn-icon"><Icon name="flower" size={14} color="#c9a227" /></span>
-              <span>归园田居</span>
+        <footer className="ending-actions ending-actions--footer">
+          {onViewLifeReview && (
+            <button className="end-btn secondary" onClick={onViewLifeReview}>
+              <span className="btn-icon"><Icon name="scroll" size={14} color="#c9a227" /></span>
+              <span>查看生平</span>
             </button>
-            <button className="end-btn primary" onClick={onRestart}>
-              <span className="btn-icon"><Icon name="shuffle" size={14} color="#0a0806" /></span>
-              <span>重走人生</span>
-            </button>
-          </div>
+          )}
+          <button className="end-btn secondary" onClick={onReturnToMenu}>
+            <span className="btn-icon"><Icon name="flower" size={14} color="#c9a227" /></span>
+            <span>返回标题</span>
+          </button>
+          <button className="end-btn primary" onClick={onRestart}>
+            <span className="btn-icon"><Icon name="shuffle" size={14} color="#0a0806" /></span>
+            <span>重走人生</span>
+          </button>
         </footer>
       </div>
     </div>
   )
+}
+
+/** 结算页摘要：优先用结局卡自带的短描述，不回放整篇回音。 */
+function buildEndingSummary(event: GameEvent | null): string {
+  if (!event) return ''
+  const description = event.description?.trim()
+  if (description) return normalizeParagraphs(description)
+
+  const choice = event.choices?.find(c => c.resultDescription?.trim() || c.result?.echo?.trim())
+  if (!choice) return ''
+  if (choice.resultDescription?.trim()) return normalizeParagraphs(choice.resultDescription)
+
+  const echo = choice.result?.echo?.trim() || ''
+  const paragraphs = echo
+    .split(/\n+/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('【'))
+  return paragraphs[0] || ''
+}
+
+function normalizeParagraphs(text: string): string {
+  return text
+    .split(/\n+/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(' ')
 }
 
 // ============================================================
