@@ -93,6 +93,8 @@ export default function MobileBoard(props: MobileBoardProps) {
   // 人物面板默认收起；能力 / 态度 / 卷宗三页签，补回财帛等桌面侧栏参数。
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [panelTab, setPanelTab] = useState<'能力' | '态度' | '卷宗'>('能力')
+  // 选项不再埋在长正文底部：点「选项」把抉择区提到全屏面板，省掉反复下滑。
+  const [isChoicesOpen, setIsChoicesOpen] = useState(false)
 
   const lifeSummary = useMemo(() => generateLifeSummary(), [generateLifeSummary])
 
@@ -105,6 +107,14 @@ export default function MobileBoard(props: MobileBoardProps) {
     else handleNextMonth()
   }, [currentEvent, handleContinue, handleNextMonth])
 
+  const handleChoiceFromDock = useCallback((
+    choice: Parameters<typeof handleChoice>[0],
+    opts?: Parameters<typeof handleChoice>[1]
+  ) => {
+    setIsChoicesOpen(false)
+    return handleChoice(choice, opts)
+  }, [handleChoice])
+
   const modalOpen =
     diceModalOpen ||
     isSaveSlotsOpen ||
@@ -112,6 +122,9 @@ export default function MobileBoard(props: MobileBoardProps) {
     resignConfirmModal.isOpen ||
     deathEndingState.show ||
     isGameOver
+
+  const showChoicesFab = !!currentEvent && !eventResolved && !modalOpen &&
+    !isPanelOpen && !isActionbarOpen && !isChoicesOpen
 
   const saveSlotsCurrentData = useMemo(() => ({
     name: character.name || '无名氏',
@@ -122,7 +135,7 @@ export default function MobileBoard(props: MobileBoardProps) {
   }), [character.name, character.rank, gameState.currentYear, gameState.currentMonth, identityType])
 
   return (
-    <div className="mobile-board">
+    <div className={`mobile-board ${isChoicesOpen ? 'is-choices-open' : ''}`}>
       {awaitingEventData && (
         <div className="mobile-boot" role="status" aria-live="polite">
           <div className="mobile-boot__title">崇祯 · 宦海浮沉</div>
@@ -171,6 +184,7 @@ export default function MobileBoard(props: MobileBoardProps) {
           className="mobile-hud__panel"
           onClick={() => {
             setIsActionbarOpen(false)
+            setIsChoicesOpen(false)
             setIsPanelOpen(true)
           }}
           aria-label="打开人物面板"
@@ -184,6 +198,7 @@ export default function MobileBoard(props: MobileBoardProps) {
           className="mobile-hud__action"
           onClick={() => {
             setIsPanelOpen(false)
+            setIsChoicesOpen(false)
             setIsActionbarOpen(true)
           }}
           aria-label="展开操作栏"
@@ -201,14 +216,34 @@ export default function MobileBoard(props: MobileBoardProps) {
 
       {/* 主区：中央事件卡 */}
       <main className="mobile-board__main">
+        {/* 选项入口：不再让玩家划过整篇正文才看到抉择。 */}
+        {showChoicesFab && (
+          <button
+            type="button"
+            className="mobile-choices-fab"
+            onClick={() => {
+              setIsPanelOpen(false)
+              setIsActionbarOpen(false)
+              setIsChoicesOpen(true)
+            }}
+            aria-label={`打开选项，共 ${currentEvent?.choices.length ?? 0} 项`}
+          >
+            <span>选项</span>
+            <span className="mobile-choices-fab__count">{currentEvent?.choices.length ?? 0}</span>
+          </button>
+        )}
+
         <div className="mobile-event-host">
           <EventDisplay
             event={currentEvent}
             character={character}
             gameState={gameState}
-            onChoice={handleChoice}
+            onChoice={handleChoiceFromDock}
             onContinue={handleContinue}
-            onResolvedChange={setEventResolved}
+            onResolvedChange={(resolved) => {
+              setEventResolved(resolved)
+              if (resolved) setIsChoicesOpen(false)
+            }}
             onDiceModalOpenChange={setDiceModalOpen}
             shortcutsEnabled={!modalOpen}
             onUndo={handleUndo}
@@ -220,6 +255,21 @@ export default function MobileBoard(props: MobileBoardProps) {
           />
         </div>
       </main>
+
+      {isChoicesOpen && (
+        <div className="mobile-choices-head">
+          <span className="mobile-choices-head__title">本月抉择</span>
+          <span className="mobile-choices-head__count">{currentEvent?.choices.length ?? 0} 项</span>
+          <button
+            type="button"
+            className="mobile-choices-head__close"
+            onClick={() => setIsChoicesOpen(false)}
+            aria-label="收起选项目录"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* 底部操作条：默认收起，点顶栏「操作」才展开；展开后不再挤压事件区。 */}
       {isActionbarOpen && !modalOpen && !isPanelOpen && (

@@ -24,6 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.BackHandler
 import com.chenbenkong.chongzhen.ui.theme.CardInk
 import com.chenbenkong.chongzhen.ui.theme.CardInkDeep
@@ -211,7 +217,7 @@ private fun WebStatusBar(
             onClick = { viewModel.openBoardPanel(BoardPanel.Attributes) }
         )
         GhostButton(
-            text = "操作",
+            text = if (board.pendingCount > 0) "操作 ${board.pendingCount + 1}" else "操作",
             onClick = { viewModel.setActionBarOpen(true) }
         )
     }
@@ -433,6 +439,7 @@ private fun EventCard(
     modifier: Modifier = Modifier
 ) {
     val event = state.event
+    var choicesOpen by remember(event) { mutableStateOf(false) }
     Column(
         modifier = modifier
             .clip(PanelShape)
@@ -449,7 +456,11 @@ private fun EventCard(
             return@Column
         }
 
-        EventHeader(event.title, state.board?.pendingCount ?: 0)
+        EventHeader(
+            title = event.title,
+            choiceCount = state.choices.size,
+            onOpenChoices = { choicesOpen = true }
+        )
 
         event.narrative?.speaker?.takeIf { it.name.isNotBlank() }?.let { speaker ->
             NarrativeQuote(
@@ -497,16 +508,80 @@ private fun EventCard(
             }
         }
     }
+
+    if (choicesOpen) {
+        Dialog(
+            onDismissRequest = { choicesOpen = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(CardInkDeep)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Column(Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "本月抉择",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Gold,
+                            letterSpacing = 3.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "${state.choices.size} 项",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = ParchmentFaint
+                        )
+                        GhostButton(
+                            text = "×",
+                            onClick = { choicesOpen = false },
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        state.choices.forEachIndexed { index, view ->
+                            ChoiceCard(
+                                index = index + 1,
+                                view = view,
+                                onClick = {
+                                    choicesOpen = false
+                                    viewModel.choose(view.choice.id)
+                                }
+                            )
+                        }
+                        if (state.choices.isEmpty()) {
+                            Text("本事件暂无可选项。", style = MaterialTheme.typography.bodySmall, color = ParchmentDim)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
-private fun EventHeader(title: String, pending: Int) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+private fun EventHeader(title: String, choiceCount: Int, onOpenChoices: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 44.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = if (choiceCount > 0) 92.dp else 0.dp)
+                .align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -539,12 +614,11 @@ private fun EventHeader(title: String, pending: Int) {
                     )
             )
         }
-        if (pending > 0) {
-            Text(
-                text = "本月尚有 ${pending + 1} 个事件待处理",
-                style = MaterialTheme.typography.labelMedium,
-                color = ParchmentFaint,
-                modifier = Modifier.padding(top = 3.dp)
+        if (choiceCount > 0) {
+            GhostButton(
+                text = "选项 $choiceCount",
+                onClick = onOpenChoices,
+                modifier = Modifier.align(Alignment.CenterEnd)
             )
         }
     }

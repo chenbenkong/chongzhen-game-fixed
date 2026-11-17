@@ -3,7 +3,7 @@
  *
  * 用途：在真实浏览器里验证「手机自动进横屏版、竖屏出旋转遮罩、?mobile=1 可强制预览、
  * 桌面视口仍走原版」四条入口规则，并检查牌桌最小可用性（HUD 六项状态齐全、
- * 操作条默认收起/可展开/可收起、财帛/体质速览、人物面板三页签、正文 ≤14px、无横向溢出、无 console.error）。
+ * 操作条默认收起/可展开/可收起、财帛/体质速览、人物面板三页签、全屏抉择面板、正文 ≤14px、无横向溢出、无 console.error）。
  *
  * 运行：先起 preview（dist），再
  *   $env:BASE_URL="http://localhost:4180"; node tests/mobile-web.mjs
@@ -81,6 +81,37 @@ async function main() {
     check('HUD 六项状态齐全', states === 6, `count=${states}`)
     check('HUD 显示财帛与体质', (await page.locator('.mobile-hud__vitals').innerText()).includes('财帛'),
       await page.locator('.mobile-hud__vitals').innerText())
+    check('事件区不重复待办提示', !(await page.locator('.mobile-event-host .event-pending-hint').isVisible()))
+    const pendingBadge = await page.locator('.mobile-hud__pending').innerText()
+    check('待办数字在顶栏操作入口', pendingBadge.trim() === '2', pendingBadge)
+    const headerBox = await page.locator('.mobile-event-host .event-header').boundingBox()
+    check('事件标题区压成单行', !!headerBox && headerBox.height <= 40,
+      `h=${headerBox?.height}`)
+
+    const choicesFab = await page.locator('.mobile-choices-fab').boundingBox()
+    check('选项入口常驻且可触控', !!choicesFab && Math.min(choicesFab.width, choicesFab.height) >= 44,
+      choicesFab ? `${choicesFab.width}×${choicesFab.height}` : 'missing')
+    check('选项入口显示数量', (await page.locator('.mobile-choices-fab').innerText()).includes('4'))
+    await page.locator('.mobile-choices-fab').click()
+    await page.waitForTimeout(150)
+    const choicesSheet = await page.locator('.choices-section').boundingBox()
+    check('抉择面板直接覆盖全屏', !!choicesSheet && choicesSheet.x <= 1 && choicesSheet.y <= 1 &&
+      choicesSheet.width >= 843 && choicesSheet.height >= 389,
+      choicesSheet ? `${choicesSheet.x},${choicesSheet.y} ${choicesSheet.width}×${choicesSheet.height}` : 'missing')
+    const choicesFit = await page.evaluate(() => {
+      const el = document.querySelector('.choices-section')
+      if (!el) return null
+      return { scroll: el.scrollHeight, client: el.clientHeight,
+        cards: [...document.querySelectorAll('.choice-card')].map(c => {
+          const r = c.getBoundingClientRect()
+          return { top: r.top, bottom: r.bottom }
+        }) }
+    })
+    check('四个选项无需下滑即可看全', !!choicesFit && choicesFit.scroll <= choicesFit.client + 1,
+      choicesFit ? `scroll=${choicesFit.scroll} client=${choicesFit.client}` : 'missing')
+    await page.locator('.mobile-choices-head__close').click()
+    await page.waitForTimeout(150)
+    check('抉择面板可收起', (await page.locator('.mobile-choices-head').count()) === 0 && !(await page.locator('.mobile-choices-fab').isHidden()))
 
     await page.locator('.mobile-hud__panel').click()
     await page.waitForTimeout(200)

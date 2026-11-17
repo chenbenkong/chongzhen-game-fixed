@@ -411,6 +411,7 @@ body.mobile-applied textarea {
 
 /* 主区：高度链必须一路收到 0，事件正文在宿主内部滚动，不把抉择 / 底栏顶下去。 */
 .mobile-shell .mobile-board__main {
+  position: relative;
   flex: 1 1 0;
   min-height: 0;
   max-height: 100%;
@@ -431,6 +432,109 @@ body.mobile-applied textarea {
 .mobile-shell .mobile-event-host .event-display {
   height: 100%;
   padding: 10px 12px;
+}
+
+/* 选项入口：常驻右下角的小按钮，点开全屏抉择面板。 */
+.mobile-shell .mobile-choices-fab {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 74px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, rgba(197, 165, 90, 0.4));
+  border-radius: 3px;
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+  color: var(--gold, #c5a55a);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.mobile-shell .mobile-choices-fab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(197, 165, 90, 0.18);
+  color: var(--gold, #c5a55a);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* 全屏抉择面板：把原本埋在正文底部的 choices-section 提到最前，
+   不改变选项组件/判定逻辑，只改变手机上的位置。 */
+.mobile-shell .mobile-board.is-choices-open .mobile-event-host,
+.mobile-shell .mobile-board.is-choices-open .mobile-event-host .event-display {
+  overflow: visible;
+}
+.mobile-shell .mobile-board.is-choices-open .mobile-event-host .event-display {
+  animation: none;
+  transform: none;
+}
+.mobile-shell .mobile-board.is-choices-open .choices-section {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  margin: 0;
+  padding: 56px 10px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #161210 0%, #0c0a08 100%);
+  overscroll-behavior: contain;
+}
+.mobile-shell .mobile-board.is-choices-open .choices-list {
+  gap: 4px;
+}
+.mobile-shell .mobile-board.is-choices-open .choice-card {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  animation: none;
+}
+.mobile-shell .mobile-choices-head {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 61;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 8px 0 14px;
+  border-bottom: 1px solid var(--color-border, #2a2015);
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+}
+.mobile-shell .mobile-choices-head__title {
+  color: var(--gold, #c5a55a);
+  font-family: var(--font-heading, serif);
+  font-size: 15px;
+  letter-spacing: 3px;
+}
+.mobile-shell .mobile-choices-head__count {
+  color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
+  font-size: 12px;
+}
+.mobile-shell .mobile-choices-head__close {
+  margin-left: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border-strong, rgba(197, 165, 90, 0.4));
+  border-radius: 3px;
+  background: #12100c;
+  color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .mobile-shell .mobile-actionbar {
@@ -733,14 +837,17 @@ body.mobile-applied textarea {
 .mobile-shell .mobile-event-host .event-display {
   padding: 8px 10px;
 }
+.mobile-shell .mobile-event-host .event-header {
+  margin-bottom: 4px;
+}
 .mobile-shell .mobile-event-host .event-title {
   font-size: 1.25rem;
   letter-spacing: 3px;
   padding: 0 14px;
 }
+/* 事件区不重复待办提示：顶栏「操作」右侧已有数字角标，省掉这一行。 */
 .mobile-shell .mobile-event-host .event-pending-hint {
-  margin-top: 2px;
-  font-size: 0.66rem;
+  display: none;
 }
 .mobile-shell .mobile-event-host .quote-text-compact {
   font-size: 0.74rem;

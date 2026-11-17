@@ -3,6 +3,7 @@
  *
  * 输出：
  *   release/手机网页版-924x426.png            收起态（默认，顶栏「面板 / 操作」）
+ *   release/手机网页版-选项面板-924x426.png    全屏抉择面板（不划过正文直接选）
  *   release/手机网页版-人物面板-924x426.png    能力页（财帛/文韬/理政/武略/体质 + 隐藏属性）
  *   release/手机网页版-人物面板隐藏属性-924x426.png 能力页下半段（道德/欲望/野心/机敏/忠诚）
  *   release/手机网页版-操作条展开-924x426.png  操作条展开态（底部浮层）
@@ -47,6 +48,11 @@ await page.goto(BASE_URL + '?mobile=1', { waitUntil: 'load', timeout: 60000 })
 await playToBoard(page)
 
 await page.screenshot({ path: `${OUT_DIR}手机网页版-924x426.png`, fullPage: false })
+await page.locator('.mobile-choices-fab').click()
+await page.waitForTimeout(250)
+await page.screenshot({ path: `${OUT_DIR}手机网页版-选项面板-924x426.png`, fullPage: false })
+await page.locator('.mobile-choices-head__close').click()
+await page.waitForTimeout(150)
 await page.locator('.mobile-hud__panel').click()
 await page.waitForTimeout(250)
 await page.screenshot({ path: `${OUT_DIR}手机网页版-人物面板-924x426.png`, fullPage: false })
