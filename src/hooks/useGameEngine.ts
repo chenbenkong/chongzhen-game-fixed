@@ -115,6 +115,29 @@ export function annualIncomeFor(rankName: string, isFugitive: boolean): number {
 // 改一局开局年份要同时改五个地方，现在只有这里一处。
 export const GAME_START_YEAR = 1628
 
+/**
+ * 「重走人生」的回到事件快照。
+ *
+ * 结局屏的重走不再整局重开，而是把局面还原到**触发结局的那张事件卡摆上桌、
+ * 玩家还没做选择**的一刻，让同一张卡再选一次。快照只保留重选必需的局内状态，
+ * 不包含结局屏自身。
+ */
+interface EndingRetryCheckpoint {
+  event: GameEvent
+  character: Character
+  gameState: GameStateValues
+  eventHistory: string[]
+  pendingEvents: GameEvent[]
+  lastTurnById: Map<string, number>
+  currentStoryline?: string
+  meritBonus: number
+  previousMeritScore: number
+  meritScore: number
+  playerStats: PlayerStats
+  lifeRecords: LifeRecord[]
+  identityType: IdentityType
+}
+
 // 升官缓冲分：每升一级额外加20分，防止刚升官就贬官
 const PROMOTION_SCORE_BONUS = 20
 
@@ -775,6 +798,8 @@ export function useGameEngine(props: UseGameEngineProps) {
   })()
 
   const [meritScore, setMeritScore] = useState<number>(() => initialScoreForMerit)
+  const meritScoreRef = useRef(meritScore)
+  useEffect(() => { meritScoreRef.current = meritScore }, [meritScore])
 
   /**
    * 选项显式声明的政绩分累计值（`choice.effects.meritScore`）。
@@ -793,6 +818,8 @@ export function useGameEngine(props: UseGameEngineProps) {
   const [previousMeritScore, setPreviousMeritScore] = useState<number>(() =>
     initialScoreForMerit / difficultyConfig.promotionThresholdMultiplier
   )
+  const previousMeritScoreRef = useRef(previousMeritScore)
+  useEffect(() => { previousMeritScoreRef.current = previousMeritScore }, [previousMeritScore])
   const [promotionMessage, setPromotionMessage] = useState<string | null>(null)
 
   const [identityType, setIdentityType] = useState<IdentityType>(() => {
@@ -803,6 +830,14 @@ export function useGameEngine(props: UseGameEngineProps) {
   })
 
   const [isGameOver, setIsGameOver] = useState(false)
+
+  /** 本局已经用过「重走人生」的事件 id；同一事件只给一次重选。 */
+  const [retriedEndingEventIds, setRetriedEndingEventIds] = useState<string[]>(() => {
+    const saved = (loadSaveData as { retriedEndingEventIds?: string[] } | undefined)?.retriedEndingEventIds
+    return Array.isArray(saved) ? saved : []
+  })
+  const retriedEndingEventIdsRef = useRef(retriedEndingEventIds)
+  useEffect(() => { retriedEndingEventIdsRef.current = retriedEndingEventIds }, [retriedEndingEventIds])
 
   const [saveNotification, setSaveNotification] = useState<{ isOpen: boolean; message: string; subMessage: string }>({
     isOpen: false,
@@ -1108,6 +1143,34 @@ export function useGameEngine(props: UseGameEngineProps) {
    * 同一份月份轨迹，因此这条 ref 也是那条路径的唯一记录处。
    */
   const lastTurnByIdRef = useRef<Map<string, number>>(new Map())
+
+  /**
+   * 当前事件刚摆上桌时的局面快照，供「重走人生」回到同一张卡。
+   * 只在事件 id 变化时拍一次，不能在每次属性变化时覆盖 —— 否则快照会变成
+   * 「选完之后」的局面，重选就等于把同一次抉择的收益再加一遍。
+   */
+  const endingRetryCheckpointRef = useRef<EndingRetryCheckpoint | null>(null)
+  useEffect(() => {
+    if (!currentEvent || !currentEvent.choices?.length) {
+      endingRetryCheckpointRef.current = null
+      return
+    }
+    endingRetryCheckpointRef.current = {
+      event: currentEvent,
+      character: JSON.parse(JSON.stringify(characterRef.current)),
+      gameState: JSON.parse(JSON.stringify(gameStateRef.current)),
+      eventHistory: [...eventHistoryRef.current],
+      pendingEvents: [...pendingEventsRef.current],
+      lastTurnById: new Map(lastTurnByIdRef.current),
+      currentStoryline: currentStorylineRef.current,
+      meritBonus: meritBonusRef.current,
+      previousMeritScore: previousMeritScoreRef.current,
+      meritScore: meritScoreRef.current,
+      playerStats: { ...playerStatsRef.current },
+      lifeRecords: [...lifeRecordsRef.current],
+      identityType: identityTypeRef.current
+    }
+  }, [currentEvent?.id])
 
   const findAllEventsForState = useCallback((state: GameStateValues): GameEvent[] => {
     const history = eventHistoryRef.current
@@ -2105,7 +2168,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       difficulty,
       currentStoryline: currentStorylineRef.current,
       stats: statsForSave,
-      meritBonus: meritBonusRef.current
+      meritBonus: meritBonusRef.current,
+      retriedEndingEventIds: retriedEndingEventIdsRef.current
     }
     const ok = saveSaveSlot(slotId, saveData)
     if (ok) {
@@ -2139,6 +2203,83 @@ export function useGameEngine(props: UseGameEngineProps) {
         }, 100)
       }
     }
+  }, [])
+
+  /**
+   * 「重走人生」：回到触发结局的那张事件卡，允许同一事件重选一次。
+   *
+   * 和 handleRestart 的整局重开是两件事：
+   *   - handleRestart 是彻底新开一局（死亡结局 / 生平回顾的「重新开始」）；
+   *   - 本函数只回滚到当前结局事件的抉择前快照，保留姓名、年号、履历与已走过的月份。
+   * 同一事件只要重选过一次，就会记进 retriedEndingEventIds；若这次仍是死路，
+   * 结局屏拿到的 canRetryEnding 为 false，按钮锁定。
+   */
+  const handleRetryEnding = useCallback((): boolean => {
+    const event = currentEventRef.current
+    const checkpoint = endingRetryCheckpointRef.current
+    if (!event || !checkpoint || checkpoint.event.id !== event.id) return false
+    if (!event.choices?.length) return false
+    if (retriedEndingEventIdsRef.current.includes(event.id)) return false
+
+    const nextRetried = [...retriedEndingEventIdsRef.current, event.id]
+    retriedEndingEventIdsRef.current = nextRetried
+    setRetriedEndingEventIds(nextRetried)
+
+    const restoredCharacter: Character = JSON.parse(JSON.stringify(checkpoint.character))
+    const restoredState: GameStateValues = JSON.parse(JSON.stringify(checkpoint.gameState))
+    const restoredHistory = [...checkpoint.eventHistory]
+    const restoredPending = [...checkpoint.pendingEvents]
+    const restoredStats: PlayerStats = { ...checkpoint.playerStats }
+    const restoredLifeRecords = [...checkpoint.lifeRecords]
+
+    characterRef.current = restoredCharacter
+    gameStateRef.current = restoredState
+    eventHistoryRef.current = restoredHistory
+    pendingEventsRef.current = restoredPending
+    lastTurnByIdRef.current = new Map(checkpoint.lastTurnById)
+    currentStorylineRef.current = checkpoint.currentStoryline
+    meritBonusRef.current = checkpoint.meritBonus
+    previousMeritScoreRef.current = checkpoint.previousMeritScore
+    meritScoreRef.current = checkpoint.meritScore
+    playerStatsRef.current = restoredStats
+    lifeRecordsRef.current = restoredLifeRecords
+    identityTypeRef.current = checkpoint.identityType
+    currentEventRef.current = event
+
+    setCharacter(restoredCharacter)
+    setGameState(restoredState)
+    setEventHistory(restoredHistory)
+    setPendingEvents(restoredPending)
+    setCurrentStoryline(checkpoint.currentStoryline)
+    setMeritBonus(checkpoint.meritBonus)
+    setPreviousMeritScore(checkpoint.previousMeritScore)
+    setMeritScore(checkpoint.meritScore)
+    setPlayerStats(restoredStats)
+    setLifeRecords(restoredLifeRecords)
+    setIdentityType(checkpoint.identityType)
+    setCurrentEvent(event)
+    setUndoHistory([])
+    setBiography('')
+    setDeathEndingState({
+      show: false,
+      type: 'martyrdom',
+      title: '',
+      description: '',
+      echo: '',
+      tags: []
+    })
+    setIsGameOver(false)
+    setIsLifeReviewOpen(false)
+    setPromotionMessage(null)
+    setResignConfirmModal({
+      isOpen: false,
+      choice: null,
+      newStateVals: {},
+      newAttrs: restoredCharacter.attributes
+    })
+    // 回滚后的局面要重新写自动存档，否则刷新页面会读回结局前那份「已死」的档。
+    setLastAutosaveFingerprint('')
+    return true
   }, [])
 
   /**
@@ -2184,6 +2325,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     setPendingEvents([])
     setCurrentEvent(null)
     setUndoHistory([])
+    retriedEndingEventIdsRef.current = []
+    setRetriedEndingEventIds([])
+    endingRetryCheckpointRef.current = null
     setMeritScore(freshMeritScore)
     // 选项加分属于上一局，必须清零，否则新的一局开局就白拿一段政绩分。
     meritBonusRef.current = 0
@@ -2420,6 +2564,11 @@ export function useGameEngine(props: UseGameEngineProps) {
     setCharacter(fixedCharacter)
     setGameState(initialGameState)
     setEventHistory(loadSaveData.eventHistory)
+    const restoredRetried = (loadSaveData as { retriedEndingEventIds?: string[] }).retriedEndingEventIds
+    if (Array.isArray(restoredRetried)) {
+      retriedEndingEventIdsRef.current = restoredRetried
+      setRetriedEndingEventIds(restoredRetried)
+    }
     setUndoHistory([])
     setPendingEvents((loadSaveData as any).pendingEvents || [])
     const restoredEvent = (loadSaveData as any).currentEvent || null
@@ -2643,7 +2792,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       difficulty,
       currentStoryline,
       stats: playerStats,
-      meritBonus
+      meritBonus,
+      retriedEndingEventIds
     }
 
     const fingerprint = autosaveFingerprint(data)
@@ -2675,7 +2825,7 @@ export function useGameEngine(props: UseGameEngineProps) {
         autosaveTimerRef.current = null
       }
     }
-  }, [character, gameState, eventHistory, currentEvent, pendingEvents, isProcessing, identityType, lifeRecords, playTime, lastAutosaveFingerprint, origin, degree, playerName, difficulty, currentStoryline, playerStats, meritBonus])
+  }, [character, gameState, eventHistory, currentEvent, pendingEvents, isProcessing, identityType, lifeRecords, playTime, lastAutosaveFingerprint, origin, degree, playerName, difficulty, currentStoryline, playerStats, meritBonus, retriedEndingEventIds])
 
   // 升官贬官检查
   useEffect(() => {
@@ -2771,6 +2921,17 @@ export function useGameEngine(props: UseGameEngineProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character.attributes.理政, character.attributes.文韬, character.attributes.武略, character.attributes.财帛, character.attributes.体质, character.hidden.道德值, character.hidden.欲望值, character.hidden.野心值, character.degree, gameState.圣眷, gameState.中官, gameState.清议, gameState.士绅, gameState.民望, gameState.国势, difficultyConfig, identityType, previousMeritScore, meritBonus])
 
+  const retriedCurrentEnding = currentEvent?.id
+    ? retriedEndingEventIds.includes(currentEvent.id)
+    : false
+  const canRetryEnding = Boolean(
+    isGameOver &&
+    currentEvent &&
+    currentEvent.choices?.length &&
+    endingRetryCheckpointRef.current?.event.id === currentEvent.id &&
+    !retriedCurrentEnding
+  )
+
   return {
     // 状态
     character,
@@ -2785,6 +2946,9 @@ export function useGameEngine(props: UseGameEngineProps) {
     promotionMessage,
     identityType,
     isGameOver,
+    retriedEndingEventIds,
+    canRetryEnding,
+    retryEndingLocked: Boolean(isGameOver && retriedCurrentEnding),
     saveNotification,
     resignConfirmModal,
     isCheatModeOpen,
@@ -2839,6 +3003,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     handleLoadFromSlot,
     handleLoadAutosave,
     handleRestart,
+    handleRetryEnding,
     handleReturnToMenu,
     handleGameOver,
     handleDeathEnding,

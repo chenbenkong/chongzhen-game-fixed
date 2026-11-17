@@ -30,6 +30,8 @@ class GameController(
 
     private var engine: GameEngine? = null
     private var undoSnapshot: SaveData? = null
+    /** 本局已经用过「重走人生」的事件 id；同一事件只能重选一次。 */
+    private val retriedEndingEventIds = mutableSetOf<String>()
 
     private val eventsById: Map<String, GameEvent> = data.events.associateBy { it.id }
 
@@ -66,6 +68,7 @@ class GameController(
     fun beginNewGame() {
         engine = null
         undoSnapshot = null
+        retriedEndingEventIds.clear()
         _state.update {
             it.copy(
                 screen = Screen.NameForm,
@@ -334,7 +337,43 @@ class GameController(
         runCatching { deleteSave() }
         engine = null
         undoSnapshot = null
+        retriedEndingEventIds.clear()
         enterTitle()
+    }
+
+    /**
+     * 「重走人生」：回到触发结局的那张事件卡，允许同一事件重选一次。
+     *
+     * `undoSnapshot` 是每次 choose 之前拍下的整局快照，里面带着 currentEventId。
+     * 恢复后不整局重开，只把牌桌摆回同一张卡；同一事件重选后再触发结局时，
+     * showEnding 读到的 retriedEndingEventIds 已包含该 id，按钮自然锁定。
+     */
+    fun retryEnding() {
+        val snapshot = undoSnapshot ?: return
+        val eventId = snapshot.currentEventId ?: return
+        if (retriedEndingEventIds.contains(eventId)) return
+        val eng = engine ?: return
+        val event = data.events.firstOrNull { it.id == eventId } ?: return
+        if (event.choices.isEmpty()) return
+
+        retriedEndingEventIds.add(eventId)
+        try {
+            eng.restore(snapshot)
+            undoSnapshot = null
+            refresh()
+            persistAutosave()
+            _state.update {
+                it.copy(
+                    screen = Screen.Board,
+                    ending = null,
+                    outcome = null,
+                    outcomeVisible = false,
+                    toast = "已回到「${event.title}」，本次事件只能重选一次"
+                )
+            }
+        } catch (e: Exception) {
+            _state.update { it.copy(toast = "重走失败：${e.message ?: "存档损坏"}") }
+        }
     }
 
     /** 错误页重试：无事件则再推一月；其余回到标题。 */
@@ -486,6 +525,12 @@ class GameController(
         val outcome = eng.lastOutcome
         val chosenChoice = outcome?.choiceId?.let { cid -> event.choices.firstOrNull { it.id == cid } }
         val biography = buildBiography(event)
+        val retryEventId = undoSnapshot?.currentEventId
+        val retryEvent = retryEventId?.let { id -> data.events.firstOrNull { it.id == id } }
+        val canRetry = retryEventId != null &&
+            retryEvent?.choices?.isNotEmpty() == true &&
+            !retriedEndingEventIds.contains(retryEventId)
+        val retryLocked = retryEventId != null && retriedEndingEventIds.contains(retryEventId)
         val view = EndingView(
             event = event,
             tierLabel = tierLabel(event.endingConfig?.tier),
@@ -496,7 +541,9 @@ class GameController(
             echo = outcome?.resultEcho ?: event.narrative?.background,
             tags = chosenChoice?.result?.tags ?: chosenChoice?.failResult?.tags,
             biography = biography,
-            history = eng.state.character.history.toList().reversed()
+            history = eng.state.character.history.toList().reversed(),
+            canRetry = canRetry,
+            retryLocked = retryLocked
         )
         _state.update {
             it.copy(

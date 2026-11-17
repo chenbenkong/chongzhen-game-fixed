@@ -776,6 +776,18 @@
   box-shadow: 0 0 22px rgba(201, 162, 39, 0.45);
   transform: translateY(-2px);
 }
+.end-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+  filter: grayscale(0.35);
+  box-shadow: none;
+  transform: none;
+}
+.end-btn.primary:disabled:hover,
+.end-btn.secondary:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
 .end-btn.secondary {
   color: #c9a227;
   border: 1px solid #8b6914;

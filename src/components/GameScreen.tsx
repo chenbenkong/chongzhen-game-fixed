@@ -69,6 +69,8 @@ function GameScreen(props: GameScreenProps) {
     promotionMessage,
     identityType,
     isGameOver,
+    canRetryEnding,
+    retryEndingLocked,
     saveNotification,
     resignConfirmModal,
     isCheatModeOpen,
@@ -111,6 +113,7 @@ function GameScreen(props: GameScreenProps) {
     handleLoadFromSlot,
     handleLoadAutosave,
     handleRestart,
+    handleRetryEnding,
     handleReturnToMenu,
     handleGameOver,
     handleDeathEnding,
@@ -326,7 +329,9 @@ function GameScreen(props: GameScreenProps) {
             character={character}
             gameState={gameState}
             biography={biography}
-            onRestart={handleRestart}
+            onRestart={handleRetryEnding}
+            canRestart={canRetryEnding}
+            restartLocked={retryEndingLocked}
             onReturnToMenu={handleReturnToMenu}
             onViewLifeReview={openLifeReview}
           />

@@ -35,6 +35,11 @@ export interface SaveData {
   achievements?: AchievementData
   /** 当前持久化剧情线（玩家主动选择后保存） */
   currentStoryline?: string
+  /**
+   * 本局已经用过「重走人生」的事件 id。
+   * 旧存档缺失时按空数组处理；同一事件重选过一次后，结局屏的重走按钮锁定。
+   */
+  retriedEndingEventIds?: string[]
   /** 本局难度。旧存档缺失时按 'normal' 处理 */
   difficulty?: DifficultyLevel
   /**

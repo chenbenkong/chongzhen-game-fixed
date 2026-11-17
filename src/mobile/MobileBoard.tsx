@@ -56,6 +56,8 @@ export default function MobileBoard(props: MobileBoardProps) {
     promotionMessage,
     identityType,
     isGameOver,
+    canRetryEnding,
+    retryEndingLocked,
     saveNotification,
     resignConfirmModal,
     lifeRecords,
@@ -79,6 +81,7 @@ export default function MobileBoard(props: MobileBoardProps) {
     handleLoadFromSlot,
     handleLoadAutosave,
     handleRestart,
+    handleRetryEnding,
     handleReturnToMenu,
     handleGameOver,
     handleDeathEnding,
@@ -294,9 +297,9 @@ export default function MobileBoard(props: MobileBoardProps) {
               setIsActionbarOpen(false)
               handleReturnToMenu()
             }}
-            aria-label="返回标题"
+            aria-label="返回首页"
           >
-            标题
+            首页
           </button>
           <button
             type="button"
@@ -418,7 +421,9 @@ export default function MobileBoard(props: MobileBoardProps) {
             character={character}
             gameState={gameState}
             biography={biography}
-            onRestart={handleRestart}
+            onRestart={handleRetryEnding}
+            canRestart={canRetryEnding}
+            restartLocked={retryEndingLocked}
             onReturnToMenu={handleReturnToMenu}
             onViewLifeReview={openLifeReview}
           />

@@ -13,6 +13,10 @@ interface GameOverScreenProps {
   /** 人物志（明史列传风格）— 由 GameScreen 在 handleGameOver 时生成 */
   biography?: string
   onRestart: () => void
+  /** 是否还能回到触发结局的事件重选；没有可重选事件时为 false。 */
+  canRestart?: boolean
+  /** 该事件已经重选过一次且再次触发结局，按钮锁定。 */
+  restartLocked?: boolean
   onReturnToMenu: () => void
   onViewLifeReview?: () => void
 }
@@ -35,6 +39,8 @@ export default function GameOverScreen({
   endingEvent,
   biography,
   onRestart,
+  canRestart = true,
+  restartLocked = false,
   onReturnToMenu,
   onViewLifeReview
 }: GameOverScreenProps) {
@@ -204,11 +210,16 @@ export default function GameOverScreen({
           )}
           <button className="end-btn secondary" onClick={onReturnToMenu}>
             <span className="btn-icon"><Icon name="flower" size={14} color="#c9a227" /></span>
-            <span>返回标题</span>
+            <span>返回首页</span>
           </button>
-          <button className="end-btn primary" onClick={onRestart}>
-            <span className="btn-icon"><Icon name="shuffle" size={14} color="#0a0806" /></span>
-            <span>重走人生</span>
+          <button
+            className="end-btn primary"
+            onClick={onRestart}
+            disabled={!canRestart}
+            title={restartLocked ? '同一事件只能重选一次' : undefined}
+          >
+            <span className="btn-icon"><Icon name="shuffle" size={14} color={canRestart ? '#0a0806' : '#6b6257'} /></span>
+            <span>{restartLocked ? '重走人生 · 已锁' : '重走人生'}</span>
           </button>
         </footer>
       </div>

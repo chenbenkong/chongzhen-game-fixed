@@ -110,7 +110,11 @@ data class EndingView(
     val tags: List<String>?,
     /** 传记 / 回顾正文。 */
     val biography: String,
-    val history: List<String>
+    val history: List<String>,
+    /** 是否还能回到触发结局的事件重选一次。 */
+    val canRetry: Boolean = false,
+    /** 该事件已经重选过一次且再次触发结局，按钮锁定。 */
+    val retryLocked: Boolean = false
 )
 
 /** 取名草稿。 */

@@ -77,6 +77,8 @@ class BoardViewModel(app: Application) : AndroidViewModel(app) {
 
     fun restartFresh() = controller?.restartFresh()
 
+    fun retryEnding() = controller?.retryEnding()
+
     fun retryFromError() = controller?.retryFromError()
 
     // ---- 取名 ----

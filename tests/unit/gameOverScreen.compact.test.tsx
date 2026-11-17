@@ -66,4 +66,25 @@ describe('结局结算界面', () => {
     expect(screen.getByText('史 馆 传 略')).not.toBeNull()
     expect(screen.getByText('属 性 与 成 就')).not.toBeNull()
   })
+
+  it('同一事件重选失败后「重走人生」锁定，不能再点', () => {
+    const { container } = render(
+      <GameOverScreen
+        endingEvent={endingEvent}
+        character={makeCharacter({ name: '沈砚' })}
+        gameState={makeGameState()}
+        onRestart={() => {}}
+        canRestart={false}
+        restartLocked
+        onReturnToMenu={() => {}}
+      />
+    )
+
+    const restart = Array.from(container.querySelectorAll('.end-btn')).find(
+      node => node.textContent?.includes('重走人生')
+    ) as HTMLButtonElement
+    expect(restart).not.toBeNull()
+    expect(restart.disabled).toBe(true)
+    expect(restart.textContent).toContain('已锁')
+  })
 })

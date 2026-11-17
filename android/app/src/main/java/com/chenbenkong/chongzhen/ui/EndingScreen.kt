@@ -197,8 +197,12 @@ fun EndingScreen(state: UiState, viewModel: BoardViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 modifier = Modifier.padding(top = 8.dp)
             ) {
-                GhostButton(text = "返回标题", onClick = { viewModel.backToTitle() })
-                PrimaryButton(text = "另起一局", onClick = { viewModel.restartFresh() })
+                GhostButton(text = "返回首页", onClick = { viewModel.backToTitle() })
+                PrimaryButton(
+                    text = if (ending.retryLocked) "重走人生 · 已锁" else "重走人生",
+                    enabled = ending.canRetry,
+                    onClick = { viewModel.retryEnding() }
+                )
             }
         }
     }
