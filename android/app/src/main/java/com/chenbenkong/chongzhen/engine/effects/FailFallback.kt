@@ -71,7 +71,7 @@ object FailFallback {
         )
     }
 
-    /** 生成与事件 / 选项强相关的失败回音（口径同 Web generateFailEcho）。 */
+    /** 生成与当前事件不打架的失败回音（口径同 Web generateFailEcho）。 */
     fun generateFailEcho(
         choice: EventChoice,
         reasonText: String,
@@ -79,7 +79,6 @@ object FailFallback {
         gap: Double?,
         event: GameEvent?
     ): FailEcho {
-        val eventDesc = event?.description ?: event?.narrative?.situation ?: ""
         val tagMatch = Regex("【([^】]+)】").find(choice.text ?: "")
         val choiceText = (tagMatch?.groupValues?.getOrNull(1) ?: choice.text ?: "").trim()
 
@@ -103,33 +102,54 @@ object FailFallback {
         }
 
         val title = "未能如愿 · ${choiceText.ifEmpty { "行动" }}"
-        val description = "因${lackingDescriptive}，强行为之反遭其祸。"
+        val description = "因${lackingDescriptive}，强行为之，事情没能办成。"
 
-        val hay = eventDesc + " " + choiceText
-        val intro = if (eventDesc.isNotEmpty()) eventDesc.take(minOf(eventDesc.length, 60)) else "事情出了岔子"
+        // 只看选项本身的动作，不把事件描述里的“军/兵/战/守”混进来。
+        // 旧版用 eventDesc + choiceText 做关键词分类，一条“上疏请饷/护送太子/弹劾”
+        // 的失败回音也会写成“你自恃能武，执意出战 / 兵卒折损数十”，与当前事件正面冲突。
+        val action = choice.text ?: ""
+        val intent = when {
+            Regex("上疏|奏疏|弹章|弹劾|劾|具折|进谏|谏|廷议|廷争|朝会|请援|请饷|请恤|鸣冤|参本|揭发|自辩|附议|请旨|票拟|留中|封驳|召对|廷推|派系|党争|考成|考功|说情|认错|请罪|称病|告病|托病|卸差|上报|致书|政绩册|吏部|门生帖|条陈|力陈|三策|善后").containsMatchIn(action) -> "court"
+            Regex("出战|出征|率军|领兵|迎战|守城|固守|死守|剿|突袭|追击|勤王|督战|阵前|平叛|兵变|劫营|驰援|接战|城防|武备|军务|以武|动武|用兵|弹压|请缨|主战|撤军|掘堤|水攻|诈降|反戈").containsMatchIn(action) -> "military"
+            Regex("科举|会试|乡试|应试|讲学|著书|诗文|修史").containsMatchIn(action) -> "exam"
+            Regex("囤|待价|待涨|货引|经商|商号|商贾|商户|商队|本钱|盐引|漕|榷|贿|贪|中饱|私囊|敛财|牟利|谋利|发财|捞取|虚报|浮报|克扣|截留|索贿|开价|明码标价|转卖|火耗|军械|抽头|包揽|冒领|趁火打劫|趁灾").containsMatchIn(action) -> "wealth"
+            Regex("赈|救灾|济民|安民|减税|蠲|抚民|粥|开仓|平粜|流民|减免|散粮|放粮|加派").containsMatchIn(action) -> "relief"
+            Regex("饷|军粮|军需|补给|转运|屯田|运粮|粮船|粮站|粮草|漕粮|供粮").containsMatchIn(action) -> "logistics"
+            Regex("议和|谈判|出使|受抚|抚局|互市|遣使").containsMatchIn(action) -> "diplomacy"
+            Regex("查案|查库|查办|查访|查缉|查问|彻查|审|案|狱|缉|捕|问刑|勘|鞫").containsMatchIn(action) -> "justice"
+            Regex("婚|妻|妾|妻子|儿子|子女|家书|家宅|婚嫁|丧葬|葬|亲族|族人|亲人").containsMatchIn(action) -> "family"
+            else -> "generic"
+        }
 
-        val body = when {
-            Regex("[军兵战剿守边关匪贼]").containsMatchIn(hay) ->
-                "你自恃能武，执意出战。无奈${lackingKey.ifEmpty { "武略" }}不济，阵脚大乱，反被对方看出破绽。\n\n兵卒折损数十，部下虽未明言，眼底颇有怨色。\n\n更糟的是，这一败让你的威严扫地，往后再要整军，只怕调遣不动。"
-            Regex("[官朝政奏帝阉东林权党]").containsMatchIn(hay) ->
-                "你欲在朝堂上翻云覆雨，无奈${lackingKey.ifEmpty { "根基" }}未稳，被对方一句话顶了回来。\n\n朝会散后，政敌们相视而笑，传言当晚便在京城各衙门口传开。\n\n你不仅没占到便宜，反而暴露出急于求成的底牌。"
-            Regex("[考试举进士状元科举]").containsMatchIn(hay) ->
-                "你自信才学，欲在科场上一搏。无奈${lackingKey.ifEmpty { "文才" }}欠火候，文章被考官批得体无完肤。\n\n同场士子皆以异样的目光看你，更有好事者当场赋诗讽之。\n\n你颜面尽失，原本有意结交的几位才子，也悄然远离。"
-            Regex("[外使和贡边夷番]").containsMatchIn(hay) ->
-                "你欲以外交手段斡旋，奈何${lackingKey.ifEmpty { "手腕" }}生疏，被对方使节三言两语便看穿了底牌。\n\n谈判未成，反被对方抓住了把柄，回国后还须向朝廷解释。\n\n消息传回京城，主和派借题发挥，让你处境愈发尴尬。"
-            Regex("[灾民荒济赈赋税]").containsMatchIn(hay) ->
-                "你心系灾民，急于赈济。无奈${lackingDescriptive}，筹到的米粮杯水车薪，分配时又生骚乱。\n\n流民非但没有领情，反而砸了你的施粥棚。\n\n此事被人参了一本，说你沽名钓誉、办事不力。"
-            Regex("[士子闹落第落第举监学]").containsMatchIn(hay) ->
-                "你欲以德化之、安抚之。无奈${lackingDescriptive}，群情激愤之下反被人揪住衣领质问。\n\n你仓皇退场，不仅平白折了脸面，事情也彻底闹大。\n\n更麻烦的是，落榜士子已将你视为眼中钉，日后再想施恩，怕是没人会领情。"
+        val body = when (intent) {
+            "military" ->
+                "你按“${choiceText.ifEmpty { "出战" }}”的法子调兵，奈何${lackingDescriptive}，号令不一、阵脚先乱；这一阵没能打出想要的结果。\n\n退下来清点，人马有折损，但未至溃散。部下虽未明言，眼底已有怨色。"
+            "court" ->
+                "你想在朝堂上把这件事推动下去，奈何${lackingDescriptive}，话递不上去，或当廷被顶了回来。\n\n风向未变，反把你的底牌露了；政敌们相视而笑，传言当晚便在京中衙门口传开。"
+            "relief" ->
+                "你想把赈济办实，奈何${lackingDescriptive}，粮款不继、分配生乱。\n\n百姓没得着实惠，反添怨言；此事被人参了一本，说你沽名钓誉、办事不力。"
+            "exam" ->
+                "你想在文墨上争一口气，奈何${lackingDescriptive}，文章与主张未被认可。\n\n同场士子以异样的目光看你，更有好事者当场赋诗讽之；你颜面尽失，原本有意结交的几位才子也悄然远离。"
+            "justice" ->
+                "你想把这桩案子办成铁案，奈何${lackingDescriptive}，口供翻覆、上下推诿。\n\n案子没结，反沾了一手灰；旁人开始躲着你，怕被这桩案子牵连。"
+            "logistics" ->
+                "你想把粮饷补给办妥，奈何${lackingDescriptive}，账目与转运都出了岔子。\n\n该到的钱粮迟了，营中怨气比先前更重；管粮的吏员互相推诿，最后只留下一本烂账。"
+            "diplomacy" ->
+                "你想在谈判桌上斡旋，奈何${lackingDescriptive}，被对方使节三言两语看穿了底牌。\n\n没占到便宜，反留下把柄；消息传回京城，主和派与主战派都拿你作话头。"
+            "wealth" ->
+                "你想在这笔钱上取利，奈何${lackingDescriptive}，账目露了破绽。\n\n利没落袋，反折了本；与你合伙的人开始撇清干系，官府那边也多了一双盯着你的眼睛。"
+            "family" ->
+                "你想把家里这桩事办妥，奈何${lackingDescriptive}，话说不到一处，反添嫌隙。\n\n亲近的人寒了心，外人看了笑话；这桩事此后成了家里谁也不愿再提的一根刺。"
             else ->
-                "你决意强行推动此事，无奈${lackingDescriptive}，结果与你的设想背道而驰。\n\n现场陷入一片尴尬的沉默。旁人的目光，让你恨不得掘地三尺。\n\n事后回想，其实若再等一等、准备更充分一些，未必不能成事。"
+                "你想${choiceText.ifEmpty { "把这件事办成" }}，奈何${lackingDescriptive}，事情没按你的设想走。\n\n你原先指望的转机没有出现，反倒多了一层说不清的被动；此后每走一步，都得先看旁人的脸色。"
         }
 
         val gapHint = if (gap != null && gap > 0) {
             "\n\n（提示：${lackingKey.ifEmpty { conditionKey ?: "此项" }}还差约${gap.toInt()}点，待来日修为精进，或可一搏。）"
         } else ""
 
-        val echo = "【回音】\n\n${intro}…\n\n${body}\n\n——事已至此，多想无益。${gapHint}"
+        val scene = event?.title?.takeIf { it.isNotEmpty() }?.let { "「${it}」这一桩，" } ?: ""
+        val echo = "【回音】\n\n${scene}你想${choiceText.ifEmpty { "把这件事办成" }}，却因${lackingDescriptive}，没能如愿。\n\n${body}\n\n——事已至此，多想无益。${gapHint}"
         return FailEcho(title, description, echo)
     }
 }
