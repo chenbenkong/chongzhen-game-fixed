@@ -3,7 +3,7 @@
  *
  * 用途：在真实浏览器里验证「手机自动进横屏版、竖屏出旋转遮罩、?mobile=1 可强制预览、
  * 桌面视口仍走原版」四条入口规则，并检查牌桌最小可用性（HUD 六项状态齐全、
- * 抉择可点、底部操作条完整在视口内、无横向溢出、无 console.error）。
+ * 操作条默认收起/可展开/可收起、正文 ≤14px、无横向溢出、无 console.error）。
  *
  * 运行：先起 preview（dist），再
  *   $env:BASE_URL="http://localhost:4180"; node tests/mobile-web.mjs
@@ -87,16 +87,35 @@ async function main() {
     check('无横向溢出', overflow.scrollWidth <= overflow.clientWidth + 1,
       `scroll=${overflow.scrollWidth} client=${overflow.clientWidth}`)
 
-    const bar = await page.locator('.mobile-actionbar').boundingBox()
+    check('底部操作条默认收起', (await page.locator('.mobile-actionbar').count()) === 0)
+
+    const handle = page.locator('.mobile-actionbar-handle')
+    const handleBox = await handle.boundingBox()
+    check('有浮动的操作入口', !!handleBox,
+      handleBox ? `${handleBox.width.toFixed(1)}×${handleBox.height.toFixed(1)}` : 'no box')
+    check('操作入口触控目标 ≥44px', !!handleBox && Math.min(handleBox.width, handleBox.height) >= 44,
+      handleBox ? `min=${Math.min(handleBox.width, handleBox.height).toFixed(1)}` : 'n/a')
+    await handle.click()
+    await page.waitForTimeout(250)
+
     const vp = page.viewportSize()
-    check('底部操作条完整在视口内', !!bar && bar.y + bar.height <= vp.height + 1,
+    const bar = await page.locator('.mobile-actionbar').boundingBox()
+    check('点操作后操作条展开且在视口内', !!bar && bar.y + bar.height <= vp.height + 1,
       bar ? `y=${bar.y.toFixed(1)} h=${bar.height.toFixed(1)} vp=${vp.height}` : 'no box')
 
     const targets = await page.locator('.mobile-actionbar .mobile-bar-btn').evaluateAll(els =>
       els.map(e => e.getBoundingClientRect()).map(r => Math.min(r.width, r.height))
     )
-    check('底部按钮触控目标 ≥44px', targets.length > 0 && targets.every(v => v >= 44),
-      `min=${targets.length ? Math.min(...targets).toFixed(1) : 'n/a'}`)
+    check('展开后按钮触控目标 ≥44px', targets.length >= 5 && targets.every(v => v >= 44),
+      `count=${targets.length} min=${targets.length ? Math.min(...targets).toFixed(1) : 'n/a'}`)
+
+    await page.locator('.mobile-actionbar__close').click()
+    await page.waitForTimeout(150)
+    check('收起后操作条不再常驻', (await page.locator('.mobile-actionbar').count()) === 0)
+
+    const bodyFont = await page.locator('.mobile-event-host .narrative-paragraph').first()
+      .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
+    check('手机正文 ≤14px', bodyFont <= 14, `font=${bodyFont.toFixed(1)}px`)
 
     const choices = await page.locator('button.choice-card:not(.locked)').count()
     check('有可选项', choices > 0, `choices=${choices}`)

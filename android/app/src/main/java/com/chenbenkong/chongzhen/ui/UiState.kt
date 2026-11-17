@@ -173,6 +173,8 @@ data class UiState(
     val banner: BannerView? = null,
     /** null = 面板收起；手机默认单栏，避免左右栏白占宽度。 */
     val boardPanel: BoardPanel? = null,
+    /** 底部操作条：手机默认收起，不常驻占高度。 */
+    val actionBarOpen: Boolean = false,
     val drawerOpen: Boolean = false,
     val codex: List<CodexEntry> = emptyList(),
     val ending: EndingView? = null,

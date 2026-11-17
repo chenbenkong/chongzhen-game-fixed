@@ -317,6 +317,11 @@ class GameController(
         _state.update { it.copy(boardPanel = null) }
     }
 
+    /** 展开/收起底部操作条；手机默认收起。 */
+    fun setActionBarOpen(open: Boolean) {
+        _state.update { it.copy(actionBarOpen = open) }
+    }
+
     /** 返回标题（保留自动存档）。 */
     fun backToTitle() {
         engine = null

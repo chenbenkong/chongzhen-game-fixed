@@ -336,6 +336,7 @@ body.mobile-applied textarea {
 
 /* —— 牌桌 —— */
 .mobile-shell .mobile-board {
+  position: relative;
   flex: 1 1 0;
   min-height: 0;
   max-height: 100%;
@@ -428,12 +429,18 @@ body.mobile-applied textarea {
 }
 
 .mobile-shell .mobile-actionbar {
-  flex-shrink: 0;
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 40;
   display: flex;
   gap: 8px;
-  padding: 8px 12px;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--color-border, rgba(197, 165, 90, 0.15));
+  padding: 6px 8px;
+  border: 1px solid var(--color-border, #2a2015);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #18130d 0%, #12100c 100%);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
 .mobile-shell .mobile-bar-btn {
   flex: 1;
@@ -443,6 +450,41 @@ body.mobile-applied textarea {
   background: var(--gold, #c5a55a);
   color: #1a1a1a;
   font-weight: 700;
+}
+.mobile-shell .mobile-actionbar__close {
+  flex: 0 0 54px;
+  min-width: 54px;
+  padding-left: 8px;
+  padding-right: 8px;
+  color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
+}
+
+/* 收起态只留右下角一个 44px 的「操作」入口，不再占整行高度。 */
+.mobile-shell .mobile-actionbar-handle {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 41;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  min-width: 64px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, rgba(197, 165, 90, 0.4));
+  border-radius: 3px;
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+  color: var(--gold, #c5a55a);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.mobile-shell .mobile-actionbar-handle__icon {
+  font-size: 15px;
+  line-height: 1;
+  color: rgba(197, 165, 90, 0.75);
 }
 
 /* 升迁提示条 */
@@ -526,6 +568,50 @@ body.mobile-applied textarea {
   border: 1px solid var(--color-border, #2a2015);
   border-radius: 3px;
   background: linear-gradient(165deg, #161210 0%, #0d0a08 100%);
+  scroll-padding-bottom: 56px;
+}
+
+/* 手机正文比桌面再收一档：924dp 宽时桌面 0.95rem 会显得过大，压到 0.8rem。
+   只改 .mobile-event-host 作用域，桌面 EventDisplay.css 一个字不动。 */
+.mobile-shell .mobile-event-host .event-display {
+  padding: 8px 10px;
+}
+.mobile-shell .mobile-event-host .event-title {
+  font-size: 1.25rem;
+  letter-spacing: 3px;
+  padding: 0 14px;
+}
+.mobile-shell .mobile-event-host .event-pending-hint {
+  margin-top: 2px;
+  font-size: 0.66rem;
+}
+.mobile-shell .mobile-event-host .quote-text-compact {
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+.mobile-shell .mobile-event-host .speaker-name-compact {
+  font-size: 0.74rem;
+}
+.mobile-shell .mobile-event-host .speaker-title-compact {
+  font-size: 0.66rem;
+}
+.mobile-shell .mobile-event-host .narrative-paragraph {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-indent: 1.5em;
+}
+.mobile-shell .mobile-event-host .situation-prompt {
+  font-size: 0.72rem;
+  padding: 2px 0;
+}
+.mobile-shell .mobile-event-host .choice-title {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.mobile-shell .mobile-event-host .choice-description {
+  font-size: 0.7rem;
+  line-height: 1.4;
 }
 
 .mobile-shell .mobile-actionbar {

@@ -110,6 +110,8 @@ class BoardViewModel(app: Application) : AndroidViewModel(app) {
 
     fun closeBoardPanel() = controller?.closeBoardPanel()
 
+    fun setActionBarOpen(open: Boolean) = controller?.setActionBarOpen(open)
+
     fun consumeToast() = controller?.consumeToast()
 
     companion object {

@@ -65,9 +65,10 @@ private val PanelBg = Brush.verticalGradient(listOf(CardInk, CardInkDeep))
 @Composable
 fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
     val board = state.board
-    // 面板打开时，系统返回键只收起面板，不退游戏。
-    BackHandler(enabled = state.boardPanel != null) {
-        viewModel.closeBoardPanel()
+    // 系统返回键：先收面板，再收底部操作条，都不直接退游戏。
+    BackHandler(enabled = state.boardPanel != null || state.actionBarOpen) {
+        if (state.boardPanel != null) viewModel.closeBoardPanel()
+        else viewModel.setActionBarOpen(false)
     }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -93,8 +94,27 @@ fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
                     Text("案卷尚未展开", color = ParchmentDim)
                 }
             }
+        }
 
-            BottomBar(state, viewModel)
+        if (state.actionBarOpen && board != null) {
+            ActionBarScrim(onClose = { viewModel.setActionBarOpen(false) })
+            BottomBar(
+                state = state,
+                viewModel = viewModel,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(6.dp),
+                onClose = { viewModel.setActionBarOpen(false) }
+            )
+        } else if (board != null) {
+            // 收起态只留右下角一个 44dp 的「操作」入口，事件区拿回整块高度。
+            GhostButton(
+                text = "操作",
+                onClick = { viewModel.setActionBarOpen(true) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(10.dp)
+            )
         }
 
         if (state.boardPanel != null && board != null) {
@@ -440,9 +460,9 @@ private fun EventCard(
         if (event.description.isNotBlank()) {
             Text(
                 text = event.description,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = Parchment,
-                lineHeight = 21.sp
+                lineHeight = 19.sp
             )
         }
         event.narrative?.background?.takeIf { it.isNotBlank() }?.let { bg ->
@@ -555,9 +575,9 @@ private fun NarrativeQuote(speaker: String, quote: String) {
             if (quote.isNotBlank()) {
                 Text(
                     text = "「$quote」",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = ParchmentDim,
-                    lineHeight = 19.sp
+                    lineHeight = 18.sp
                 )
             }
         }
@@ -604,14 +624,14 @@ private fun ChoiceCard(index: Int, view: ChoiceView, onClick: () -> Unit) {
         ) {
             Text(
                 text = view.choice.text,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = if (view.open) Parchment else ParchmentFaint,
-                lineHeight = 18.sp
+                lineHeight = 17.sp
             )
             view.choice.description?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelLarge,
                     color = ParchmentFaint,
                     lineHeight = 16.sp
                 )
@@ -687,9 +707,14 @@ private fun OutcomePanel(
 // ---------------------------------------------------------------------- 底部操作栏
 
 @Composable
-private fun BottomBar(state: UiState, viewModel: BoardViewModel) {
+private fun BottomBar(
+    state: UiState,
+    viewModel: BoardViewModel,
+    modifier: Modifier = Modifier,
+    onClose: () -> Unit
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 44.dp)
             .clip(PanelShape)
@@ -723,14 +748,36 @@ private fun BottomBar(state: UiState, viewModel: BoardViewModel) {
                 overflow = TextOverflow.Ellipsis
             )
         }
-        GhostButton(text = "返回", onClick = { viewModel.backToTitle() })
-        GhostButton(text = "撤销", onClick = { viewModel.undo() })
-        GhostButton(text = "存档", onClick = { viewModel.saveNow() })
+        GhostButton(
+            text = "返回",
+            onClick = {
+                onClose()
+                viewModel.backToTitle()
+            }
+        )
+        GhostButton(
+            text = "撤销",
+            onClick = {
+                onClose()
+                viewModel.undo()
+            }
+        )
+        GhostButton(
+            text = "存档",
+            onClick = {
+                onClose()
+                viewModel.saveNow()
+            }
+        )
         PrimaryButton(
             text = "进下月",
-            onClick = { viewModel.advanceMonth() },
+            onClick = {
+                onClose()
+                viewModel.advanceMonth()
+            },
             enabled = state.advanceBlockedReason == null && state.board != null
         )
+        GhostButton(text = "×", onClick = onClose)
     }
 }
 
@@ -827,6 +874,18 @@ private fun Meter(
 private fun formatDelta(v: Double): String {
     val n = v.toInt()
     return if (n >= 0) "+$n" else n.toString()
+}
+
+// ---------------------------------------------------------------------- 浮动操作条
+
+@Composable
+private fun ActionBarScrim(onClose: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.22f))
+            .clickable(onClick = onClose)
+    )
 }
 
 // ---------------------------------------------------------------------- 面板抽屉

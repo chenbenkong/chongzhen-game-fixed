@@ -86,6 +86,8 @@ export default function MobileBoard(props: MobileBoardProps) {
   const [eventResolved, setEventResolved] = useState(false)
   // 骰子弹窗开合（EventDisplay 内部，portal 到 body）。
   const [diceModalOpen, setDiceModalOpen] = useState(false)
+  // 手机寸土寸金：底部操作条默认收起，只留一个浮动「操作」入口。
+  const [isActionbarOpen, setIsActionbarOpen] = useState(false)
 
   const lifeSummary = useMemo(() => generateLifeSummary(), [generateLifeSummary])
 
@@ -185,33 +187,77 @@ export default function MobileBoard(props: MobileBoardProps) {
         </div>
       </main>
 
-      {/* 底部操作条 */}
-      <footer className="mobile-actionbar">
-        <button type="button" className="mobile-bar-btn" onClick={handleReturnToMenu} aria-label="返回标题">
-          标题
-        </button>
+      {/* 底部操作条：默认收起，点右下角「操作」才展开；展开后不再挤压事件区。 */}
+      {!isActionbarOpen && !modalOpen && (
         <button
           type="button"
-          className="mobile-bar-btn"
-          onClick={handleUndo}
-          disabled={undoHistory.length === 0}
-          aria-label="撤销"
+          className="mobile-actionbar-handle"
+          onClick={() => setIsActionbarOpen(true)}
+          aria-label="展开操作栏"
         >
-          撤销
+          <span className="mobile-actionbar-handle__icon" aria-hidden="true">☰</span>
+          <span>操作</span>
         </button>
-        <button type="button" className="mobile-bar-btn" onClick={handleSave} aria-label="存档">
-          存档
-        </button>
-        <button
-          type="button"
-          className="mobile-bar-btn mobile-bar-btn--primary"
-          onClick={handleAdvance}
-          disabled={!canAdvance}
-          title={advanceHint ?? undefined}
-        >
-          {currentEvent ? '继 续' : '进 下 月'}
-        </button>
-      </footer>
+      )}
+
+      {isActionbarOpen && !modalOpen && (
+        <footer className="mobile-actionbar" aria-label="牌桌操作">
+          <button
+            type="button"
+            className="mobile-bar-btn"
+            onClick={() => {
+              setIsActionbarOpen(false)
+              handleReturnToMenu()
+            }}
+            aria-label="返回标题"
+          >
+            标题
+          </button>
+          <button
+            type="button"
+            className="mobile-bar-btn"
+            onClick={() => {
+              setIsActionbarOpen(false)
+              handleUndo()
+            }}
+            disabled={undoHistory.length === 0}
+            aria-label="撤销"
+          >
+            撤销
+          </button>
+          <button
+            type="button"
+            className="mobile-bar-btn"
+            onClick={() => {
+              setIsActionbarOpen(false)
+              handleSave()
+            }}
+            aria-label="存档"
+          >
+            存档
+          </button>
+          <button
+            type="button"
+            className="mobile-bar-btn mobile-bar-btn--primary"
+            onClick={() => {
+              setIsActionbarOpen(false)
+              handleAdvance()
+            }}
+            disabled={!canAdvance}
+            title={advanceHint ?? undefined}
+          >
+            {currentEvent ? '继 续' : '进 下 月'}
+          </button>
+          <button
+            type="button"
+            className="mobile-bar-btn mobile-actionbar__close"
+            onClick={() => setIsActionbarOpen(false)}
+            aria-label="收起操作栏"
+          >
+            收起
+          </button>
+        </footer>
+      )}
 
       {/* 结局屏（复用 GameOverScreen，作用域样式见 mobile.css） */}
       {isGameOver && (

@@ -18,7 +18,7 @@
 | `src/mobile/MobileTitle.tsx` | 标题、开始、继续上次、难度三选 |
 | `src/mobile/MobileNameSetup.tsx` | 姓/名/字/年岁/籍贯；字与籍贯复用 `utils/naming.ts`，不复制生成规则 |
 | `src/mobile/MobileOriginSetup.tsx` | 出身卡网格，数据复用 `data/origins` |
-| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD + 中央事件区（**复用 `EventDisplay`**）+ 底部操作条 + 结局/死亡/回顾宿主 |
+| `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD + 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
 | `src/mobile/mobile.css` | 全部选择器限定在 `.mobile-shell` / `.mobile-board` / `body.mobile-applied` 下，无全局覆盖 |
 | `tests/mobile-web.mjs` | 入口四规则 + 牌桌最小可用性的浏览器冒烟（退出码即结论） |
 
@@ -31,6 +31,18 @@
 ## 懒加载边界
 
 `MobileApp` 与桌面 `GameScreen` 同一条分包线：`const MobileAppLazy = lazy(() => import('./mobile/MobileApp'))`，只在 `detectMobileMode()` 为真时挂 `<Suspense>`。桌面标题屏不会因为手机版存在而预取游戏主包（`MobileApp-*.js` 是独立分片）。
+
+## 手机重排：操作条可收起 + 正文字号缩小（2026-11-17）
+
+- **底部操作条默认收起**：`.mobile-actionbar` 从常驻底栏改为绝对定位浮层；收起时只在右下角渲染
+  一个 44px 高的 `.mobile-actionbar-handle`（「☰ 操作」）。点开才展开「标题 / 撤销 / 存档 / 继续或进下月 / 收起」，
+  任一操作执行前先关闭浮层；点「收起」或 `modalOpen` 时整条移除。事件区因此拿回整行高度。
+- **字号手机化**：覆盖只作用于 `.mobile-event-host`，桌面 `EventDisplay.css` 0 改动：
+  正文 `.narrative-paragraph` 0.72rem / 1.5 行高（924dp 宽实测 13.0px），引语 0.74rem，
+  事件标题 1.25rem，选项标题 0.78rem，选项说明 0.7rem。
+- **触控**：浮动入口 74.5×44.0px；展开后 5 个按钮最小边 54.0px，均 ≥44px。
+- **不挤压事件区**：操作条是 `position:absolute`，不参与 flex 高度分配；`.mobile-event-host` 加
+  `scroll-padding-bottom:56px`，滚动到底时正文不会被浮动入口永久遮住。
 
 ## 强制横屏（2026-11-17）
 
@@ -45,7 +57,11 @@
 
 ## 已验证（本地 preview，844×390）
 
-- 进入手机版、HUD 六项状态齐全、PWA manifest 为 `orientation: landscape`、无横向溢出、底部操作条完整在视口内（y=325.2 + h=64.8 ≈ 390）、底部按钮最小边 50.8px（≥44）、可点抉择并出结算；
+- 进入手机版、HUD 六项状态齐全、PWA manifest 为 `orientation: landscape`、无横向溢出；
+- 底部操作条默认不出现；右下角浮动入口 74.5×44.0px（≥44）；点开后操作条在视口内
+  （y=288.4 + h=93.6 ≈ 390），5 个按钮最小边 54.0px；点「收起」后操作条消失；
+- 正文 `.narrative-paragraph` 实测 13.0px（≤14px）；
+- 可点抉择并出结算；
 - 390×844 竖屏：只出"请旋转手机"遮罩，不渲染牌桌交互；
 - `?mobile=1` + 1440×900：仍渲染手机版（强制预览生效）；无参数 + 1440×900：仍走桌面原版；
 - 全程无 `console.error` / `pageerror`。
