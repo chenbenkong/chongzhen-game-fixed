@@ -27,7 +27,7 @@ class DiceBranchTest {
         return engine
     }
 
-    @Test fun `投骰失败走反推失败效果，道德值按兜底扣 2`() {
+    @Test fun `投骰失败走反推失败效果，不再凭空扣道德或加野心`() {
         val engine = engineOnHistorical009()
         val before = engine.state.character.hidden.toMap()
 
@@ -38,9 +38,10 @@ class DiceBranchTest {
         assertTrue(outcome.usedFailEffects)
         assertEquals(1, outcome.diceRoll)
 
-        // 反推兜底：道德值无正向成功增量 → 失败 -2。
+        // 成功效果没有正向道德增量 → 失败不再凭空道德 -2、野心 +2。
         val after = engine.state.character.hidden
-        assertEquals(-2.0, (after["道德值"] ?: 0.0) - (before["道德值"] ?: 0.0), 0.001)
+        assertEquals(0.0, (after["道德值"] ?: 0.0) - (before["道德值"] ?: 0.0), 0.001)
+        assertEquals(0.0, (after["野心值"] ?: 0.0) - (before["野心值"] ?: 0.0), 0.001)
         assertTrue(outcome.resultTitle!!.isNotBlank())
         assertTrue(outcome.resultEcho!!.isNotBlank())
     }

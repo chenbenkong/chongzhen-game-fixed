@@ -94,7 +94,7 @@
   存档预览压成单行 11sp。
 - 校验：`testDebugUnitTest` **12 个套件 / 53 个用例 / 0 失败**；`assembleDebug` 成功；
   新 APK **17,677,805 字节**，SHA-256
-  `B639D80EAC821E5E445A269421825D7F54C53F0F904EEA2D24D598E9B9432CE8`。
+  `4A2A1995FB58259D9E1D41297FCEA9A5AC6550ADDD295BBD89A0F55C464B5BAA`。
 - 未验证：本机无真机/AVD，上述三屏的真机触控与字形仍只能静态编译通过，不能宣称已看过实机效果。
 
 ## 结算只显示已选选项与回音（2026-11-17）
@@ -153,7 +153,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **17,677,805 字节**，SHA-256 `B639D80EAC821E5E445A269421825D7F54C53F0F904EEA2D24D598E9B9432CE8`，
+- `assembleDebug`：`app-debug.apk` **17,677,805 字节**，SHA-256 `4A2A1995FB58259D9E1D41297FCEA9A5AC6550ADDD295BBD89A0F55C464B5BAA`，
   复制到 `release/崇祯直聘-0.5.0-debug.apk`；
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**、

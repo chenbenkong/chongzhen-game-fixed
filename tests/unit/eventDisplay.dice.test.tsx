@@ -370,6 +370,9 @@ describe('EventDisplay 勉力一试（投骰）', () => {
       expect(echo).toContain('话递不上去')
       expect(echo).not.toContain('亲自出战')
       expect(echo).not.toContain('兵卒折损')
+      // 失败副作用也不再无条件“道德 -2 / 野心 +2”
+      expect(applied.effects?.hidden?.道德值).toBeUndefined()
+      expect(applied.effects?.hidden?.野心值).toBeUndefined()
     } finally {
       randomSpy.mockRestore()
     }

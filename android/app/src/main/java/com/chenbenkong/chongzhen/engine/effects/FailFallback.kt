@@ -53,10 +53,11 @@ object FailFallback {
         gs["民望"]?.let { v -> if (v > 0) failGs["民望"] = -minOf(8.0, maxOf(3.0, ceil(v / 2).toDouble())) }
         gs["中官"]?.let { v -> if (v > 0) failGs["中官"] = -minOf(6.0, maxOf(2.0, ceil(v / 2).toDouble())) }
 
-        failHid["道德值"] = hid["道德值"]?.let { v ->
-            if (v > 0) -minOf(5.0, maxOf(2.0, ceil(v / 2).toDouble())) else -2.0
-        } ?: -2.0
-        failHid["野心值"] = hid["野心值"]?.let { v -> maxOf(2.0, ceil(abs(v) / 2 + 1)) } ?: 2.0
+        // 隐藏属性：只反推成功效果里明确写出的正向道德值；没有就不凭空生成。
+        // 失败一次善举不等于道德下降，失败一次阴谋也不等于野心上涨。
+        hid["道德值"]?.let { v ->
+            if (v > 0) failHid["道德值"] = -minOf(5.0, maxOf(2.0, ceil(v / 2).toDouble()))
+        }
 
         // 兜底：成功效果全无正向属性时，失败折一点体质。
         val totalFail = failAttrs.values.sumOf { abs(it) } + failGs.values.sumOf { abs(it) }
@@ -67,7 +68,7 @@ object FailFallback {
         return EventEffects(
             attributes = failAttrs.ifEmpty { null },
             gameState = failGs.ifEmpty { null },
-            hidden = failHid
+            hidden = failHid.ifEmpty { null }
         )
     }
 

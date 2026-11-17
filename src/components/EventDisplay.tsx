@@ -62,7 +62,8 @@ interface EventDisplayProps {
 
 /**
  * 根据选项的"成功时的效果"反推失败时的合理副作用。
- * 原则：成功+的属性，失败时按比例扣回；隐藏属性默认道德-、野心+。
+ * 原则：成功+的属性，失败时按比例扣回；不再无条件扣道德、加野心——
+ * 一次“为民请命/上疏鸣冤”没办成，不该被系统判定成“道德下降、野心上涨”。
  */
 function deriveFailEffects(choice: EventChoice): {
   attributes?: Record<string, number>
@@ -111,15 +112,11 @@ function deriveFailEffects(choice: EventChoice): {
     failGs.中官 = -Math.min(6, Math.max(2, Math.ceil(gs.中官 / 2)))
   }
 
-  // 3. 隐藏属性
+  // 3. 隐藏属性：只反推成功效果里明确写出的正向道德值；
+  //    没有就不凭空生成。失败一次善举不等于道德下降，失败一次阴谋也不等于野心上涨。
   if (typeof hid.道德值 === 'number' && hid.道德值 > 0) {
     failHid.道德值 = -Math.min(5, Math.max(2, Math.ceil(hid.道德值 / 2)))
-  } else {
-    failHid.道德值 = -2
   }
-  failHid.野心值 = (typeof hid.野心值 === 'number')
-    ? Math.max(2, Math.ceil(Math.abs(hid.野心值) / 2 + 1))
-    : 2
 
   // 兜底
   const totalFail = Object.values(failAttrs).reduce((s, v) => s + Math.abs(v), 0) +
