@@ -4,6 +4,7 @@
  * 输出：
  *   release/手机网页版-924x426.png            收起态（默认，顶栏「面板 / 操作」）
  *   release/手机网页版-人物面板-924x426.png    能力页（财帛/文韬/理政/武略/体质 + 隐藏属性）
+ *   release/手机网页版-人物面板隐藏属性-924x426.png 能力页下半段（道德/欲望/野心/机敏/忠诚）
  *   release/手机网页版-操作条展开-924x426.png  操作条展开态（底部浮层）
  *
  * 运行：先起 preview（dist），再
@@ -49,6 +50,12 @@ await page.screenshot({ path: `${OUT_DIR}手机网页版-924x426.png`, fullPage:
 await page.locator('.mobile-hud__panel').click()
 await page.waitForTimeout(250)
 await page.screenshot({ path: `${OUT_DIR}手机网页版-人物面板-924x426.png`, fullPage: false })
+await page.evaluate(() => {
+  const body = document.querySelector('.mobile-panel__body')
+  if (body) body.scrollTop = body.scrollHeight
+})
+await page.waitForTimeout(200)
+await page.screenshot({ path: `${OUT_DIR}手机网页版-人物面板隐藏属性-924x426.png`, fullPage: false })
 await page.locator('.mobile-panel__close').click()
 await page.waitForTimeout(150)
 await page.locator('.mobile-hud__action').click()
