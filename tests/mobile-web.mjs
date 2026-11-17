@@ -214,8 +214,32 @@ async function main() {
       check('结算不再重播事件标题', !(await page.locator('.mobile-event-host .event-header').isVisible()))
       check('结算保留已选选项', await page.locator('.mobile-event-host .selected-choice').isVisible())
       check('结算保留回音', (await page.locator('.mobile-event-host .echo-box').count()) > 0)
-      await page.locator('.continue-btn').click()
-      await page.waitForTimeout(250)
+      const eraBefore = await page.locator('.mobile-hud__era').innerText()
+      // 结算后的「继续」只是同月队列里的下一张；要真正跨月，得把当月队列走完。
+      for (let step = 0; step < 10; step++) {
+        const eraNow = await page.locator('.mobile-hud__era').innerText()
+        if (eraNow !== eraBefore) break
+
+        if (await page.locator('.continue-btn').isVisible().catch(() => false)) {
+          await page.locator('.continue-btn').click()
+          await page.waitForTimeout(250)
+          continue
+        }
+
+        if (await page.locator('.mobile-choices-fab').isVisible().catch(() => false)) {
+          await page.locator('.mobile-choices-fab').click()
+          await page.waitForTimeout(150)
+          const option = page.locator('button.choice-card:not(.locked)').first()
+          if ((await option.count()) > 0) {
+            await option.click()
+            await page.waitForTimeout(300)
+          }
+        } else {
+          await page.waitForTimeout(250)
+        }
+      }
+      const eraAfter = await page.locator('.mobile-hud__era').innerText()
+      check('已真正推进到下一月', eraAfter !== eraBefore, `${eraBefore} -> ${eraAfter}`)
       const hudMetaAfterMonth = await page.locator('.mobile-hud__meta').innerText()
       check('跨月后岁数仍为整数', /^\d+岁/.test(hudMetaAfterMonth), hudMetaAfterMonth)
       await page.screenshot({ path: `${SHOT_DIR}/mobile-web-result-844x390.png`, fullPage: false })
