@@ -1099,6 +1099,14 @@ body.mobile-applied textarea {
   letter-spacing: 0;
   text-indent: 1.5em;
 }
+/* 结算态只留刚选的选项与回音：标题和整篇正文都不再重播。 */
+.mobile-shell .mobile-event-host .event-display.show-result .event-header,
+.mobile-shell .mobile-event-host .event-display.show-result .narrative-section {
+  display: none;
+}
+.mobile-shell .mobile-event-host .event-display.show-result {
+  padding-top: 6px;
+}
 .mobile-shell .mobile-event-host .situation-prompt {
   font-size: 0.72rem;
   padding: 2px 0;

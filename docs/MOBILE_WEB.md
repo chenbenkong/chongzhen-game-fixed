@@ -88,6 +88,20 @@
   出身详情默认 0 展开、无属性横条、出身卡收起态 ≤100px、展开后五围 5 项、点「选此出身」进牌桌，
   并输出四张 `release/手机网页版-标题/取名/出身/出身详情-924x426.png`。
 
+## 结算不再重播正文（2026-11-17）
+
+点完选项进入 `.event-display.show-result` 后，只保留：
+- `.selected-choice`：刚点的选项文本与说明；
+- 结果评价、属性/状态增减；
+- `.echo-box`：回音；
+- 底部继续按钮。
+
+`.event-header` 和 `.narrative-section`（人物引语、背景正文、处境提示）在手机作用域内
+`display:none`，不再把整篇事件正文重播一遍。桌面 `EventDisplay.css` 仍按原样显示，一行未改。
+
+`tests/mobile-web.mjs` 新增四条断言：结算无正文、无事件标题、已选选项可见、回音框存在；
+截图见 `release/手机网页版-结算-924x426.png`。
+
 ## 强制横屏（2026-11-17）
 
 - **PWA manifest**：`public/manifest.webmanifest` 的 `orientation` 已从 `any` 改为 `landscape`；

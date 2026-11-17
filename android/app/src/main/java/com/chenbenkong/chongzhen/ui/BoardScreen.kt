@@ -450,20 +450,22 @@ private fun EventColumn(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        EventCard(
-            state = state,
-            viewModel = viewModel,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        )
         if (state.outcomeVisible && state.outcome != null) {
+            // 结算态只显示“刚选的选项 + 回音 + 效果”，不再重播整篇事件正文。
             OutcomePanel(
                 outcome = state.outcome,
                 viewModel = viewModel,
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .heightIn(max = 176.dp)
+            )
+        } else {
+            EventCard(
+                state = state,
+                viewModel = viewModel,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             )
         }
     }
@@ -764,6 +766,30 @@ private fun OutcomePanel(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
+        outcome.choiceText?.takeIf { it.isNotBlank() }?.let { choiceText ->
+            Text(
+                text = "你 选 了",
+                style = MaterialTheme.typography.labelSmall,
+                color = ParchmentFaint,
+                letterSpacing = 2.sp
+            )
+            Text(
+                text = choiceText,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Gold,
+                lineHeight = 21.sp
+            )
+            outcome.choiceDescription?.takeIf { it.isNotBlank() }?.let { desc ->
+                Text(
+                    text = desc,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = ParchmentDim,
+                    lineHeight = 17.sp
+                )
+            }
+        }
+
         outcome.outcome.resultTitle?.takeIf { it.isNotBlank() }?.let {
             Text(
                 text = it,

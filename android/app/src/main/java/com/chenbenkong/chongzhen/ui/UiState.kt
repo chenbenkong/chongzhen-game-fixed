@@ -71,6 +71,10 @@ data class ChoiceView(
 /** 结算结果展示视图。 */
 data class OutcomeView(
     val outcome: ChoiceOutcome,
+    /** 玩家刚点的选项文本；结算页只露这个，不重播事件正文。 */
+    val choiceText: String?,
+    /** 选项说明，可为空。 */
+    val choiceDescription: String?,
     val attrDeltas: Map<String, Double>,
     val stateDeltas: Map<String, Double>,
     val hiddenDeltas: Map<String, Double>,

@@ -97,6 +97,14 @@ async function main() {
   await page.waitForSelector('.mobile-hud', { timeout: 20000 })
   check('选此出身可进入牌桌', (await page.locator('.mobile-hud').count()) === 1)
 
+  if (SHOTS) {
+    await page.locator('.mobile-choices-fab').click()
+    await page.locator('button.choice-card:not(.locked)').first().click()
+    await page.waitForSelector('.mobile-event-host .result-section', { timeout: 10000 })
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: `${OUT_DIR}手机网页版-结算-924x426.png` })
+  }
+
   console.log('\n' + '='.repeat(56))
   if (failures === 0) {
     console.log('手机版开局三屏通过：紧凑、详情收起、无横条、可选出身')

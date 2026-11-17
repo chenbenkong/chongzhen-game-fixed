@@ -91,9 +91,18 @@
   说明只显示当前选中一条；标题 36sp→28sp，外边距 28dp→18/10dp，按钮与图鉴入口同宽居中；
   存档预览压成单行 11sp。
 - 校验：`testDebugUnitTest` **12 个套件 / 53 个用例 / 0 失败**；`assembleDebug` 成功；
-  新 APK **11,471,761 字节**，SHA-256
-  `5755C44C3581843D4E05FB2B44658128B63F4E4C395FED216B382E029FC55CD9`。
+  新 APK **11,472,743 字节**，SHA-256
+  `94EA8D28F2DC9B82B5328A82B2A7F3E96DA82C8E091B55DA46BB727848E934D7`。
 - 未验证：本机无真机/AVD，上述三屏的真机触控与字形仍只能静态编译通过，不能宣称已看过实机效果。
+
+## 结算只显示已选选项与回音（2026-11-17）
+
+- `OutcomeView` 新增 `choiceText / choiceDescription`，由 `GameController` 用
+  `lastOutcome.choiceId` 从当前事件选项中取回，不另存一份文案。
+- `EventColumn` 在 `state.outcomeVisible && state.outcome != null` 时**不再渲染 `EventCard`**，
+  直接把 `OutcomePanel` 拉满中栏；事件正文、人物引语、处境提示和事件标题都不再重播。
+- `OutcomePanel` 顶部显示「你 选 了」+ 选项文本 + 选项说明，其后是结果评价、属性/状态增减、
+  票签与回音，最后是「继 续」。`testDebugUnitTest` 12 套件 / 53 用例 / 0 失败。
 
 ## 构建
 
@@ -125,7 +134,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,471,761 字节**，SHA-256 `5755C44C3581843D4E05FB2B44658128B63F4E4C395FED216B382E029FC55CD9`，
+- `assembleDebug`：`app-debug.apk` **11,472,743 字节**，SHA-256 `94EA8D28F2DC9B82B5328A82B2A7F3E96DA82C8E091B55DA46BB727848E934D7`，
   复制到 `release/崇祯直聘-0.5.0-debug.apk`；
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；

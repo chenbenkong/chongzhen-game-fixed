@@ -208,6 +208,11 @@ async function main() {
       await page.waitForTimeout(900)
       const resultSections = await page.locator('.mobile-event-host .result-section').count()
       check('抉择后出现结算区', resultSections > 0, `result-sections=${resultSections}`)
+      check('结算不再重播事件正文', !(await page.locator('.mobile-event-host .narrative-section').isVisible()))
+      check('结算不再重播事件标题', !(await page.locator('.mobile-event-host .event-header').isVisible()))
+      check('结算保留已选选项', await page.locator('.mobile-event-host .selected-choice').isVisible())
+      check('结算保留回音', (await page.locator('.mobile-event-host .echo-box').count()) > 0)
+      await page.screenshot({ path: `${SHOT_DIR}/mobile-web-result-844x390.png`, fullPage: false })
     }
 
     await page.screenshot({ path: `${SHOT_DIR}/minimal-844x390.png`, fullPage: false })

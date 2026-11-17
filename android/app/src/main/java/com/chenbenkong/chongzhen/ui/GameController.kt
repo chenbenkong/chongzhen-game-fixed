@@ -378,8 +378,11 @@ class GameController(
         }
 
         val outcomeView = eng.lastOutcome?.let { outcome ->
+            val chosenChoice = event?.choices?.firstOrNull { it.id == outcome.choiceId }
             OutcomeView(
                 outcome = outcome,
+                choiceText = chosenChoice?.text,
+                choiceDescription = chosenChoice?.description,
                 attrDeltas = outcome.applied.attributes,
                 stateDeltas = outcome.applied.gameState,
                 hiddenDeltas = outcome.applied.hidden,
