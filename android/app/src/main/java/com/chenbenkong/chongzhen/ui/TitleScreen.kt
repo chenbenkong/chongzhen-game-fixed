@@ -79,7 +79,8 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             PrimaryButton(text = "开始仕途", onClick = { viewModel.beginNewGame() })
             GhostButton(
@@ -87,6 +88,7 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
                 onClick = { viewModel.continueGame() },
                 enabled = state.savePreview != null
             )
+            BgmButton()
         }
 
         state.savePreview?.let { preview ->

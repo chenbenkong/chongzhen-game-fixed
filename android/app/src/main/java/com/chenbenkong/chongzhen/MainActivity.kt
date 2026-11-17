@@ -11,6 +11,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chenbenkong.chongzhen.audio.BgmPlayer
 import com.chenbenkong.chongzhen.ui.AppRoot
 import com.chenbenkong.chongzhen.ui.BoardViewModel
 
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
         // 运行时再声明一次强制横屏：不依赖系统「自动旋转」开关，
         // 也不管用户把手机锁在竖屏；Manifest 的 sensorLandscape 是第二道保险。
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        BgmPlayer.attach(this)
         enableEdgeToEdge()
         // 横屏游戏壳：隐藏系统状态栏/导航栏，避免顶部出现一条纯黑空栏；
         // 从屏幕边缘上滑可临时呼出系统栏，不把返回手势彻底堵死。
@@ -59,5 +61,16 @@ class MainActivity : ComponentActivity() {
         if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         }
+        BgmPlayer.onResume()
+    }
+
+    override fun onPause() {
+        BgmPlayer.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        if (isFinishing) BgmPlayer.release()
+        super.onDestroy()
     }
 }

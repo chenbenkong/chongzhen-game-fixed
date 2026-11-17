@@ -16,6 +16,8 @@
 | 路径 | 用途 |
 | --- | --- |
 | `android/app/src/main/assets/game-data.json` | 导出的事件/出身/官阶/难度/结局/边界规则（3.75 MB） |
+| `android/app/src/main/res/raw/bgm.mp3` | 原生 BGM，5,984,756 字节，MediaPlayer 循环播放 |
+| `…/audio/BgmPlayer.kt` | 原生音频：默认开、循环、音频焦点、前后台暂停/恢复、偏好持久化 |
 | `…/data/GameDataModels.kt`、`GameDataRepository.kt` | JSON 数据模型与启动时一次性解析缓存 |
 | `…/engine/GameEngine.kt` | 引擎门面：开局、发牌推进、抉择结算、投骰、撤销、边界判定、存档桥接 |
 | `…/engine/conditions/` | 条件求值：硬门（flags/origin/rank，不可投骰）优先，软门（体质/属性/态度/隐藏，可勉力一试）在后；结构化返回 `available / reasonCode / reasonText / difficulty / gap` |
@@ -65,8 +67,8 @@
   把牌桌转成竖屏；`sensorLandscape` 允许左右两个横屏方向。
 - **字号按手机收一档**：事件描述 12.5sp / 19sp 行高，引语 12.5sp / 18sp，选项正文
   12.5sp / 17sp，选项说明 12sp / 16sp；事件标题 22sp，侧栏标签 11.5sp。不再用桌面 14sp 正文硬塞。
-- **触控目标**：操作条按钮 ≥44dp，顶栏「操作」入口 ≥44dp，抉择卡 ≥46dp；横屏短边只有约 366dp，
-  不做 56dp 大按钮堆叠。
+- **触控目标**：操作条按钮 ≥44dp，顶栏「操作」入口 ≥44dp，标题屏 / 操作条音乐开关 44dp，
+  抉择卡 ≥46dp；横屏短边只有约 366dp，不做 56dp 大按钮堆叠。
 - **系统栏 / 挖孔**：`MainActivity` 隐藏 systemBars、`LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`；
   `ScreenRoot` 的渐变铺满整屏，内容再让 `safeDrawing`，横屏挖孔侧不会留黑竖条。
 - **视觉对齐 Web**：墨黑 `#0A0806` / 面板 `#161210→#0D0A08` / 旧金 `#C5A55A` / 宣纸 `#F5E6C8` /
@@ -91,8 +93,8 @@
   说明只显示当前选中一条；标题 36sp→28sp，外边距 28dp→18/10dp，按钮与图鉴入口同宽居中；
   存档预览压成单行 11sp。
 - 校验：`testDebugUnitTest` **12 个套件 / 53 个用例 / 0 失败**；`assembleDebug` 成功；
-  新 APK **11,472,743 字节**，SHA-256
-  `94EA8D28F2DC9B82B5328A82B2A7F3E96DA82C8E091B55DA46BB727848E934D7`。
+  新 APK **17,677,805 字节**，SHA-256
+  `D52552FD4B688ED7B9AA42A6F06FE767E9212C09048D52C11F35B577A921B94D`。
 - 未验证：本机无真机/AVD，上述三屏的真机触控与字形仍只能静态编译通过，不能宣称已看过实机效果。
 
 ## 结算只显示已选选项与回音（2026-11-17）
@@ -103,6 +105,23 @@
   直接把 `OutcomePanel` 拉满中栏；事件正文、人物引语、处境提示和事件标题都不再重播。
 - `OutcomePanel` 顶部显示「你 选 了」+ 选项文本 + 选项说明，其后是结果评价、属性/状态增减、
   票签与回音，最后是「继 续」。`testDebugUnitTest` 12 套件 / 53 用例 / 0 失败。
+
+## 原生 BGM（2026-11-17）
+
+原生 APK 之前**完全没有音频资源与播放器**，所以牌桌再完整也没有音乐。现在：
+
+- `public/bgm.mp3` 复制为 `android/app/src/main/res/raw/bgm.mp3`，由 `MediaPlayer` 读
+  `R.raw.bgm`，`isLooping=true`、音量 0.4；不联网、不申请 `INTERNET`。
+- `BgmPlayer.kt`：默认开；`attach()` 在 `MainActivity.onCreate` 初始化，`onResume()`
+  续播、`onPause()` 暂停并让出音频焦点、`isFinishing` 时 `release()`；申请
+  `AUDIOFOCUS_GAIN`（usage=game / contentType=music），临时丢失暂停、duck 时降音量。
+- `TitleScreen.kt` 的开始/继续按钮旁、`BoardScreen.kt` 底部操作条（默认收起）各放
+  一枚 44dp 的「乐 / 静」开关；开关写 `SharedPreferences("chongzhen").bgm_on`，
+  下次启动沿用，默认仍是开。
+- 代价：APK 从 11.47 MB 增到 **17,677,805 字节**（+5.98 MB 音频），仍无 WebView、
+  无网络依赖。
+- **未验证**：本机无真机/AVD，MediaPlayer 的真实出声、音频焦点在 ROM 上的表现
+  只能静态编译 + APK 资源在位确认，不能宣称实机听过。
 
 ## 构建
 
@@ -134,11 +153,12 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,472,743 字节**，SHA-256 `94EA8D28F2DC9B82B5328A82B2A7F3E96DA82C8E091B55DA46BB727848E934D7`，
+- `assembleDebug`：`app-debug.apk` **17,677,805 字节**，SHA-256 `D52552FD4B688ED7B9AA42A6F06FE767E9212C09048D52C11F35B577A921B94D`，
   复制到 `release/崇祯直聘-0.5.0-debug.apk`；
   debug v2 签名有效（`CN=Android Debug`）。
-- APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
-  APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
+- APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**、
+  `res/raw/bgm.mp3` **5,984,756 字节**在位；APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor /
+  Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
 - 未验证项：真机安装、启动、强制横屏实际表现、面板抽屉触控、操作条浮层与遮罩触控、存档落盘
   （本机 `adb devices` 为空，SDK 无 emulator/AVD）。
 

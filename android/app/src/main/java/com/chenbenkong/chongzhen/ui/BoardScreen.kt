@@ -883,6 +883,7 @@ private fun BottomBar(
                 viewModel.backToTitle()
             }
         )
+        BgmButton()
         GhostButton(
             text = "撤销",
             onClick = {
