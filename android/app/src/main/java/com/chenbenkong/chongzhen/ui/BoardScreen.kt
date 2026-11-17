@@ -54,7 +54,7 @@ import com.chenbenkong.chongzhen.ui.theme.ParchmentFaint
 //   底部操作栏（返回 / 撤销 / 存档 / 进下月）
 //   点「面板」→ 右侧抽屉，三个页签：能力 / 态度 / 卷宗
 //
-// 只有 ≥1000dp 的平板 / 桌面才常驻左右栏；手机寸土寸金，
+// 只有 ≥600dp 高的平板 / 桌面才常驻左右栏；手机寸土寸金，
 // 默认把侧栏收起来，事件正文拿回整块宽度。
 // 视觉仍按 Web 版 theme.css：墨黑渐变、宋体、旧金细线、方角面板。
 // ============================================================================
@@ -220,9 +220,9 @@ private fun MainArea(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier) {
-        // 手机 / 小屏一律单栏，侧栏从顶部「面板」按需打开。
-        // 只有 ≥1000dp 的平板或桌面才常驻三栏，避免 844/924dp 上把事件区挤窄。
-        if (maxWidth >= 1000.dp) {
+        // 用横屏短边（高度）区分手机与平板：手机 366–426dp 一律单栏，
+        // 侧栏从顶部「面板」按需打开；≥600dp 高的平板/桌面才常驻三栏。
+        if (maxHeight >= 600.dp) {
             val sideWidth = (maxWidth * 0.21f).coerceIn(170.dp, 230.dp)
             Row(
                 modifier = Modifier.fillMaxSize(),

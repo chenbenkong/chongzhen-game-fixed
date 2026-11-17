@@ -48,7 +48,7 @@
 - **按需面板**：顶栏只留「国势 + 面板」；点「面板」从右侧弹出抽屉，页签为
   **能力 / 态度 / 卷宗**。面板宽为屏宽 64%，点遮罩、关闭按钮或系统返回键都会收起。
   `卷宗` 页签含票签、履历、结局图鉴；不再把三栏信息常驻在牌桌上。
-- **三栏只给大屏**：≥1000dp 的平板/桌面仍按 Web 三栏骨架显示，侧栏宽 `maxWidth × 0.21`
+- **三栏只给大屏**：≥600dp 高的平板/桌面仍按 Web 三栏骨架显示，侧栏宽 `maxWidth × 0.21`
   夹在 `170–230dp`；手机不再触发。
 - **强横屏**：Manifest `android:screenOrientation="sensorLandscape"`，
   `MainActivity.onCreate` / `onResume` 再设 `SCREEN_ORIENTATION_SENSOR_LANDSCAPE`。
@@ -96,7 +96,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- clean 后 `assembleDebug`：`app-debug.apk` **11,459,609 字节**，debug v2 签名有效（`CN=Android Debug`）。
+- clean 后 `assembleDebug`：`app-debug.apk` **11,459,603 字节**，debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
 - 未验证项：真机安装、启动、强制横屏实际表现、面板抽屉触控与存档落盘（本机 `adb devices` 为空，SDK 无 emulator/AVD）。
