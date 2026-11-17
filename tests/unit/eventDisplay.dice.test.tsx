@@ -347,6 +347,33 @@ describe('EventDisplay 勉力一试（投骰）', () => {
 
     expect(onChoice).toHaveBeenCalledTimes(1)
   })
+
+  it('骰子失败的自动回音按选项意图生成：上疏请饷不会被写成亲自出战', () => {
+    // 旧生成器按事件描述里的“军/兵/战/守”分类，一条“上疏请拨辽东军饷”的失败回音
+    // 会被套进“你自恃能武，执意出战 / 兵卒折损数十”，与当前事件正面冲突。
+    const choice = makeDiceChoice(
+      'c1',
+      '【上疏请饷】上疏请拨辽东军饷，宁锦不可弃',
+      '请饷·结果'
+    )
+    const onChoice = vi.fn()
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0) // 骰出 1 点，必败
+    try {
+      render(<EventDisplay {...baseProps(makeDiceEvent('ev-fail-intent', choice))} onChoice={onChoice} />)
+      fireEvent.click(screen.getByLabelText(`勉力一试：${choice.text}`))
+      fireEvent.click(screen.getByLabelText('投掷骰子'))
+      settleTimers()
+
+      expect(onChoice).toHaveBeenCalledTimes(1)
+      const applied = onChoice.mock.calls[0][0] as EventChoice
+      const echo = applied.result?.echo || ''
+      expect(echo).toContain('话递不上去')
+      expect(echo).not.toContain('亲自出战')
+      expect(echo).not.toContain('兵卒折损')
+    } finally {
+      randomSpy.mockRestore()
+    }
+  })
 })
 
 /**
