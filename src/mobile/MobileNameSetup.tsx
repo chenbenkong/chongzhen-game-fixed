@@ -87,11 +87,16 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
 
   return (
     <div className="mobile-name">
-      <h1 className="mobile-name__title">请 赐 名 字</h1>
+      <div className="mobile-name__head">
+        <h1 className="mobile-name__title">请 赐 名 字</h1>
+        <button type="button" className="mobile-btn mobile-btn--ghost mobile-name__back" onClick={onBack}>
+          ← 返回
+        </button>
+      </div>
       <p className="mobile-name__quote">「名以正体，字以表德。」</p>
 
       <div className="mobile-name__form">
-        <div className="mobile-name__row">
+        <div className="mobile-name__row mobile-name__row--identity">
           <label className="mobile-field">
             <span className="mobile-field__label">姓</span>
             <input
@@ -112,11 +117,8 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
               onChange={e => setGivenName(e.target.value)}
             />
           </label>
-        </div>
-
-        <div className="mobile-name__row">
           <label className="mobile-field">
-            <span className="mobile-field__label">字 <em>（按名生成，可改）</em></span>
+            <span className="mobile-field__label">字 <em>可改</em></span>
             <input
               type="text"
               value={courtesyName}
@@ -129,7 +131,7 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
             />
           </label>
           <label className="mobile-field">
-            <span className="mobile-field__label">年岁 <em>（16-60）</em></span>
+            <span className="mobile-field__label">年岁 <em>16–60</em></span>
             <input
               type="text"
               inputMode="numeric"
@@ -141,14 +143,14 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
           </label>
         </div>
 
-        <label className="mobile-field">
-          <span className="mobile-field__label">籍贯 <em>（如：南直隶苏州府吴县）</em></span>
+        <label className="mobile-field mobile-field--hometown">
+          <span className="mobile-field__label">籍贯</span>
           <div className="mobile-name__hometown-wrap">
             <input
               type="text"
               value={hometown}
               maxLength={14}
-              placeholder="X省X府X县"
+              placeholder="如：南直隶苏州府吴县"
               onChange={e => setHometown(e.target.value)}
             />
             <button type="button" className="mobile-btn mobile-btn--ghost" onClick={() => setHometown(randomHometown())}>
@@ -161,19 +163,6 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
           <div className="mobile-name__hint" role="status">还缺：{missingFields.join('、')}</div>
         )}
 
-        <div className="mobile-name__preview">
-          {fullName ? (
-            <>
-              阁下：{fullName}
-              {courtesyName && `，字${courtesyName}`}
-              {ageValid && `，年${age}`}
-              {hometown && `，${hometown}人`}
-            </>
-          ) : (
-            '请输入姓名'
-          )}
-        </div>
-
         <div className="mobile-name__actions">
           <button type="button" className="mobile-btn" onClick={handleRandom}>随 机 取 名</button>
           <button
@@ -185,7 +174,6 @@ export default function MobileNameSetup({ onConfirm, onBack }: MobileNameSetupPr
             定 此 名 字
           </button>
         </div>
-        <button type="button" className="mobile-btn mobile-btn--ghost" onClick={onBack}>← 返回</button>
       </div>
     </div>
   )

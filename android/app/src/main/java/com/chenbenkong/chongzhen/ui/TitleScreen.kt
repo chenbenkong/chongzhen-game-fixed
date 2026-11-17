@@ -52,13 +52,13 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(28.dp),
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = "崇祯·宦海浮沉",
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = Gold
         )
@@ -74,13 +74,12 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
         )
         Text(
             text = "「名以正体，字以表德。」",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.labelMedium,
             color = ParchmentDim
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(top = 8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             PrimaryButton(text = "开始仕途", onClick = { viewModel.beginNewGame() })
             GhostButton(
@@ -94,29 +93,36 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
             Text(
                 text = "存档：${preview.playerName} · ${toMingEraYear(preview.year)}${monthName(preview.month)} · " +
                     "${preview.rank} · ${preview.age}岁 · ${preview.originName}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = ParchmentDim
+                style = MaterialTheme.typography.labelSmall,
+                color = ParchmentDim,
+                maxLines = 1
             )
         }
 
-        // 难度三选（文案读 data.difficulties）
+        // 难度三选横向排列，说明只显示当前选中一条，不再每个难度各占两行
         data?.let { gameData ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            val selected = gameData.difficulties.firstOrNull { it.id == state.difficultyId }
+            Row(
+                modifier = Modifier.fillMaxWidth(0.7f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                SectionLabel("难度")
                 gameData.difficulties.forEach { diff ->
-                    val selected = state.difficultyId == diff.id
-                    DifficultyOption(
+                    DifficultyChip(
                         name = diff.name.ifBlank { diff.id },
-                        description = diff.description,
-                        selected = selected,
-                        onClick = { viewModel.setDifficulty(diff.id) }
+                        selected = state.difficultyId == diff.id,
+                        onClick = { viewModel.setDifficulty(diff.id) },
+                        modifier = Modifier.weight(1f)
                     )
                 }
+            }
+            if (selected?.description?.isNotBlank() == true) {
+                Text(
+                    text = selected.description,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ParchmentDim,
+                    maxLines = 1
+                )
             }
         }
 
@@ -135,57 +141,35 @@ fun TitleScreen(state: UiState, viewModel: BoardViewModel) {
 }
 
 @Composable
-private fun DifficultyOption(
+private fun DifficultyChip(
     name: String,
-    description: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
+    Box(
+        modifier = modifier
             .heightIn(min = 44.dp)
             .clip(RoundedCornerShape(3.dp))
             .background(
-                if (selected) {
-                    Brush.verticalGradient(listOf(Color(0xFF221A10), CardInkDeep))
-                } else {
-                    Brush.verticalGradient(listOf(CardInk, CardInkDeep))
-                }
+                if (selected) Gold.copy(alpha = 0.16f) else CardInkDeep
             )
             .border(
                 1.dp,
-                if (selected) GoldDark else PanelBorder,
+                if (selected) Gold else PanelBorder,
                 RoundedCornerShape(3.dp)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .width(14.dp)
-                .heightIn(min = 14.dp)
-                .clip(RoundedCornerShape(1.dp))
-                .border(1.dp, if (selected) Gold else PanelBorder, RoundedCornerShape(1.dp))
-                .background(if (selected) Gold.copy(alpha = 0.35f) else Color.Transparent)
+        Text(
+            text = name,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (selected) Gold else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
         )
-        Column {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (selected) Gold else MaterialTheme.colorScheme.onSurface
-            )
-            if (description.isNotBlank()) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = ParchmentDim
-                )
-            }
-        }
     }
 }
 

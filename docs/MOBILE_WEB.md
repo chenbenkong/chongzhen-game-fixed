@@ -16,11 +16,12 @@
 | `src/mobile/MobileShell.tsx` | 横屏壳：竖屏遮罩、首次手势尝试全屏+`screen.orientation.lock('landscape')`（try/catch，失败给降级文案，不假装成功）、`body.mobile-applied` 作用域开关 |
 | `src/mobile/MobileApp.tsx` | 阶段机：标题 → 取名 → 出身 → 牌桌；存档/难度/成就口径复用既有工具 |
 | `src/mobile/MobileTitle.tsx` | 标题、开始、继续上次、难度三选 |
-| `src/mobile/MobileNameSetup.tsx` | 姓/名/字/年岁/籍贯；字与籍贯复用 `utils/naming.ts`，不复制生成规则 |
-| `src/mobile/MobileOriginSetup.tsx` | 出身卡网格，数据复用 `data/origins` |
+| `src/mobile/MobileNameSetup.tsx` | 姓/名/字/年岁同一排，籍贯 + 随机抽同排，两个按钮同排；不重复预览、返回键移到标题行 |
+| `src/mobile/MobileOriginSetup.tsx` | 出身卡网格；默认只露名称/官阶/「详情·选此」，背景、标签、玩法与五围默认收起，属性用紧凑值块 |
 | `src/mobile/MobileBoard.tsx` | 牌桌：顶部 HUD（六项朝堂状态 + 五项个人能力第二排 + 可开合人物面板）+ 中央事件区（**复用 `EventDisplay`**）+ 默认收起的底部操作条 + 结局/死亡/回顾宿主 |
 | `src/mobile/mobile.css` | 全部选择器限定在 `.mobile-shell` / `.mobile-board` / `body.mobile-applied` 下，无全局覆盖 |
 | `tests/mobile-web.mjs` | 入口四规则 + 牌桌最小可用性的浏览器冒烟（退出码即结论） |
+| `tests/mobile-onboarding.mjs` | 标题/取名/出身三屏的几何断言 + 四张开局截图 |
 
 ## 复用与边界
 
@@ -70,6 +71,23 @@
   五项个人能力，数值直接取 `character.attributes`，与「圣眷」左对齐。原先身份栏的
   「财帛 N · 体质 N」文字速览已删除，避免重复占行。
 
+## 开局三屏：取名 / 出身 / 标题紧凑化（2026-11-17）
+
+- **取名屏**：标题「请赐名字」与右上角「← 返回」同排，不再单独占一行；
+  姓 / 名 / 字 / 年岁四字段同一排（四列 grid），籍贯与「随机抽」同排，两个操作按钮同排。
+  删掉重复的人物预览块，只保留缺项提示；输入框 38px、按钮 44px，`max-height:480px`
+  时隐藏引语。924×426 实测 `.mobile-name` 的 `scrollHeight=clientHeight=426`，一屏填完。
+- **出身屏**：8 张卡 `repeat(auto-fill,minmax(190px,1fr))`，收起态只显示名称、官阶/功名和
+  「详情 / 选此出身」两个按钮；背景、标签、玩法风格、初始五围全部放进 `.mobile-origin-card__details`，
+  默认隐藏。点「详情」才展开，`grid align-items:start` 保证别的卡不被撑高。
+  属性改成「名目 + 数值」chip，两列紧凑排；原来的 `.mobile-origin-attr__bar/__fill` 横条已删。
+  924×426 实测 8 张卡收起态最高 85px，整屏 `scrollHeight=clientHeight=426`，一屏看完。
+- **标题屏**：难度三选从竖排三条改成横排三枚 44px 选项，说明只显示当前选中的一条；
+  主操作按钮横向排列，标题降到 30px、间距收紧。924×426 实测一屏装下。
+- **测试脚本**：新增 `tests/mobile-onboarding.mjs`，覆盖标题一屏、取名四字段一排且无重复预览、
+  出身详情默认 0 展开、无属性横条、出身卡收起态 ≤100px、展开后五围 5 项、点「选此出身」进牌桌，
+  并输出四张 `release/手机网页版-标题/取名/出身/出身详情-924x426.png`。
+
 ## 强制横屏（2026-11-17）
 
 - **PWA manifest**：`public/manifest.webmanifest` 的 `orientation` 已从 `any` 改为 `landscape`；
@@ -93,6 +111,8 @@
 - 底部操作条默认不出现；顶部 HUD 右侧有「☰ 操作」入口 92.5×44.0px（≥44）；点开后操作条
   在视口内（y=326.0 + h=56.0 ≈ 390），5 个按钮最小边 44.0px；点「×」后操作条消失；
 - 正文 `.narrative-paragraph` 实测 13.0px（≤14px）；
+- **开局三屏（924×426）**：标题/取名/出身三屏均 `scrollHeight=clientHeight`，取名四字段同一排、
+  无重复预览；出身详情默认 0 展开、无属性横条、收起态最高 85px；展开后五围齐全；点「选此出身」进牌桌；
 - 可点抉择并出结算；
 - 390×844 竖屏：只出"请旋转手机"遮罩，不渲染牌桌交互；
 - `?mobile=1` + 1440×900：仍渲染手机版（强制预览生效）；无参数 + 1440×900：仍走桌面原版；
@@ -110,4 +130,5 @@
 node .\node_modules\vite\bin\vite.js build
 node .\node_modules\vite\bin\vite.js preview --port 4180
 $env:BASE_URL="http://localhost:4180/"; node tests\mobile-web.mjs
+$env:BASE_URL="http://localhost:4180/"; node tests\mobile-onboarding.mjs
 ```

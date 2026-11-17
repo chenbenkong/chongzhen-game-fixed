@@ -1,6 +1,7 @@
 package com.chenbenkong.chongzhen.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,11 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 import com.chenbenkong.chongzhen.ui.theme.Gold
-import com.chenbenkong.chongzhen.ui.theme.ParchmentDim
 
 // ============================================================================
-// 取名屏：姓 / 名 / 字 / 年岁 / 籍贯，字段与 Web 版一致。
-// 字随名自动生成（可手改，手改后停止自动覆盖）；籍贯可随机抽。
+// 取名屏：姓 / 名 / 字 / 年岁同一排，籍贯与随机抽同排，按钮同排。
+// 不再放重复预览、不再占一整行返回键；整屏一屏填完。
 // ============================================================================
 
 @Composable
@@ -38,25 +38,28 @@ fun NameSetupScreen(state: UiState, viewModel: BoardViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(28.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(7.dp)
     ) {
-        Text(
-            text = "请 赐 名 字",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = "「名以正体，字以表德。」",
-            style = MaterialTheme.typography.bodyLarge,
-            color = ParchmentDim
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "请 赐 名 字",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Gold,
+                modifier = Modifier.align(Alignment.Center)
+            )
+            GhostButton(
+                text = "← 返回",
+                onClick = { viewModel.backToTitle() },
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
 
         Row(
-            modifier = Modifier.fillMaxWidth(0.8f),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
                 value = draft.surname,
@@ -80,19 +83,13 @@ fun NameSetupScreen(state: UiState, viewModel: BoardViewModel) {
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(0.8f),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
             OutlinedTextField(
                 value = draft.courtesyName,
                 onValueChange = { v ->
                     missingHint = null
                     viewModel.updateDraft { it.copy(courtesyName = v.take(2), autoCourtesy = false) }
                 },
-                label = { Text("字（按名生成，可改）") },
+                label = { Text("字（可改）") },
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )
@@ -103,15 +100,15 @@ fun NameSetupScreen(state: UiState, viewModel: BoardViewModel) {
                     val cleaned = v.filter { it.isDigit() }.take(2)
                     viewModel.updateDraft { it.copy(ageText = cleaned) }
                 },
-                label = { Text("年岁（16-60）") },
+                label = { Text("年岁 16-60") },
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(0.8f),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
@@ -127,33 +124,34 @@ fun NameSetupScreen(state: UiState, viewModel: BoardViewModel) {
             GhostButton(text = "随机抽", onClick = { viewModel.randomizeHometown() })
         }
 
-        // 预览
-        val preview = when {
-            draft.fullName.isBlank() -> "请输入姓名"
-            else -> buildString {
-                append("阁下：").append(draft.fullName)
-                if (draft.courtesyName.isNotBlank()) append("，字").append(draft.courtesyName)
-                if (draft.age in 16..60) append("，年").append(draft.age)
-                if (draft.hometown.isNotBlank()) append("，").append(draft.hometown).append("人")
-            }
-        }
-        Text(text = preview, style = MaterialTheme.typography.bodyLarge, color = Gold)
-
         missingHint?.let {
-            Text(text = it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            GhostButton(text = "随机取名", onClick = {
-                missingHint = null
-                viewModel.randomizeName()
-            })
-            PrimaryButton(text = "定此名字", onClick = {
-                val missing = viewModel.confirmName()
-                if (missing != null) missingHint = missing
-            })
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            GhostButton(
+                text = "随机取名",
+                onClick = {
+                    missingHint = null
+                    viewModel.randomizeName()
+                },
+                modifier = Modifier.weight(1f)
+            )
+            PrimaryButton(
+                text = "定此名字",
+                onClick = {
+                    val missing = viewModel.confirmName()
+                    if (missing != null) missingHint = missing
+                },
+                modifier = Modifier.weight(1f)
+            )
         }
-
-        GhostButton(text = "← 返回", onClick = { viewModel.backToTitle() })
     }
 }

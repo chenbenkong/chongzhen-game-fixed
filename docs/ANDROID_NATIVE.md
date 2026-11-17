@@ -77,6 +77,24 @@
   「锁定当前应用方向」这类系统级开关，应用无法绕过，只能由用户关闭该开关。原生 APK 本身不做任何
   依赖系统设置的降级。
 
+## 开局三屏紧凑化（2026-11-17）
+
+- `NameSetupScreen.kt`：标题「请赐名字」与右上角「← 返回」同一 `Box` 行；姓/名/字/年岁四个
+  `OutlinedTextField` 同一 `Row`（各 `weight(1f)`）；籍贯与「随机抽」同一行；「随机取名 / 定此名字」
+  同一行。删除重复的人物预览块和底部返回键；根布局 `verticalScroll` 仅作窄屏兜底，844/924dp
+  宽、366–390dp 高可一屏填完。
+- `OriginSelectScreen.kt`：不再用 `LazyVerticalGrid`（同排最高的卡会把其余卡拉成整行高）。
+  改为 `Column(verticalScroll)` + 每 4 张一 `Row`，卡片 `weight(1f)` 按自身内容取高；8 张卡默认
+  只露名称、官阶和「详情 / 选此」两个 44dp 按钮。背景、标签、玩法风格、初始五围收进
+  `if (expanded)` 的详情区；五围是 3 列紧凑值块（名目 + 数值），`AttrRow` 横条已删。
+- `TitleScreen.kt`：难度三选从竖排三张带说明的卡改为横排三枚 44dp `DifficultyChip`，
+  说明只显示当前选中一条；标题 36sp→28sp，外边距 28dp→18/10dp，按钮与图鉴入口同宽居中；
+  存档预览压成单行 11sp。
+- 校验：`testDebugUnitTest` **12 个套件 / 53 个用例 / 0 失败**；`assembleDebug` 成功；
+  新 APK **11,471,761 字节**，SHA-256
+  `5755C44C3581843D4E05FB2B44658128B63F4E4C395FED216B382E029FC55CD9`。
+- 未验证：本机无真机/AVD，上述三屏的真机触控与字形仍只能静态编译通过，不能宣称已看过实机效果。
+
 ## 构建
 
 ```powershell
@@ -107,7 +125,8 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,471,499 字节**，SHA-256 `6604B35DD3E79718BF869BDFA669F9A78C01D51CE7814735EEACCC7C5D08372A`，
+- `assembleDebug`：`app-debug.apk` **11,471,761 字节**，SHA-256 `5755C44C3581843D4E05FB2B44658128B63F4E4C395FED216B382E029FC55CD9`，
+  复制到 `release/崇祯直聘-0.5.0-debug.apk`；
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。
