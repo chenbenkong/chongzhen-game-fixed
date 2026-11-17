@@ -308,22 +308,17 @@ private fun AttributeSidebar(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         PanelTitle("个人能力")
-        listOf("财帛", "文韬", "理政", "武略", "体质").forEach { key ->
-            Meter(
-                label = key,
-                value = board.attributes[key] ?: 0.0,
-                compact = true
-            )
-        }
+        CompactStatGrid(
+            items = listOf("财帛", "文韬", "理政", "武略", "体质")
+                .map { it to (board.attributes[it] ?: 0.0) }
+        )
 
         Spacer(Modifier.height(4.dp))
         PanelTitle("隐藏属性")
-        listOf("道德值", "欲望值", "野心值", "机敏值", "忠诚值").forEach { key ->
-            val value = board.hidden[key]
-            if (value != null) {
-                Meter(label = key, value = value, compact = true)
-            }
-        }
+        CompactStatGrid(
+            items = listOf("道德值", "欲望值", "野心值", "机敏值", "忠诚值")
+                .mapNotNull { key -> board.hidden[key]?.let { key to it } }
+        )
 
         Spacer(Modifier.height(4.dp))
         PanelTitle("官职")
@@ -343,6 +338,63 @@ private fun AttributeSidebar(
             text = "政绩分 ${board.meritScore.toInt()}",
             style = MaterialTheme.typography.labelMedium,
             color = ParchmentFaint
+        )
+    }
+}
+
+/** 紧凑属性格子：每行三格，只留「名目 + 数值」，不画横条。 */
+@Composable
+private fun CompactStatGrid(
+    items: List<Pair<String, Double>>,
+    columns: Int = 3
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        items.chunked(columns).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                row.forEach { (label, value) ->
+                    CompactStatCell(label, value, Modifier.weight(1f))
+                }
+                repeat(columns - row.size) {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactStatCell(label: String, value: Double, modifier: Modifier = Modifier) {
+    val valueColor = when {
+        label == "国势" && value < 35 -> CinnabarBright
+        value <= 10 -> CinnabarBright
+        value <= 25 -> GoldDark
+        else -> Gold
+    }
+    Row(
+        modifier = modifier
+            .clip(PanelShape)
+            .border(1.dp, PanelBorder, PanelShape)
+            .background(CardInkDeep)
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = ParchmentDim,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value.toInt().toString(),
+            style = MaterialTheme.typography.labelLarge,
+            color = valueColor,
+            maxLines = 1
         )
     }
 }
@@ -368,25 +420,10 @@ private fun StatusSidebar(
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         PanelTitle("五方态度")
-        listOf("圣眷", "中官", "清议", "士绅", "民望").forEach { key ->
-            Meter(label = key, value = board.court[key] ?: 0.0, compact = true)
-        }
-
-        Spacer(Modifier.height(4.dp))
-        PanelTitle("国势")
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("国势", style = MaterialTheme.typography.labelLarge, color = ParchmentDim)
-            Text(
-                text = (board.court["国势"] ?: 0.0).toInt().toString(),
-                style = MaterialTheme.typography.titleMedium,
-                color = if ((board.court["国势"] ?: 0.0) < 35) CinnabarBright else Gold
-            )
-        }
-        Meter(label = "", value = board.court["国势"] ?: 0.0, showLabel = false, compact = true)
+        CompactStatGrid(
+            items = listOf("圣眷", "中官", "清议", "士绅", "民望", "国势")
+                .map { it to (board.court[it] ?: 0.0) }
+        )
 
         Spacer(Modifier.height(4.dp))
         PanelTitle("政绩评定")

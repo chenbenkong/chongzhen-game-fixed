@@ -724,20 +724,141 @@ body.mobile-applied textarea {
   background: transparent;
 }
 .mobile-shell .mobile-panel__body .section-title {
-  font-size: 0.82rem;
-  letter-spacing: 2px;
-}
-.mobile-shell .mobile-panel__body .attr-name {
-  width: 40px;
   font-size: 0.78rem;
+  letter-spacing: 1.5px;
+  text-align: left;
+  margin: 0 0 5px;
+  padding: 0 0 3px;
+}
+.mobile-shell .mobile-panel__body .section-title::after {
+  left: 0;
+  transform: none;
+  width: 28px;
+}
+.mobile-shell .mobile-panel__body .panel-section {
+  margin-bottom: 8px;
+}
+.mobile-shell .mobile-panel__body .panel-section.hidden-attrs {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(197, 165, 90, 0.14);
+}
+
+/* 属性面板改成紧凑格子，彻底去掉横条 */
+.mobile-shell .mobile-panel__body .attr-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.mobile-shell .mobile-panel__body .attr-list.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mobile-shell .mobile-panel__body .attr-item,
+.mobile-shell .mobile-panel__body .attr-item.small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 3px 6px;
+  border: 1px solid rgba(197, 165, 90, 0.12);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.mobile-shell .mobile-panel__body .attr-item.attr-danger,
+.mobile-shell .mobile-panel__body .attr-item.attr-critical {
+  border-color: rgba(201, 74, 32, 0.45);
+  background: rgba(201, 74, 32, 0.12);
+}
+.mobile-shell .mobile-panel__body .attr-bar-wrap {
+  display: none;
+}
+.mobile-shell .mobile-panel__body .attr-name,
+.mobile-shell .mobile-panel__body .attr-item.small .attr-name {
+  width: auto;
+  flex: 0 0 auto;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 .mobile-shell .mobile-panel__body .attr-num {
-  width: 26px;
-  font-size: 0.8rem;
+  width: auto;
+  margin-left: auto;
+  font-size: 13px;
+  line-height: 1.2;
 }
 .mobile-shell .mobile-panel__body .attr-hint {
-  width: 36px;
-  font-size: 0.74rem;
+  width: auto;
+  min-width: 0;
+  margin-left: 2px;
+  font-size: 11px;
+}
+
+/* 态度面板同样改格子，国势只留数值，不画长条 */
+.mobile-shell .mobile-panel__body .status-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.mobile-shell .mobile-panel__body .status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid rgba(197, 165, 90, 0.12);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.mobile-shell .mobile-panel__body .status-item.status-danger,
+.mobile-shell .mobile-panel__body .status-item.status-critical {
+  border-color: rgba(201, 74, 32, 0.45);
+  background: rgba(201, 74, 32, 0.12);
+}
+.mobile-shell .mobile-panel__body .status-bar-wrap {
+  display: none;
+}
+.mobile-shell .mobile-panel__body .status-name {
+  min-width: 0;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.mobile-shell .mobile-panel__body .status-num {
+  min-width: 0;
+  margin-left: auto;
+  font-size: 13px;
+}
+.mobile-shell .mobile-panel__body .status-hint {
+  min-width: 0;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.mobile-shell .mobile-panel__body .national-fortune-bar {
+  margin-top: 6px;
+  padding: 4px 7px;
+  border: 1px solid rgba(197, 165, 90, 0.18);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.mobile-shell .mobile-panel__body .fortune-header {
+  margin: 0;
+}
+.mobile-shell .mobile-panel__body .fortune-title {
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.mobile-shell .mobile-panel__body .fortune-title::before {
+  display: none;
+}
+.mobile-shell .mobile-panel__body .fortune-value {
+  font-size: 13px;
+  padding: 0;
+  background: none;
+}
+.mobile-shell .mobile-panel__body .fortune-track,
+.mobile-shell .mobile-panel__body .fortune-labels {
+  display: none;
 }
 .mobile-shell .mobile-records {
   display: flex;

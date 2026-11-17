@@ -47,6 +47,8 @@
   上不再把能力栏、态度栏硬挤在事件两侧，事件卡独占整块宽度。
 - **按需面板**：顶栏只留「国势 + 面板」；点「面板」从右侧弹出抽屉，页签为
   **能力 / 态度 / 卷宗**。面板宽为屏宽 64%，点遮罩、关闭按钮或系统返回键都会收起。
+  **能力/态度页的属性改为三列紧凑格**，每格只显示名目与数值，不再画横条 Meter；
+  五能力、五隐藏、五方态度 + 国势各占两行，基本一屏看完。
   `卷宗` 页签含票签、履历、结局图鉴；不再把三栏信息常驻在牌桌上。
 - **财帛/体质速览**：顶栏「国势」左侧直接显示「财帛 N · 体质 N」；完整五能力与隐藏属性仍在
   「面板 → 能力」页。
@@ -105,7 +107,7 @@
 ## 本轮实测（2026-11-17）
 
 - `testDebugUnitTest`：**12 个套件 / 53 个用例 / 0 失败**（含 `DiceBranchTest` 的路线硬门、`BoardControllerTest` 的开局→抉择→进下月→存档读档全链路）。
-- `assembleDebug`：`app-debug.apk` **11,468,326 字节**，SHA-256 `B14B23CBA6D0568A789DA2BABD494D8FE4A24B532A512B3D9E8EC763AFA3A1FA`，
+- `assembleDebug`：`app-debug.apk` **11,471,499 字节**，SHA-256 `6604B35DD3E79718BF869BDFA669F9A78C01D51CE7814735EEACCC7C5D08372A`，
   debug v2 签名有效（`CN=Android Debug`）。
 - APK 静态复核：`screenOrientation=0x6`（sensorLandscape）；`assets/game-data.json` **3,927,111 字节**在位；
   APK 内没有 HTML/网页资源；源码里没有 WebView / Capacitor / Cordova / TWA / `loadUrl` 引用；无 `INTERNET`。

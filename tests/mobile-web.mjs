@@ -138,9 +138,22 @@ async function main() {
       panelAttrs.join('/'))
     check('面板含隐藏属性', ['道德值', '欲望值', '野心值', '机敏值', '忠诚值'].every(k => panelAttrs.includes(k)),
       panelAttrs.join('/'))
+    check('能力页不再画属性横条', (await page.locator('.mobile-panel .attr-bar-wrap:visible').count()) === 0)
+    check('能力页十项属性紧凑成格', (await page.locator('.mobile-panel .attr-item').count()) === 10,
+      `count=${await page.locator('.mobile-panel .attr-item').count()}`)
+    const attrHeights = await page.locator('.mobile-panel .attr-item').evaluateAll(els => els.map(e => e.getBoundingClientRect().height))
+    check('属性单格高度 ≤32px', attrHeights.every(h => h <= 32), `max=${Math.max(...attrHeights)}`)
+    const attrBodyFit = await page.locator('.mobile-panel__body').evaluate(el => ({
+      scroll: el.scrollHeight,
+      client: el.clientHeight
+    }))
+    check('能力页一屏装下无需下滑', attrBodyFit.scroll <= attrBodyFit.client + 1,
+      `scroll=${attrBodyFit.scroll} client=${attrBodyFit.client}`)
     await page.locator('.mobile-panel__tab', { hasText: '态度' }).click()
     await page.waitForTimeout(150)
     check('面板态度页可打开', (await page.locator('.mobile-panel .status-panel').count()) === 1)
+    check('态度页不再画状态横条', (await page.locator('.mobile-panel .status-bar-wrap:visible').count()) === 0)
+    check('国势不再画长条', (await page.locator('.mobile-panel .fortune-track').isVisible()) === false)
     await page.locator('.mobile-panel__tab', { hasText: '卷宗' }).click()
     await page.waitForTimeout(150)
     check('面板卷宗页可打开', (await page.locator('.mobile-panel .mobile-records').count()) === 1)
