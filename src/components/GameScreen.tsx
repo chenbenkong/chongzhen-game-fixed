@@ -21,7 +21,7 @@ import AchievementPanel from './AchievementPanel'
 import TutorialModal from './TutorialModal'
 import StorylineBar from './StorylineBar'
 import ResignConfirmDialog from './ResignConfirmDialog'
-import { toMingEraYear } from '../utils/endingSystem'
+import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 
 import './GameScreen.css'
@@ -312,8 +312,10 @@ function GameScreen(props: GameScreenProps) {
     ? '辞官归隐，不问世事'
     : '一介布衣，无权无势'
 
+  const season = getSeason(gameState.currentMonth)
+
   return (
-    <div className={`game-screen ${isGameOver ? 'game-screen--ended' : ''}`}>
+    <div className={`game-screen game-screen--season-${season} ${isGameOver ? 'game-screen--ended' : ''}`}>
       {/*
         跨年取数：开局只装了 1628 年的事件，下一批在后台补（见 data/events/store.ts）。
         只有在"补给还没到、玩家已经要点进下一年"那一刻才会出现 ——

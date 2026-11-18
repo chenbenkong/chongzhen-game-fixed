@@ -5,6 +5,11 @@ import { GameEvent } from '../types/event'
 import { unlockAchievement, recordEndingReached } from '../types/achievement'
 import { endingAchievementIdOf, resolveEndingTileId } from '../data/endingRegistry'
 
+// 牌桌季节与结局年份共用同一入口模块，避免再新增一个被桌面/手机同时引用的
+// 独立小模块，把 Rollup 的共享边界带偏。
+export { getSeason, SEASON_LABELS } from './season'
+export type { Season } from './season'
+
 /**
  * 关键生平事件的统一筛选口径。
  *

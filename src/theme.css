@@ -182,6 +182,116 @@
 .title-bg-vignette {
   background: radial-gradient(ellipse 75% 70% at center, transparent 35%, rgba(0,0,0,0.5) 100%);
 }
+
+/* ============================================================
+   P2.2 牌桌季节背景
+   ------------------------------------------------------------
+   四张 2048×1152 的无字水墨/木刻空镜，按月份切换：
+   春 3–5 / 夏 6–8 / 秋 9–11 / 冬 12–2。
+   只做环境层，不改变事件、随机序列和数值。图片本身是纸色，
+   必须叠压暗渐变并降低不透明度，否则会顶掉牌桌面板的对比度。
+   ============================================================ */
+.game-screen {
+  position: relative;
+  isolation: isolate;
+}
+.mobile-shell .mobile-board {
+  isolation: isolate;
+}
+.game-screen:not(.game-screen--ended)::before,
+.mobile-shell .mobile-board::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.46;
+  filter: grayscale(0.18) sepia(0.16) contrast(0.9) brightness(0.76);
+}
+.game-screen--season-spring::before,
+.mobile-board--season-spring::before {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 5, 0.86) 0%, rgba(8, 6, 5, 0.24) 24%, rgba(8, 6, 5, 0.16) 52%, rgba(8, 6, 5, 0.3) 78%, rgba(8, 6, 5, 0.84) 100%),
+    radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.5) 0%, rgba(8, 6, 5, 0.12) 60%, transparent 100%),
+    url('./assets/season-spring.webp');
+}
+.game-screen--season-summer::before,
+.mobile-board--season-summer::before {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 5, 0.84) 0%, rgba(8, 6, 5, 0.2) 24%, rgba(8, 6, 5, 0.12) 52%, rgba(8, 6, 5, 0.28) 78%, rgba(8, 6, 5, 0.82) 100%),
+    radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.52) 0%, rgba(8, 6, 5, 0.12) 60%, transparent 100%),
+    url('./assets/season-summer.webp');
+}
+.game-screen--season-autumn::before,
+.mobile-board--season-autumn::before {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 5, 0.88) 0%, rgba(8, 6, 5, 0.26) 24%, rgba(8, 6, 5, 0.18) 52%, rgba(8, 6, 5, 0.32) 78%, rgba(8, 6, 5, 0.86) 100%),
+    radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.48) 0%, rgba(8, 6, 5, 0.12) 60%, transparent 100%),
+    url('./assets/season-autumn.webp');
+}
+.game-screen--season-winter::before,
+.mobile-board--season-winter::before {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 5, 0.9) 0%, rgba(8, 6, 5, 0.28) 24%, rgba(8, 6, 5, 0.2) 52%, rgba(8, 6, 5, 0.34) 78%, rgba(8, 6, 5, 0.88) 100%),
+    radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.5) 0%, rgba(8, 6, 5, 0.12) 60%, transparent 100%),
+    url('./assets/season-winter.webp');
+}
+@media (max-width: 1024px) {
+  .mobile-shell .mobile-board::before {
+    opacity: 0.66;
+    filter: grayscale(0.16) sepia(0.14) contrast(0.9) brightness(0.84);
+  }
+  /* 手机事件区铺满整屏，卡片底色必须让出一点孔隙；压暗渐变也改成手机版，
+     让空镜在顶栏、正文留白和底部空隙里能看见，而不是只剩一块黑底。 */
+  .mobile-shell .mobile-board .mobile-event-host {
+    background: rgba(13, 10, 8, 0.35);
+  }
+  .mobile-shell .mobile-hud {
+    background: rgba(10, 8, 7, 0.26);
+  }
+  /* 真正盖住环境层的是嵌在事件区里的 EventDisplay 自身底色；
+     手机版把它改成半透明，空镜才透得出来。桌面 EventDisplay 不动。 */
+  .mobile-shell .mobile-event-host .event-display {
+    background: linear-gradient(
+      180deg,
+      rgba(22, 18, 16, 0.78) 0%,
+      rgba(22, 18, 16, 0.62) 34%,
+      rgba(13, 10, 8, 0.52) 62%,
+      rgba(13, 10, 8, 0.66) 100%
+    );
+  }
+  .mobile-shell .mobile-event-host .event-title,
+  .mobile-shell .mobile-event-host .event-subtitle {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  }
+  .mobile-board--season-spring::before {
+    background-image:
+      linear-gradient(180deg, rgba(8, 6, 5, 0.58) 0%, rgba(8, 6, 5, 0.18) 24%, rgba(8, 6, 5, 0.1) 52%, rgba(8, 6, 5, 0.2) 78%, rgba(8, 6, 5, 0.78) 100%),
+      radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.32) 0%, rgba(8, 6, 5, 0.08) 60%, transparent 100%),
+      url('./assets/season-spring.webp');
+  }
+  .mobile-board--season-summer::before {
+    background-image:
+      linear-gradient(180deg, rgba(8, 6, 5, 0.58) 0%, rgba(8, 6, 5, 0.16) 24%, rgba(8, 6, 5, 0.08) 52%, rgba(8, 6, 5, 0.18) 78%, rgba(8, 6, 5, 0.76) 100%),
+      radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.34) 0%, rgba(8, 6, 5, 0.08) 60%, transparent 100%),
+      url('./assets/season-summer.webp');
+  }
+  .mobile-board--season-autumn::before {
+    background-image:
+      linear-gradient(180deg, rgba(8, 6, 5, 0.6) 0%, rgba(8, 6, 5, 0.18) 24%, rgba(8, 6, 5, 0.1) 52%, rgba(8, 6, 5, 0.22) 78%, rgba(8, 6, 5, 0.8) 100%),
+      radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.3) 0%, rgba(8, 6, 5, 0.08) 60%, transparent 100%),
+      url('./assets/season-autumn.webp');
+  }
+  .mobile-board--season-winter::before {
+    background-image:
+      linear-gradient(180deg, rgba(8, 6, 5, 0.62) 0%, rgba(8, 6, 5, 0.2) 24%, rgba(8, 6, 5, 0.12) 52%, rgba(8, 6, 5, 0.24) 78%, rgba(8, 6, 5, 0.82) 100%),
+      radial-gradient(ellipse 58% 66% at 50% 48%, rgba(8, 6, 5, 0.32) 0%, rgba(8, 6, 5, 0.08) 60%, transparent 100%),
+      url('./assets/season-winter.webp');
+  }
+}
 /* 中央金色光晕 */
 .title-ambient-glow {
   position: absolute;

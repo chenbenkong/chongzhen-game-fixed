@@ -11,7 +11,7 @@ import type { OriginType, DegreeType, Attributes, GameStateValues, CareerGoalId 
 import type { SaveData } from '../types/save'
 import type { DifficultyLevel } from '../types/difficulty'
 import { useGameEngine } from '../hooks/useGameEngine'
-import { toMingEraYear } from '../utils/endingSystem'
+import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 
 import EventDisplay from '../components/EventDisplay'
@@ -146,8 +146,10 @@ export default function MobileBoard(props: MobileBoardProps) {
     title: identityType === 'official' ? '官员' : '平民'
   }), [character.name, character.rank, gameState.currentYear, gameState.currentMonth, identityType])
 
+  const season = getSeason(gameState.currentMonth)
+
   return (
-    <div className={`mobile-board ${isChoicesOpen ? 'is-choices-open' : ''}`}>
+    <div className={`mobile-board mobile-board--season-${season} ${isChoicesOpen ? 'is-choices-open' : ''}`}>
       {awaitingEventData && (
         <div className="mobile-boot" role="status" aria-live="polite">
           <div className="mobile-boot__title">崇祯 · 宦海浮沉</div>
