@@ -5,7 +5,8 @@ import { getUnlockedAchievements, Achievement } from '../types/achievement'
 import { extractCounterfactuals, getArchetype, toChineseNum, toMingEraYear } from '../utils/endingSystem'
 import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
-import { relationshipEpilogue } from '../data/characters'
+import { relationshipEpilogue, relationshipsOf } from '../data/characters'
+import { downloadShareCard } from '../utils/shareCard'
 import Icon from './Icon'
 import './GameOverScreen.css'
 
@@ -56,7 +57,7 @@ export default function GameOverScreen({
   }, [endingEvent])
 
   const {
-    endingType, score, finalRank, posthumousTitle, historicalRank
+    endingType, score, finalRank, posthumousTitle, historicalRank, evaluationText
   } = useMemo(() => {
     return calculateEnding(character, gameState)
   }, [character, gameState])
@@ -84,6 +85,26 @@ export default function GameOverScreen({
     () => relationshipEpilogue(character.flags),
     [character.flags]
   )
+  const sharePeople = useMemo(
+    () => relationshipsOf(character.flags)
+      .slice(0, 3)
+      .map(({ character: person }) => `${person.name}　${person.title}`),
+    [character.flags]
+  )
+  const handleSaveShareCard = () => {
+    downloadShareCard({
+      name: character.name,
+      courtesyName: character.courtesyName,
+      origin: character.origin,
+      finalRank,
+      endingTitle,
+      evaluation: evaluationText,
+      years: totalYearsText,
+      score,
+      date: endingDate,
+      people: sharePeople
+    })
+  }
 
   return (
     <div className={`ending-screen ending-${endingType}`}>
@@ -234,6 +255,10 @@ export default function GameOverScreen({
               <span>查看生平</span>
             </button>
           )}
+          <button className="end-btn secondary" onClick={handleSaveShareCard}>
+            <span className="btn-icon"><Icon name="scroll" size={14} color="#c9a227" /></span>
+            <span>保存青史卡</span>
+          </button>
           <button className="end-btn secondary" onClick={onReturnToMenu}>
             <span className="btn-icon"><Icon name="flower" size={14} color="#c9a227" /></span>
             <span>返回首页</span>
