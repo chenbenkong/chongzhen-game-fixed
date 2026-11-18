@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef, useState } from 'react'
 import { Character, GameStateValues } from '../types/game'
 import { GameEvent } from '../types/event'
 import { getUnlockedAchievements, Achievement } from '../types/achievement'
@@ -7,6 +7,14 @@ import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
 import { relationshipEpilogue, relationshipsOf } from '../data/characters'
 import { downloadShareCard } from '../utils/shareCard'
+import {
+  computeLegacyGain,
+  legacyGoalStatus,
+  legacyRunKey,
+  recordLegacyRun,
+  type LegacyGain,
+  type LegacyGoalId
+} from '../data/legacy'
 import Icon from './Icon'
 import './GameOverScreen.css'
 
@@ -23,6 +31,8 @@ interface GameOverScreenProps {
   restartLocked?: boolean
   onReturnToMenu: () => void
   onViewLifeReview?: () => void
+  /** 本局带的家训目标；由本局家训决定，结局页只判一次。 */
+  legacyGoalId?: LegacyGoalId
 }
 
 type EndingType = 'legendary' | 'good' | 'normal' | 'bad' | 'dark'
@@ -46,7 +56,8 @@ export default function GameOverScreen({
   canRestart = true,
   restartLocked = false,
   onReturnToMenu,
-  onViewLifeReview
+  onViewLifeReview,
+  legacyGoalId
 }: GameOverScreenProps) {
   const achievements = getUnlockedAchievements()
   const unlockedAchievements = achievements
@@ -106,6 +117,30 @@ export default function GameOverScreen({
     })
   }
 
+  // P1 传承：结局只结算一次，按 runKey 去重；同一局刷新结局页不会重复发点。
+  const legacyRecordedKey = useRef<string | null>(null)
+  const [legacyGain, setLegacyGain] = useState<LegacyGain>({ 门生: 0, 著作: 0, 家训: 0 })
+  useEffect(() => {
+    if (!endingEvent) return
+    const runKey = legacyRunKey({
+      endingId: endingEvent.id,
+      name: character.name || '无名',
+      date: endingDate,
+      score
+    })
+    if (legacyRecordedKey.current === runKey) return
+    legacyRecordedKey.current = runKey
+    const result = recordLegacyRun({
+      runKey,
+      gain: computeLegacyGain({ score, character, gameState })
+    })
+    setLegacyGain(result.gained)
+  }, [endingEvent?.id, character, gameState, score, endingDate])
+  const legacyGoal = useMemo(
+    () => legacyGoalStatus(legacyGoalId, character, gameState),
+    [legacyGoalId, character, gameState]
+  )
+
   return (
     <div className={`ending-screen ending-${endingType}`}>
       <div className="ending-bg-pattern"></div>
@@ -149,6 +184,26 @@ export default function GameOverScreen({
           <div className="ending-relationships" aria-label="这一生绕不开的人">
             <span className="ending-relationships-label">故 人</span>
             <p className="ending-relationships-text">{relationships}</p>
+          </div>
+        )}
+
+        {legacyGoal && (
+          <div className={`ending-legacy-goal ${legacyGoal.achieved ? 'is-achieved' : 'is-missed'}`}>
+            <span className="ending-legacy-label">家 训 目 标</span>
+            <span className="ending-legacy-title">{legacyGoal.goal.label}</span>
+            <span className="ending-legacy-status">
+              {legacyGoal.achieved ? '达成' : '未达成'} · {legacyGoal.goal.hint}
+            </span>
+          </div>
+        )}
+
+        {(legacyGain.门生 > 0 || legacyGain.著作 > 0 || legacyGain.家训 > 0) && (
+          <div className="ending-legacy-gain">
+            <span className="ending-legacy-label">传 家</span>
+            <span>门生 +{legacyGain.门生}</span>
+            <span>著作 +{legacyGain.著作}</span>
+            <span>家训 +{legacyGain.家训}</span>
+            <span className="ending-legacy-hint">下一局可带一条</span>
           </div>
         )}
 

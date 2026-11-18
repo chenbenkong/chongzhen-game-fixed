@@ -8,6 +8,7 @@ import {
 import { allEndingEvents } from '../src/data/events/ending'
 import { FAMOUS_MINISTER_EXTRA_TICKETS } from '../src/data/events/ending/endings_all'
 import { FLAG_MEMOIRS } from '../src/data/flagBiography'
+import { LEGACY_PERKS } from '../src/data/legacy'
 import { GameEvent } from '../src/types/event'
 
 /**
@@ -90,6 +91,9 @@ export function scanFlagReachability(
     }
   }
   for (const f of ENGINE_WRITTEN_FLAGS) granted.add(f)
+  // P1 家训：这三张票由开局传承写入，不由任何选项写出；
+  // 不认它们，履历表里的 `家训在身` 会被误判成死文案。
+  for (const perk of LEGACY_PERKS) granted.add(perk.flag)
 
   /**
    * 「读过这个 flag」的判据 —— 事件级 `conditions.flags` 与选项级 `showConditions.flags`

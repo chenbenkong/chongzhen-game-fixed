@@ -37,6 +37,14 @@ vi.mock('../../src/components/OriginSelect', () => ({
   )
 }))
 
+// 家训屏是 P1 新加的一步；这些用例只关心 setup 档案，不关心传承。
+// 用一个「直接跳过」按钮把这一步折叠掉，保持原来的三次点击契约。
+vi.mock('../../src/components/LegacySelect', () => ({
+  default: ({ onConfirm }: { onConfirm: (id: null) => void }) => (
+    <button onClick={() => onConfirm(null)}>legacy-skip</button>
+  )
+}))
+
 vi.mock('../../src/components/BGMContext', () => ({
   BGMProvider: ({ children }: { children: unknown }) => children,
   useBGM: () => ({ on: false, toggle: () => {}, status: 'idle', errorMessage: '' })
@@ -122,6 +130,7 @@ describe('第七十三轮：App 的读档 → 重新开局档案', () => {
     fireEvent.click(document.querySelector('.title-btn') as HTMLButtonElement) // 开始仕途
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：起名确认
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：选出身
+    fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：跳过家训
     await waitFor(() => expect(lastGameScreenProps()?.playerName).toBe('张三'))
 
     act(() => {

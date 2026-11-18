@@ -37,6 +37,7 @@ export const FLAG_MEMOIRS: Record<string, Memoir> = {
   // —— 朝局：官、兵、奏议、党派 ——
   地方官任职: { line: '在地方上实任过一职', group: '朝局' },
   崇祯赏识: { line: '乾清宫奏对，得过皇帝一句赏识', group: '朝局' },
+  家训在身: { line: '带着一条先人立下的家训入仕', group: '风骨' },
   崇祯近臣: { line: '御前奏对称旨，皇帝记得这名儿', group: '朝局' },
   言路官: { line: '拜在言路，以说话为职', group: '朝局' },
   台谏之声: { line: '台谏之上有人替你传过话', group: '朝局' },

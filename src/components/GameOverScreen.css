@@ -1183,6 +1183,58 @@
   white-space: pre-line;
 }
 
+/* P1 家训：结局页只占一条，不展开成大面板。 */
+.ending-legacy-goal,
+.ending-legacy-gain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(201, 162, 39, 0.16);
+  background: rgba(201, 162, 39, 0.035);
+  font-family: 'STKaiti', 'KaiTi', 'SimKai', '楷体', serif;
+  font-size: 0.8rem;
+  color: #b9ad96;
+}
+
+.ending-legacy-goal.is-achieved {
+  border-color: rgba(201, 162, 39, 0.35);
+  color: #d8c48d;
+}
+
+.ending-legacy-goal.is-missed {
+  border-color: rgba(140, 120, 90, 0.2);
+  color: #9c907d;
+}
+
+.ending-legacy-label {
+  color: #a98b6b;
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  flex-shrink: 0;
+}
+
+.ending-legacy-title {
+  color: #d3bc7f;
+  font-weight: 700;
+}
+
+.ending-legacy-status {
+  color: #8e816d;
+  font-size: 0.74rem;
+}
+
+.ending-legacy-gain > span:not(.ending-legacy-label):not(.ending-legacy-hint) {
+  color: #cfb878;
+}
+
+.ending-legacy-hint {
+  color: #8e816d;
+  font-size: 0.72rem;
+  margin-left: auto;
+}
+
 /* 归零死因：只占一行，和“一生概要”同宽，不另开一栏说明文。 */
 .ending-cause {
   display: flex;

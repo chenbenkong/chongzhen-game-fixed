@@ -22,6 +22,7 @@ import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
 import { checkEventConditions, lastChanceThisMonth, pickEvent } from '../utils/eventConditions'
 import { hasOpenChoice } from '../utils/choiceRequirements'
+import { applyLegacyPerk, type LegacyPerkId } from '../data/legacy'
 
 // 身份类型
 type IdentityType = 'official' | 'civilian' | 'rebel' | 'exiled' | 'retired'
@@ -266,6 +267,8 @@ export interface UseGameEngineProps {
   playerCustomAge?: number | null
   loadSaveData?: SaveData
   difficulty: DifficultyLevel
+  /** P1 家训：新局开局带一条传承加成；读档时忽略。 */
+  legacyPerkId?: LegacyPerkId | null
   onReturnToMenu?: () => void
 }
 
@@ -656,7 +659,8 @@ function createInitialCharacter(
   playerName?: string,
   playerCourtesyName?: string,
   playerHometown?: string,
-  playerCustomAge?: number | null
+  playerCustomAge?: number | null,
+  legacyPerkId?: LegacyPerkId | null
 ): Character {
   const originData = origins[originType]
   // 出身只声明部分隐藏属性，其余（含机敏值 / 忠诚值）补齐为默认值 50
@@ -692,6 +696,7 @@ function createInitialCharacter(
   }
 
   tempCharacter.rank = '正七品·知县'
+  applyLegacyPerk(tempCharacter, legacyPerkId)
   return tempCharacter
 }
 
@@ -706,6 +711,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     playerCustomAge,
     loadSaveData,
     difficulty,
+    legacyPerkId,
     onReturnToMenu
   } = props
 
@@ -733,7 +739,7 @@ export function useGameEngine(props: UseGameEngineProps) {
         }
       }
     }
-    return createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge)
+    return createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId)
   })
 
   const [gameState, setGameState] = useState<GameStateValues>(() => {
@@ -800,7 +806,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     if (loadSaveData) {
       return calculateMeritScore(loadSaveData.character, loadSaveData.gameState)
     }
-    const initialChar = createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge)
+    const initialChar = createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId)
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
     const initialState = {
@@ -2385,7 +2391,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       playerName,
       playerCourtesyName,
       playerHometown,
-      playerCustomAge
+      playerCustomAge,
+      legacyPerkId
     )
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
@@ -2452,6 +2459,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     playerCourtesyName,
     playerHometown,
     playerCustomAge,
+    legacyPerkId,
     difficultyConfig
   ])
 

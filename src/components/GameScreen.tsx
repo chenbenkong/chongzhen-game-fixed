@@ -22,6 +22,7 @@ import TutorialModal from './TutorialModal'
 import StorylineBar from './StorylineBar'
 import ResignConfirmDialog from './ResignConfirmDialog'
 import { toMingEraYear } from '../utils/endingSystem'
+import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 
 import './GameScreen.css'
 
@@ -54,6 +55,7 @@ interface GameScreenProps {
   playerCustomAge?: number | null
   loadSaveData?: SaveData
   difficulty: DifficultyLevel
+  legacyPerkId?: LegacyPerkId | null
   onReturnToMenu?: () => void
 }
 
@@ -123,6 +125,8 @@ function GameScreen(props: GameScreenProps) {
     getCurrentStoryline,
     generateLifeSummary
   } = useGameEngine(props)
+
+  const legacyGoalId = LEGACY_PERKS.find((perk) => perk.id === props.legacyPerkId)?.goal
 
   const currentStorylineKey = useMemo(
     () => currentStoryline ?? getCurrentStoryline(),
@@ -335,6 +339,7 @@ function GameScreen(props: GameScreenProps) {
             restartLocked={retryEndingLocked}
             onReturnToMenu={handleReturnToMenu}
             onViewLifeReview={openLifeReview}
+            legacyGoalId={legacyGoalId}
           />
         </div>
       )}
