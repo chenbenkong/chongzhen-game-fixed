@@ -400,6 +400,30 @@ function channelParams(zhongguan: number): BoundaryEventCheckParams {
   }
 }
 
+describe('警告卡的封口语义：票不在时可再开口，普通危机仍按 eventHistory 封口', () => {
+  it('归零警告与贪墨预警不被 seenIds 永久封死', () => {
+    const zero = zeroWarningEvents.find(r => r.id === 'warn_zero_财帛')!
+    expect(
+      crisisEventMayShow(zero.id, zero.event, 10, new Map(), new Set([zero.event.id])),
+      '票被清掉/存档缺票时，同一维必须能再次收到警告'
+    ).toBe(true)
+
+    const corruption = corruptionWarningEvents[0]
+    expect(
+      crisisEventMayShow(corruption.id, corruption.event, 10, new Map(), new Set([corruption.event.id])),
+      '贪墨票在革职后被消费，再次暴露必须能再收到一次通知'
+    ).toBe(true)
+  })
+
+  it('普通危机卡仍不被已播历史放行', () => {
+    const illness = BOUNDARY_EVENTS.find(r => r.id === 'serious_illness')!
+    expect(
+      crisisEventMayShow(illness.id, illness.event, 20, new Map(), new Set([illness.event.id])),
+      '重病缠身不能因为绕开冷却而反复演'
+    ).toBe(false)
+  })
+})
+
 describe('第三十九轮：中官低位时才开的那扇内廷门（§1.4 ②）', () => {
   it('只在中官 1~30 之间开门，0 点交给归零警告，31 点以上不许存着刷', () => {
     expect(CHANNEL_RULE.check(channelParams(1))).toBe(true)

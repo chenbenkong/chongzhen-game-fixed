@@ -203,7 +203,8 @@ function isCoolingDown(
  *    「革职预警·贪墨」都走这一条。它们是"判死／革职前的最后一次通知"，漏发一次，
  *    那一层就停在「已归零／已暴露但没警告」的状态上，而八条死线与那条 severity 3
  *    都要求先见过警告才收尾 —— 于是既不判死也不给救，整局悬空。
- *    不吃冷却是安全的：这批 check 自己带 `!flags.includes(警告)`，一生只可能命中一次。
+ *    不吃冷却是安全的：这批 check 自己带 `!flags.includes(警告)`，票在时不会重复；
+ *    票被消费（贪墨革职）或存档缺票时，则允许它再次开口。
  * 2. 冷却：crisis 的条件判的是**状态**（`0 < 体质 < 20`）而不是历史，只要玩家一直病着
  *    就恒真。第十四轮之前这条路径完全不设冷却，于是同一个「重病缠身」能在三个月里
  *    发作两遍（`engine.cooldown.test.ts` 的 seed=8 实测）。
@@ -221,9 +222,14 @@ export function crisisEventMayShow(
   lastTurnById: Map<string, number>,
   seenIds: Set<string> = new Set()
 ): boolean {
-  // 本局已经播过的事件（包括危机卡）不再发第二遍；读档后 eventHistory 仍在，照样生效。
-  if (seenIds.has(event.id)) return false
-  if (isZeroWarningRegistryId(ruleId) || isCorruptionWarningRegistryId(ruleId)) return true
+  // 警告卡不是“一生只播一次”的内容：它读的是**当前状态**，票不在时才开口。
+  // 「革职预警·贪墨」的票会在革职后消费；消费之后再次暴露，必须能再收到一次
+  // 通知，否则玩家会在没有第二张卡的情况下被同一条判据直接收走。
+  // 归零警告同一道理：票被清掉/存档缺票时，允许它重新出现。
+  // 普通危机卡仍按 eventHistory 封口，避免同一张「重病缠身」反复演。
+  const isWarning = isZeroWarningRegistryId(ruleId) || isCorruptionWarningRegistryId(ruleId)
+  if (!isWarning && seenIds.has(event.id)) return false
+  if (isWarning) return true
   if (isCoolingDown(event.id, event.type, turn, lastTurnById)) return false
   return Math.random() < CRISIS_EVENT_PROBABILITY
 }

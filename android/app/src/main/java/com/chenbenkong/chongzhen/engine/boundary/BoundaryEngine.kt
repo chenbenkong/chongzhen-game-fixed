@@ -71,6 +71,10 @@ class BoundaryEngine(
 
     // ------------------------------------------------------------------ 内部
 
+    /** 必达警告卡：八条归零警告 + 贪墨预警。它们不吃 eventHistory 封口。 */
+    private fun isWarningRegistry(registryId: String): Boolean =
+        registryId.startsWith("warn_zero_") || registryId == "warn_corruption"
+
     private fun checkByType(
         type: String,
         ctx: ConditionContext,
@@ -82,8 +86,10 @@ class BoundaryEngine(
     ): BoundaryHit? {
         val sorted = data.boundaryEvents.filter { it.type == type }.sortedBy { it.priority }
         for (entry in sorted) {
-            // 本局已经播过的危机卡不再发；读档后 eventHistory 仍在，照样生效。
-            if (type == "crisis" && entry.eventId in seenEventIds) continue
+            // 普通危机卡：本局已经播过的不再发；读档后 eventHistory 仍在，照样生效。
+            // 警告卡例外：它读的是当前状态，票不在时才开口。贪墨票会在革职后消费，
+            // 消费后再次暴露必须能再收到通知，否则会被同一条判据无声收走。
+            if (type == "crisis" && !isWarningRegistry(entry.registryId) && entry.eventId in seenEventIds) continue
             when (val verdict = evaluateEntry(entry, ctx, character, court, lastTurnById, difficultyId)) {
                 is EntryVerdict.Matched -> return hit(entry, matched = true)
                 is EntryVerdict.Unported -> return BoundaryHit(

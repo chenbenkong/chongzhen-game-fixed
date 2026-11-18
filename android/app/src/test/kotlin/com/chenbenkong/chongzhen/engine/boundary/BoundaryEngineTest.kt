@@ -116,6 +116,19 @@ class BoundaryEngineTest {
         assertEquals("bankrupt", endingB!!.registryId)
     }
 
+    @Test fun `警告卡已播过但票不在时仍可再次开口`() {
+        // 贪墨票会在革职后消费；消费后再次暴露必须能再收到一次通知。
+        // 归零票同一道理：票被清掉或存档缺票时，不能因为 eventHistory 里有过就永久封口。
+        val char = TestFixture.defaultCharacter(attributes = mapOf("财帛" to 0.0), flags = emptyList())
+        val court = TestFixture.defaultCourt(turn = 12)
+        val crisis = engine.checkCrisis(
+            TestFixture.ctx(court, char), char, court, emptyMap(),
+            seenEventIds = setOf("boundary_warn_财帛")
+        )
+        assertNotNull("票不在时警告卡应当重新开口", crisis)
+        assertEquals("warn_zero_财帛", crisis!!.registryId)
+    }
+
     @Test fun `faction_sacrifice 年下限 1635：1634 不触发，1635 触发`() {
         fun sacrificeState(year: Int) {
             val char = TestFixture.defaultCharacter(flags = emptyList())

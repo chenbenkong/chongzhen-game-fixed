@@ -79,6 +79,7 @@ fun BoardScreen(state: UiState, viewModel: BoardViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             WebStatusBar(board, viewModel)
+            if (board != null) RiskHud(board)
             state.banner?.let { BannerBar(it) }
 
             if (board != null) {
@@ -219,6 +220,82 @@ private fun WebStatusBar(
         GhostButton(
             text = if (board.pendingCount > 0) "操作 ${board.pendingCount + 1}" else "操作",
             onClick = { viewModel.setActionBarOpen(true) }
+        )
+    }
+}
+
+/**
+ * 主界面常驻风险条（Android 对齐 Web `RiskHud`）。
+ *
+ * 顶栏只报财帛/体质与国势，其余六维与死亡线要展开面板才看得到。
+ * 这里把最危险的一到两维直接摆在牌桌上：维度、整数值、档位、
+ * 对应结局。没有风险时不占版面。
+ */
+@Composable
+private fun RiskHud(board: BoardSnapshot) {
+    val risks = remember(board) {
+        collectRiskItems(board.attributes, board.hidden, board.court, board.flags).take(2)
+    }
+    if (risks.isEmpty()) return
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 1.dp, vertical = 2.dp)
+            .clip(PanelShape)
+            .background(Brush.horizontalGradient(listOf(Color(0xFF24100C), Color(0xFF160D09))))
+            .border(1.dp, Color(0xFF5A2A22), PanelShape)
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = "危局",
+            style = MaterialTheme.typography.labelLarge,
+            color = CinnabarBright,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp
+        )
+        risks.forEach { risk ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text(risk.key, style = MaterialTheme.typography.labelMedium, color = ParchmentDim)
+                Text(
+                    text = risk.value.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = when (risk.level) {
+                        RiskLevel.Cliff -> CinnabarBright
+                        RiskLevel.Zero -> Gold
+                        RiskLevel.Near -> GoldDark
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = risk.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = when (risk.level) {
+                        RiskLevel.Cliff -> CinnabarBright
+                        RiskLevel.Zero -> Gold
+                        RiskLevel.Near -> ParchmentFaint
+                    },
+                    maxLines = 1
+                )
+                Text(
+                    text = "→《${risk.endingTitle}》",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ParchmentFaint,
+                    maxLines = 1
+                )
+            }
+        }
+        Text(
+            text = if (risks.any { it.level == RiskLevel.Cliff }) "再归零就收局" else "下一张重卡就可能见底",
+            style = MaterialTheme.typography.labelSmall,
+            color = if (risks.any { it.level == RiskLevel.Cliff }) CinnabarBright else ParchmentFaint,
+            maxLines = 1
         )
     }
 }
