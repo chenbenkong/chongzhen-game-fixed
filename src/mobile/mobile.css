@@ -123,6 +123,14 @@ body.mobile-applied textarea {
   padding: 10px 16px;
   overflow-y: auto;
   overflow-x: hidden;
+  /* P2.1：手机标题屏使用同一张无字主视觉。
+     中央压暗保证金字/按钮可读；上下留出画幅，不把标题屏继续做成纯黑。 */
+  background:
+    linear-gradient(180deg, rgba(10, 8, 7, 0.68) 0%, rgba(10, 8, 7, 0.18) 28%, rgba(10, 8, 7, 0.14) 72%, rgba(10, 8, 7, 0.7) 100%),
+    radial-gradient(ellipse 62% 88% at 50% 46%, rgba(10, 8, 7, 0.82) 0%, rgba(10, 8, 7, 0.46) 54%, transparent 100%),
+    url('../assets/title-keyart.webp') center center / cover no-repeat,
+    #0b0907;
+  background-blend-mode: normal;
 }
 .mobile-shell .mobile-title__version {
   color: var(--color-text-faint, rgba(245, 230, 200, 0.35));

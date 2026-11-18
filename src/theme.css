@@ -164,10 +164,15 @@
     radial-gradient(ellipse 35% 30% at 88% 12%, rgba(120,85,35,0.1) 0%, rgba(80,55,20,0.03) 50%, transparent 100%),
     radial-gradient(ellipse 80% 50% at 50% 55%, rgba(120,80,30,0.08) 0%, transparent 70%);
 }
-/* 主背景图 - 相对 base 解析，GitHub Pages 子路径与 Electron file:// 下都能命中 */
+/* 主背景图 - 相对 base 解析，GitHub Pages 子路径与 Electron file:// 下都能命中。
+   旧 cover 是带字宣传图，只留作历史参考；标题层改用无字主视觉。
+   中央用遮罩淡出，避免背景云纹穿过标题框影响金字辨识度。 */
 .title-bg-image {
-  background: url('./assets/cover-landscape.webp') center center / cover no-repeat;
-  opacity: 0.1;
+  background: url('./assets/title-keyart.webp') center center / cover no-repeat;
+  opacity: 0.62;
+  filter: grayscale(0.35) sepia(0.22) contrast(1.08) brightness(0.82);
+  -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, transparent 0%, rgba(0, 0, 0, 0.35) 55%, #000 82%);
+  mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, transparent 0%, rgba(0, 0, 0, 0.35) 55%, #000 82%);
 }
 /* 远山剪影 - 用 SVG */
 .title-bg-mountains {

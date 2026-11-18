@@ -24,7 +24,7 @@
   background:
     repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(197,165,90,0.035) 7px, rgba(197,165,90,0.035) 8px),
     repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(197,165,90,0.035) 7px, rgba(197,165,90,0.035) 8px),
-    linear-gradient(160deg, rgba(24,18,10,0.85), rgba(16,12,8,0.9));
+    linear-gradient(160deg, rgba(18,13,8,0.94), rgba(11,8,5,0.96));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 2;
@@ -110,7 +110,7 @@
 /* 副标题 */
 .title-sub {
   font-size: 0.88rem;
-  color: rgba(197,165,90,0.5);
+  color: rgba(197,165,90,0.62);
   letter-spacing: 0.6em;
   margin-bottom: 32px;
   font-weight: 400;
@@ -121,7 +121,7 @@
 /* 标签语 */
 .title-tagline {
   font-size: 0.82rem;
-  color: rgba(235,230,220,0.55);
+  color: rgba(235,230,220,0.8);
   line-height: 2;
   margin-bottom: 18px;
   max-width: 520px;
@@ -133,7 +133,7 @@
 /* 引语 */
 .title-quote {
   font-size: 0.8rem;
-  color: rgba(197,165,90,0.45);
+  color: rgba(197,165,90,0.7);
   line-height: 2;
   margin-bottom: 44px;
   max-width: 500px;
@@ -170,7 +170,7 @@
   font-size: 0.76rem;
   letter-spacing: 0.5em;
   text-indent: 0.5em;
-  color: rgba(197, 165, 90, 0.4);
+  color: rgba(197, 165, 90, 0.55);
 }
 
 .title-difficulty__options {
@@ -182,7 +182,7 @@
   background: transparent;
   border: none;
   border-right: 1px solid rgba(197, 165, 90, 0.2);
-  color: rgba(197, 165, 90, 0.55);
+  color: rgba(197, 165, 90, 0.72);
   font-family: var(--font-body);
   font-size: 0.8rem;
   letter-spacing: 0.25em;
@@ -210,7 +210,7 @@
   font-family: var(--font-body);
   font-size: 0.78rem;
   letter-spacing: 0.05em;
-  color: rgba(235, 230, 220, 0.42);
+  color: rgba(235, 230, 220, 0.58);
   margin: 0;
   min-height: 1.4em;
 }
