@@ -20,7 +20,11 @@ export interface BoundaryEventCheckParams {
   characterRank?: string
   /** 年岁（`character.age`）—— `conditions.age` 读它；缺键按 0 算，于是年龄门恒假 */
   characterAge?: number
-  /** 本局难度的归零宽限期（月），从该维写下警告票的月份起算；缺省时用全局默认值 */
+  /**
+   * 本局难度的归零宽限期（月）。逐维倒计时，从该维写下警告票的月份起算；
+   * 但只在“该维仍处于警告带内”时累计 —— 回到 `ZERO_WARNING_RECOVERY` 线以上，
+   * `flagTurns` 会被推到恢复的月份，旧警告不再继续跑。缺省时用全局默认值。
+   */
   thresholdGraceTurns?: number
   /**
    * 每段经历**落笔的那个月**（`character.flagTurns`）—— `conditions.flags.since` 读它。

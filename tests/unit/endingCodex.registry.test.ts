@@ -624,10 +624,11 @@ describe('真引擎跑完一局：从 handleChoice 到格子亮', () => {
      */
     const rawIds = outcomes.map(r => r.endEventId as string)
     expect(rawIds, '取样里必须有被引擎改名过的破产').toContain('ending_bankrupt')
-    expect(
-      rawIds.filter(id => id === DEMOTION_ENDING_ID || id === EXILE_ENDING_ID),
-      '取样里必须有从前内联在引擎里的那条革职结局（两支之一）'
-    ).not.toHaveLength(0)
+    // 革职两支（`ending_demotion` / `ending_exile`）不再从这批随机种子里碰运气：
+    // P0.1 把「贪墨被查」降成宽限后降两级、并把道德归零接回逐维倒计时之后，
+    // 1..60 的 random / steady 取样里一次都没有自然走到革职。该路径仍由
+    // `engine.demotionGrace.test.ts` 的读档夹具钉住（道德 0 + 满 30 月警告 → ending_exile），
+    // 这里只负责随机流的图鉴对账，不再要求随机批次必须覆盖一条低概率死法。
 
     // 引擎自己写的达成记录：达成的格子集合就是它，一个不多一个不少
     expect(Object.keys(getReachedEndings()).sort()).toEqual([...tiles].sort())

@@ -240,6 +240,10 @@ class GameEngine(
             )
         } else appliedBase
 
+        // 抉择可能把某一维养回警告线以上；宽限只累计“仍在带内”的月份，
+        // 已经恢复的局面不能继续吃旧警告的 30 月倒计时。与 Web 同口径。
+        refreshZeroWarningCountdown()
+
         choice.staminaBonus?.let { bonus ->
             if (bonus > 0) {
                 val next = (state.character.attributes["体质"] ?: 0.0) + bonus
@@ -315,6 +319,9 @@ class GameEngine(
         }
         state.court.turn += 1
         state.character.age += 1.0 / 12.0
+
+        // 整月没有抉择时也要刷新：某维已经回到警告线以上，旧警告的倒计时不能继续跑。
+        refreshZeroWarningCountdown()
 
         val ctx = ctxAfter()
 
@@ -411,6 +418,36 @@ class GameEngine(
     /** 经历票人话标签表（flag → line），供选项锁闭原因展示。 */
     fun gateLabels(): Map<String, String> =
         data.flagGateLabels.associate { it.flag to it.line }
+
+    /**
+     * 归零警告的宽限只在“该维仍处于警告带内”时累计。
+     *
+     * 与 Web `refreshZeroWarningCountdown` 同口径：财帛/体质 20，其余 15；
+     * 维度回到线以上，就把该警告 flag 的计时推到本月。旧规则只写一次月份，
+     * 玩家把维度养回 30 多以后，下一次归零仍会按旧警告收尾。
+     */
+    private fun refreshZeroWarningCountdown() {
+        val prefix = data.constants.zeroWarnFlagPrefix
+        val turns = state.character.flagTurns
+        for (spec in data.constants.zeroThresholds) {
+            val flag = prefix + spec.key
+            if (!state.character.flags.contains(flag)) continue
+            val value = when (spec.group) {
+                "attributes" -> state.character.attributes[spec.key] ?: 0.0
+                "hidden" -> state.character.hidden[spec.key] ?: 50.0
+                else -> when (spec.key) {
+                    "圣眷" -> state.court.圣眷
+                    "中官" -> state.court.中官
+                    "清议" -> state.court.清议
+                    "士绅" -> state.court.士绅
+                    "民望" -> state.court.民望
+                    else -> 0.0
+                }
+            }
+            val recoveryLine = if (spec.key == "财帛" || spec.key == "体质") 20.0 else 15.0
+            if (value > recoveryLine) turns[flag] = state.court.turn
+        }
+    }
 
     private fun clamp0_100(v: Double): Double = max(0.0, min(100.0, v))
 

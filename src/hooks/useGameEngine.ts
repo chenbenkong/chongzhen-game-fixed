@@ -9,7 +9,7 @@ import { origins } from '../data/origins'
 import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
-import { isZeroWarningRegistryId, zeroWarningKeyOf, zeroWarnFlag } from '../data/zeroWarningEvents'
+import { isZeroWarningRegistryId, zeroWarningKeyOf, zeroWarnFlag, refreshZeroWarningCountdown } from '../data/zeroWarningEvents'
 import { capDamage } from '../utils/damageCap'
 import {
   CORRUPTION_WARNING_FLAG,
@@ -1695,6 +1695,15 @@ export function useGameEngine(props: UseGameEngineProps) {
         newChar.flagTurns = turns
       }
 
+      // 宽限倒计时只累计“仍在警告带内”的月份。某维回到 warnAt 以上，
+      // 就把它的警告计时推到本月；否则旧警告会在 30 月后继续处决一个已经恢复的局面。
+      newChar.flagTurns = refreshZeroWarningCountdown(
+        newChar.flags,
+        newChar.flagTurns,
+        { ...newAttrs, ...newStateVals, ...newChar.hidden },
+        currentGameState.turn
+      )
+
       const addedFlags = choice.effects.flags?.add || []
       const removedFlags = choice.effects.flags?.remove || []
       if (addedFlags.length > 0 || removedFlags.length > 0) {
@@ -2077,15 +2086,26 @@ export function useGameEngine(props: UseGameEngineProps) {
     }
     setCharacter(prevChar => {
       const aged = { ...prevChar, age: prevChar.age + skippedMonths / 12 }
-      if (stipend <= 0) return aged
-      const bounds = ATTR_BOUNDS.财帛
-      return {
-        ...aged,
-        attributes: {
-          ...aged.attributes,
-          财帛: Math.max(bounds.min, Math.min(bounds.max, aged.attributes.财帛 + stipend))
+      let next = aged
+      if (stipend > 0) {
+        const bounds = ATTR_BOUNDS.财帛
+        next = {
+          ...aged,
+          attributes: {
+            ...aged.attributes,
+            财帛: Math.max(bounds.min, Math.min(bounds.max, aged.attributes.财帛 + stipend))
+          }
         }
       }
+      // 每月也刷新一次：玩家可能整月不点抉择，但这一维已经回到警告线以上。
+      // 只在仍有旧警告 flag 时推进计时；没有警告的维度不受影响。
+      next.flagTurns = refreshZeroWarningCountdown(
+        next.flags,
+        next.flagTurns,
+        { ...next.attributes, ...newState, ...normalizeHidden(next.hidden) },
+        newState.turn
+      )
+      return next
     })
 
     monthAdvanceTimerRef.current = window.setTimeout(() => {

@@ -69,6 +69,56 @@ export function specOf(key: ZeroKey): ThresholdSpec {
 
 export const zeroWarnFlag = (key: string) => `归零警告·${key}`
 
+/**
+ * 各维的警告带上限。
+ *
+ * `warnAt` 不是随手抄的：`routeTrail` 的危局提示、归零警告的触发区间、
+ * 以及这里的宽限重置必须读同一组数。`财帛`/`体质` 的生存压力更直接，留 20；
+ * 其余六维留 15。维度回到这条线以上，说明玩家已经离开“随时会归零”的区间，
+ * 警告的 30 个月倒计时就不再从旧月份继续累计。
+ */
+export const ZERO_WARNING_RECOVERY: Record<ZeroKey, number> = {
+  财帛: 20,
+  体质: 20,
+  圣眷: 15,
+  中官: 15,
+  清议: 15,
+  士绅: 15,
+  民望: 15,
+  道德值: 15
+}
+
+/**
+ * 把仍在警告带内的维度按“最近一次健康月份”重新计时。
+ *
+ * 旧规则只写一次 `flagTurns`，之后无论玩家把这一维养回多高，30 个月一到，
+ * 下一次归零仍按旧警告收尾。实测里 seed 5 在财帛警告后曾回到 38，
+ * 第 37 月再次见底时仍被判死；玩家看到的却是“我明明缓过来了”。
+ *
+ * 现在只在维度仍低于/等于 `warnAt` 时保留旧月份；回到线上方就把该 flag
+ * 的计时推到本月。这样死亡条件从“曾经归零过”变成“归零后一直没爬出警告带”，
+ * 宽限仍然是 30 个月，但不再惩罚已经恢复的局面。
+ */
+export function refreshZeroWarningCountdown(
+  flags: readonly string[] | undefined,
+  flagTurns: Record<string, number> | undefined,
+  values: Record<string, number>,
+  turn: number
+): Record<string, number> | undefined {
+  if (!flags?.length) return flagTurns
+  let next: Record<string, number> | undefined
+  for (const spec of ZERO_THRESHOLDS) {
+    const flag = zeroWarnFlag(spec.key)
+    if (!flags.includes(flag)) continue
+    const value = values[spec.key]
+    if (typeof value !== 'number' || value <= ZERO_WARNING_RECOVERY[spec.key]) continue
+    if (flagTurns?.[flag] === turn) continue
+    if (!next) next = { ...(flagTurns || {}) }
+    next[flag] = turn
+  }
+  return next ?? flagTurns
+}
+
 /** 与死线 check 同口径地取一个阈值维度的当前值；取不到就返回 null（视为不触发） */
 function thresholdValue(params: BoundaryEventCheckParams, t: ThresholdSpec): number | null {
   const src =
