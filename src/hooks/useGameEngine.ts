@@ -10,6 +10,7 @@ import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
 import { isZeroWarningRegistryId, zeroWarningKeyOf, zeroWarnFlag } from '../data/zeroWarningEvents'
+import { capDamage } from '../utils/damageCap'
 import {
   CORRUPTION_WARNING_FLAG,
   FUGITIVE_FLAG,
@@ -441,7 +442,8 @@ function checkDemotion(
   currentScore: number,
   previousScore: number,
   character: Character,
-  gameState: GameStateValues
+  gameState: GameStateValues,
+  zeroGraceTurns: number = 30
 ): {
   demoted: boolean;
   newRank?: string;
@@ -468,6 +470,16 @@ function checkDemotion(
 
   const currentRankData = RANKS.find(r => r.name === character.rank)
   const currentRankBaseScore = currentRankData?.minScore ?? 500
+  const moralWarnedAt = character.flagTurns?.[zeroWarnFlag('道德值')]
+  const moralWarningMature =
+    moralWarnedAt !== undefined
+      ? (gameState.turn - moralWarnedAt) >= zeroGraceTurns
+      : gameState.turn >= zeroGraceTurns
+  const corruptionWarnedAt = character.flagTurns?.[CORRUPTION_WARNING_FLAG]
+  const corruptionWarningMature =
+    corruptionWarnedAt !== undefined
+      ? (gameState.turn - corruptionWarnedAt) >= zeroGraceTurns
+      : gameState.turn >= zeroGraceTurns
 
   const reasons: { condition: boolean; reason: DemotionReason; severity: number; message: string }[] = [
     {
@@ -482,7 +494,7 @@ function checkDemotion(
       // 后者从前不问警告，于是同一个维度上「归零两次才要命」的规则被自己作废了一半 ——
       // 实测到第十四轮放开灰色池的年代门槛后，49% 的局在第 10 个月被这条直接收尾，
       // 玩家连"你已经丧尽天良"这句提示都没见过。现在两条通路同进同退。
-      condition: character.hidden.道德值 <= 0 && !!character.flags?.includes(zeroWarnFlag('道德值')),
+      condition: character.hidden.道德值 <= 0 && !!character.flags?.includes(zeroWarnFlag('道德值')) && moralWarningMature,
       reason: '道德败坏',
       severity: 3,
       message: '道德败坏，丧尽天良，天人共愤'
@@ -511,9 +523,11 @@ function checkDemotion(
           财帛: character.attributes.财帛,
           欲望值: character.hidden.欲望值,
           道德值: character.hidden.道德值
-        }) && !!character.flags?.includes(CORRUPTION_WARNING_FLAG),
+        }) && !!character.flags?.includes(CORRUPTION_WARNING_FLAG) && corruptionWarningMature,
       reason: '贪墨被查',
-      severity: 3,
+      // 风闻入告是最后一次通知：宽限到期后先降两级，不当场革职。
+      // 旧版 severity 3 让 16–31 个月的局直接结案，玩家连中年的门都没摸到。
+      severity: 2,
       message: '贪墨受贿，中饱私囊，东窗事发'
     },
     {
@@ -1453,7 +1467,8 @@ export function useGameEngine(props: UseGameEngineProps) {
     let newAttrs = { ...currentCharacter.attributes }
 
     if (choice.staminaCost && choice.staminaCost > 0) {
-      newAttrs.体质 = Math.max(0, newAttrs.体质 - choice.staminaCost)
+      const capped = capDamage(newAttrs.体质, -choice.staminaCost)
+      newAttrs.体质 = Math.round(Math.max(0, newAttrs.体质 + capped))
     }
 
     if (choice.staminaBonus && choice.staminaBonus > 0) {
@@ -1475,7 +1490,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         const adjustedValue = Math.round(
           applyOriginModifier(currentCharacter.origin, mappedKey, difficultyAdjusted)
         )
-        newAttrs[attrKey] = Math.max(bounds.min, Math.min(bounds.max, (newAttrs[attrKey] || 0) + adjustedValue))
+        const cappedValue = capDamage(newAttrs[attrKey] || 0, adjustedValue)
+        newAttrs[attrKey] = Math.round(Math.max(bounds.min, Math.min(bounds.max, (newAttrs[attrKey] || 0) + cappedValue)))
       }
     }
 
@@ -1499,8 +1515,9 @@ export function useGameEngine(props: UseGameEngineProps) {
         if (isFugitive && stateKey === '圣眷' && value > 0) continue
         const currentVal = (newStateVals[stateKey] as number) || 0
         const difficultyAdjusted = value < 0 ? value * difficultyConfigRef.current.lossMultiplier : value
-        const adjustedStateValue = applyOriginStateModifier(currentCharacter.origin, mappedKey, difficultyAdjusted)
-        newStateVals[stateKey] = Math.max(0, Math.min(100, currentVal + adjustedStateValue))
+        const adjustedStateValue = Math.round(applyOriginStateModifier(currentCharacter.origin, mappedKey, difficultyAdjusted))
+        const cappedStateValue = capDamage(currentVal, adjustedStateValue)
+        newStateVals[stateKey] = Math.round(Math.max(0, Math.min(100, currentVal + cappedStateValue)))
       }
     }
 
@@ -1535,12 +1552,12 @@ export function useGameEngine(props: UseGameEngineProps) {
       hidden: {}
     }
     for (const key of Object.keys(newAttrs) as Array<keyof Attributes>) {
-      const delta = (newAttrs[key] ?? 0) - (currentCharacter.attributes[key] ?? 0)
+      const delta = Math.round((newAttrs[key] ?? 0) - (currentCharacter.attributes[key] ?? 0))
       if (delta !== 0) appliedEffects.attributes[key] = delta
     }
     for (const key of Object.keys(newStateVals) as Array<keyof GameStateValues>) {
       if (key === 'currentYear' || key === 'currentMonth' || key === 'turn') continue
-      const delta = ((newStateVals[key] as number) ?? 0) - ((currentGameState[key] as number) ?? 0)
+      const delta = Math.round(((newStateVals[key] as number) ?? 0) - ((currentGameState[key] as number) ?? 0))
       if (delta !== 0) appliedEffects.gameState[key] = delta
     }
     if (choice.effects.hidden) {
@@ -1554,8 +1571,9 @@ export function useGameEngine(props: UseGameEngineProps) {
         }
         const hiddenKey = key as keyof HiddenAttributes
         const adjustedValue = value < 0 ? value * difficultyConfigRef.current.lossMultiplier : value
-        const next = Math.max(0, Math.min(100, hiddenBase[hiddenKey] + adjustedValue))
-        const delta = next - hiddenBase[hiddenKey]
+        const cappedValue = capDamage(hiddenBase[hiddenKey], adjustedValue)
+        const next = Math.round(Math.max(0, Math.min(100, hiddenBase[hiddenKey] + cappedValue)))
+        const delta = Math.round(next - hiddenBase[hiddenKey])
         if (delta !== 0) appliedEffects.hidden[key] = delta
       }
     }
@@ -2905,7 +2923,7 @@ export function useGameEngine(props: UseGameEngineProps) {
         return
       }
 
-      const demotion = checkDemotion(adjustedScore, previousMeritScore, currentCharacter, currentGameState)
+      const demotion = checkDemotion(adjustedScore, previousMeritScore, currentCharacter, currentGameState, difficultyConfig.zeroGraceTurns)
       if (demotion.demoted && demotion.message) {
         if (demotion.newIdentity === 'civilian' || demotion.newIdentity === 'exiled') {
           addLifeRecord({
@@ -2931,12 +2949,23 @@ export function useGameEngine(props: UseGameEngineProps) {
         }
 
         setPromotionMessage(demotion.message)
-        setCharacter(prev => ({
-          ...prev,
-          rank: demotion.newRank || prev.rank,
-          demotionCount: prev.demotionCount + 1,
-          history: [...prev.history, `${currentGameState.currentYear}年${currentGameState.currentMonth}月：${demotion.message}（第${prev.demotionCount + 1}次贬官）`]
-        }))
+        setCharacter(prev => {
+          const consumedCorruptionWarning = demotion.reason === '贪墨被查'
+          const nextFlags = consumedCorruptionWarning
+            ? prev.flags.filter(f => f !== CORRUPTION_WARNING_FLAG)
+            : prev.flags
+          const nextFlagTurns = consumedCorruptionWarning
+            ? Object.fromEntries(Object.entries(prev.flagTurns || {}).filter(([f]) => f !== CORRUPTION_WARNING_FLAG))
+            : prev.flagTurns
+          return {
+            ...prev,
+            rank: demotion.newRank || prev.rank,
+            demotionCount: prev.demotionCount + 1,
+            flags: nextFlags,
+            flagTurns: nextFlagTurns,
+            history: [...prev.history, `${currentGameState.currentYear}年${currentGameState.currentMonth}月：${demotion.message}（第${prev.demotionCount + 1}次贬官）`]
+          }
+        })
         addLifeRecord({
           year: currentGameState.currentYear,
           month: currentGameState.currentMonth,

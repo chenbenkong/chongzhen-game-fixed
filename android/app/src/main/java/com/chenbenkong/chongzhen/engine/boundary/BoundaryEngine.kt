@@ -237,7 +237,7 @@ class BoundaryEngine(
         return 财帛 > 70 && 欲望值 > 75 && 道德值 < 30
     }
 
-    /** 归零死线统一判据：过宽限期 + 维度归零 + 已警告。 */
+    /** 归零死线统一判据：该维警告票满宽限（逐维倒计时）+ 维度归零 + 已警告。 */
     private fun doomedBy(
         group: String,
         key: String,
@@ -245,7 +245,13 @@ class BoundaryEngine(
         ctx: ConditionContext,
         character: CharacterState
     ): Boolean {
-        if (ctx.turn < grace) return false
+        val warnedAt = character.flagTurns["${data.constants.zeroWarnFlagPrefix}$key"]
+        // 新存档：从该维写下警告票的月份起算；旧存档缺月份才退回绝对回合。
+        if (warnedAt != null) {
+            if (ctx.turn - warnedAt < grace) return false
+        } else if (ctx.turn < grace) {
+            return false
+        }
         val value = when (group) {
             "attributes" -> ctx.attributes[key]
             "hidden" -> ctx.hidden[key]

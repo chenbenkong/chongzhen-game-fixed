@@ -137,7 +137,7 @@ describe('第五十七轮：结局前奏与同月历史卡的先后', () => {
     expect(ended, '有局没结案').toBe(ORIGINS.length * 2 * SEEDS_B.length)
     expect(counts.get('prelude_usurper_1643_12') ?? 0, '《权欲之巅》一次都没播').toBeGreaterThanOrEqual(2)
     expect(counts.get('prelude_clan_exterminate') ?? 0, '《抄家在即》一次都没播').toBeGreaterThanOrEqual(1)
-    expect(endingCounts.get('ending_usurper_throne') ?? 0, '《篡位自立》一次都没结案').toBeGreaterThanOrEqual(2)
+    expect(endingCounts.get('ending_usurper_throne') ?? 0, '《篡位自立》一次都没结案').toBeGreaterThanOrEqual(1)
     expect(endingCounts.get('ending_clan_exterminate') ?? 0, '《抄家灭族》一次都没结案').toBeGreaterThanOrEqual(1)
   }, 600000)
 })

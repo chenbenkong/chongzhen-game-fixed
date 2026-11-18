@@ -14,7 +14,7 @@ const WARNING: GameEvent = {
 
 function saveWith(choice: EventChoice) {
   return makeSaveData({
-    character: makeCharacter({ attributes: { 财帛: 50, 文韬: 50, 理政: 50, 武略: 50, 体质: 50 } }),
+    character: makeCharacter({ attributes: { 财帛: 0, 文韬: 50, 理政: 50, 武略: 50, 体质: 50 } }),
     currentEvent: { ...WARNING, choices: [choice] },
     currentEventId: WARNING.id
   })

@@ -2,7 +2,7 @@ import { BoundaryEvent, BoundaryEventCheckParams } from '../types/boundaryEvent'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { GameEvent } from '../types/event'
 import { wrapBatchAsBoundaryEvents, NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from './boundaryEventCompiler'
-import { isFatalZero, zeroWarningEvents, type ZeroKey } from './zeroWarningEvents'
+import { isFatalZero, zeroWarningEvents, zeroWarnFlag, type ZeroKey } from './zeroWarningEvents'
 import { corruptionWarningEvents, FUGITIVE_FLAG } from './demotionWarningEvents'
 // 直接从子文件导入结局数据（避免与 ending/index.ts 循环依赖）
 import { allEndingEvents as mainNarrativeEndings, OLD_AGE_ENDING_TILE } from './events/ending/endings_all'
@@ -465,16 +465,27 @@ const ENDING_MORAL_DEGENERACY: GameEvent = {
  * 第一次归零由 `zeroWarningEvents` 那条 crisis 事件当面告知并给出回天之路（写下
  * `归零警告·X` 这个 flag），下面的 check 因此统一改成 `pastGrace && isFatalZero`
  * —— 没被警告过的归零不判死，警告过又再次归零的，这一次没有人再救你。
+ *
+ * 宽限必须是**逐维倒计时**：从该维写下警告票的那个月起算，而不是局内绝对月份。
+ * 旧的 `turn >= 18` 是一道全局处决日，所有局会在同一个月突然死亡，
+ * 宽限拉得越长，阶跃越明显；那不是难度曲线。
  */
 const THRESHOLD_ENDING_GRACE_TURNS = 30
 
-function pastGrace(params: BoundaryEventCheckParams): boolean {
-  return (params.gameState?.turn ?? 0) >= (params.thresholdGraceTurns ?? THRESHOLD_ENDING_GRACE_TURNS)
+function pastGrace(params: BoundaryEventCheckParams, key: ZeroKey): boolean {
+  const grace = params.thresholdGraceTurns ?? THRESHOLD_ENDING_GRACE_TURNS
+  const warnedAt = params.flagTurns?.[zeroWarnFlag(key)]
+  if (typeof warnedAt === 'number') {
+    return ((params.gameState?.turn ?? 0) - warnedAt) >= grace
+  }
+  // 旧存档只有警告 flag、没有 flagTurns：没有倒计时起点，只能退回绝对回合。
+  // 新开一局永远走上面那条逐维倒计时。
+  return (params.gameState?.turn ?? 0) >= grace
 }
 
-/** 阈值类结局的统一判据：过了宽限期、该维归零、且这一维已经被警告过 */
+/** 阈值类结局的统一判据：该维警告票已满宽限、该维归零、且这一维已经被警告过 */
 function doomedBy(params: BoundaryEventCheckParams, key: Parameters<typeof isFatalZero>[1]): boolean {
-  return pastGrace(params) && isFatalZero(params, key)
+  return pastGrace(params, key) && isFatalZero(params, key)
 }
 
 /**

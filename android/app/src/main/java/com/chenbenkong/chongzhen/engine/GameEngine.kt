@@ -441,7 +441,7 @@ class GameEngine(
             val demotion = RankService.checkDemotion(
                 adjustedScore, state.previousMeritScore, state.character, state.court, data.ranks,
                 data.constants.fugitiveFlag, data.constants.corruptionWarningFlag,
-                data.constants.zeroWarnFlagPrefix
+                data.constants.zeroWarnFlagPrefix, difficulty.zeroGraceTurns
             )
             if (demotion.demoted) {
                 if (demotion.newIdentity == "exiled" || demotion.newIdentity == "civilian") {
@@ -449,6 +449,10 @@ class GameEngine(
                 } else {
                     state.character.rank = demotion.newRank ?: state.character.rank
                     state.character.demotionCount += 1
+                    if (demotion.reason == "贪墨被查") {
+                        state.character.flags.remove(data.constants.corruptionWarningFlag)
+                        state.character.flagTurns.remove(data.constants.corruptionWarningFlag)
+                    }
                 }
             }
         }

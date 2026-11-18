@@ -90,9 +90,10 @@ object EffectApplier {
             val key = ATTR_MAP[rawKey] ?: rawKey
             val bounds = ATTR_BOUNDS[key] ?: (0.0 to 150.0)
             val difficultyAdjusted = if (value > 0) value * attributeMultiplier else value * lossMultiplier
-            val adjusted = applyOriginModifier(character.origin, key, difficultyAdjusted).roundToInt()
-            val next = (character.attributes[key] ?: 0.0) + adjusted
-            character.attributes[key] = clamp(next, bounds.first, bounds.second)
+            val adjusted = applyOriginModifier(character.origin, key, difficultyAdjusted).roundToInt().toDouble()
+            val capped = capDamage(character.attributes[key] ?: 0.0, adjusted)
+            val next = (character.attributes[key] ?: 0.0) + capped
+            character.attributes[key] = clamp(next, bounds.first, bounds.second).roundToInt().toDouble()
         }
 
         // ---- 五方态度 ----
@@ -103,13 +104,16 @@ object EffectApplier {
             if (isFugitive && key == "圣眷" && value > 0) return@forEach
             val adjusted = applyOriginStateModifier(character.origin, key, if (value < 0) value * lossMultiplier else value)
             val current = stateValue(court, key)
-            stateValue(court, key, clamp(current + adjusted, 0.0, 100.0))
+            val capped = capDamage(current, adjusted)
+            stateValue(court, key, clamp(current + capped, 0.0, 100.0).roundToInt().toDouble())
         }
 
         // ---- 隐藏属性（未知键跳过，不写 NaN）----
         effects.hidden?.forEach { (key, value) ->
             if (key !in HIDDEN_KEYS) return@forEach
-            val next = clamp((character.hidden[key] ?: 0.0) + if (value < 0) value * lossMultiplier else value, 0.0, 100.0)
+            val adjusted = if (value < 0) value * lossMultiplier else value
+            val current = character.hidden[key] ?: 0.0
+            val next = clamp(current + capDamage(current, adjusted), 0.0, 100.0).roundToInt().toDouble()
             character.hidden[key] = next
         }
 
@@ -318,5 +322,16 @@ object EffectApplier {
         character.faction.阉党好感 = eunuch
         character.faction.立场 = alignment
         character.faction.党争烈度 = strife
+    }
+
+    /**
+     * 单次结算的负向伤害上限：最大跌幅 = max(当前值 × 50%, 10)。
+     * 与 Web `src/utils/damageCap.ts` 同一口径；正增量原样返回。
+     */
+    private fun capDamage(current: Double, delta: Double): Double {
+        if (delta >= 0) return kotlin.math.round(delta)
+        val currentSafe = max(0.0, kotlin.math.round(current))
+        val maxDrop = max(kotlin.math.floor(currentSafe * 0.5), 10.0)
+        return -min(kotlin.math.round(kotlin.math.abs(delta)), maxDrop)
     }
 }

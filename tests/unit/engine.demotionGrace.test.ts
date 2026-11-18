@@ -90,10 +90,25 @@ describe('K-14b：道德归零的两条判死通路必须同进同退', () => {
     expect(result.current.identityType).toBe('official')
   })
 
-  it('已经被警告过又归零 → severity 3 革职，走 handleGameOver 落到已注册的结局格子上', async () => {
+  it('已经被警告过、但警告未满 30 个月 → 不革职（逐维倒计时先走完）', async () => {
     const { result } = renderGameEngine({
-      loadSaveData: saveFor({ turn: 20, 道德值: -5, 圣眷: 50, flags: [zeroWarnFlag('道德值')] })
+      loadSaveData: saveFor({
+        turn: 20,
+        道德值: -5,
+        圣眷: 50,
+        flags: [zeroWarnFlag('道德值')]
+      })
     })
+    await flush()
+
+    expect(result.current.isGameOver).toBe(false)
+    expect(result.current.identityType).toBe('official')
+  })
+
+  it('警告满 30 个月后仍归零 → severity 3 革职，走 handleGameOver 落到已注册的结局格子上', async () => {
+    const save = saveFor({ turn: 50, 道德值: -5, 圣眷: 50, flags: [zeroWarnFlag('道德值')] })
+    save.character.flagTurns = { [zeroWarnFlag('道德值')]: 20 }
+    const { result } = renderGameEngine({ loadSaveData: save })
     await flush()
 
     expect(result.current.isGameOver).toBe(true)

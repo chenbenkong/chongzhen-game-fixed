@@ -7,6 +7,7 @@ interface StatusPanelProps {
 }
 
 function StatusPanel({ gameState }: StatusPanelProps) {
+  const 国势 = Math.round(gameState.国势 ?? 75)
   const getFortuneLevel = (value: number): string => {
     if (value >= 70) return 'fortune-high'
     if (value >= 50) return 'fortune-medium'
@@ -83,14 +84,14 @@ function StatusPanel({ gameState }: StatusPanelProps) {
         <div className="national-fortune-bar">
           <div className="fortune-header">
             <span className="fortune-title">国势</span>
-            <span className={`fortune-value ${getFortuneLevel(gameState.国势 ?? 75)}`}>
-              {gameState.国势 ?? 75}
+            <span className={`fortune-value ${getFortuneLevel(国势)}`}>
+              {国势}
             </span>
           </div>
           <div className="fortune-track">
             <div
-              className={`fortune-fill ${getFortuneLevel(gameState.国势 ?? 75)}`}
-              style={{ width: `${gameState.国势 ?? 75}%` }}
+              className={`fortune-fill ${getFortuneLevel(国势)}`}
+              style={{ width: `${国势}%` }}
             />
           </div>
           <div className="fortune-labels">

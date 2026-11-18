@@ -285,9 +285,9 @@ describe(`亡命江湖的等待期怎么活（${GAMES} 局 fugitive，第廿八�
    * 带 潜逃、活进 1635–1650 的年窗、结在《亡命江湖》，一次跑完就是证据。
    * 复现性由 `simulate.determinism.test.ts` 钉着 —— 从此不再换。
    */
-  it('反推存档：seed 9 / fugitive / 诗文清望 真的走得到亡命江湖', async () => {
+  it('反推存档：seed 4 / fugitive / 诗文清望 真的走得到亡命江湖', async () => {
     const r = await simulateRun({
-      seed: 9,
+      seed: 4,
       policy: 'fugitive',
       origin: '诗文清望',
       maxMonths: 240,

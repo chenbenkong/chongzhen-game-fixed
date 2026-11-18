@@ -585,8 +585,12 @@ describe('真引擎跑完一局：从 handleChoice 到格子亮', () => {
    * P0 把标准难度宽限改成 30 个月后，旧取样里 4/6/9 都落到破产，只剩 2 格。
    * 重扫 1..30：取 1/3/7/11/23 —— exile / bankrupt / moral_degeneracy /
    * scholar_ostracism / eunuch，5 局 5 格，破产与革职两支都压住。
+   *
+   * P0.1 把「贪墨被查」从当场革职降为宽限 30 个月后降两级，随机流又整体挪位。
+   * 同一口径重扫 1..40：取 1/2/20/22/24 —— emperor_hate / bankrupt / exile /
+   * scholar_ostracism / scholar_martyr，5 局 5 格，破产与革职两支仍压住。
    */
-  const SEEDS = [1, 3, 7, 11, 23]
+  const SEEDS = [1, 2, 20, 22, 24]
 
   it('引擎实际达成的每一局都在图鉴里有格子，且真的亮了', async () => {
     const outcomes = []

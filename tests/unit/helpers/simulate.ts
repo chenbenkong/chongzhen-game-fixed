@@ -1393,7 +1393,7 @@ export async function simulateRun(opts: {
       endingId = endingTile
       endingTitle = ENDING_TITLES.get(endingTile) ?? null
     }
-    if (endingTile === 'ending_demotion') {
+    if (endingTile === 'ending_demotion' || endingTile === 'ending_exile') {
       const bg = hook.result.current.currentEvent?.narrative?.background
       endReason = typeof bg === 'string' ? bg.split('\n')[0].trim() || null : null
     }

@@ -101,12 +101,25 @@ object RankService {
         ranks: List<RankConfig>,
         fugitiveFlag: String,
         corruptionWarningFlag: String,
-        zeroWarnPrefix: String
+        zeroWarnPrefix: String,
+        zeroGraceTurns: Int = 30
     ): DemotionResult {
         if (court.turn < DEMOTION_GRACE_TURNS) return DemotionResult(demoted = false)
         if (character.flags.contains(fugitiveFlag)) return DemotionResult(demoted = false)
 
         val currentRankBaseScore = ranks.find { it.name == character.rank }?.minScore ?: 500.0
+        val moralWarnedAt = character.flagTurns["${zeroWarnPrefix}道德值"]
+        val moralWarningMature = if (moralWarnedAt != null) {
+            court.turn - moralWarnedAt >= zeroGraceTurns
+        } else {
+            court.turn >= zeroGraceTurns
+        }
+        val corruptionWarnedAt = character.flagTurns[corruptionWarningFlag]
+        val corruptionWarningMature = if (corruptionWarnedAt != null) {
+            court.turn - corruptionWarnedAt >= zeroGraceTurns
+        } else {
+            court.turn >= zeroGraceTurns
+        }
 
         val reasons = listOf(
             DemotionReason(
@@ -117,7 +130,8 @@ object RankService {
             ),
             DemotionReason(
                 condition = (character.hidden["道德值"] ?: 0.0) <= 0 &&
-                    character.flags.contains("${zeroWarnPrefix}道德值"),
+                    character.flags.contains("${zeroWarnPrefix}道德值") &&
+                    moralWarningMature,
                 reason = "道德败坏",
                 severity = 3,
                 message = "道德败坏，丧尽天良，天人共愤"
@@ -135,9 +149,11 @@ object RankService {
                 message = "政绩平庸，碌碌无为，不堪其任"
             ),
             DemotionReason(
-                condition = isCorruptExposed(character) && character.flags.contains(corruptionWarningFlag),
+                condition = isCorruptExposed(character) &&
+                    character.flags.contains(corruptionWarningFlag) &&
+                    corruptionWarningMature,
                 reason = "贪墨被查",
-                severity = 3,
+                severity = 2,
                 message = "贪墨受贿，中饱私囊，东窗事发"
             ),
             DemotionReason(
