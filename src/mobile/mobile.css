@@ -748,6 +748,18 @@ body.mobile-applied textarea {
 .mobile-shell .bgm-toggle--inline .bgm-label { display: none; }
 .mobile-shell .bgm-toggle--inline .bgm-icon { font-size: 1.1rem; }
 
+/* 标题屏主视觉是浅灰纸色，BGM 若沿用透明底会几乎看不见；
+   只给标题屏这一处加深底，不影响牌桌顶栏的幽灵按钮。 */
+.mobile-shell .mobile-title .bgm-toggle--inline {
+  background: rgba(10, 8, 7, 0.62);
+  border-color: rgba(197, 165, 90, 0.48);
+  color: rgba(235, 220, 180, 0.9);
+}
+.mobile-shell .mobile-title .bgm-toggle--inline:hover {
+  background: rgba(10, 8, 7, 0.82);
+  border-color: rgba(197, 165, 90, 0.72);
+}
+
 /* 人物面板：默认收起；补回桌面侧栏的财帛 / 文韬 / 理政 / 武略 / 体质与隐藏属性。 */
 .mobile-shell .mobile-panel__scrim {
   position: absolute;
