@@ -278,3 +278,81 @@
     font-size: 0.76rem;
   }
 }
+
+/*
+ * 手机横屏（例如 924×426）：宽度够放三列，缺的只是高度。
+ * 上面的单列规则会让第三张卡和开局按钮掉到折叠线以下；
+ * 这里把三张卡压回同一行，并把正文夹到三行，保证一屏能选、能开局。
+ */
+@media (max-height: 520px) and (min-width: 761px) {
+  .legacy-screen {
+    padding: 8px 10px;
+  }
+
+  .legacy-sheet {
+    max-height: calc(100dvh - 16px);
+    padding: 10px 16px 12px;
+  }
+
+  .legacy-head {
+    margin-bottom: 8px;
+  }
+
+  .legacy-head h1 {
+    font-size: 1.45rem;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+  }
+
+  .legacy-head p {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  .legacy-points {
+    margin-bottom: 8px;
+  }
+
+  .legacy-points > div {
+    padding: 5px 4px;
+  }
+
+  .legacy-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .legacy-card {
+    min-height: 0;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .legacy-card-top strong {
+    font-size: 0.92rem;
+  }
+
+  .legacy-card-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    font-size: 0.66rem;
+    line-height: 1.35;
+  }
+
+  .legacy-card-cost {
+    font-size: 0.64rem;
+  }
+
+  .legacy-actions {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .legacy-btn {
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+}

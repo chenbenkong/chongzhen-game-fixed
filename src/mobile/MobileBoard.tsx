@@ -12,6 +12,7 @@ import type { SaveData } from '../types/save'
 import type { DifficultyLevel } from '../types/difficulty'
 import { useGameEngine } from '../hooks/useGameEngine'
 import { toMingEraYear } from '../utils/endingSystem'
+import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 
 import EventDisplay from '../components/EventDisplay'
 import RiskHud from '../components/RiskHud'
@@ -35,6 +36,7 @@ export interface MobileBoardProps {
   playerCustomAge?: number | null
   loadSaveData?: SaveData
   difficulty: DifficultyLevel
+  legacyPerkId?: LegacyPerkId | null
   onReturnToMenu?: () => void
 }
 
@@ -48,6 +50,7 @@ const PERSONAL_ATTRIBUTES = ['财帛', '文韬', '理政', '武略', '体质'] a
 
 export default function MobileBoard(props: MobileBoardProps) {
   const engine = useGameEngine(props)
+  const legacyGoalId = LEGACY_PERKS.find((perk) => perk.id === props.legacyPerkId)?.goal
   const {
     character,
     gameState,
@@ -424,6 +427,7 @@ export default function MobileBoard(props: MobileBoardProps) {
             character={character}
             gameState={gameState}
             biography={biography}
+            legacyGoalId={legacyGoalId}
             onRestart={handleRetryEnding}
             canRestart={canRetryEnding}
             restartLocked={retryEndingLocked}

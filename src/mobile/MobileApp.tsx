@@ -13,6 +13,8 @@ import { origins } from '../data/origins'
 import { setAchievementData } from '../types/achievement'
 import { loadDifficulty, saveDifficulty } from '../types/difficulty'
 import type { NameInputResult } from '../components/NameInput'
+import LegacySelect from '../components/LegacySelect'
+import type { LegacyPerkId } from '../data/legacy'
 
 import MobileShell from './MobileShell'
 import MobileTitle from './MobileTitle'
@@ -24,7 +26,7 @@ import './mobile.css'
 // 存档槽位弹窗懒加载：标题屏不预取这一块（与桌面同一口径）。
 const SaveSlotsModal = lazy(() => import('../components/SaveSlotsModal'))
 
-type MobilePhase = 'title' | 'name' | 'origin' | 'board'
+type MobilePhase = 'title' | 'name' | 'origin' | 'legacy' | 'board'
 
 const FALLBACK_ATTRIBUTES: Attributes = { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
 
@@ -35,6 +37,7 @@ export default function MobileApp() {
   const [playerHometown, setPlayerHometown] = useState('')
   const [playerCustomAge, setPlayerCustomAge] = useState<number | null>(null)
   const [selectedOrigin, setSelectedOrigin] = useState<OriginType | null>(null)
+  const [selectedLegacyPerk, setSelectedLegacyPerk] = useState<LegacyPerkId | null>(null)
   const [finalDegree, setFinalDegree] = useState<DegreeType>('进士')
   const [finalAttributes, setFinalAttributes] = useState<Attributes | null>(null)
   const [loadSaveData, setLoadSaveData] = useState<SaveData | null>(null)
@@ -57,6 +60,7 @@ export default function MobileApp() {
     const restoredOrigin = saveData.origin && origins[saveData.origin] ? saveData.origin : '寒门'
     setLoadSaveData(saveData)
     setSelectedOrigin(restoredOrigin)
+    setSelectedLegacyPerk(null)
     setPlayerName(saveData.character.name || '')
     setPlayerCourtesyName(saveData.character.courtesyName || '')
     setPlayerHometown(saveData.character.hometown || '')
@@ -88,6 +92,12 @@ export default function MobileApp() {
     const originData = origins[origin]
     setFinalDegree((originData.initialDegree as DegreeType) || '进士')
     setFinalAttributes(originData.initialAttributes)
+    setSelectedLegacyPerk(null)
+    setPhase('legacy')
+  }, [])
+
+  const handleLegacyConfirm = useCallback((perkId: LegacyPerkId | null) => {
+    setSelectedLegacyPerk(perkId)
     setPhase('board')
   }, [])
 
@@ -132,6 +142,10 @@ export default function MobileApp() {
         <MobileOriginSetup onSelect={handleOriginSelect} onBack={() => setPhase('name')} />
       )}
 
+      {phase === 'legacy' && (
+        <LegacySelect onConfirm={handleLegacyConfirm} onBack={() => setPhase('origin')} />
+      )}
+
       {phase === 'board' && selectedOrigin && (finalAttributes || loadSaveData) && (
         <MobileBoard
           origin={selectedOrigin}
@@ -143,6 +157,7 @@ export default function MobileApp() {
           playerCustomAge={playerCustomAge ?? loadSaveData?.character?.age ?? null}
           loadSaveData={loadSaveData ?? undefined}
           difficulty={difficulty}
+          legacyPerkId={selectedLegacyPerk}
           onReturnToMenu={handleReturnToMenu}
         />
       )}
