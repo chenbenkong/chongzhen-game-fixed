@@ -711,7 +711,7 @@ function dangerValue(
   return src[key] ?? 0
 }
 
-function collectDangers(character: Character, gameState: GameStateValues): DangerRow[] {
+export function collectDangers(character: Character, gameState: GameStateValues): DangerRow[] {
   const held = new Set(character.flags)
   return ZERO_THRESHOLDS.map((t, order) => {
     const value = dangerValue(t.key, t.group, character, gameState)

@@ -14,6 +14,7 @@ import { useGameEngine } from '../hooks/useGameEngine'
 import { toMingEraYear } from '../utils/endingSystem'
 
 import EventDisplay from '../components/EventDisplay'
+import RiskHud from '../components/RiskHud'
 import AttributePanel from '../components/AttributePanel'
 import StatusPanel from '../components/StatusPanel'
 import GameOverScreen from '../components/GameOverScreen'
@@ -179,7 +180,7 @@ export default function MobileBoard(props: MobileBoardProps) {
             {SIX_STATES.map(key => (
               <span key={key} className="mobile-state-capsule">
                 <span className="mobile-state-capsule__label">{key}</span>
-                <span className="mobile-state-capsule__value">{gameState[key]}</span>
+                <span className="mobile-state-capsule__value">{Math.round(gameState[key])}</span>
               </span>
             ))}
           </div>
@@ -229,6 +230,8 @@ export default function MobileBoard(props: MobileBoardProps) {
           )}
         </button>
       </header>
+
+      <RiskHud character={character} gameState={gameState} compact />
 
       {/* 主区：中央事件卡 */}
       <main className="mobile-board__main">

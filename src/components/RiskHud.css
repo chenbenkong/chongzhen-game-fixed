@@ -1,0 +1,97 @@
+.risk-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 3px 16px;
+  margin-bottom: 4px;
+  background: linear-gradient(90deg, rgba(72, 28, 18, 0.78), rgba(24, 18, 10, 0.86));
+  border: 1px solid rgba(179, 58, 42, 0.55);
+  border-radius: 3px;
+  color: rgba(245, 230, 200, 0.82);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.risk-hud__label {
+  flex: 0 0 auto;
+  color: #f0c7a6;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.risk-hud__chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 1px 7px;
+  border: 1px solid rgba(197, 165, 90, 0.28);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.22);
+  white-space: nowrap;
+}
+
+.risk-hud__chip.is-near {
+  border-color: rgba(197, 165, 90, 0.5);
+  color: #e7d3a4;
+}
+
+.risk-hud__chip.is-zero {
+  border-color: rgba(206, 122, 55, 0.8);
+  color: #ffd2a8;
+}
+
+.risk-hud__chip.is-cliff {
+  border-color: rgba(190, 62, 44, 0.9);
+  color: #ffd0c2;
+  background: rgba(120, 30, 20, 0.28);
+}
+
+.risk-hud__dim {
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.risk-hud__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #fff3dc;
+}
+
+.risk-hud__state {
+  color: rgba(245, 230, 200, 0.7);
+}
+
+.risk-hud__ending {
+  color: rgba(197, 165, 90, 0.65);
+}
+
+.risk-hud__hint {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: rgba(255, 208, 194, 0.78);
+  white-space: nowrap;
+}
+
+.risk-hud.is-compact {
+  min-height: 24px;
+  padding: 2px 8px;
+  margin-bottom: 2px;
+  gap: 6px;
+  font-size: 0.7rem;
+}
+
+.risk-hud.is-compact .risk-hud__label {
+  letter-spacing: 1px;
+}
+
+.risk-hud.is-compact .risk-hud__state {
+  color: rgba(245, 230, 200, 0.62);
+}
+
+.risk-hud.is-compact .risk-hud__hint {
+  display: none;
+}

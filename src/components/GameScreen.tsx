@@ -5,6 +5,7 @@ import { DifficultyLevel, DIFFICULTY_CONFIGS } from '../types/difficulty'
 import { useGameShortcuts } from '../hooks/useGameShortcuts'
 import { useGameEngine, RANKS } from '../hooks/useGameEngine'
 import StatusBar from './StatusBar'
+import RiskHud from './RiskHud'
 import AttributePanel from './AttributePanel'
 import RoutePanel from './RoutePanel'
 import StatusPanel from './StatusPanel'
@@ -359,6 +360,8 @@ function GameScreen(props: GameScreenProps) {
           degree={props.degree}
           onCheatClick={openCheatMode}
         />
+
+        <RiskHud character={character} gameState={gameState} />
 
         <StorylineBar
           currentStorylineKey={currentStorylineKey}
