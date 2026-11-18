@@ -27,6 +27,7 @@ export default function OriginSelect({ onSelect }: OriginSelectProps) {
           <div
             key={origin.type}
             className={`origin-card origin-${origin.type}`}
+            data-origin={origin.type}
             role="button"
             tabIndex={0}
             aria-label={`选择出身：${origin.name}`}
@@ -34,6 +35,7 @@ export default function OriginSelect({ onSelect }: OriginSelectProps) {
             onKeyDown={(e) => handleCardKeyDown(e, origin)}
           >
             <div className="card-header">
+              <span className="origin-emblem" aria-hidden="true" />
               <h2>{origin.name}</h2>
               <span className="rank-info">
                 <span className="rank-label">{origin.initialRank || '待定'}</span>

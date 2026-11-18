@@ -17,8 +17,9 @@ function OriginCard({ origin, onSelect }: { origin: OriginData; onSelect: () => 
   const [expanded, setExpanded] = useState(false)
   const entries = Object.entries(origin.initialAttributes)
   return (
-    <div className={`mobile-origin-card${expanded ? ' is-expanded' : ''}`}>
+    <div className={`mobile-origin-card${expanded ? ' is-expanded' : ''}`} data-origin={origin.type}>
       <div className="mobile-origin-card__header">
+        <span className="origin-emblem" aria-hidden="true" />
         <h2>{origin.name}</h2>
         <span className="mobile-origin-card__rank">
           {origin.initialRank || '待定'} · {origin.initialDegree || '进士'}

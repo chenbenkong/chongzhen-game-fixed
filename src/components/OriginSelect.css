@@ -88,11 +88,39 @@
 .origin-card .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid #2a2015;
 }
+
+.origin-card .card-header h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 出身印记：56px 见方，按 origin 换图；只做卡头识别，不占正文。 */
+.origin-card .origin-emblem {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border: 1px solid #4a3820;
+  border-radius: 3px;
+  background-color: #0d0a08;
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(212, 165, 32, 0.08), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.origin-card[data-origin="寒门"] .origin-emblem { background-image: url('../assets/origin-hanmen.webp'); }
+.origin-card[data-origin="缙绅"] .origin-emblem { background-image: url('../assets/origin-jinshen.webp'); }
+.origin-card[data-origin="没落世家"] .origin-emblem { background-image: url('../assets/origin-moluo-shijia.webp'); }
+.origin-card[data-origin="诗文清望"] .origin-emblem { background-image: url('../assets/origin-shiwen-qingwang.webp'); }
+.origin-card[data-origin="胥吏"] .origin-emblem { background-image: url('../assets/origin-xuli.webp'); }
+.origin-card[data-origin="海商"] .origin-emblem { background-image: url('../assets/origin-haishang.webp'); }
+.origin-card[data-origin="罪臣之后"] .origin-emblem { background-image: url('../assets/origin-zuichen-zhihou.webp'); }
+.origin-card[data-origin="军户"] .origin-emblem { background-image: url('../assets/origin-junhu.webp'); }
 
 .origin-card .card-header h2 {
   color: #d4a520;
