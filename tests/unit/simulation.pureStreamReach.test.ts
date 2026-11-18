@@ -87,6 +87,13 @@ describe(`清流骨鲠 实测（stream 组 ${GAMES} 局 × 四出身）`, () => 
     ).toBeGreaterThan(0)
   })
 
+  it('第二拍《直言进谏》真的播出来过 —— 不是只加了一张没人见过的票', () => {
+    expect(
+      firedIn('route_loyal_minister').length,
+      `${GAMES} 局里《直言进谏》一次也没播：清流直谏这张票没人写，`
+    ).toBeGreaterThan(0)
+  })
+
   it('拒过《致仕善终》的玩家还能继续往下走 —— 逐格闸门没有把它自己也关死', () => {
     const declined = firedIn('ending_honorable_retirement').filter(
       r => r.endingId !== 'ending_honorable_retirement'

@@ -58,7 +58,10 @@ export const eventsRouteGuide: GameEvent[] = [
           hidden: {
               道德值: 10
         },
-          gameState: { 清议: 15, 圣眷: -10, 中官: -10, 民望: 15 }
+          gameState: { 清议: 15, 圣眷: -10, 中官: -10, 民望: 15 },
+          // P1：这一拍是《清流骨鲠》三拍里的第二拍（第一拍是《清议之争》的弹劾）。
+          // 只有坚持/联名两条写票；明哲保身不写，路线在此分叉。
+          flags: { add: ['清流直谏'] }
         },
         resultDescription: '你坚持弹劾，虽然得罪了权贵，但赢得了清议的尊重。',
         result: {
@@ -106,7 +109,8 @@ export const eventsRouteGuide: GameEvent[] = [
         effects: {
           attributes: { 文韬: 5, 理政: 3 },
           gameState: { 清议: 12, 圣眷: -5, 中官: -5 },
-          hidden: { 道德值: 8, 野心值: 3, 机敏值: 3 }
+          hidden: { 道德值: 8, 野心值: 3, 机敏值: 3 },
+          flags: { add: ['清流直谏'] }
         },
         result: {
           title: '直言进谏 · 联名上疏',

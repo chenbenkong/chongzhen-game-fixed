@@ -155,7 +155,17 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         title: '天伦之乐',
         mode: 'any',
         priority: 115,
-        tickets: ['皮岛人脉', '士绅联盟', '持续仁政', '修族谱', '义田'],
+        tickets: [
+          '皮岛人脉',
+          '士绅联盟',
+          '持续仁政',
+          '修族谱',
+          '义田',
+          'harmonious_family',
+          'has_children',
+          'wife_respected',
+          'legitimate_heir'
+        ],
         window: { min: 1640, max: 1660 }
       },
       {
