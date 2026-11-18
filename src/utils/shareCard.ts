@@ -151,12 +151,16 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
     ctx.fillText(model.goalLine, canvas.width / 2, 522)
   }
 
-  // 评语；有志业行时压到 10 行，避免顶到故人段。
+  // 评语；有志业行时压到 10 行，避免顶到故人段；超出的部分用省略号收尾。
   ctx.textAlign = 'left'
   ctx.fillStyle = ink
   ctx.font = '28px "STKaiti", "KaiTi", "SimKai", serif'
-  const bodyLines = wrapCanvasText(model.evaluation, innerWidth, (value) => ctx.measureText(value).width)
-    .slice(0, model.goalLine ? 10 : 12)
+  const allBodyLines = wrapCanvasText(model.evaluation, innerWidth, (value) => ctx.measureText(value).width)
+  const bodyLineLimit = model.goalLine ? 10 : 12
+  const bodyLines = allBodyLines.slice(0, bodyLineLimit)
+  if (allBodyLines.length > bodyLineLimit && bodyLines.length > 0) {
+    bodyLines[bodyLines.length - 1] += '…'
+  }
   let y = model.goalLine ? 574 : 556
   for (const line of bodyLines) {
     ctx.fillText(line, margin, y)
@@ -165,7 +169,7 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
 
   // 故人
   if (model.people.length > 0) {
-    y += 18
+    y += model.goalLine ? 36 : 18
     ctx.fillStyle = gold
     ctx.font = '700 26px "STKaiti", "KaiTi", "SimKai", serif'
     ctx.fillText('故　人', margin, y)
