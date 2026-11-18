@@ -5,6 +5,7 @@ import { getUnlockedAchievements, Achievement } from '../types/achievement'
 import { extractCounterfactuals, getArchetype, toChineseNum, toMingEraYear } from '../utils/endingSystem'
 import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
+import { relationshipEpilogue } from '../data/characters'
 import Icon from './Icon'
 import './GameOverScreen.css'
 
@@ -79,6 +80,10 @@ export default function GameOverScreen({
     () => deathCauseOf(endingEvent ? resolveEndingTileId(endingEvent.id) : null),
     [endingEvent]
   )
+  const relationships = useMemo(
+    () => relationshipEpilogue(character.flags),
+    [character.flags]
+  )
 
   return (
     <div className={`ending-screen ending-${endingType}`}>
@@ -117,6 +122,13 @@ export default function GameOverScreen({
 
         {endingSummary && (
           <p className="ending-summary">{endingSummary}</p>
+        )}
+
+        {relationships && (
+          <div className="ending-relationships" aria-label="这一生绕不开的人">
+            <span className="ending-relationships-label">故 人</span>
+            <p className="ending-relationships-text">{relationships}</p>
+          </div>
         )}
 
         {deathCause && (

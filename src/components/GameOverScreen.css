@@ -1155,6 +1155,34 @@
   overflow: hidden;
 }
 
+/* P1：结局里的“故人”。只列真的写过关系票的人，最多三个；不占整屏。 */
+.ending-relationships {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 12px;
+  border: 1px solid rgba(201, 162, 39, 0.16);
+  border-left: 2px solid rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.04);
+}
+
+.ending-relationships-label {
+  color: #a98b6b;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.ending-relationships-text {
+  margin: 0;
+  color: #b9ad96;
+  font-family: 'STKaiti', 'KaiTi', 'SimKai', '楷体', serif;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
 /* 归零死因：只占一行，和“一生概要”同宽，不另开一栏说明文。 */
 .ending-cause {
   display: flex;
