@@ -545,7 +545,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_died_battlefield',
-    storyline: 'ordinary',
+    storyline: 'border_war',
     title: '战死沙场',
     description: '你倒在了为国征战的沙场上...',
     type: 'ending',
@@ -720,7 +720,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_usurper_throne',
-    storyline: 'ordinary',
+    storyline: 'power',
     title: '篡位自立',
     description: '趁乱称帝，黄袍加身，注定背负千古骂名。',
     type: 'ending',
@@ -870,7 +870,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_southern_ming',
-    storyline: 'ordinary',
+    storyline: 'nationfall',
     title: '南渡续祚',
     description: '你在南方延续了明朝的国祚...',
     type: 'ending',
@@ -1032,7 +1032,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_jiashen_nationfall',
-    storyline: 'ordinary',
+    storyline: 'nationfall',
     title: '甲申国变',
     description: '见证崇祯帝煤山殉国，二百七十六年国祚画上句号。',
     type: 'ending',
@@ -1199,7 +1199,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_zhongxing_success',
-    storyline: 'ordinary',
+    storyline: 'legend',
     title: '中兴成功',
     description: '你创造了历史——大明中兴！',
     type: 'ending',
@@ -1750,7 +1750,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_recluse_scholar',
-    storyline: 'ordinary',
+    storyline: 'hermit',
     title: '大儒传世',
     description: '辞官讲学、著述等身，以思想影响后世三百年。',
     type: 'ending',
@@ -1852,7 +1852,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_wealthy_retiree',
-    storyline: 'ordinary',
+    storyline: 'merchant',
     title: '富甲一方',
     description: '你成为了大明王朝最富有的人之一...',
     type: 'ending',
@@ -1997,7 +1997,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_exile_overseas',
-    storyline: 'ordinary',
+    storyline: 'merchant',
     title: '流亡海外',
     description: '你在海外开始了全新的生活...',
     type: 'ending',
@@ -2148,7 +2148,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_monk_nirvana',
-    storyline: 'ordinary',
+    storyline: 'hermit',
     title: '遁入空门',
     description: '看破红尘剃度出家，青灯古佛中得大自在。',
     type: 'ending',
@@ -2294,7 +2294,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_family_man',
-    storyline: 'ordinary',
+    storyline: 'female',
     title: '天伦之乐',
     description: '回乡修族谱、建宗祠、设义田，荫庇子孙三代。',
     type: 'ending',
@@ -2430,7 +2430,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_medical_saint',
-    storyline: 'ordinary',
+    storyline: 'medical',
     title: '悬壶济世',
     description: '你以医术拯救了无数生命...',
     type: 'ending',
@@ -2569,7 +2569,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_unknown_fate',
-    storyline: 'ordinary',
+    storyline: 'mystery',
     title: '不知所踪',
     description: '消失于乱世迷雾之中，下落成永久的谜团。',
     type: 'ending',
@@ -3216,7 +3216,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_pure_stream',
-    storyline: 'ordinary',
+    storyline: 'eastern_forest',
     title: '清流骨鲠',
     description: '你以言官为剑，以清议为盾，哪怕粉身碎骨也不改其志。',
     type: 'ending',
@@ -3370,7 +3370,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_city_fall',
-    storyline: 'ordinary',
+    storyline: 'martyr',
     title: '城破殉城',
     description: '国破之际，你以身殉城——和北京城一起，消失在甲申年的烽火中。',
     type: 'ending',
@@ -3516,7 +3516,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════════════
   {
     id: 'ending_clan_exterminate',
-    storyline: 'ordinary',
+    storyline: 'corrupt',
     title: '抄家灭族',
     description: '你敛尽天下财，也把全家老小的命都敛了进去。',
     type: 'ending',
@@ -4088,7 +4088,7 @@ const rawEndingEvents: GameEvent[] = [
   // ════════════════════════════════════════
   {
     id: 'ending_scholar_martyr',
-    storyline: 'ordinary',
+    storyline: 'eastern_forest',
     title: '清流殉道',
     description: '为信念赴死，以文章为剑——你用生命诠释了什么叫"士"的尊严。',
     type: 'ending',

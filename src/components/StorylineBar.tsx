@@ -7,7 +7,7 @@
  */
 
 import { memo as ReactMemo } from 'react'
-import { STORYLINES, getStoryline, type StorylineTone } from '../data/storylines'
+import { MAINLINE_COUNT, SUPPORTLINE_COUNT, getStoryline, type StorylineTone } from '../data/storylines'
 import Icon from './Icon'
 import type { IconName } from './Icon'
 import './StorylineBar.css'
@@ -35,13 +35,14 @@ const ICON_MAP: Record<string, IconName> = {
   sparkleDim: 'sparkleDim'
 }
 
-// 全部剧情线计数（用于在徽章里显示"15 条主线"）
-const TOTAL_STORYLINES = Object.keys(STORYLINES).length
+// 全部剧情线计数（P1：8 主 + 8 辅）
+const TOTAL_LABEL = `${MAINLINE_COUNT} 条主线 · ${SUPPORTLINE_COUNT} 条支线`
 
 const StorylineBarImpl = function StorylineBar({ currentStorylineKey, eventCount }: StorylineBarProps) {
   const storyline = getStoryline(currentStorylineKey)
   const iconName: IconName = storyline ? (ICON_MAP[storyline.iconName] || 'sparkle') : 'sparkle'
   const tone: StorylineTone = storyline?.tone || 'gray'
+  const caption = storyline?.tier === 'support' ? '当前支线' : '当前剧情线'
 
   // 无剧情线时的"未启程"占位
   if (!storyline) {
@@ -60,7 +61,7 @@ const StorylineBarImpl = function StorylineBar({ currentStorylineKey, eventCount
         <div className="storyline-bar__meta">
           <span className="storyline-bar__count">{eventCount} 事件</span>
           <span className="storyline-bar__divider">·</span>
-          <span className="storyline-bar__total">{TOTAL_STORYLINES} 条主线</span>
+          <span className="storyline-bar__total">{TOTAL_LABEL}</span>
         </div>
       </div>
     )
@@ -70,7 +71,7 @@ const StorylineBarImpl = function StorylineBar({ currentStorylineKey, eventCount
     <div className={`storyline-bar storyline-bar--${tone}`} title={storyline.intro}>
       <div className="storyline-bar__lead">
         <Icon name={iconName} size={16} />
-        <span className="storyline-bar__caption">当前剧情线</span>
+        <span className="storyline-bar__caption">{caption}</span>
       </div>
       <div className="storyline-bar__main">
         <span className="storyline-bar__name">{storyline.name}</span>
@@ -79,7 +80,7 @@ const StorylineBarImpl = function StorylineBar({ currentStorylineKey, eventCount
       <div className="storyline-bar__meta">
         <span className="storyline-bar__count">{eventCount} 事件</span>
         <span className="storyline-bar__divider">·</span>
-        <span className="storyline-bar__total">{TOTAL_STORYLINES} 条主线</span>
+        <span className="storyline-bar__total">{TOTAL_LABEL}</span>
       </div>
     </div>
   )
