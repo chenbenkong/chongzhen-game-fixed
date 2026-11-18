@@ -41,7 +41,7 @@ describe('RoutePanel', () => {
           flags: [zeroWarnFlag('财帛')],
           attributes: { 财帛: 0, 文韬: 50, 理政: 50, 武略: 50, 体质: 50 } as Attributes
         })}
-        gameState={makeGameState({ turn: 20 })}
+        gameState={makeGameState({ turn: 30 })}
       />
     )
     expect(screen.getByText('危 局')).toBeTruthy()

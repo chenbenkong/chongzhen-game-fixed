@@ -57,16 +57,17 @@ class BoundaryEngine(
 
     val unportedCount: Int get() = unportedRules.size
 
-    fun checkEnding(ctx: ConditionContext, character: CharacterState, court: GameStateValues): BoundaryHit? =
-        checkByType("ending", ctx, character, court, emptyMap(), emptySet())
+    fun checkEnding(ctx: ConditionContext, character: CharacterState, court: GameStateValues, difficultyId: String = "normal"): BoundaryHit? =
+        checkByType("ending", ctx, character, court, emptyMap(), emptySet(), difficultyId)
 
     fun checkCrisis(
         ctx: ConditionContext,
         character: CharacterState,
         court: GameStateValues,
         lastTurnById: Map<String, Int>,
-        seenEventIds: Set<String> = emptySet()
-    ): BoundaryHit? = checkByType("crisis", ctx, character, court, lastTurnById, seenEventIds)
+        seenEventIds: Set<String> = emptySet(),
+        difficultyId: String = "normal"
+    ): BoundaryHit? = checkByType("crisis", ctx, character, court, lastTurnById, seenEventIds, difficultyId)
 
     // ------------------------------------------------------------------ 内部
 
@@ -76,13 +77,14 @@ class BoundaryEngine(
         character: CharacterState,
         court: GameStateValues,
         lastTurnById: Map<String, Int>,
-        seenEventIds: Set<String>
+        seenEventIds: Set<String>,
+        difficultyId: String
     ): BoundaryHit? {
         val sorted = data.boundaryEvents.filter { it.type == type }.sortedBy { it.priority }
         for (entry in sorted) {
             // 本局已经播过的危机卡不再发；读档后 eventHistory 仍在，照样生效。
             if (type == "crisis" && entry.eventId in seenEventIds) continue
-            when (val verdict = evaluateEntry(entry, ctx, character, court, lastTurnById)) {
+            when (val verdict = evaluateEntry(entry, ctx, character, court, lastTurnById, difficultyId)) {
                 is EntryVerdict.Matched -> return hit(entry, matched = true)
                 is EntryVerdict.Unported -> return BoundaryHit(
                     registryId = entry.registryId,
@@ -117,7 +119,8 @@ class BoundaryEngine(
         ctx: ConditionContext,
         character: CharacterState,
         court: GameStateValues,
-        lastTurnById: Map<String, Int>
+        lastTurnById: Map<String, Int>,
+        difficultyId: String
     ): EntryVerdict = when (entry.rule.kind) {
         // compiledConditions：条件烘在事件自身 conditions 上（年/月兜底地板导出时已烘入）。
         "compiledConditions" -> {
@@ -129,7 +132,7 @@ class BoundaryEngine(
         }
         "handwrittenCheck" -> {
             if (entry.registryId in portedIds) {
-                if (handwrittenPasses(entry.registryId, ctx, character, court, lastTurnById)) {
+                if (handwrittenPasses(entry.registryId, ctx, character, court, lastTurnById, difficultyId)) {
                     EntryVerdict.Matched
                 } else EntryVerdict.Miss
             } else {
@@ -160,9 +163,11 @@ class BoundaryEngine(
         ctx: ConditionContext,
         character: CharacterState,
         court: GameStateValues,
-        lastTurnById: Map<String, Int>
+        lastTurnById: Map<String, Int>,
+        difficultyId: String
     ): Boolean {
-        val grace = data.constants.thresholdGraceTurns
+        val difficulty = data.difficulties.firstOrNull { it.id == difficultyId }
+        val grace = difficulty?.zeroGraceTurns ?: data.constants.thresholdGraceTurns
         return when {
             // ---- 八条归零死线：宽限期 + 归零 + 已警告 ----
             registryId == "bankrupt" -> doomedBy("attributes", "财帛", grace, ctx, character)
@@ -184,7 +189,7 @@ class BoundaryEngine(
 
             // ---- 八条归零警告（确定性触发，不走概率门；flag 由警告卡选项写入）----
             registryId.startsWith("warn_zero_") -> warnZeroPasses(registryId, ctx, character)
-            registryId == "warn_corruption" -> corruptionPasses(ctx, character, court)
+            registryId == "warn_corruption" -> corruptionPasses(ctx, character, court, difficultyId)
 
             // ---- 党派结局（年下限逐条对照 unportableRules）----
             registryId == "faction_donglin_martyr" -> settledIn(court, 1644) &&
@@ -222,8 +227,9 @@ class BoundaryEngine(
     }
 
     /** 贪墨预警：过宽限期、未持预警票；财帛>70、欲望>75、道德<30（道德缺省 100）。 */
-    private fun corruptionPasses(ctx: ConditionContext, character: CharacterState, court: GameStateValues): Boolean {
-        if (court.turn < data.constants.thresholdGraceTurns) return false
+    private fun corruptionPasses(ctx: ConditionContext, character: CharacterState, court: GameStateValues, difficultyId: String): Boolean {
+        val difficulty = data.difficulties.firstOrNull { it.id == difficultyId }
+        if (court.turn < (difficulty?.zeroGraceTurns ?: data.constants.thresholdGraceTurns)) return false
         if (character.flags.contains(data.constants.corruptionWarningFlag)) return false
         val 财帛 = ctx.attributes["财帛"] ?: 0.0
         val 欲望值 = ctx.hidden["欲望值"] ?: 50.0

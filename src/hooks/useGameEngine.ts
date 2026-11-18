@@ -9,7 +9,7 @@ import { origins } from '../data/origins'
 import { branchRepeatableEventTypes } from '../data/branchPools'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import '../data/boundaryEvents'
-import { isZeroWarningRegistryId, zeroWarnFlag } from '../data/zeroWarningEvents'
+import { isZeroWarningRegistryId, zeroWarningKeyOf, zeroWarnFlag } from '../data/zeroWarningEvents'
 import {
   CORRUPTION_WARNING_FLAG,
   FUGITIVE_FLAG,
@@ -1471,7 +1471,7 @@ export function useGameEngine(props: UseGameEngineProps) {
         // 最后取整：1.5 倍会把 3 变成 4.5，属性面板没有小数位。
         const difficultyAdjusted = value > 0
           ? value * difficultyConfigRef.current.attributeMultiplier
-          : value
+          : value * difficultyConfigRef.current.lossMultiplier
         const adjustedValue = Math.round(
           applyOriginModifier(currentCharacter.origin, mappedKey, difficultyAdjusted)
         )
@@ -1498,7 +1498,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         // 逐月读数与断言见 `tests/unit/simulation.fugitiveGate.test.ts`。
         if (isFugitive && stateKey === '圣眷' && value > 0) continue
         const currentVal = (newStateVals[stateKey] as number) || 0
-        const adjustedStateValue = applyOriginStateModifier(currentCharacter.origin, mappedKey, value)
+        const difficultyAdjusted = value < 0 ? value * difficultyConfigRef.current.lossMultiplier : value
+        const adjustedStateValue = applyOriginStateModifier(currentCharacter.origin, mappedKey, difficultyAdjusted)
         newStateVals[stateKey] = Math.max(0, Math.min(100, currentVal + adjustedStateValue))
       }
     }
@@ -1552,9 +1553,43 @@ export function useGameEngine(props: UseGameEngineProps) {
           continue
         }
         const hiddenKey = key as keyof HiddenAttributes
-        const next = Math.max(0, Math.min(100, hiddenBase[hiddenKey] + value))
+        const adjustedValue = value < 0 ? value * difficultyConfigRef.current.lossMultiplier : value
+        const next = Math.max(0, Math.min(100, hiddenBase[hiddenKey] + adjustedValue))
         const delta = next - hiddenBase[hiddenKey]
         if (delta !== 0) appliedEffects.hidden[key] = delta
+      }
+    }
+
+    // 归零警告是「最后一次通知」，不是「换一种死法」。
+    // 玩家选了警告卡之后，保这一维回到难度对应的安全下限；只保这一击，
+    // 下一张卡再把它打回 0，仍然照常结案。
+    const warningKey = zeroWarningKeyOf(currentEvent?.id ?? '')
+    // 潜逃者不再领朝廷的恩：圣眷警告也不能把他抬回去，
+    // 否则「弃官南还」之后还能靠保底重新长圣眷，逻辑上说不通。
+    const skipFugitiveGrace =
+      warningKey === '圣眷' && !!currentCharacter.flags?.includes(FUGITIVE_FLAG)
+    if (warningKey && !skipFugitiveGrace) {
+      const floor = difficultyConfigRef.current.zeroRescueFloor
+      if (warningKey in newAttrs) {
+        const key = warningKey as keyof Attributes
+        const next = Math.max(newAttrs[key] ?? 0, floor)
+        if (next !== newAttrs[key]) {
+          newAttrs[key] = next
+          appliedEffects.attributes[warningKey] = next - (currentCharacter.attributes[key] ?? 0)
+        }
+      } else if (warningKey in newStateVals) {
+        const key = warningKey as keyof GameStateValues
+        const next = Math.max((newStateVals[key] as number) ?? 0, floor)
+        if (next !== newStateVals[key]) {
+          newStateVals[key] = next
+          appliedEffects.gameState[warningKey] = next - ((currentGameState[key] as number) ?? 0)
+        }
+      } else if (warningKey === '道德值') {
+        const hiddenBase = normalizeHidden(currentCharacter.hidden)
+        const current = hiddenBase.道德值 + (appliedEffects.hidden.道德值 ?? 0)
+        if (current < floor) {
+          appliedEffects.hidden.道德值 = floor - hiddenBase.道德值
+        }
       }
     }
 
@@ -1844,6 +1879,8 @@ export function useGameEngine(props: UseGameEngineProps) {
         // 年岁门（conditions.age）读的正是这个 —— 《寿终正寝》那一格靠它收熬过
         // 全部年窗的人；不带这个键，年龄门会被 compiler 按 0 判成恒假（§1.4 ㉟）。
         characterAge: currentCharacter.age,
+        // 难度化宽限：史话 24 / 标准 18 / 铁人 12。边界判据缺省时回落到全局默认。
+        thresholdGraceTurns: difficultyConfigRef.current.zeroGraceTurns,
         // 时长门（conditions.flags.since）读它 —— 结局格上「守了三年孤城」这类判据
         // 问的是经历落下多久，不是公元几年；不带这张表，缺项按放行。
         flagTurns: currentCharacter.flagTurns
@@ -2686,6 +2723,7 @@ export function useGameEngine(props: UseGameEngineProps) {
       currentYear: gameStateRef.current.currentYear,
       currentMonth: gameStateRef.current.currentMonth,
       characterAge: characterRef.current.age,
+      thresholdGraceTurns: difficultyConfigRef.current.zeroGraceTurns,
       // 时长门（conditions.flags.since）的入参，同 checkBoundary —— 挂载/读档这条路径漏了它，
       // 「读档进来时这段经历早已满几年」那种场景就会比引擎少结一次案。
       flagTurns: characterRef.current.flagTurns

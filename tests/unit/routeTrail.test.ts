@@ -512,7 +512,7 @@ describe('此刻史笔', () => {
       flags: ['地方官任职', zeroWarnFlag('财帛')],
       attributes: { 财帛: 0, 文韬: 50, 理政: 50, 武略: 50, 体质: 50 }
     })
-    const preview = previewEnding(character, makeGameState({ currentYear: 1630, turn: 20 }))
+    const preview = previewEnding(character, makeGameState({ currentYear: 1630, turn: 30 }))
     expect(preview?.endingId).toBe('triggerable_bankrupt')
     expect(preview?.isThreshold).toBe(true)
   })

@@ -20,6 +20,7 @@
 import { Character, GameStateValues } from '../types/game'
 import { BoundaryEventCheckParams } from '../types/boundaryEvent'
 import { EventChoice, EventConditions } from '../types/event'
+import { DifficultyLevel, DIFFICULTY_CONFIGS } from '../types/difficulty'
 import { NARRATIVE_MIN_TURN, NARRATIVE_MIN_YEAR } from '../data/boundaryEventCompiler'
 import { boundaryEventManager } from '../services/BoundaryEventManager'
 import { THRESHOLD_ENDING_BY_KEY } from '../data/boundaryEvents'
@@ -485,7 +486,11 @@ export interface RouteTrail {
 }
 
 /** 与 useGameEngine 的 checkBoundary / 挂载路径同构；缺一个键就等于条件不满足 */
-function buildCheckParams(character: Character, gameState: GameStateValues): BoundaryEventCheckParams {
+function buildCheckParams(
+  character: Character,
+  gameState: GameStateValues,
+  difficulty: DifficultyLevel = 'normal'
+): BoundaryEventCheckParams {
   return {
     attributes: { ...character.attributes } as unknown as Record<string, number>,
     gameState: {
@@ -505,6 +510,9 @@ function buildCheckParams(character: Character, gameState: GameStateValues): Bou
     // 命途面板必须与引擎同一份入参：少了年岁，《寿终正寝》这类年龄门在这里会
     // 永远显示成"差得远"，而引擎其实下个月就收人。
     characterAge: character.age,
+    // 宽限必须是当前难度的那一档：面板预览若仍按旧全局 18 个月算，
+    // 标准难度第 20 个月就会显示「已在崖边」，而引擎要到第 30 个月才收人。
+    thresholdGraceTurns: DIFFICULTY_CONFIGS[difficulty].zeroGraceTurns,
     // 时长门（conditions.flags.since）同理 —— 面板不说"还要等几年"，玩家就只能看见
     // 「条件都齐了却迟迟不结案」，而这一句其实是引擎在等这段经历满几年。
     flagTurns: character.flagTurns
@@ -839,9 +847,13 @@ export function findRouteClosures(
  * 第五十一轮之前后者被整个 `continue` 掉了，面板于是只能显示"已经走上路的"那几途，
  * 玩家看不见自己还有哪些路、也看不见下一拍该往哪迈 —— 全量可见性靠这一刀补上。
  */
-export function buildRouteTrail(character: Character, gameState: GameStateValues): RouteTrail {
+export function buildRouteTrail(
+  character: Character,
+  gameState: GameStateValues,
+  difficulty: DifficultyLevel = 'normal'
+): RouteTrail {
   const held = new Set(character.flags)
-  const params = buildCheckParams(character, gameState)
+  const params = buildCheckParams(character, gameState, difficulty)
   const registry = endingRegistry()
 
   const routes: ActiveRoute[] = []
@@ -939,8 +951,12 @@ export function buildRouteTrail(character: Character, gameState: GameStateValues
  * 与引擎唯一的差别是这里不执行"史馆请笔"的跳过逻辑：
  * 那张卡就摆在桌上时，预览仍显示它本身，玩家才不会以为局面已经换了。
  */
-export function previewEnding(character: Character, gameState: GameStateValues): EndingPreview | null {
-  const boundary = boundaryEventManager.checkByType(buildCheckParams(character, gameState), 'ending')
+export function previewEnding(
+  character: Character,
+  gameState: GameStateValues,
+  difficulty: DifficultyLevel = 'normal'
+): EndingPreview | null {
+  const boundary = boundaryEventManager.checkByType(buildCheckParams(character, gameState, difficulty), 'ending')
   if (!boundary) return null
   const thresholdIds = Object.values(THRESHOLD_ENDING_BY_KEY)
   return {

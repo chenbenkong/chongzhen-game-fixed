@@ -212,14 +212,33 @@ class GameEngine(
         }
 
         val difficulty = difficultyConfig()
-        val applied = EffectApplier.apply(
+        val appliedBase = EffectApplier.apply(
             effects = effectsToApply,
             character = state.character,
             court = state.court,
             turn = state.court.turn,
             attributeMultiplier = difficulty.attributeMultiplier,
+            lossMultiplier = difficulty.lossMultiplier,
             fugitiveFlag = data.constants.fugitiveFlag
         )
+
+        // 归零警告的最后一次保命：只把警告卡对应的那一维抬到难度下限，
+        // 不免疫下一击。与 Web handleChoice 同一口径。
+        val warningKey = if (event.id.startsWith("boundary_warn_")) event.id.removePrefix("boundary_warn_") else null
+        val warningSpec = warningKey?.let { key -> data.constants.zeroThresholds.firstOrNull { it.key == key } }
+        // 潜逃者不再领朝廷的恩：圣眷警告也不能把他抬回去。
+        val fugitiveGraceBlocked =
+            warningKey == "圣眷" && state.character.flags.contains(data.constants.fugitiveFlag)
+        val applied = if (warningKey != null && warningSpec != null && !fugitiveGraceBlocked) {
+            EffectApplier.applyRescueFloor(
+                character = state.character,
+                court = state.court,
+                key = warningKey,
+                group = warningSpec.group,
+                floor = difficulty.zeroRescueFloor,
+                applied = appliedBase
+            )
+        } else appliedBase
 
         choice.staminaBonus?.let { bonus ->
             if (bonus > 0) {
@@ -242,7 +261,7 @@ class GameEngine(
         state.lastTurnById[event.id] = state.court.turn
 
         // 抉择后结局判定
-        val endingHit = boundary.checkEnding(ctxAfter(), state.character, state.court)
+        val endingHit = boundary.checkEnding(ctxAfter(), state.character, state.court, state.difficultyId)
         var ending: BoundaryHit? = endingHit
         if (endingHit != null) {
             // 可搁笔结局：只摆牌不结算
@@ -305,7 +324,8 @@ class GameEngine(
             state.character,
             state.court,
             state.lastTurnById,
-            state.seenEventIds.toSet()
+            state.seenEventIds.toSet(),
+            state.difficultyId
         )
         lastCrisis = crisis
         if (crisis != null && crisis.event != null) {
@@ -314,7 +334,7 @@ class GameEngine(
         }
 
         // 结局判定
-        val endingHit = boundary.checkEnding(ctx, state.character, state.court)
+        val endingHit = boundary.checkEnding(ctx, state.character, state.court, state.difficultyId)
         if (endingHit != null) {
             if (!endingHit.declinable) {
                 state.gameOver = true

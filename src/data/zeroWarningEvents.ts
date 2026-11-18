@@ -534,6 +534,13 @@ export const ZERO_WARNING_REGISTRY_ID = 'warn_zero_'
 export const ZERO_WARNING_EVENT_ID = 'boundary_warn_'
 export const isZeroWarningRegistryId = (id: string) => id.startsWith(ZERO_WARNING_REGISTRY_ID)
 
+/** 从事件 id 取出对应的归零维度；不是警告卡返回 null。 */
+export function zeroWarningKeyOf(eventId: string): string | null {
+  if (!eventId.startsWith(ZERO_WARNING_EVENT_ID)) return null
+  const key = eventId.slice(ZERO_WARNING_EVENT_ID.length)
+  return ZERO_THRESHOLDS.some(t => t.key === key) ? key : null
+}
+
 /**
  * 由内容表生成八条 crisis 边界事件。
  * `flags.add` 在这里统一注入而不是写在每条内容里：

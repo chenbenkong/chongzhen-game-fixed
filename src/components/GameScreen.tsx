@@ -420,7 +420,7 @@ function GameScreen(props: GameScreenProps) {
           </main>
 
           <aside className="right-sidebar">
-            <RoutePanel character={character} gameState={gameState} />
+            <RoutePanel character={character} gameState={gameState} difficulty={props.difficulty} />
 
             <StatusPanel gameState={gameState} />
 

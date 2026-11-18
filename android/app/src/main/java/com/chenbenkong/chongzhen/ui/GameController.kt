@@ -540,6 +540,7 @@ class GameController(
             resultTitle = outcome?.resultTitle,
             echo = outcome?.resultEcho ?: event.narrative?.background,
             tags = chosenChoice?.result?.tags ?: chosenChoice?.failResult?.tags,
+            deathCause = if (isDeathEnding(event.id)) deathCauseOf(event.id) else null,
             biography = biography,
             history = eng.state.character.history.toList().reversed(),
             canRetry = canRetry,
@@ -555,6 +556,18 @@ class GameController(
                 unlockedEndingCount = codex.unlocked().count { id -> data.endings.endingIds.contains(id) }
             )
         }
+    }
+
+    private fun deathCauseOf(eventId: String): String? = when {
+        eventId.contains("bankrupt") -> "财帛归零 · 倾家荡产"
+        eventId.contains("illness") || eventId.contains("bing_ru") -> "体质归零 · 病入膏肓"
+        eventId.contains("emperor_hate") || eventId.contains("disgrace") -> "圣眷归零 · 龙颜震怒"
+        eventId.contains("eunuch") -> "中官归零 · 宦官构陷"
+        eventId.contains("scholar_ostracism") || eventId.contains("shilin") -> "清议归零 · 士林唾弃"
+        eventId.contains("gentry_rebellion") || eventId.contains("xiangshen") -> "士绅归零 · 乡绅反目"
+        eventId.contains("popular_uproar") || eventId.contains("minyuan") -> "民望归零 · 民怨沸腾"
+        eventId.contains("moral_degeneracy") || eventId.contains("daode") -> "道德归零 · 身败名裂"
+        else -> null
     }
 
     private fun buildBiography(event: GameEvent): String {

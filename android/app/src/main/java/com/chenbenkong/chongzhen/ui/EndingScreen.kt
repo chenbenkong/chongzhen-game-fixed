@@ -103,6 +103,15 @@ fun EndingScreen(state: UiState, viewModel: BoardViewModel) {
                 }
             }
 
+            ending.deathCause?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = "直接死因 · $it",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Cinnabar,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
             ending.resultTitle?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     text = it,

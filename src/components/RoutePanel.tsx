@@ -1,11 +1,13 @@
 import { memo, useState } from 'react'
 import { Character, GameStateValues } from '../types/game'
+import { DifficultyLevel } from '../types/difficulty'
 import { buildRouteTrail, previewEnding, ROUTE_FAMILIES, type RouteBeatHint } from '../utils/routeTrail'
 import './RoutePanel.css'
 
 interface RoutePanelProps {
   character: Character
   gameState: GameStateValues
+  difficulty?: DifficultyLevel
 }
 
 /** 全库口径：面板头部那行计数直接读命途表，不靠渲染结果反推，也不写死数字 */
@@ -28,9 +30,9 @@ function beatText(beat: RouteBeatHint): string {
   return `《${beat.title}》${head}${BEAT_STATUS_SUFFIX[beat.status] ?? ''}`
 }
 
-function RoutePanel({ character, gameState }: RoutePanelProps) {
-  const { routes, dormant, dangers } = buildRouteTrail(character, gameState)
-  const preview = previewEnding(character, gameState)
+function RoutePanel({ character, gameState, difficulty = 'normal' }: RoutePanelProps) {
+  const { routes, dormant, dangers } = buildRouteTrail(character, gameState, difficulty)
+  const preview = previewEnding(character, gameState, difficulty)
   const [expanded, setExpanded] = useState(false)
 
   const heldDests = routes.reduce((n, r) => n + r.destinations.length, 0)

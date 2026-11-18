@@ -2,7 +2,7 @@
   "meta": {
     "schemaVersion": 1,
     "sourceVersion": "0.4.8",
-    "exportedAt": "2026-11-17T16:35:16.454Z",
+    "exportedAt": "2026-11-18T04:52:31.892Z",
     "generator": "scripts/export-native-data.ts",
     "counts": {
       "eventsTotal": 494,
@@ -480,8 +480,11 @@
     {
       "id": "easy",
       "name": "简单模式",
-      "description": "适合新手，属性获得更容易，升官门槛更低",
+      "description": "史话体验：损失减少两成，归零宽限 36 个月",
       "attributeMultiplier": 1.5,
+      "lossMultiplier": 0.8,
+      "zeroGraceTurns": 36,
+      "zeroRescueFloor": 5,
       "meritScoreMultiplier": 1.3,
       "promotionThresholdMultiplier": 0.8,
       "eventDifficulty": 0.7,
@@ -490,8 +493,11 @@
     {
       "id": "normal",
       "name": "普通模式",
-      "description": "标准难度，平衡的游戏体验",
+      "description": "标准难度：完整压力，归零宽限 30 个月",
       "attributeMultiplier": 1,
+      "lossMultiplier": 1,
+      "zeroGraceTurns": 30,
+      "zeroRescueFloor": 5,
       "meritScoreMultiplier": 1,
       "promotionThresholdMultiplier": 1,
       "eventDifficulty": 1,
@@ -500,8 +506,11 @@
     {
       "id": "hard",
       "name": "困难模式",
-      "description": "富有挑战性，属性获得更难，升官门槛更高",
+      "description": "铁人挑战：损失增加两成，归零宽限 12 个月",
       "attributeMultiplier": 0.7,
+      "lossMultiplier": 1.2,
+      "zeroGraceTurns": 12,
+      "zeroRescueFloor": 5,
       "meritScoreMultiplier": 0.8,
       "promotionThresholdMultiplier": 1.3,
       "eventDifficulty": 1.5,

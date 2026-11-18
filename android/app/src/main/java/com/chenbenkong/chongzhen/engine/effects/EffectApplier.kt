@@ -54,9 +54,11 @@ object EffectApplier {
 
     /**
      * 把一组效果写入角色 / 朝堂状态。
-     * @param attributeMultiplier 难度属性倍率（只作用于正增量）
+     * @param attributeMultiplier 难度属性正增量倍率
+     * @param lossMultiplier 难度属性/态度/隐藏属性负增量倍率
      * @param fugitiveFlag 「潜逃」票标记名（来自 constants）
      */
+    /** 兼容旧调用（未传难度损失倍率）：按 1.0 结算。 */
     fun apply(
         effects: EventEffects,
         character: CharacterState,
@@ -64,8 +66,19 @@ object EffectApplier {
         turn: Int,
         attributeMultiplier: Double,
         fugitiveFlag: String
-    ): AppliedEffects {
-        val attrBefore = character.attributes.toMap()
+    ): AppliedEffects = apply(
+        effects, character, court, turn, attributeMultiplier, 1.0, fugitiveFlag
+    )
+
+    fun apply(
+        effects: EventEffects,
+        character: CharacterState,
+        court: GameStateValues,
+        turn: Int,
+        attributeMultiplier: Double,
+        lossMultiplier: Double = 1.0,
+        fugitiveFlag: String
+    ): AppliedEffects {        val attrBefore = character.attributes.toMap()
         val stateBefore = mapOf(
             "圣眷" to court.圣眷, "中官" to court.中官, "清议" to court.清议,
             "士绅" to court.士绅, "民望" to court.民望, "国势" to court.国势
@@ -76,7 +89,7 @@ object EffectApplier {
         effects.attributes?.forEach { (rawKey, value) ->
             val key = ATTR_MAP[rawKey] ?: rawKey
             val bounds = ATTR_BOUNDS[key] ?: (0.0 to 150.0)
-            val difficultyAdjusted = if (value > 0) value * attributeMultiplier else value
+            val difficultyAdjusted = if (value > 0) value * attributeMultiplier else value * lossMultiplier
             val adjusted = applyOriginModifier(character.origin, key, difficultyAdjusted).roundToInt()
             val next = (character.attributes[key] ?: 0.0) + adjusted
             character.attributes[key] = clamp(next, bounds.first, bounds.second)
@@ -88,7 +101,7 @@ object EffectApplier {
             val key = STATE_MAP[rawKey] ?: rawKey
             if (key == "currentYear" || key == "currentMonth" || key == "turn") return@forEach
             if (isFugitive && key == "圣眷" && value > 0) return@forEach
-            val adjusted = applyOriginStateModifier(character.origin, key, value)
+            val adjusted = applyOriginStateModifier(character.origin, key, if (value < 0) value * lossMultiplier else value)
             val current = stateValue(court, key)
             stateValue(court, key, clamp(current + adjusted, 0.0, 100.0))
         }
@@ -96,7 +109,7 @@ object EffectApplier {
         // ---- 隐藏属性（未知键跳过，不写 NaN）----
         effects.hidden?.forEach { (key, value) ->
             if (key !in HIDDEN_KEYS) return@forEach
-            val next = clamp((character.hidden[key] ?: 0.0) + value, 0.0, 100.0)
+            val next = clamp((character.hidden[key] ?: 0.0) + if (value < 0) value * lossMultiplier else value, 0.0, 100.0)
             character.hidden[key] = next
         }
 
@@ -140,6 +153,53 @@ object EffectApplier {
     }
 
     // ------------------------------------------------------------------ 内部
+
+    /**
+     * 归零警告结算后的保命下限。
+     *
+     * 只把「这一张警告卡对应的那一维」抬到 floor，不免疫下一击：
+     * 下一张卡再把它打回 0，边界引擎仍会照常结案。返回的 AppliedEffects
+     * 带上这次补差，结算面板读到的账才与实际落账一致。
+     */
+    fun applyRescueFloor(
+        character: CharacterState,
+        court: GameStateValues,
+        key: String,
+        group: String,
+        floor: Double,
+        applied: AppliedEffects
+    ): AppliedEffects {
+        when (group) {
+            "attributes" -> {
+                val before = character.attributes[key] ?: 0.0
+                if (before >= floor) return applied
+                character.attributes[key] = floor
+                val extra = floor - before
+                return applied.copy(
+                    attributes = applied.attributes + (key to (applied.attributes[key] ?: 0.0) + extra)
+                )
+            }
+            "gameState" -> {
+                val before = stateValue(court, key)
+                if (before >= floor) return applied
+                stateValue(court, key, floor)
+                val extra = floor - before
+                return applied.copy(
+                    gameState = applied.gameState + (key to (applied.gameState[key] ?: 0.0) + extra)
+                )
+            }
+            "hidden" -> {
+                val before = character.hidden[key] ?: 0.0
+                if (before >= floor) return applied
+                character.hidden[key] = floor
+                val extra = floor - before
+                return applied.copy(
+                    hidden = applied.hidden + (key to (applied.hidden[key] ?: 0.0) + extra)
+                )
+            }
+        }
+        return applied
+    }
 
     private fun stateValue(court: GameStateValues, key: String): Double = when (key) {
         "圣眷" -> court.圣眷

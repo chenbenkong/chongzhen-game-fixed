@@ -108,6 +108,8 @@ data class EndingView(
     val resultTitle: String?,
     val echo: String?,
     val tags: List<String>?,
+    /** 八条归零死线的直接死因；非归零结局为 null。 */
+    val deathCause: String? = null,
     /** 传记 / 回顾正文。 */
     val biography: String,
     val history: List<String>,

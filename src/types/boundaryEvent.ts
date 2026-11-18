@@ -20,6 +20,8 @@ export interface BoundaryEventCheckParams {
   characterRank?: string
   /** 年岁（`character.age`）—— `conditions.age` 读它；缺键按 0 算，于是年龄门恒假 */
   characterAge?: number
+  /** 本局难度的归零宽限期（月）；缺省时用 boundaryEvents 的全局默认值 */
+  thresholdGraceTurns?: number
   /**
    * 每段经历**落笔的那个月**（`character.flagTurns`）—— `conditions.flags.since` 读它。
    *

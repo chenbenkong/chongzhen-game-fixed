@@ -3,6 +3,8 @@ import { Character, GameStateValues } from '../types/game'
 import { GameEvent } from '../types/event'
 import { getUnlockedAchievements, Achievement } from '../types/achievement'
 import { extractCounterfactuals, getArchetype, toChineseNum, toMingEraYear } from '../utils/endingSystem'
+import { deathCauseOf } from '../utils/deathCause'
+import { resolveEndingTileId } from '../data/endingRegistry'
 import Icon from './Icon'
 import './GameOverScreen.css'
 
@@ -73,6 +75,10 @@ export default function GameOverScreen({
   const archetype = endingEvent ? getArchetype(endingEvent.endingConfig?.category) : undefined
   const endingSummary = buildEndingSummary(endingEvent)
   const endingDate = `${toMingEraYear(gameState.currentYear)} ${getChineseMonth(gameState.currentMonth)}月`
+  const deathCause = useMemo(
+    () => deathCauseOf(endingEvent ? resolveEndingTileId(endingEvent.id) : null),
+    [endingEvent]
+  )
 
   return (
     <div className={`ending-screen ending-${endingType}`}>
@@ -111,6 +117,14 @@ export default function GameOverScreen({
 
         {endingSummary && (
           <p className="ending-summary">{endingSummary}</p>
+        )}
+
+        {deathCause && (
+          <div className="ending-cause" aria-label="直接死因">
+            <span className="ending-cause-label">直接死因</span>
+            <strong className="ending-cause-value">{deathCause.label}</strong>
+            <span className="ending-cause-tip">下一局：{deathCause.tip}</span>
+          </div>
         )}
 
         <div className="ending-facts" aria-label="一生概要">

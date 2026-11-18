@@ -466,10 +466,10 @@ const ENDING_MORAL_DEGENERACY: GameEvent = {
  * `归零警告·X` 这个 flag），下面的 check 因此统一改成 `pastGrace && isFatalZero`
  * —— 没被警告过的归零不判死，警告过又再次归零的，这一次没有人再救你。
  */
-const THRESHOLD_ENDING_GRACE_TURNS = 12
+const THRESHOLD_ENDING_GRACE_TURNS = 30
 
 function pastGrace(params: BoundaryEventCheckParams): boolean {
-  return (params.gameState?.turn ?? 0) >= THRESHOLD_ENDING_GRACE_TURNS
+  return (params.gameState?.turn ?? 0) >= (params.thresholdGraceTurns ?? THRESHOLD_ENDING_GRACE_TURNS)
 }
 
 /** 阈值类结局的统一判据：过了宽限期、该维归零、且这一维已经被警告过 */

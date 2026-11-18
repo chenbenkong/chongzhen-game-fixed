@@ -535,21 +535,21 @@ describe('缺陷：开局第一个选项就能把人当场判死（阈值类结�
    * 现在判死必须同时满足：过了宽限期、该维归零、且 `归零警告·X` 这个 flag 已在身上。
    */
   it('宽限期满后归零，但没被警告过 —— 不判死（第一次归零给活路）', () => {
-    expect(boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12))).toBe(false)
+    expect(boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 30))).toBe(false)
     expect(boundaryById('death_illness').check(thresholdParams({ 体质: 0 }, 36))).toBe(false)
     expect(boundaryById('eunuch_conspiracy').check(thresholdParams({ 中官: 0 }, 40))).toBe(false)
   })
 
   it('警告过之后再次归零，结局照常触发（第二次没人救）', () => {
     expect(
-      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12, [zeroWarnFlag('财帛')]))
+      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 30, [zeroWarnFlag('财帛')]))
     ).toBe(true)
     expect(
       boundaryById('death_illness').check(thresholdParams({ 体质: 0 }, 36, [zeroWarnFlag('体质')]))
     ).toBe(true)
     // 别的维度的警告不作数：警告与死线必须同一键
     expect(
-      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 12, [zeroWarnFlag('圣眷')]))
+      boundaryById('bankrupt').check(thresholdParams({ 财帛: 0 }, 30, [zeroWarnFlag('圣眷')]))
     ).toBe(false)
   })
 
@@ -573,7 +573,7 @@ describe('缺陷：开局第一个选项就能把人当场判死（阈值类结�
       }
 
       const params = (flags: string[]) => {
-        const p = thresholdParams({}, 20, flags) as any
+        const p = thresholdParams({}, 40, flags) as any
         p[t.group][t.key] = 0
         return p as BoundaryEventCheckParams
       }

@@ -198,6 +198,12 @@ data class DifficultyConfig(
     val name: String = "",
     val description: String = "",
     val attributeMultiplier: Double = 1.0,
+    /** 属性负增量倍率：史话 0.8 / 标准 1.0 / 铁人 1.2 */
+    val lossMultiplier: Double = 1.0,
+    /** 归零死线宽限期（月） */
+    val zeroGraceTurns: Int = 18,
+    /** 归零警告结算后的保命下限 */
+    val zeroRescueFloor: Double = 5.0,
     val meritScoreMultiplier: Double = 1.0,
     val promotionThresholdMultiplier: Double = 1.0,
     val eventDifficulty: Double = 1.0,
@@ -224,7 +230,7 @@ data class GameConstants(
     val gameStartYear: Int = 1628,
     val narrativeMinYear: Int = 1635,
     val narrativeMinTurn: Int = 36,
-    val thresholdGraceTurns: Int = 12,
+    val thresholdGraceTurns: Int = 30,
     val demotionGraceTurns: Int = 12,
     val fugitiveAnnualIncome: Double = 8.0,
     val fugitiveFlag: String = "潜逃",

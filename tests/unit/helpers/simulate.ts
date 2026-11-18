@@ -7,6 +7,7 @@ import { resolveEndingTileId } from '../../../src/data/endingRegistry'
 import { ZERO_WARNING_EVENT_ID } from '../../../src/data/zeroWarningEvents'
 import { FUGITIVE_FLAG, CORRUPTION_WARNING_EVENT_ID, FUGITIVE_CHOICE_ID } from '../../../src/data/demotionWarningEvents'
 import type { Character, GameStateValues, OriginType } from '../../../src/types/game'
+import type { DifficultyLevel } from '../../../src/types/difficulty'
 import type { EventChoice, GameEvent } from '../../../src/types/event'
 import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 
@@ -1219,12 +1220,13 @@ export async function simulateRun(opts: {
   policy?: SimPolicy
   maxMonths?: number
   origin?: OriginType
+  difficulty?: DifficultyLevel
   /** 逐月抄一份边界入参（见 `SimOutcome.trace`）。默认关：其余 41 个测试文件都不需要它。 */
   traceMonths?: boolean
   /** 逐条抉择抄一份下坡供给（见 `ChoiceLog`）。默认关，理由同上。 */
   logChoices?: boolean
 }): Promise<SimOutcome> {
-  const { seed, policy = 'random', maxMonths = 260, origin = '寒门', traceMonths = false, logChoices = false } = opts
+  const { seed, policy = 'random', maxMonths = 260, origin = '寒门', difficulty = 'normal', traceMonths = false, logChoices = false } = opts
   let rand = mulberry32(seed)
   const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => rand())
   vi.useFakeTimers()
@@ -1241,7 +1243,7 @@ export async function simulateRun(opts: {
   let finalYear = 1628
   let finalRank = ''
 
-  const hook = renderGameEngine({ origin })
+  const hook = renderGameEngine({ origin, difficulty })
   let endEventId: string | null = null
   let finalThresholds: Record<string, number> = {}
   let finalFlags: string[] = []
@@ -1479,6 +1481,8 @@ export async function simulateMany(opts: {
   startSeed?: number
   policies?: SimPolicy[]
   maxMonths?: number
+  origin?: OriginType
+  difficulty?: DifficultyLevel
 }): Promise<{ report: SimReport; runs: SimOutcome[] }> {
   const policies = opts.policies ?? ['random', 'first', 'ambitious']
   const runs: SimOutcome[] = []
@@ -1487,7 +1491,9 @@ export async function simulateMany(opts: {
       await simulateRun({
         seed: (opts.startSeed ?? 1) + i,
         policy: policies[i % policies.length],
-        maxMonths: opts.maxMonths
+        maxMonths: opts.maxMonths,
+        origin: opts.origin,
+        difficulty: opts.difficulty
       })
     )
   }

@@ -110,7 +110,8 @@ class BoundaryEngineTest {
         )
         val crisisB = engine.checkCrisis(TestFixture.ctx(courtA, charB), charB, courtA, emptyMap())
         assertFalse("已持警告票后警告卡不得重复", crisisB?.registryId == "warn_zero_财帛")
-        val endingB = engine.checkEnding(TestFixture.ctx(courtA, charB), charB, courtA)
+        val courtB = TestFixture.defaultCourt(turn = 30)
+        val endingB = engine.checkEnding(TestFixture.ctx(courtB, charB), charB, courtB)
         assertNotNull("持警告票且仍归零时应判死线结局", endingB)
         assertEquals("bankrupt", endingB!!.registryId)
     }

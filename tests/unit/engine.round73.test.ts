@@ -35,14 +35,14 @@ function saveWith(choice: EventChoice, overrides: Parameters<typeof makeSaveData
   })
 }
 
-describe('第七十三轮：难度系数只作用于「获得」', () => {
+describe('第七十三轮：难度系数分开作用于「获得」与「损失」', () => {
   const choice: EventChoice = {
     id: 'c1',
     text: '一手进一手出',
     effects: { attributes: { 财帛: 10, 武略: -10 } }
   }
 
-  it('简单模式：+10 变成 +15，−10 仍是 −10', async () => {
+  it('简单模式：+10 变成 +15，−10 减为 −8', async () => {
     const { result, unmount } = renderGameEngine({
       loadSaveData: saveWith(choice),
       difficulty: 'easy'
@@ -55,16 +55,16 @@ describe('第七十三轮：难度系数只作用于「获得」', () => {
     })
 
     expect(result.current.character.attributes.财帛).toBe(65)
-    expect(result.current.character.attributes.武略).toBe(40)
+    expect(result.current.character.attributes.武略).toBe(42)
     expect(applied).toEqual({
-      attributes: { 财帛: 15, 武略: -10 },
+      attributes: { 财帛: 15, 武略: -8 },
       gameState: {},
       hidden: {}
     })
     unmount()
   })
 
-  it('困难模式：+10 变成 +7，−10 仍是 −10', async () => {
+  it('困难模式：+10 变成 +7，−10 增为 −12', async () => {
     const { result, unmount } = renderGameEngine({
       loadSaveData: saveWith(choice),
       difficulty: 'hard'
@@ -76,7 +76,7 @@ describe('第七十三轮：难度系数只作用于「获得」', () => {
     })
 
     expect(result.current.character.attributes.财帛).toBe(57)
-    expect(result.current.character.attributes.武略).toBe(40)
+    expect(result.current.character.attributes.武略).toBe(38)
     unmount()
   })
 
