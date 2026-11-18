@@ -290,6 +290,18 @@ async function main() {
       warn('未找到 .origin-card')
     }
 
+    // P1/P0.2：出身之后还有家训与志业两屏；冒烟测试走无传承、无志业空局。
+    const legacyPrimary = page.locator('.legacy-btn.primary')
+    if ((await legacyPrimary.count()) > 0) {
+      await legacyPrimary.first().click().catch(() => {})
+      await page.waitForTimeout(500)
+    }
+    const careerSkip = page.locator('.career-btn.ghost', { hasText: '不立志业' })
+    if ((await careerSkip.count()) > 0) {
+      await careerSkip.first().click().catch(() => {})
+      await page.waitForTimeout(500)
+    }
+
     reachedGame = await page.locator('.game-screen').isVisible().catch(() => false)
   }
 

@@ -315,11 +315,17 @@ async function main() {
         await cards.first().click().catch(() => {})
       }
       await page.waitForTimeout(600)
-      // P1 在出身之后多了一屏「家训」。这里走无传承的空局，
-      // 不能只点出身就等首卡，否则量具会自己卡在 legacy-select 上。
+      // P1 在出身之后有一屏「家训」，P0.2 在家训之后又有一屏「志业」。
+      // 这里走无传承、无志业的空局，不能只点出身就等首卡。
       const legacyPrimary = page.locator('.legacy-btn.primary')
       if ((await legacyPrimary.count()) > 0) {
         await legacyPrimary.first().click().catch(() => {})
+      }
+      await page.waitForTimeout(300)
+      await page.waitForSelector('.career-select-screen', { timeout: 8000 }).catch(() => {})
+      const careerSkip = page.locator('.career-btn.ghost', { hasText: '不立志业' })
+      if ((await careerSkip.count()) > 0) {
+        await careerSkip.first().click().catch(() => {})
       }
       await page.waitForSelector('.event-title', { timeout: 60000 })
       reachedCard = true

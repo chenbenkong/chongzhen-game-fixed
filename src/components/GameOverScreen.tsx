@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useRef, useState } from 'react'
-import { Character, GameStateValues } from '../types/game'
+import { Character, GameStateValues, CareerGoalId } from '../types/game'
 import { GameEvent } from '../types/event'
 import { getUnlockedAchievements, Achievement } from '../types/achievement'
 import { extractCounterfactuals, getArchetype, toChineseNum, toMingEraYear } from '../utils/endingSystem'
@@ -7,6 +7,7 @@ import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
 import { relationshipEpilogue, relationshipsOf } from '../data/characters'
 import { downloadShareCard } from '../utils/shareCard'
+import { careerGoalStatus } from '../data/careerGoals'
 import {
   computeLegacyGain,
   legacyGoalStatus,
@@ -33,6 +34,8 @@ interface GameOverScreenProps {
   onViewLifeReview?: () => void
   /** 本局带的家训目标；由本局家训决定，结局页只判一次。 */
   legacyGoalId?: LegacyGoalId
+  /** P0.2 本局志业；缺省表示这一局没立志业，不显示志业结算。 */
+  careerGoalId?: CareerGoalId | null
 }
 
 type EndingType = 'legendary' | 'good' | 'normal' | 'bad' | 'dark'
@@ -57,7 +60,8 @@ export default function GameOverScreen({
   restartLocked = false,
   onReturnToMenu,
   onViewLifeReview,
-  legacyGoalId
+  legacyGoalId,
+  careerGoalId
 }: GameOverScreenProps) {
   const achievements = getUnlockedAchievements()
   const unlockedAchievements = achievements
@@ -113,7 +117,8 @@ export default function GameOverScreen({
       years: totalYearsText,
       score,
       date: endingDate,
-      people: sharePeople
+      people: sharePeople,
+      careerGoal: careerGoal?.shareLine
     })
   }
 
@@ -139,6 +144,11 @@ export default function GameOverScreen({
   const legacyGoal = useMemo(
     () => legacyGoalStatus(legacyGoalId, character, gameState),
     [legacyGoalId, character, gameState]
+  )
+
+  const careerGoal = useMemo(
+    () => careerGoalStatus(careerGoalId ?? character.careerGoal, character, gameState),
+    [careerGoalId, character, gameState]
   )
 
   return (
@@ -184,6 +194,17 @@ export default function GameOverScreen({
           <div className="ending-relationships" aria-label="这一生绕不开的人">
             <span className="ending-relationships-label">故 人</span>
             <p className="ending-relationships-text">{relationships}</p>
+          </div>
+        )}
+
+        {careerGoal && (
+          <div className={`ending-career-goal career-grade-${careerGoal.completed}`}>
+            <span className="ending-legacy-label">志 业</span>
+            <span className="ending-career-title">{careerGoal.goal.name}</span>
+            <span className="ending-career-status">
+              {careerGoal.grade} · {careerGoal.completed}/3 ·{' '}
+              {careerGoal.milestones.map((milestone) => milestone.label).join(' / ')}
+            </span>
           </div>
         )}
 

@@ -1,13 +1,18 @@
 import { memo } from 'react'
-import { GameStateValues } from '../types/game'
+import { Character, GameStateValues } from '../types/game'
+import { careerGoalStatus } from '../data/careerGoals'
 import './StatusPanel.css'
+import './StatusPanelCareer.css'
 
 interface StatusPanelProps {
   gameState: GameStateValues
+  /** 有角色时才显示志业；旧调用点不传也不会多渲染一块空面板。 */
+  character?: Character
 }
 
-function StatusPanel({ gameState }: StatusPanelProps) {
+function StatusPanel({ gameState, character }: StatusPanelProps) {
   const 国势 = Math.round(gameState.国势 ?? 75)
+  const career = character ? careerGoalStatus(character.careerGoal, character, gameState) : null
   const getFortuneLevel = (value: number): string => {
     if (value >= 70) return 'fortune-high'
     if (value >= 50) return 'fortune-medium'
@@ -52,6 +57,26 @@ function StatusPanel({ gameState }: StatusPanelProps) {
 
   return (
     <div className="status-panel">
+      {career && (
+        <div className="panel-section career-panel" aria-label={`志业：${career.goal.name}`}>
+          <div className="career-panel-head">
+            <h2 className="section-title">志业 · {career.goal.name}</h2>
+            <span className={`career-panel-grade career-grade-${career.completed}`}>
+              {career.grade} {career.completed}/3
+            </span>
+          </div>
+          <ol className="career-panel-list">
+            {career.milestones.map((milestone) => (
+              <li key={milestone.label} className={milestone.done ? 'is-done' : ''}>
+                <span className="career-panel-mark">{milestone.done ? '成' : '未'}</span>
+                <span className="career-panel-label">{milestone.label}</span>
+                <span className="career-panel-hint">{milestone.hint}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       <div className="panel-section">
         <h2 className="section-title">五方态度</h2>
         <div className="status-list">

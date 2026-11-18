@@ -1,0 +1,103 @@
+/* P0.2 志业：状态面板里只列三个整数里程碑，不新增数值条。 */
+.career-panel {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 165, 32, 0.12);
+}
+
+.career-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.career-panel-head .section-title {
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.career-panel-grade {
+  color: #8f806b;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.career-grade-3 {
+  color: #d4a520;
+}
+
+.career-grade-2 {
+  color: #c8a76a;
+}
+
+.career-panel-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.career-panel-list li {
+  display: grid;
+  grid-template-columns: 1.6em minmax(3em, auto) 1fr;
+  align-items: baseline;
+  gap: 6px;
+  color: #6f6250;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.career-panel-list li.is-done {
+  color: #b9a273;
+}
+
+.career-panel-mark {
+  color: #5d5143;
+  font-size: 0.64rem;
+  text-align: center;
+}
+
+.career-panel-list li.is-done .career-panel-mark {
+  color: #d4a520;
+}
+
+.career-panel-label {
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.career-panel-hint {
+  color: #6f6250;
+  font-size: 0.66rem;
+  text-align: right;
+}
+
+.career-panel-list li.is-done .career-panel-hint {
+  color: #8f806b;
+}
+
+@media (max-width: 480px) {
+  .career-panel {
+    margin-bottom: 10px;
+    padding-bottom: 9px;
+  }
+
+  .career-panel-head .section-title {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+  }
+
+  .career-panel-list li {
+    font-size: 0.68rem;
+    grid-template-columns: 1.4em minmax(2.8em, auto) 1fr;
+    gap: 4px;
+  }
+
+  .career-panel-hint {
+    font-size: 0.62rem;
+  }
+}

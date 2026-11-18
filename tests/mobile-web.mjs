@@ -40,7 +40,7 @@ async function openPage(browser, viewport, url) {
   return { ctx, page }
 }
 
-/** 走完开局：标题 → 取名 → 出身 → 牌桌 */
+/** 走完开局：标题 → 取名 → 出身 → 家训 → 志业 → 牌桌 */
 async function playToBoard(page) {
   await page.waitForSelector('.mobile-title__actions', { timeout: 15000 })
   await page.click('.mobile-title__actions .mobile-btn--primary')
@@ -56,6 +56,11 @@ async function playToBoard(page) {
 
   await page.waitForSelector('.mobile-origin-card', { timeout: 15000 })
   await page.locator('.mobile-origin-card').first().locator('.mobile-btn--primary').click()
+
+  await page.waitForSelector('.legacy-screen', { timeout: 15000 })
+  await page.locator('.legacy-btn.primary').click()
+  await page.waitForSelector('.career-select-screen', { timeout: 15000 })
+  await page.locator('.career-btn.ghost', { hasText: '不立志业' }).click()
 
   await page.waitForSelector('.mobile-hud', { timeout: 20000 })
   await page.waitForTimeout(500)

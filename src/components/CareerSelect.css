@@ -1,0 +1,267 @@
+/* P0.2 志业选择：接在家训之后、进游戏之前。四张目标卡，不加新手教学。 */
+.career-select-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(201, 162, 39, 0.08), transparent 58%),
+    linear-gradient(180deg, #0a0907 0%, #12100c 62%, #080706 100%);
+  color: #c9bda6;
+  box-sizing: border-box;
+}
+
+.career-select-header {
+  width: min(980px, 100%);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.career-select-kicker {
+  margin: 0 0 6px;
+  color: #8c7652;
+  font-size: 0.7rem;
+  letter-spacing: 5px;
+}
+
+.career-select-header h1 {
+  margin: 0 0 8px;
+  color: #e1ce9e;
+  font-family: 'STKaiti', 'KaiTi', 'SimKai', '楷体', serif;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  letter-spacing: 10px;
+  font-weight: 700;
+}
+
+.career-select-sub {
+  margin: 0 auto;
+  max-width: 46em;
+  color: #9d907a;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.career-grid {
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.career-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 170px;
+  padding: 13px 14px;
+  text-align: left;
+  color: #c9bda6;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(201, 162, 39, 0.14);
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.career-card:hover {
+  border-color: rgba(201, 162, 39, 0.42);
+  background: rgba(201, 162, 39, 0.06);
+}
+
+.career-card.is-active {
+  border-color: rgba(201, 162, 39, 0.72);
+  background: rgba(201, 162, 39, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.16);
+}
+
+.career-card-index {
+  color: #8c7652;
+  font-size: 0.64rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.career-card-name {
+  color: #e0c985;
+  font-family: 'STKaiti', 'KaiTi', 'SimKai', '楷体', serif;
+  font-size: 1.35rem;
+  letter-spacing: 3px;
+}
+
+.career-card-desc {
+  flex: 1;
+  color: #9d907a;
+  font-size: 0.74rem;
+  line-height: 1.65;
+}
+
+.career-card-milestones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.career-milestone-chip {
+  padding: 2px 5px;
+  border: 1px solid rgba(201, 162, 39, 0.18);
+  color: #b8a98d;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.career-actions {
+  width: min(980px, 100%);
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(201, 162, 39, 0.12);
+}
+
+.career-btn {
+  min-height: 38px;
+  padding: 8px 16px;
+  font-family: 'STKaiti', 'KaiTi', 'SimKai', '楷体', serif;
+  font-size: 0.86rem;
+  letter-spacing: 1px;
+  border: 1px solid rgba(201, 162, 39, 0.26);
+  background: transparent;
+  color: #b8a98d;
+  cursor: pointer;
+}
+
+.career-btn.ghost:hover {
+  border-color: rgba(201, 162, 39, 0.5);
+  color: #d8c48d;
+}
+
+.career-btn.primary {
+  background: linear-gradient(180deg, #c9a227, #9a7428);
+  border-color: #d8b64a;
+  color: #17130d;
+  font-weight: 700;
+}
+
+.career-btn.primary:hover {
+  filter: brightness(1.08);
+}
+
+.career-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .career-select-screen {
+    justify-content: flex-start;
+    padding: 12px 10px 18px;
+  }
+
+  .career-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .career-card {
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  .career-select-header h1 {
+    font-size: 1.7rem;
+    letter-spacing: 6px;
+  }
+
+  .career-select-sub {
+    font-size: 0.72rem;
+    line-height: 1.55;
+  }
+
+  .career-actions {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .career-btn {
+    flex: 1 1 auto;
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
+}
+
+/* 手机横屏 924×426：四张卡同排，正文夹三行，保证一屏可选可开局。 */
+@media (max-height: 520px) and (min-width: 761px) {
+  .career-select-screen {
+    justify-content: center;
+    padding: 8px 10px;
+  }
+
+  .career-select-header {
+    margin-bottom: 8px;
+  }
+
+  .career-select-header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 6px;
+    margin-bottom: 4px;
+  }
+
+  .career-select-kicker {
+    margin-bottom: 2px;
+    font-size: 0.62rem;
+  }
+
+  .career-select-sub {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  .career-grid {
+    gap: 7px;
+  }
+
+  .career-card {
+    min-height: 0;
+    padding: 9px 10px;
+    gap: 4px;
+  }
+
+  .career-card-name {
+    font-size: 1.08rem;
+    letter-spacing: 2px;
+  }
+
+  .career-card-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.68rem;
+    line-height: 1.45;
+  }
+
+  .career-card-milestones {
+    gap: 3px;
+  }
+
+  .career-milestone-chip {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+  }
+
+  .career-actions {
+    margin-top: 9px;
+    padding-top: 8px;
+  }
+
+  .career-btn {
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+}

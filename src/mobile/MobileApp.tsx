@@ -5,7 +5,7 @@
  * 但只装配手机屏；玩法规则仍在 useGameEngine 内部，这里不复制。
  */
 import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
-import type { OriginType, DegreeType, Attributes } from '../types/game'
+import type { OriginType, DegreeType, Attributes, CareerGoalId } from '../types/game'
 import type { SaveData } from '../types/save'
 import type { DifficultyLevel } from '../types/difficulty'
 import { getAllSaveSlots, deleteAutosave, loadAutosave } from '../types/save'
@@ -14,6 +14,7 @@ import { setAchievementData } from '../types/achievement'
 import { loadDifficulty, saveDifficulty } from '../types/difficulty'
 import type { NameInputResult } from '../components/NameInput'
 import LegacySelect from '../components/LegacySelect'
+import CareerSelect from '../components/CareerSelect'
 import type { LegacyPerkId } from '../data/legacy'
 
 import MobileShell from './MobileShell'
@@ -26,7 +27,7 @@ import './mobile.css'
 // 存档槽位弹窗懒加载：标题屏不预取这一块（与桌面同一口径）。
 const SaveSlotsModal = lazy(() => import('../components/SaveSlotsModal'))
 
-type MobilePhase = 'title' | 'name' | 'origin' | 'legacy' | 'board'
+type MobilePhase = 'title' | 'name' | 'origin' | 'legacy' | 'career' | 'board'
 
 const FALLBACK_ATTRIBUTES: Attributes = { 财帛: 0, 文韬: 0, 理政: 0, 武略: 0, 体质: 50 }
 
@@ -38,6 +39,7 @@ export default function MobileApp() {
   const [playerCustomAge, setPlayerCustomAge] = useState<number | null>(null)
   const [selectedOrigin, setSelectedOrigin] = useState<OriginType | null>(null)
   const [selectedLegacyPerk, setSelectedLegacyPerk] = useState<LegacyPerkId | null>(null)
+  const [selectedCareerGoal, setSelectedCareerGoal] = useState<CareerGoalId | null>(null)
   const [finalDegree, setFinalDegree] = useState<DegreeType>('进士')
   const [finalAttributes, setFinalAttributes] = useState<Attributes | null>(null)
   const [loadSaveData, setLoadSaveData] = useState<SaveData | null>(null)
@@ -61,6 +63,7 @@ export default function MobileApp() {
     setLoadSaveData(saveData)
     setSelectedOrigin(restoredOrigin)
     setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(saveData.character.careerGoal ?? null)
     setPlayerName(saveData.character.name || '')
     setPlayerCourtesyName(saveData.character.courtesyName || '')
     setPlayerHometown(saveData.character.hometown || '')
@@ -74,6 +77,8 @@ export default function MobileApp() {
 
   const handleStart = useCallback(() => {
     setLoadSaveData(null)
+    setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(null)
     setAchievementData({ unlocked: [], unlockTimes: {} })
     setPhase('name')
   }, [])
@@ -93,11 +98,18 @@ export default function MobileApp() {
     setFinalDegree((originData.initialDegree as DegreeType) || '进士')
     setFinalAttributes(originData.initialAttributes)
     setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(null)
     setPhase('legacy')
   }, [])
 
   const handleLegacyConfirm = useCallback((perkId: LegacyPerkId | null) => {
     setSelectedLegacyPerk(perkId)
+    setSelectedCareerGoal(null)
+    setPhase('career')
+  }, [])
+
+  const handleCareerConfirm = useCallback((goalId: CareerGoalId | null) => {
+    setSelectedCareerGoal(goalId)
     setPhase('board')
   }, [])
 
@@ -146,6 +158,10 @@ export default function MobileApp() {
         <LegacySelect onConfirm={handleLegacyConfirm} onBack={() => setPhase('origin')} />
       )}
 
+      {phase === 'career' && (
+        <CareerSelect onConfirm={handleCareerConfirm} onBack={() => setPhase('legacy')} />
+      )}
+
       {phase === 'board' && selectedOrigin && (finalAttributes || loadSaveData) && (
         <MobileBoard
           origin={selectedOrigin}
@@ -158,6 +174,7 @@ export default function MobileApp() {
           loadSaveData={loadSaveData ?? undefined}
           difficulty={difficulty}
           legacyPerkId={selectedLegacyPerk}
+          careerGoalId={selectedCareerGoal}
           onReturnToMenu={handleReturnToMenu}
         />
       )}

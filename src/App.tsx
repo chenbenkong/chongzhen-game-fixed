@@ -3,11 +3,12 @@ import './App.css'
 import NameInput, { NameInputResult } from './components/NameInput'
 import OriginSelect from './components/OriginSelect'
 import LegacySelect from './components/LegacySelect'
+import CareerSelect from './components/CareerSelect'
 import TitleScreen from './components/TitleScreen'
 import { BGMProvider } from './components/BGMContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import StorageAlerts from './components/StorageAlerts'
-import { OriginType, DegreeType, Attributes } from './types/game'
+import { OriginType, DegreeType, Attributes, CareerGoalId } from './types/game'
 import { SaveData, getAllSaveSlots, deleteAutosave, loadAutosave } from './types/save'
 import { origins } from './data/origins'
 import { type LegacyPerkId } from './data/legacy'
@@ -60,7 +61,7 @@ const AchievementPanel = lazy(() => import('./components/AchievementPanel'))
 const EndingCodex = lazy(() => import('./components/EndingCodex'))
 const TutorialModal = lazy(() => import('./components/TutorialModal'))
 
-type GamePhase = 'title' | 'name-input' | 'origin-select' | 'legacy-select' | 'playing'
+type GamePhase = 'title' | 'name-input' | 'origin-select' | 'legacy-select' | 'career-select' | 'playing'
 
 function App() {
   const [phase, setPhase] = useState<GamePhase>('title')
@@ -70,6 +71,7 @@ function App() {
   const [playerCustomAge, setPlayerCustomAge] = useState<number | null>(null) // 自定义起始年龄
   const [selectedOrigin, setSelectedOrigin] = useState<OriginType | null>(null)
   const [selectedLegacyPerk, setSelectedLegacyPerk] = useState<LegacyPerkId | null>(null)
+  const [selectedCareerGoal, setSelectedCareerGoal] = useState<CareerGoalId | null>(null)
   const [finalDegree, setFinalDegree] = useState<DegreeType>('进士')
   const [finalAttributes, setFinalAttributes] = useState<Attributes | null>(null)
   const [loadSaveData, setLoadSaveData] = useState<SaveData | null>(null)
@@ -147,6 +149,7 @@ function App() {
     setSelectedOrigin(restoredOrigin)
     // 存档里已经带着上一局的家训；读档时不再叠一次，避免同一局吃两条。
     setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(saveData.character.careerGoal ?? null)
     // 这套 setup 状态同时是「死亡/结局后重新开始」的档案来源：读档时必须
     // 一起换成存档里的这一份，否则读档后重开会拿到「上一局的姓名 + 全零起始属性」
     // （finalAttributes 为 null 时 GameScreen 只拿到 {财帛:0,…,体质:50} 的兜底）。
@@ -182,6 +185,7 @@ function App() {
     prefetchGameScreen().catch(() => {})
     setLoadSaveData(null)
     setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(null)
     // 这里不能删自动存档：玩家还停在起名屏，随时可以点「返回」回标题，
     // 而旧进度要能继续读。真正的「新局开始」是 handleOriginSelect。
     // 成就数据是模块级单例（每个存档独立一份）。新开一局必须清空，
@@ -207,11 +211,19 @@ function App() {
     setFinalAttributes(originData.initialAttributes)
     // P1 家训：出身之后先看一眼上一局留下了什么；没点数也可以直接跳过。
     setSelectedLegacyPerk(null)
+    setSelectedCareerGoal(null)
     setPhase('legacy-select')
   }, [])
 
   const handleLegacyConfirm = useCallback((perkId: LegacyPerkId | null) => {
     setSelectedLegacyPerk(perkId)
+    // P0.2 志业：家训之后只多一屏；不选也能直接开局。
+    setSelectedCareerGoal(null)
+    setPhase('career-select')
+  }, [])
+
+  const handleCareerConfirm = useCallback((goalId: CareerGoalId | null) => {
+    setSelectedCareerGoal(goalId)
     setPhase('playing')
   }, [])
 
@@ -316,6 +328,13 @@ function App() {
           />
         )}
 
+        {phase === 'career-select' && (
+          <CareerSelect
+            onConfirm={handleCareerConfirm}
+            onBack={() => setPhase('legacy-select')}
+          />
+        )}
+
         {phase === 'playing' && selectedOrigin && (finalAttributes || loadSaveData) && (
           // 懒加载边界：主包未就绪时先给一个与启动层同款的最小占位，
           // 而不是让 #root 空着（空着就是黑屏）。
@@ -347,6 +366,7 @@ function App() {
                 loadSaveData={loadSaveData ?? undefined}
                 difficulty={difficulty}
                 legacyPerkId={selectedLegacyPerk}
+                careerGoalId={selectedCareerGoal}
                 onReturnToMenu={handleReturnToMenu}
               />
             </ErrorBoundary>

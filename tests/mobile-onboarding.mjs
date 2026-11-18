@@ -1,5 +1,5 @@
 /**
- * 手机版开局三屏：标题 / 取名 / 出身。
+ * 手机版开局链路：标题 / 取名 / 出身 / 家训 / 志业。
  *
  * 重点验证“紧凑、能一屏完成、详细资料默认收起、属性不再用横条”：
  *   - 取名页四个身份字段同一排，整页不用下滑；
@@ -48,7 +48,7 @@ async function main() {
   await page.waitForSelector('.mobile-title', { timeout: 15000 })
   await page.waitForTimeout(400)
 
-  console.log(`\n[${WIDTH}×${HEIGHT} 横屏 · 开局三屏]`)
+  console.log(`\n[${WIDTH}×${HEIGHT} 横屏 · 开局链路]`)
   const titleFit = await fit(page, '.mobile-title')
   check('标题页一屏装下', titleFit.scroll <= titleFit.client + 1,
     `scroll=${titleFit.scroll} client=${titleFit.client}`)
@@ -94,8 +94,19 @@ async function main() {
   if (SHOTS) await page.screenshot({ path: `${OUT_DIR}手机网页版-出身详情-924x426.png` })
 
   await page.locator('.mobile-origin-card').first().locator('.mobile-btn--primary').click()
+  await page.waitForSelector('.legacy-screen', { timeout: 15000 })
+  check('出身之后进入家训屏', (await page.locator('.legacy-screen').count()) === 1)
+  await page.locator('.legacy-btn.primary').click()
+  await page.waitForSelector('.career-select-screen', { timeout: 15000 })
+  check('家训之后进入志业屏', (await page.locator('.career-select-screen').count()) === 1)
+  check('志业屏四张卡同排', (await page.locator('.career-card').count()) === 4)
+  const careerFit = await fit(page, '.career-select-screen')
+  check('志业屏一屏装下', careerFit.scroll <= careerFit.client + 1,
+    `scroll=${careerFit.scroll} client=${careerFit.client}`)
+  if (SHOTS) await page.screenshot({ path: `${OUT_DIR}手机网页版-志业-924x426.png` })
+  await page.locator('.career-btn.ghost', { hasText: '不立志业' }).click()
   await page.waitForSelector('.mobile-hud', { timeout: 20000 })
-  check('选此出身可进入牌桌', (await page.locator('.mobile-hud').count()) === 1)
+  check('跳过志业可进入牌桌', (await page.locator('.mobile-hud').count()) === 1)
 
   if (SHOTS) {
     await page.locator('.mobile-choices-fab').click()
@@ -107,7 +118,7 @@ async function main() {
 
   console.log('\n' + '='.repeat(56))
   if (failures === 0) {
-    console.log('手机版开局三屏通过：紧凑、详情收起、无横条、可选出身')
+    console.log('手机版开局链路通过：紧凑、详情收起、无横条、可选出身、志业一屏')
   } else {
     console.log(`手机版开局三屏失败：${failures} 项`)
     process.exitCode = 1

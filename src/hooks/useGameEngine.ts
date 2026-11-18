@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import { Character, GameStateValues, OriginType, DegreeType, Attributes, LifeRecord, LifeSummary, PlayerFaction, HiddenAttributes, HIDDEN_DEFAULTS, normalizeHidden } from '../types/game'
+import { Character, GameStateValues, OriginType, DegreeType, Attributes, LifeRecord, LifeSummary, PlayerFaction, HiddenAttributes, HIDDEN_DEFAULTS, normalizeHidden, CareerGoalId } from '../types/game'
 import { GameEvent, EventChoice, AppliedChoiceEffects } from '../types/event'
 import { SaveData, PlayerStats, createEmptyPlayerStats, normalizePlayerStats, saveSaveSlot, loadSaveSlot, saveAutosaveDetailed, loadAutosave, deleteAutosave, normalizeLegacyGameState, autosaveFingerprint } from '../types/save'
 import { checkAndUnlockAchievements, loadAchievements, Achievement, AchievementContext } from '../types/achievement'
@@ -269,6 +269,8 @@ export interface UseGameEngineProps {
   difficulty: DifficultyLevel
   /** P1 家训：新局开局带一条传承加成；读档时忽略。 */
   legacyPerkId?: LegacyPerkId | null
+  /** P0.2 志业：新局开局选定；读档时以存档内 character.careerGoal 为准。 */
+  careerGoalId?: CareerGoalId | null
   onReturnToMenu?: () => void
 }
 
@@ -660,7 +662,8 @@ function createInitialCharacter(
   playerCourtesyName?: string,
   playerHometown?: string,
   playerCustomAge?: number | null,
-  legacyPerkId?: LegacyPerkId | null
+  legacyPerkId?: LegacyPerkId | null,
+  careerGoalId?: CareerGoalId | null
 ): Character {
   const originData = origins[originType]
   // 出身只声明部分隐藏属性，其余（含机敏值 / 忠诚值）补齐为默认值 50
@@ -687,6 +690,7 @@ function createInitialCharacter(
     examHistory: [],
     promotionCount: 0,
     demotionCount: 0,
+    careerGoal: careerGoalId ?? undefined,
     faction: {
       东林好感: 50,
       阉党好感: 50,
@@ -712,6 +716,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     loadSaveData,
     difficulty,
     legacyPerkId,
+    careerGoalId,
     onReturnToMenu
   } = props
 
@@ -739,7 +744,7 @@ export function useGameEngine(props: UseGameEngineProps) {
         }
       }
     }
-    return createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId)
+    return createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId, careerGoalId)
   })
 
   const [gameState, setGameState] = useState<GameStateValues>(() => {
@@ -806,7 +811,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     if (loadSaveData) {
       return calculateMeritScore(loadSaveData.character, loadSaveData.gameState)
     }
-    const initialChar = createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId)
+    const initialChar = createInitialCharacter(origin, degree, bonusAttributes, playerName, playerCourtesyName, playerHometown, playerCustomAge, legacyPerkId, careerGoalId)
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
     const initialState = {
@@ -2392,7 +2397,8 @@ export function useGameEngine(props: UseGameEngineProps) {
       playerCourtesyName,
       playerHometown,
       playerCustomAge,
-      legacyPerkId
+      legacyPerkId,
+      careerGoalId
     )
     const originData = origins[origin]
     const initialGameStateFromOrigin = originData.initialGameState || {}
@@ -2460,6 +2466,7 @@ export function useGameEngine(props: UseGameEngineProps) {
     playerHometown,
     playerCustomAge,
     legacyPerkId,
+    careerGoalId,
     difficultyConfig
   ])
 

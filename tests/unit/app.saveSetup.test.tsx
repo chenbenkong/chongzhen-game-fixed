@@ -38,10 +38,17 @@ vi.mock('../../src/components/OriginSelect', () => ({
 }))
 
 // 家训屏是 P1 新加的一步；这些用例只关心 setup 档案，不关心传承。
-// 用一个「直接跳过」按钮把这一步折叠掉，保持原来的三次点击契约。
+// 用一个「直接跳过」按钮把这一步折叠掉，保持原来的点击契约。
 vi.mock('../../src/components/LegacySelect', () => ({
   default: ({ onConfirm }: { onConfirm: (id: null) => void }) => (
     <button onClick={() => onConfirm(null)}>legacy-skip</button>
+  )
+}))
+
+// P0.2 志业屏同样是独立一步；这里也跳过，避免把 setup 用例变成流程用例。
+vi.mock('../../src/components/CareerSelect', () => ({
+  default: ({ onConfirm }: { onConfirm: (id: null) => void }) => (
+    <button onClick={() => onConfirm(null)}>career-skip</button>
   )
 }))
 
@@ -124,6 +131,19 @@ describe('第七十三轮：App 的读档 → 重新开局档案', () => {
     expect(props.playerCustomAge).toBe(45)
   })
 
+  it('读档后把存档里的志业传给引擎，不丢成“未立志业”', async () => {
+    const save = makeSave()
+    save.character.careerGoal = 'survival'
+    render(<App />)
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent('loadSave', { detail: save }))
+    })
+
+    await waitFor(() => expect(lastGameScreenProps()).toBeTruthy())
+    expect(lastGameScreenProps().careerGoalId).toBe('survival')
+  })
+
   it('先开过一局再读另一份存档，重新开局档案要换成存档里的身份', async () => {
     render(<App />)
 
@@ -131,6 +151,7 @@ describe('第七十三轮：App 的读档 → 重新开局档案', () => {
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：起名确认
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：选出身
     fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：跳过家训
+    fireEvent.click(document.querySelector('button') as HTMLButtonElement) // 桩：跳过志业
     await waitFor(() => expect(lastGameScreenProps()?.playerName).toBe('张三'))
 
     act(() => {

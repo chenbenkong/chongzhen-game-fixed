@@ -21,6 +21,8 @@ export interface ShareCardInput {
   date: string
   /** 结局页“故人”段里已经算好的名字 + 身份，最多三个。 */
   people?: string[]
+  /** P0.2 志业评价，例如“志业　升迁 · 近志（2/3）”；不立志业时留空。 */
+  careerGoal?: string
 }
 
 export interface ShareCardModel {
@@ -28,6 +30,7 @@ export interface ShareCardModel {
   metaLine: string
   endingLine: string
   scoreLine: string
+  goalLine: string
   evaluation: string
   people: string[]
   footer: string
@@ -42,6 +45,7 @@ export function buildShareCardModel(input: ShareCardInput): ShareCardModel {
     metaLine,
     endingLine: input.endingTitle,
     scoreLine: `功过 ${Math.round(input.score)} / 100　·　宦海 ${input.years}`,
+    goalLine: input.careerGoal?.trim() ?? '',
     evaluation: input.evaluation.trim(),
     people: (input.people ?? []).filter(Boolean).slice(0, 3),
     footer: `${input.date}　·　青史`
@@ -140,13 +144,20 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
   ctx.font = '24px "STKaiti", "KaiTi", "SimKai", serif'
   ctx.fillText(model.scoreLine, canvas.width / 2, 478)
 
-  // 评语
+  // P0.2 志业：只占一行，放在功过下面；没有志业时不占位。
+  if (model.goalLine) {
+    ctx.fillStyle = gold
+    ctx.font = '24px "STKaiti", "KaiTi", "SimKai", serif'
+    ctx.fillText(model.goalLine, canvas.width / 2, 522)
+  }
+
+  // 评语；有志业行时压到 10 行，避免顶到故人段。
   ctx.textAlign = 'left'
   ctx.fillStyle = ink
   ctx.font = '28px "STKaiti", "KaiTi", "SimKai", serif'
   const bodyLines = wrapCanvasText(model.evaluation, innerWidth, (value) => ctx.measureText(value).width)
-    .slice(0, 12)
-  let y = 556
+    .slice(0, model.goalLine ? 10 : 12)
+  let y = model.goalLine ? 574 : 556
   for (const line of bodyLines) {
     ctx.fillText(line, margin, y)
     y += 46

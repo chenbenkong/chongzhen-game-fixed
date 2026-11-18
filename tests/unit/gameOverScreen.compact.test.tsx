@@ -67,6 +67,24 @@ describe('结局结算界面', () => {
     expect(screen.getByText('属 性 与 成 就')).not.toBeNull()
   })
 
+  it('有志向时，结局首屏按志业给整数评价', () => {
+    const { container } = render(
+      <GameOverScreen
+        endingEvent={endingEvent}
+        character={makeCharacter({ name: '沈砚', promotionCount: 3 })}
+        gameState={makeGameState({ currentYear: 1640, currentMonth: 7 })}
+        careerGoalId="promotion"
+        onRestart={() => {}}
+        onReturnToMenu={() => {}}
+      />
+    )
+
+    const career = container.querySelector('.ending-career-goal')
+    expect(career).not.toBeNull()
+    expect(career?.textContent).toContain('升迁')
+    expect(career?.textContent).toContain('近志 · 2/3')
+  })
+
   it('同一事件重选失败后「重走人生」锁定，不能再点', () => {
     const { container } = render(
       <GameOverScreen

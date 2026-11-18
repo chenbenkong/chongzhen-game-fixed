@@ -1,5 +1,5 @@
 import { lazy, Suspense, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { OriginType, DegreeType, Attributes } from '../types/game'
+import { OriginType, DegreeType, Attributes, CareerGoalId } from '../types/game'
 import { SaveData } from '../types/save'
 import { DifficultyLevel, DIFFICULTY_CONFIGS } from '../types/difficulty'
 import { useGameShortcuts } from '../hooks/useGameShortcuts'
@@ -56,6 +56,7 @@ interface GameScreenProps {
   loadSaveData?: SaveData
   difficulty: DifficultyLevel
   legacyPerkId?: LegacyPerkId | null
+  careerGoalId?: CareerGoalId | null
   onReturnToMenu?: () => void
 }
 
@@ -340,6 +341,7 @@ function GameScreen(props: GameScreenProps) {
             onReturnToMenu={handleReturnToMenu}
             onViewLifeReview={openLifeReview}
             legacyGoalId={legacyGoalId}
+            careerGoalId={character.careerGoal ?? props.careerGoalId ?? null}
           />
         </div>
       )}
@@ -430,7 +432,7 @@ function GameScreen(props: GameScreenProps) {
           <aside className="right-sidebar">
             <RoutePanel character={character} gameState={gameState} difficulty={props.difficulty} />
 
-            <StatusPanel gameState={gameState} />
+            <StatusPanel gameState={gameState} character={character} />
 
             {identityType === 'official' && (
               <div className="merit-panel">

@@ -7,7 +7,7 @@
  * 抉择门槛、投骰、失败回音一律沿用 EventDisplay 既有实现，不在此另写一套。
  */
 import { useCallback, useMemo, useState } from 'react'
-import type { OriginType, DegreeType, Attributes, GameStateValues } from '../types/game'
+import type { OriginType, DegreeType, Attributes, GameStateValues, CareerGoalId } from '../types/game'
 import type { SaveData } from '../types/save'
 import type { DifficultyLevel } from '../types/difficulty'
 import { useGameEngine } from '../hooks/useGameEngine'
@@ -37,6 +37,7 @@ export interface MobileBoardProps {
   loadSaveData?: SaveData
   difficulty: DifficultyLevel
   legacyPerkId?: LegacyPerkId | null
+  careerGoalId?: CareerGoalId | null
   onReturnToMenu?: () => void
 }
 
@@ -397,7 +398,7 @@ export default function MobileBoard(props: MobileBoardProps) {
                   hidden={character.hidden}
                 />
               )}
-              {panelTab === '态度' && <StatusPanel gameState={gameState} />}
+              {panelTab === '态度' && <StatusPanel gameState={gameState} character={character} />}
               {panelTab === '卷宗' && (
                 <div className="mobile-records">
                   {lifeRecords.length === 0 ? (
@@ -428,6 +429,7 @@ export default function MobileBoard(props: MobileBoardProps) {
             gameState={gameState}
             biography={biography}
             legacyGoalId={legacyGoalId}
+            careerGoalId={character.careerGoal ?? props.careerGoalId ?? null}
             onRestart={handleRetryEnding}
             canRestart={canRetryEnding}
             restartLocked={retryEndingLocked}

@@ -1,9 +1,10 @@
 /**
  * P1 手机横屏版：家训屏必须在「出身」与「牌桌」之间。
+ * P0.2 志业屏接在家训之后；本用例同时钉住两步都不能漏。
  *
- * 这里不重复测家训规则（legacy.p1.test.ts 已经覆盖），只钉两件事：
- *   1. 手机入口真的会经过 legacy 屏，不能像桌面第一版那样漏掉；
- *   2. 选中的家训 id 真的传给 MobileBoard，读档时则必须清空，防止叠第二条。
+ * 这里不重复测家训/志业规则（legacy.p1.test.ts / careerGoals.p0.test.ts 已覆盖），
+ * 只钉：手机入口真的经过 legacy + career 两屏，选中的 id 真的传给牌桌；
+ * 读档时则必须清空，防止叠第二条。
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
@@ -47,6 +48,15 @@ vi.mock('../../src/components/LegacySelect', () => ({
   )
 }))
 
+vi.mock('../../src/components/CareerSelect', () => ({
+  default: ({ onConfirm }: { onConfirm: (value: string | null) => void }) => (
+    <div>
+      <button className="mock-career-skip" onClick={() => onConfirm(null)}>跳过志业</button>
+      <button className="mock-career-take" onClick={() => onConfirm('promotion')}>立志升迁</button>
+    </div>
+  )
+}))
+
 vi.mock('../../src/mobile/MobileBoard', () => ({
   default: (props: Record<string, unknown>) => {
     boardProps.push(props)
@@ -67,19 +77,24 @@ function reachLegacy() {
   fireEvent.click(screen.getByText('选寒门'))
 }
 
-describe('P1 手机横屏版：家训入口', () => {
-  it('出身之后必经家训屏，跳过也才进牌桌', async () => {
+describe('P1 手机横屏版：家训与志业入口', () => {
+  it('出身之后必经家训屏，再经志业屏，跳过才进牌桌', async () => {
     reachLegacy()
     expect(screen.getByText('跳过家训')).toBeTruthy()
     fireEvent.click(screen.getByText('跳过家训'))
+    expect(screen.getByText('跳过志业')).toBeTruthy()
+    fireEvent.click(screen.getByText('跳过志业'))
     await waitFor(() => expect(screen.getByTestId('mock-board')).toBeTruthy())
     expect(boardProps[boardProps.length - 1]?.legacyPerkId).toBeNull()
+    expect(boardProps[boardProps.length - 1]?.careerGoalId).toBeNull()
   })
 
-  it('选中的家训会传给牌桌', async () => {
+  it('选中的家训与志业都会传给牌桌', async () => {
     reachLegacy()
     fireEvent.click(screen.getByText('带故吏满门'))
+    fireEvent.click(screen.getByText('立志升迁'))
     await waitFor(() => expect(screen.getByTestId('mock-board')).toBeTruthy())
     expect(boardProps[boardProps.length - 1]?.legacyPerkId).toBe('mentor')
+    expect(boardProps[boardProps.length - 1]?.careerGoalId).toBe('promotion')
   })
 })

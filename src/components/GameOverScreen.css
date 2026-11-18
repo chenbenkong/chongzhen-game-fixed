@@ -1183,7 +1183,8 @@
   white-space: pre-line;
 }
 
-/* P1 家训：结局页只占一条，不展开成大面板。 */
+/* P1 家训 + P0.2 志业：结局页各占一条，不展开成大面板。 */
+.ending-career-goal,
 .ending-legacy-goal,
 .ending-legacy-gain {
   display: flex;
@@ -1206,6 +1207,21 @@
 .ending-legacy-goal.is-missed {
   border-color: rgba(140, 120, 90, 0.2);
   color: #9c907d;
+}
+
+.ending-career-goal.career-grade-3 {
+  border-color: rgba(201, 162, 39, 0.35);
+  color: #d8c48d;
+}
+
+.ending-career-title {
+  color: #d3bc7f;
+  font-weight: 700;
+}
+
+.ending-career-status {
+  color: #8e816d;
+  font-size: 0.74rem;
 }
 
 .ending-legacy-label {

@@ -170,6 +170,9 @@ export interface GameStateValues {
 // 角色数据
 // ============================================
 
+/** P0.2 志业：一局只选一个长期目标，不新增属性、货币或好感度。 */
+export type CareerGoalId = 'promotion' | 'reputation' | 'family' | 'survival'
+
 export interface OriginData {
   type: OriginType
   name: string
@@ -217,6 +220,11 @@ export interface Character {
   examHistory: ExamRecord[]
   promotionCount: number  // 升迁次数
   demotionCount: number   // 贬官次数
+  /**
+   * P0.2 志业：本局选定的长期目标。
+   * 旧存档没有该字段，缺省视为“未立志业”，不补默认值、不影响旧档。
+   */
+  careerGoal?: CareerGoalId
   faction: FactionState   // 派系状态
 }
 

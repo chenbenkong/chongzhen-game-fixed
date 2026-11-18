@@ -20,8 +20,25 @@ describe('青史分享卡', () => {
     expect(model.endingLine).toBe('南渡续祚')
     expect(model.scoreLine).toContain('78 / 100')
     expect(model.scoreLine).toContain('十七年又三个月')
+    expect(model.goalLine).toBe('')
     expect(model.people).toHaveLength(3)
     expect(model.footer).toBe('崇祯十七年 三月　·　青史')
+  })
+
+  it('P0.2 有志业时单起一行，不挤掉功过评分', () => {
+    const model = buildShareCardModel({
+      name: '沈青崖',
+      origin: '寒门',
+      finalRank: '正三品',
+      endingTitle: '南渡续祚',
+      evaluation: '守节不降。',
+      years: '十七年',
+      score: 78,
+      date: '崇祯十七年 三月',
+      careerGoal: '志业　升迁 · 遂志（3/3）'
+    })
+    expect(model.scoreLine).toContain('78 / 100')
+    expect(model.goalLine).toBe('志业　升迁 · 遂志（3/3）')
   })
 
   it('没有字时不硬写“字”', () => {
