@@ -314,6 +314,13 @@ async function main() {
       if ((await cards.count()) > 0) {
         await cards.first().click().catch(() => {})
       }
+      await page.waitForTimeout(600)
+      // P1 在出身之后多了一屏「家训」。这里走无传承的空局，
+      // 不能只点出身就等首卡，否则量具会自己卡在 legacy-select 上。
+      const legacyPrimary = page.locator('.legacy-btn.primary')
+      if ((await legacyPrimary.count()) > 0) {
+        await legacyPrimary.first().click().catch(() => {})
+      }
       await page.waitForSelector('.event-title', { timeout: 60000 })
       reachedCard = true
       cardMs = Date.now() - startAt
