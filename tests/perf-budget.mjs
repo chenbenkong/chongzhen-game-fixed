@@ -38,6 +38,9 @@ const REMOTE_BASE = baseArg ? baseArg.slice('--base='.length) : process.env.BASE
 const BUDGET_JS_KB = 700
 /** 首屏请求数上限 */
 const BUDGET_REQUESTS = 45
+/** P2.3 出身印记：首卡前会随出身屏加载，单独封顶，不混进 3 MB 代码/事件预算 */
+const BUDGET_ORIGIN_EMBLEMS_MB = 0.75
+const ORIGIN_EMBLEM_PATTERN = /\/assets\/images\/origin-[^/]*\.webp$/
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -293,6 +296,8 @@ async function main() {
   // 这里量的是"首卡之前"那一截：它不许包含 1632 年以后的任何事件分片，
   // 也不许超过 3 MB —— 否则说明某个组件又把全量 barrel 拖回了静态图
   // （第七十九轮的教训：`GameScreen` 静态 import `CheatMode`，就这么漏的）。
+  // P2.3 的 8 张出身印记会随出身屏在首卡前加载，按用户要求不并入这笔代码预算；
+  // 它们单独按 0.75 MB 封顶，防止以后无上限加图。
   if (REMOTE_BASE) {
     console.log('\n（线上模式：跳过「开局首卡」这一相，Resource Timing 记不到首卡的瞬间）')
   } else {
@@ -368,10 +373,20 @@ async function main() {
     }
 
     const BUDGET_CARD_MB = 3.0
-    if (reachedCard && cardBytes / 1024 / 1024 <= BUDGET_CARD_MB) {
-      pass(`首卡之前 ${fmtMB(cardBytes)} ≤ 预算 ${BUDGET_CARD_MB} MB`)
+    const originEmblemBytes = cardPhase
+      .filter(r => ORIGIN_EMBLEM_PATTERN.test(r.url))
+      .reduce((s, r) => s + (r.bytes || 0), 0)
+    const codeAndEventBytes = cardBytes - originEmblemBytes
+    console.log(`  其中出身印记：${fmtMB(originEmblemBytes)}（单独预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB）`)
+    if (originEmblemBytes / 1024 / 1024 <= BUDGET_ORIGIN_EMBLEMS_MB) {
+      pass(`出身印记 ${fmtMB(originEmblemBytes)} ≤ 预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB`)
+    } else {
+      fail(`出身印记 ${fmtMB(originEmblemBytes)} 超预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB`)
+    }
+    if (reachedCard && codeAndEventBytes / 1024 / 1024 <= BUDGET_CARD_MB) {
+      pass(`首卡之前（不含出身印记）${fmtMB(codeAndEventBytes)} ≤ 预算 ${BUDGET_CARD_MB} MB`)
     } else if (reachedCard) {
-      fail(`首卡之前 ${fmtMB(cardBytes)} 超预算 ${BUDGET_CARD_MB} MB`)
+      fail(`首卡之前（不含出身印记）${fmtMB(codeAndEventBytes)} 超预算 ${BUDGET_CARD_MB} MB`)
     }
 
     if (consoleErrors.length === 0) {
