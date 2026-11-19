@@ -1516,35 +1516,46 @@
 }
 
 @media (max-height: 520px) {
+  .ending-screen { overflow-y: auto; }
   .ending-container--compact {
-    padding: 10px 24px 12px;
-    gap: 8px;
-    justify-content: center;
+    height: auto;
+    min-height: 100dvh;
+    padding: 6px 18px 8px;
+    gap: 6px;
+    justify-content: flex-start;
   }
-  .ending-hero { padding-bottom: 8px; }
-  .ending-eyebrow { font-size: 0.64rem; letter-spacing: 2px; }
-  .ending-hero-title { margin: 4px 0; font-size: 1.75rem; letter-spacing: 0.1em; }
-  .ending-hero-meta { font-size: 0.74rem; gap: 6px; letter-spacing: 1px; }
-  .ending-score-value { font-size: 2rem; }
-  .ending-score-rank { margin-top: 3px; font-size: 0.68rem; }
+  .ending-hero { padding-bottom: 4px; gap: 12px; }
+  .ending-eyebrow { font-size: 0.6rem; letter-spacing: 2px; }
+  .ending-hero-title { margin: 2px 0; font-size: 1.5rem; letter-spacing: 0.1em; }
+  .ending-hero-meta { font-size: 0.68rem; gap: 5px; letter-spacing: 1px; }
+  .ending-score-value { font-size: 1.7rem; }
+  .ending-score-rank { margin-top: 2px; font-size: 0.62rem; }
   .ending-summary {
-    font-size: 0.78rem;
-    line-height: 1.45;
-    -webkit-line-clamp: 2;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    -webkit-line-clamp: 1;
   }
-  .ending-fact { padding: 5px 8px; }
-  .ending-fact span { font-size: 0.6rem; }
-  .ending-fact strong { font-size: 0.82rem; }
-  .ending-details-summary { padding: 4px 2px; font-size: 0.7rem; }
+  .ending-relationships { padding: 4px 7px; gap: 4px; }
+  .ending-relationships-label { font-size: 0.62rem; letter-spacing: 2px; }
+  .ending-relationship-grid { gap: 5px; }
+  .ending-relationship-card { gap: 4px; padding: 2px 4px; }
+  .ending-relationship-portrait { width: 28px; height: 38px; }
+  .ending-relationship-name { font-size: 0.7rem; }
+  .ending-relationship-title { font-size: 0.56rem; }
+  .ending-relationship-line { margin-top: 1px; font-size: 0.6rem; line-height: 1.3; -webkit-line-clamp: 1; }
+  .ending-career-goal,
+  .ending-legacy-goal,
+  .ending-legacy-gain { padding: 3px 8px; gap: 4px 8px; font-size: 0.68rem; }
+  .ending-cause { padding: 3px 8px; gap: 3px 6px; font-size: 0.68rem; line-height: 1.35; }
+  .ending-cause-tip { font-size: 0.62rem; }
+  .ending-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ending-fact { padding: 3px 6px; }
+  .ending-fact span { font-size: 0.55rem; }
+  .ending-fact strong { font-size: 0.72rem; }
+  .ending-details-summary { padding: 2px 2px; font-size: 0.64rem; }
   .ending-details-body { max-height: 34vh; }
-  .ending-actions--footer { padding-top: 0; }
-  .ending-actions--footer .end-btn { padding: 6px 14px; font-size: 0.76rem; letter-spacing: 2px; }
-  .ending-relationships { padding: 7px 9px; gap: 7px; }
-  .ending-relationship-card { gap: 6px; padding: 5px 6px; }
-  .ending-relationship-portrait { width: 34px; height: 45px; }
-  .ending-relationship-name { font-size: 0.78rem; }
-  .ending-relationship-title { font-size: 0.62rem; }
-  .ending-relationship-line { font-size: 0.66rem; -webkit-line-clamp: 1; }
+  .ending-actions--footer { padding-top: 0; gap: 6px; }
+  .ending-actions--footer .end-btn { padding: 3px 10px; font-size: 0.68rem; letter-spacing: 1px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
