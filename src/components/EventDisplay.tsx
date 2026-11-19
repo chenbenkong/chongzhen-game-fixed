@@ -59,6 +59,12 @@ interface EventDisplayProps {
     echo: string
     tags: string[]
   }) => void
+  /**
+   * 选项呈现方式。
+   *  · inline：选项直接铺在事件正文底部（默认，手机网页端由 MobileBoard 自己接管）
+   *  · panel：桌面端「本月抉择」面板，与手机网页端同一套目录式交互
+   */
+  choicesPresentation?: 'inline' | 'panel'
 }
 
 
@@ -259,7 +265,8 @@ function EventDisplay({
   selectedChoiceId: externalSelectedChoiceId,
   onBackToChoices,
   onDeathEnding,
-  onDiceModalOpenChange
+  onDiceModalOpenChange,
+  choicesPresentation = 'inline'
 }: EventDisplayProps) {
   // 无事件时自动触发继续（进入下月），避免显示空界面
   const autoAdvancedRef = useRef(false)
@@ -277,6 +284,7 @@ function EventDisplay({
 
   const [internalSelectedChoice, setInternalSelectedChoice] = useState<EventChoice | null>(null)
   const [internalShowResult, setInternalShowResult] = useState(false)
+  const [isChoicePanelOpen, setIsChoicePanelOpen] = useState(false)
   // 引擎回传的实际落账增量（含难度/出身/上下限）；null 时退回声明值（幽灵模式）
   const [appliedEffects, setAppliedEffects] = useState<AppliedChoiceEffects | null>(null)
   
@@ -553,6 +561,9 @@ function EventDisplay({
       if (isTypingTarget(e.target)) return
       if (e.ctrlKey || e.altKey || e.metaKey) return
       if (!event || isProcessing || showResult || isGhostMode) return
+      // 桌面端选项收在「本月抉择」面板里时，数字键不能穿透到不可见的选项；
+      // 面板打开后才允许 1–9。
+      if (choicesPresentation === 'panel' && !isChoicePanelOpen) return
       // 投骰弹窗（勉力一试）开着时，数字键不能穿透到背后的事件面板：
       // 那会在弹窗里结算之前就把事件选定，并消耗掉本局唯一一次投骰机会。
       if (diceModal.show) return
@@ -565,7 +576,7 @@ function EventDisplay({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [event, isProcessing, showResult, isGhostMode, shortcutsEnabled, handleSelectChoice, diceModal.show])
+  }, [event, isProcessing, showResult, isGhostMode, shortcutsEnabled, handleSelectChoice, diceModal.show, choicesPresentation, isChoicePanelOpen])
 
   const openDiceModal = useCallback((choice: EventChoice) => {
     const check = choiceChecks.get(choice.id)
@@ -576,6 +587,8 @@ function EventDisplay({
     // 整个事件已经用过了投骰
     if (eventDiceUsed) return
 
+    // 桌面端「本月抉择」先收起，避免两层 portal 抢焦点 / 叠层。
+    setIsChoicePanelOpen(false)
     setDiceModal({
       show: true,
       choice,
@@ -701,14 +714,32 @@ function EventDisplay({
   } = useModal({
     open: diceModal.show,
     onClose: closeDiceModal,
-    // 初始焦点停在面板本身，而不是"框里第一个可聚焦元素"（那是 .dice-area，排在整段
-    // 难度说明之下）。第三十三轮把弹窗改成"只让中间一段滚"之后，focus() 的默认行为会把
-    // 滚动区一路拉到骰子（1280×600 + 200% 字号实测 scrollTop=421），弹窗一打开就把
-    // 「难度 / 需投出 三 或以上」滚出视野 —— 而那恰恰是玩家决定要不要投之前唯一要读的话。
-    // 停在面板上时读屏念 aria-labelledby 的标题，Tab 一下才进骰子（那时是玩家自己要过去，
-    // 浏览器按需滚动）；「投 掷」在钉住的页脚里，鼠标玩家从一开始就点得到。
+    // 初始焦点停在面板本身，而不是框里第一个可聚焦元素（那是 .dice-area）。
+    // 停在面板上时读屏念 aria-labelledby 的标题，Tab 一下才进骰子；
+    // 「投 掷」在钉住的页脚里，鼠标玩家从一开始就点得到。
     initialFocus: 'dialog'
   })
+
+  // 桌面端「本月抉择」面板：复用同一套模态语义（ESC / Tab 焦点陷阱 / 滚动锁）。
+  const {
+    getModalProps: getChoicesModalProps,
+    dialogRef: choicesDialogRef,
+    titleId: choicesTitleId,
+    handleOverlayClick: handleChoicesOverlayClick
+  } = useModal({
+    open: isChoicePanelOpen,
+    onClose: () => setIsChoicePanelOpen(false),
+    initialFocus: 'dialog'
+  })
+
+  useEffect(() => {
+    if (showResult) setIsChoicePanelOpen(false)
+  }, [showResult])
+
+  // 事件切换时收起目录，避免面板停在新事件上却没有重新提示。
+  useEffect(() => {
+    setIsChoicePanelOpen(false)
+  }, [event?.id])
 
   // 锁定原因 aria-describedby 的 id 前缀（useId 保证实例唯一）
   const choiceIdPrefix = useId()
@@ -772,6 +803,128 @@ function EventDisplay({
       !eventDiceUsed
   })
   const showDeadEndEscape = !isGhostMode && availableCount === 0 && !hasDiceLeft
+
+  // 桌面端「本月抉择」与内嵌模式共用同一份选项 DOM，避免两套判定逻辑漂移。
+  const choiceListContent = (
+    <>
+      <div className="choices-list">
+        {event.choices.map((choice, idx) => {
+          const check = choiceChecks.get(choice.id)
+          if (!check) return null
+
+          const canAttemptDice = !check.available &&
+            !diceModal.isRolling &&
+            check.difficulty !== undefined &&
+            check.conditionType !== 'flag' &&
+            (choiceResults.get(choice.id) !== true) &&
+            !eventDiceUsed // 整个事件只投一次
+
+          // 锁定原因用 aria-describedby 暴露；id 由 useId() 派生，避免实例/选项间冲突
+          const lockReasonId = `${choiceIdPrefix}-${choice.id}-lock-reason`
+          const closures = routeClosures.get(choice.id)
+          const showClosures = !!closures?.length && (check.available || canAttemptDice)
+          const closureId = `${choiceIdPrefix}-${choice.id}-route-closure`
+          const describedBy = [
+            !check.available ? lockReasonId : null,
+            showClosures ? closureId : null
+          ].filter(Boolean).join(' ') || undefined
+
+          return (
+            <div key={`${choice.id}-${idx}`} className="choice-card-wrapper">
+              <button
+                className={`choice-card ${!check.available ? 'locked' : ''}`}
+                onClick={() => handleSelectChoice(choice)}
+                aria-disabled={isProcessing || !check.available}
+                aria-label={!check.available ? choice.text : undefined}
+                aria-describedby={describedBy}
+              >
+                <div className="choice-content">
+                  {/* 序号徽标：既是 1–9 快捷键的可见提示，也让"点第几个"
+                      与"按几"对应上，减少误点。仅前 9 个选项显示。 */}
+                  {idx < 9 && shortcutsEnabled && (
+                    <span className="choice-index" aria-hidden="true">
+                      {idx + 1}
+                    </span>
+                  )}
+                  <div className="choice-title">
+                    {choice.text}
+                    {choice.storyline && choice.storyline !== event.storyline && (
+                      <span className="choice-storyline-shift">
+                        → {getStoryline(choice.storyline)?.name || choice.storyline}
+                      </span>
+                    )}
+                  </div>
+                  {choice.description && (
+                    <div className="choice-description">{choice.description}</div>
+                  )}
+                  {showClosures && (
+                    <div className="choice-route-closure" id={closureId}>
+                      此择将断了：{closures!.slice(0, 2).join('、')}
+                      {closures!.length > 2 ? ` 等 ${closures!.length} 条` : ''}
+                    </div>
+                  )}
+                </div>
+
+                {/* 锁定原因：按钮不再 disabled（可聚焦），原因通过 aria-describedby 暴露。
+                    放在按钮内部以保留原来的缩进/透明度叠加效果（视觉不变） */}
+                {!check.available && (
+                  <div className="choice-lock-reason" id={lockReasonId}>
+                    {check.reason}
+                    {attemptedChoices.has(choice.id) && choiceResults.get(choice.id) === false && (
+                      <span className="attempt-failed-mark"> <Icon name="cross" size={12} /> 已失败</span>
+                    )}
+                    {eventDiceUsed && !canAttemptDice && choiceResults.get(choice.id) !== true && (
+                      <span className="attempt-failed-mark"> （本事件骰子已投）</span>
+                    )}
+                  </div>
+                )}
+              </button>
+
+              {canAttemptDice && (
+                <button
+                  className="dice-attempt-btn"
+                  onClick={() => openDiceModal(choice)}
+                  aria-label={`勉力一试：${choice.text}`}
+                >
+                  勉力一试
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 「听天由命」：从当前可选的选项里随机挑一个。
+          只在有两个及以上可选时才有意义（只有一个选项时等于替玩家点它）。
+          这个入口同时是 randomChoiceCount 的唯一来源。 */}
+      {event.choices.filter(c => choiceChecks.get(c.id)?.available).length >= 2 && (
+        <button
+          type="button"
+          className="random-choice-btn"
+          onClick={handleRandomChoice}
+          aria-disabled={isProcessing}
+          title="从当前可选的选项中随机挑一个"
+        >
+          听 天 由 命
+        </button>
+      )}
+
+      {/* 全锁兜底：所有选项都关死、骰子也没得投时，只剩"让这一页翻过去"。
+          文案沿用失败回音里的"事已至此"，点它等同于点底部「继 续」——
+          引擎会接着发同月队列里的下一张卡，或推进到下个月。 */}
+      {showDeadEndEscape && (
+        <button
+          type="button"
+          className="random-choice-btn dead-end-escape-btn"
+          onClick={handleContinue}
+          aria-disabled={isProcessing}
+          title="所有选项都关死了，只能让这一页翻过去"
+        >
+          事已至此
+        </button>
+      )}
+    </>
+  )
 
   const node = (
     <div className="dice-modal-overlay" onClick={handleDiceOverlayClick}>
@@ -883,6 +1036,17 @@ function EventDisplay({
             本月尚有 <strong>{pendingCount}</strong> 个事件待处理
           </div>
         )}
+        {choicesPresentation === 'panel' && !showResult && (
+          <button
+            type="button"
+            className="desktop-choices-fab"
+            onClick={() => setIsChoicePanelOpen(true)}
+            aria-label={`打开选项，共 ${event.choices.length} 项`}
+          >
+            <span>选项</span>
+            <span className="desktop-choices-fab__count">{event.choices.length}</span>
+          </button>
+        )}
       </div>
 
       {eventScene && (
@@ -980,127 +1144,23 @@ function EventDisplay({
         </div>
       </div>
 
+      {choicesPresentation === 'panel' && !showResult && (
+        <button
+          type="button"
+          className="desktop-choices-prompt"
+          onClick={() => setIsChoicePanelOpen(true)}
+          aria-label={`打开本月抉择，共 ${event.choices.length} 项`}
+        >
+          <span className="desktop-choices-prompt__label">本月抉择</span>
+          <span className="desktop-choices-prompt__count">{event.choices.length} 项</span>
+          <span className="desktop-choices-prompt__arrow" aria-hidden="true">展 开 →</span>
+        </button>
+      )}
+
       {!showResult ? (
-        /* 选项列表 */
-        <div className="choices-section">
-          <div className="choices-list">
-            {event.choices.map((choice, idx) => {
-              const check = choiceChecks.get(choice.id)
-              if (!check) return null
-
-              const canAttemptDice = !check.available &&
-                !diceModal.isRolling &&
-                check.difficulty !== undefined &&
-                check.conditionType !== 'flag' &&
-                (choiceResults.get(choice.id) !== true) &&
-                !eventDiceUsed // 整个事件只投一次
-
-              // 锁定原因用 aria-describedby 暴露；id 由 useId() 派生，避免实例/选项间冲突
-              const lockReasonId = `${choiceIdPrefix}-${choice.id}-lock-reason`
-              const closures = routeClosures.get(choice.id)
-              const showClosures = !!closures?.length && (check.available || canAttemptDice)
-              const closureId = `${choiceIdPrefix}-${choice.id}-route-closure`
-              const describedBy = [
-                !check.available ? lockReasonId : null,
-                showClosures ? closureId : null
-              ].filter(Boolean).join(' ') || undefined
-
-              return (
-                <div key={`${choice.id}-${idx}`} className="choice-card-wrapper">
-                  <button
-                    className={`choice-card ${!check.available ? 'locked' : ''}`}
-                    onClick={() => handleSelectChoice(choice)}
-                    aria-disabled={isProcessing || !check.available}
-                    aria-label={!check.available ? choice.text : undefined}
-                    aria-describedby={describedBy}
-                  >
-                    <div className="choice-content">
-                      {/* 序号徽标：既是 1–9 快捷键的可见提示，也让"点第几个"
-                          与"按几"对应上，减少误点。仅前 9 个选项显示。 */}
-                      {idx < 9 && shortcutsEnabled && (
-                        <span className="choice-index" aria-hidden="true">
-                          {idx + 1}
-                        </span>
-                      )}
-                      <div className="choice-title">
-                        {choice.text}
-                        {choice.storyline && choice.storyline !== event.storyline && (
-                          <span className="choice-storyline-shift">
-                            → {getStoryline(choice.storyline)?.name || choice.storyline}
-                          </span>
-                        )}
-                      </div>
-                      {choice.description && (
-                        <div className="choice-description">{choice.description}</div>
-                      )}
-                      {showClosures && (
-                        <div className="choice-route-closure" id={closureId}>
-                          此择将断了：{closures!.slice(0, 2).join('、')}
-                          {closures!.length > 2 ? ` 等 ${closures!.length} 条` : ''}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 锁定原因：按钮不再 disabled（可聚焦），原因通过 aria-describedby 暴露。
-                        放在按钮内部以保留原来的缩进/透明度叠加效果（视觉不变） */}
-                    {!check.available && (
-                      <div className="choice-lock-reason" id={lockReasonId}>
-                        {check.reason}
-                        {attemptedChoices.has(choice.id) && choiceResults.get(choice.id) === false && (
-                          <span className="attempt-failed-mark"> <Icon name="cross" size={12} /> 已失败</span>
-                        )}
-                        {eventDiceUsed && !canAttemptDice && choiceResults.get(choice.id) !== true && (
-                          <span className="attempt-failed-mark"> （本事件骰子已投）</span>
-                        )}
-                      </div>
-                    )}
-                  </button>
-
-                  {canAttemptDice && (
-                    <button
-                      className="dice-attempt-btn"
-                      onClick={() => openDiceModal(choice)}
-                      aria-label={`勉力一试：${choice.text}`}
-                    >
-                      勉力一试
-                    </button>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* 「听天由命」：从当前可选的选项里随机挑一个。
-              只在有两个及以上可选时才有意义（只有一个选项时等于替玩家点它）。
-              这个入口同时是 randomChoiceCount 的唯一来源。 */}
-          {event.choices.filter(c => choiceChecks.get(c.id)?.available).length >= 2 && (
-            <button
-              type="button"
-              className="random-choice-btn"
-              onClick={handleRandomChoice}
-              aria-disabled={isProcessing}
-              title="从当前可选的选项中随机挑一个"
-            >
-              听 天 由 命
-            </button>
-          )}
-
-          {/* 全锁兜底：所有选项都关死、骰子也没得投时，只剩"让这一页翻过去"。
-              文案沿用失败回音里的"事已至此"，点它等同于点底部「继 续」——
-              引擎会接着发同月队列里的下一张卡，或推进到下个月。 */}
-          {showDeadEndEscape && (
-            <button
-              type="button"
-              className="random-choice-btn dead-end-escape-btn"
-              onClick={handleContinue}
-              aria-disabled={isProcessing}
-              title="所有选项都关死了，只能让这一页翻过去"
-            >
-              事已至此
-            </button>
-          )}
-
-        </div>
+        choicesPresentation === 'panel' ? null : (
+          <div className="choices-section">{choiceListContent}</div>
+        )
       ) : (
         /* 结果展示 */
         <div className="result-section">
@@ -1180,6 +1240,34 @@ function EventDisplay({
         const check = choiceChecks.get(diceModal.choice.id)
         return check && !check.available
       })() && createPortal(node, document.body)}
+
+      {/* 桌面端「本月抉择」：与手机网页端同一套目录式选项面板 */}
+      {!showResult && choicesPresentation === 'panel' && isChoicePanelOpen && createPortal(
+        <div className="desktop-choices-overlay" onClick={handleChoicesOverlayClick}>
+          <div
+            className="desktop-choices-panel"
+            ref={choicesDialogRef}
+            {...getChoicesModalProps()}
+          >
+            <div className="desktop-choices-header">
+              <h2 className="desktop-choices-title" id={choicesTitleId}>本月抉择</h2>
+              <span className="desktop-choices-count">{event.choices.length} 项</span>
+              <button
+                type="button"
+                className="desktop-choices-close"
+                onClick={() => setIsChoicePanelOpen(false)}
+                aria-label="收起选项目录"
+              >
+                ×
+              </button>
+            </div>
+            <div className="desktop-choices-body">
+              {choiceListContent}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
     </div>
   )

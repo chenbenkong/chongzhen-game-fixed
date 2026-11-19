@@ -1,6 +1,18 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { SaveSlot, getAllSaveSlots, deleteSaveSlot, hasAutosave, getAutosavePreview, deleteAutosave } from '../types/save'
+import {
+  SaveSlot,
+  getAllSaveSlots,
+  deleteSaveSlot,
+  hasAutosave,
+  getAutosavePreview,
+  deleteAutosave,
+  buildSaveBundle,
+  serializeSaveBundle,
+  parseSaveBundle,
+  applySaveBundle,
+  type SaveBundleSummary
+} from '../types/save'
 import { useConfirm } from '../hooks/useConfirm'
 import { useModal } from '../hooks/useModal'
 import './SaveSlotsModal.css'
@@ -25,15 +37,104 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
   const [slots, setSlots] = useState<SaveSlot[]>([])
   const [autosavePresent, setAutosavePresent] = useState(false)
   const [autosavePreview, setAutosavePreviewState] = useState<ReturnType<typeof getAutosavePreview>>(null)
+  const [backupNotice, setBackupNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { confirm, dialog: confirmDialog } = useConfirm()
+
+  const refreshSaves = useCallback(() => {
+    setSlots(getAllSaveSlots())
+    setAutosavePresent(hasAutosave())
+    setAutosavePreviewState(getAutosavePreview())
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
-      setSlots(getAllSaveSlots())
-      setAutosavePresent(hasAutosave())
-      setAutosavePreviewState(getAutosavePreview())
+      refreshSaves()
+      setBackupNotice(null)
     }
-  }, [isOpen])
+  }, [isOpen, refreshSaves])
+
+  const handleExportBackup = useCallback(() => {
+    const bundle = buildSaveBundle()
+    if (bundle.slots.length === 0 && !bundle.autosave) {
+      setBackupNotice({ text: '当前没有可导出的存档', tone: 'warn' })
+      return
+    }
+    try {
+      const json = serializeSaveBundle(bundle)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `chongzhen-save-backup-${stamp}.json`
+      link.click()
+      URL.revokeObjectURL(url)
+      const total = bundle.slots.length + (bundle.autosave ? 1 : 0)
+      setBackupNotice({ text: `已导出 ${total} 份存档备份`, tone: 'ok' })
+    } catch (error) {
+      console.error('[save] 导出备份失败：', error)
+      setBackupNotice({ text: '导出失败，请检查浏览器是否允许下载文件', tone: 'warn' })
+    }
+  }, [])
+
+  const formatBundleSummary = (summary: SaveBundleSummary): string => {
+    const parts: string[] = []
+    if (summary.autosave) {
+      parts.push(`自动存档：${summary.autosave.playerName} · ${summary.autosave.year}年${summary.autosave.month}月`)
+    }
+    for (const { slotId, preview } of summary.slots) {
+      parts.push(`槽位 ${slotId}：${preview.playerName} · ${preview.year}年${preview.month}月`)
+    }
+    return parts.join('；')
+  }
+
+  const handleImportFile = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    if (file.size > 6_000_000) {
+      setBackupNotice({ text: '备份文件过大，已拒绝导入', tone: 'warn' })
+      return
+    }
+
+    let text: string
+    try {
+      text = await file.text()
+    } catch {
+      setBackupNotice({ text: '无法读取该文件', tone: 'warn' })
+      return
+    }
+
+    const parsed = parseSaveBundle(text)
+    if (!parsed.ok) {
+      setBackupNotice({ text: `导入失败：${parsed.error}`, tone: 'warn' })
+      return
+    }
+
+    const ok = await confirm({
+      title: '导入存档备份',
+      message: `备份包含 ${parsed.summary.total} 份存档。`,
+      detail: formatBundleSummary(parsed.summary),
+      warning: '导入会覆盖同编号的手动槽位与自动存档；备份里没有的槽位保持原样。',
+      confirmText: '导入',
+      cancelText: '取消',
+      variant: 'primary'
+    })
+    if (!ok) return
+
+    const applied = applySaveBundle(parsed.bundle)
+    refreshSaves()
+    if (applied.ok) {
+      const parts: string[] = []
+      if (applied.importedSlots.length > 0) parts.push(`槽位 ${applied.importedSlots.join('、')}`)
+      if (applied.autosaveImported) parts.push('自动存档')
+      setBackupNotice({ text: `已导入：${parts.join(' / ')}。可从上方直接读取。`, tone: 'ok' })
+    } else {
+      setBackupNotice({ text: `部分导入失败：${applied.failures.join('、')}`, tone: 'warn' })
+    }
+  }, [confirm, refreshSaves])
 
   const handleDelete = useCallback(async (slotId: number) => {
     const slot = slots.find(s => s.id === slotId)
@@ -264,6 +365,39 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
             )
           })}
         </div>
+
+        <div className="save-backup-bar">
+          <button type="button" className="save-backup-btn" onClick={handleExportBackup}>
+            导出备份
+          </button>
+          {mode === 'load' && (
+            <button
+              type="button"
+              className="save-backup-btn"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              导入备份
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="save-backup-file"
+            onChange={handleImportFile}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        </div>
+        {backupNotice && (
+          <p
+            className={`save-backup-notice save-backup-notice--${backupNotice.tone}`}
+            role="status"
+            aria-live="polite"
+          >
+            {backupNotice.text}
+          </p>
+        )}
       </div>
       {confirmDialog}
     </div>

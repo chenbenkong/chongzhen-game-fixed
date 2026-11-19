@@ -668,6 +668,203 @@ export function deleteAutosave(): void {
 }
 
 /**
+ * 导入备份时显式覆盖自动存档。
+ *
+ * 与 `saveAutosave` 的区别：备份恢复是玩家主动确认的覆盖，
+ * 不受跨标签页“落后就停写”的守卫限制；写完把序号推到最新，
+ * 让本页重新成为这一局的写入方。
+ */
+export function restoreAutosave(data: SaveData): boolean {
+  try {
+    const json = serializeSave(data)
+    localStorage.setItem(AUTOSAVE_KEY, json)
+    const nextSeq = readAutosaveSeq() + 1
+    localStorage.setItem(AUTOSAVE_SEQ_KEY, String(nextSeq))
+    lastWrittenSeq = nextSeq
+    return true
+  } catch (e) {
+    reportStorageError('导入自动存档', e)
+    return false
+  }
+}
+
+// ============================================================
+// 本地存档备份：导出 / 导入 JSON bundle
+// ============================================================
+// 不做云存档与账号；只给“换浏览器 / 换机器 / 手工备份”一个不丢档的出口。
+// bundle 只装已迁移到当前 schema 的 SaveData，导入时仍走 migrateSave，
+// 因此旧版本备份也能被升级；格式或结构不对时整包拒绝，不做部分猜测。
+
+export const SAVE_BUNDLE_FORMAT = 'chongzhen-save-bundle'
+export const SAVE_BUNDLE_VERSION = 1
+const MAX_SAVE_BUNDLE_CHARS = 6_000_000
+
+export interface SaveBundleSlot {
+  slotId: number
+  data: SaveData
+}
+
+export interface SaveBundle {
+  format: typeof SAVE_BUNDLE_FORMAT
+  version: number
+  schemaVersion: number
+  exportedAt: string
+  autosave: SaveData | null
+  slots: SaveBundleSlot[]
+}
+
+export interface SaveBundleSummary {
+  autosave: SavePreview | null
+  slots: Array<{ slotId: number; preview: SavePreview }>
+  total: number
+}
+
+export type SaveBundleParseResult =
+  | { ok: true; bundle: SaveBundle; summary: SaveBundleSummary }
+  | { ok: false; error: string }
+
+/** 从当前 localStorage 收集自动存档与 1/2/3 手动槽位。损坏的槽位直接跳过。 */
+export function buildSaveBundle(): SaveBundle {
+  const autosave = loadAutosave()
+  const slots: SaveBundleSlot[] = []
+  for (const slotId of MANUAL_SAVE_SLOT_IDS) {
+    const data = loadSaveSlot(slotId)
+    if (data) slots.push({ slotId, data })
+  }
+  return {
+    format: SAVE_BUNDLE_FORMAT,
+    version: SAVE_BUNDLE_VERSION,
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    autosave,
+    slots
+  }
+}
+
+export function serializeSaveBundle(bundle: SaveBundle): string {
+  return JSON.stringify(bundle)
+}
+
+function buildBundleSummary(bundle: SaveBundle): SaveBundleSummary {
+  return {
+    autosave: buildPreview(bundle.autosave),
+    slots: bundle.slots
+      .map(({ slotId, data }) => {
+        const preview = buildPreview(data)
+        return preview ? { slotId, preview } : null
+      })
+      .filter((entry): entry is { slotId: number; preview: SavePreview } => entry !== null),
+    total: bundle.slots.length + (bundle.autosave ? 1 : 0)
+  }
+}
+
+/**
+ * 校验并迁移一份备份文本。
+ *
+ * 失败时只返回一句可展示的原因，不抛异常；成功时所有存档都已升级到当前 schema。
+ * 只接受本格式、版本 1、槽位 1–3；重复槽位与空包一律拒绝，避免“导入一半”的歧义。
+ */
+export function parseSaveBundle(text: string): SaveBundleParseResult {
+  if (typeof text !== 'string' || text.trim() === '') {
+    return { ok: false, error: '备份文件为空' }
+  }
+  if (text.length > MAX_SAVE_BUNDLE_CHARS) {
+    return { ok: false, error: '备份文件过大，已拒绝导入' }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return { ok: false, error: '备份文件不是合法 JSON' }
+  }
+  if (!isPlainObject(parsed)) {
+    return { ok: false, error: '备份文件结构不完整' }
+  }
+
+  const raw = parsed as Record<string, unknown>
+  if (raw.format !== SAVE_BUNDLE_FORMAT) {
+    return { ok: false, error: '不是本游戏的存档备份' }
+  }
+  if (raw.version !== SAVE_BUNDLE_VERSION) {
+    return { ok: false, error: '备份版本不受支持，请使用当前版本重新导出' }
+  }
+  if (!Array.isArray(raw.slots)) {
+    return { ok: false, error: '备份文件缺少槽位列表' }
+  }
+
+  const slots: SaveBundleSlot[] = []
+  const seen = new Set<number>()
+  for (const entry of raw.slots) {
+    if (!isPlainObject(entry)) return { ok: false, error: '备份槽位结构不完整' }
+    const slotId = readFiniteNumber(entry.slotId)
+    if (slotId === null || !MANUAL_SAVE_SLOT_IDS.includes(slotId as 1 | 2 | 3)) {
+      return { ok: false, error: '备份里含有非法槽位编号' }
+    }
+    if (seen.has(slotId)) return { ok: false, error: `槽位 ${slotId} 在备份里重复出现` }
+    seen.add(slotId)
+    const migrated = migrateSave(entry.data)
+    if (!migrated) return { ok: false, error: `槽位 ${slotId} 的存档结构不完整` }
+    slots.push({ slotId, data: migrated })
+  }
+
+  let autosave: SaveData | null = null
+  if (raw.autosave !== null && raw.autosave !== undefined) {
+    autosave = migrateSave(raw.autosave)
+    if (!autosave) return { ok: false, error: '自动存档结构不完整' }
+  }
+
+  if (slots.length === 0 && !autosave) {
+    return { ok: false, error: '备份里没有可导入的存档' }
+  }
+
+  const bundle: SaveBundle = {
+    format: SAVE_BUNDLE_FORMAT,
+    version: SAVE_BUNDLE_VERSION,
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    exportedAt: typeof raw.exportedAt === 'string' ? raw.exportedAt : new Date().toISOString(),
+    autosave,
+    slots
+  }
+  return { ok: true, bundle, summary: buildBundleSummary(bundle) }
+}
+
+/**
+ * 把备份写回 localStorage。
+ *
+ * 只覆盖 bundle 里出现的槽位与自动存档；bundle 没带的槽位保持原样。
+ * 写入可能因容量不足部分失败，因此返回逐项结果，由 UI 决定提示文案。
+ */
+export function applySaveBundle(bundle: SaveBundle): {
+  ok: boolean
+  importedSlots: number[]
+  autosaveImported: boolean
+  failures: string[]
+} {
+  const importedSlots: number[] = []
+  const failures: string[] = []
+
+  for (const { slotId, data } of bundle.slots) {
+    if (saveSaveSlot(slotId, data)) importedSlots.push(slotId)
+    else failures.push(`槽位 ${slotId}`)
+  }
+
+  let autosaveImported = false
+  if (bundle.autosave) {
+    autosaveImported = restoreAutosave(bundle.autosave)
+    if (!autosaveImported) failures.push('自动存档')
+  }
+
+  return {
+    ok: failures.length === 0,
+    importedSlots,
+    autosaveImported,
+    failures
+  }
+}
+
+
+/**
  * 仅供测试：直接调用迁移函数。
  *
  * migrateSave 是"读档不崩"的唯一防线，但它此前只被 loadSaveSlot / loadAutosave

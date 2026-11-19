@@ -56,6 +56,8 @@ describe('第七十三轮：死亡结局遮罩必须挡住游戏快捷键', () =
     // 遮罩没开时快捷键是可用的
     expect(shortcutBlocked()).toBe(false)
 
+    // 桌面端选项收在「本月抉择」面板里，先展开目录再点选项。
+    fireEvent.click(screen.getByRole('button', { name: /打开选项/ }))
     fireEvent.click(screen.getByRole('button', { name: /自缢/ }))
 
     // 死亡遮罩已经盖住整屏

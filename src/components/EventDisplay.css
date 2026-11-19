@@ -517,6 +517,192 @@
 }
 
 /* ========== 选项区 ========== */
+/* 桌面端「选项」入口：与手机网页端同一个目录式心智，不把选项埋在正文底部 */
+.desktop-choices-fab {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 9px;
+  background: #12100c;
+  border: 1px solid rgba(197, 165, 90, 0.32);
+  border-radius: 3px;
+  color: rgba(197, 165, 90, 0.78);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.desktop-choices-fab:hover {
+  color: #e8dcc8;
+  border-color: rgba(197, 165, 90, 0.65);
+  background: #1a1510;
+}
+
+.desktop-choices-fab:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.desktop-choices-fab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(197, 165, 90, 0.18);
+  color: var(--gold);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+/* 正文收束后的「本月抉择」入口：桌面事件卡常见大片留白，
+   不能只让玩家自己去右上角找一个小按钮。 */
+.desktop-choices-prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(420px, 100%);
+  margin: auto auto 0;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+  border: 1px dashed rgba(197, 165, 90, 0.28);
+  border-radius: 3px;
+  color: rgba(197, 165, 90, 0.72);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.desktop-choices-prompt:hover {
+  color: #e8dcc8;
+  border-color: rgba(197, 165, 90, 0.62);
+  background: #1a1510;
+}
+
+.desktop-choices-prompt:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.desktop-choices-prompt__label {
+  font-family: var(--font-heading);
+  font-size: 0.86rem;
+  letter-spacing: 2px;
+}
+
+.desktop-choices-prompt__count {
+  color: rgba(245, 230, 200, 0.5);
+  font-size: 0.74rem;
+}
+
+.desktop-choices-prompt__arrow {
+  margin-left: auto;
+  font-size: 0.74rem;
+  letter-spacing: 2px;
+}
+
+/* 桌面端「本月抉择」：遮罩 + 居中目录；选项卡沿用事件面板里的同一套样式 */
+.desktop-choices-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(6, 5, 4, 0.78);
+  backdrop-filter: blur(3px);
+}
+
+.desktop-choices-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 92vw);
+  max-height: min(780px, 88vh);
+  background: linear-gradient(180deg, #171310 0%, #0c0a08 100%);
+  border: 1px solid rgba(197, 165, 90, 0.32);
+  border-radius: 4px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.desktop-choices-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 50px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid #2a2015;
+  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
+}
+
+.desktop-choices-title {
+  margin: 0;
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+
+.desktop-choices-count {
+  color: rgba(245, 230, 200, 0.55);
+  font-size: 0.76rem;
+}
+
+.desktop-choices-close {
+  margin-left: auto;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid rgba(197, 165, 90, 0.4);
+  border-radius: 3px;
+  background: #12100c;
+  color: rgba(245, 230, 200, 0.55);
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.desktop-choices-close:hover {
+  color: #e8dcc8;
+  border-color: rgba(197, 165, 90, 0.7);
+}
+
+.desktop-choices-close:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.desktop-choices-body {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+@media (max-height: 620px) {
+  .desktop-choices-overlay {
+    padding: 10px;
+  }
+  .desktop-choices-panel {
+    max-height: 94vh;
+  }
+  .desktop-choices-body {
+    padding: 10px 12px;
+  }
+}
+
 .choices-section {
   margin-top: 0;
 }

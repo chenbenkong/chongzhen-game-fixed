@@ -415,6 +415,7 @@ function GameScreen(props: GameScreenProps) {
           <main className="main-content">
             <EventDisplay
               event={currentEvent}
+              choicesPresentation="panel"
               character={character}
               gameState={gameState}
               onChoice={handleChoice}

@@ -38,6 +38,13 @@ async function run(browser, viewport, suffix) {
       await fab.click()
       await page.waitForTimeout(250)
     }
+  } else {
+    const fab = page.locator('.desktop-choices-fab')
+    if (await fab.count()) {
+      await fab.click()
+      await page.waitForSelector('.desktop-choices-panel', { timeout: 15000 })
+      await page.waitForTimeout(150)
+    }
   }
   await page.locator('.choice-card:not(.locked)').first().click()
   await page.waitForSelector('.ending-screen, .continue-btn', { timeout: 15000 })

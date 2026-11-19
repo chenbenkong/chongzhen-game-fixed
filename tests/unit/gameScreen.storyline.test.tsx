@@ -53,6 +53,8 @@ describe('剧情线顶栏随抉择刷新', () => {
 
     expect(container.querySelector('.storyline-bar__name')?.textContent).toBe('未启程')
 
+    // 桌面端选项收在「本月抉择」面板里，先展开目录再点选项。
+    fireEvent.click(screen.getByRole('button', { name: /打开选项/ }))
     fireEvent.click(screen.getByRole('button', { name: /请缨出关/ }))
 
     await waitFor(() => {
