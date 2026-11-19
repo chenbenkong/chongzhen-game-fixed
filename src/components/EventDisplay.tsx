@@ -9,6 +9,7 @@ import { findRouteClosures } from '../utils/routeTrail'
 import { motionDelay } from '../utils/motion'
 import { getStoryline } from '../data/storylines'
 import { figureEventPortrait } from '../data/characterPortraits'
+import { eventIllustration } from '../data/eventIllustrations'
 import { useModal } from '../hooks/useModal'
 import DiceAnimation from './DiceAnimation'
 import Icon from './Icon'
@@ -870,6 +871,7 @@ function EventDisplay({
   )
 
   const eventFigure = figureEventPortrait(event.id)
+  const eventScene = eventIllustration(event.id)
 
   return (
     <div className={`event-display ${showResult ? 'show-result' : ''}`}>
@@ -882,6 +884,17 @@ function EventDisplay({
           </div>
         )}
       </div>
+
+      {eventScene && (
+        <figure className="event-illustration">
+          <img
+            src={eventScene}
+            alt={`${event.title}场景插图`}
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      )}
 
       {/* 叙事区 */}
       <div className="narrative-section">

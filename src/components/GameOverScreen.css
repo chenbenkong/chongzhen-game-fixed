@@ -1477,6 +1477,21 @@
   flex-shrink: 0;
 }
 
+/* P2.5：结局落款印。透明水印放在右下角，只作收束，不参与点击。 */
+.ending-seal {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  opacity: 0.58;
+  transform: rotate(-7deg);
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.45));
+}
+
 @media (max-width: 900px) {
   .ending-container--compact {
     max-width: 100%;
@@ -1513,6 +1528,16 @@
   .ending-detail-section { padding: 10px 12px; }
   .ending-relationships { flex-direction: column; gap: 7px; }
   .ending-relationship-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .ending-seal {
+    right: 10px;
+    bottom: 8px;
+    width: 54px;
+    height: 54px;
+    opacity: 0.5;
+  }
 }
 
 @media (max-height: 520px) {
@@ -1556,6 +1581,7 @@
   .ending-details-body { max-height: 34vh; }
   .ending-actions--footer { padding-top: 0; gap: 6px; }
   .ending-actions--footer .end-btn { padding: 3px 10px; font-size: 0.68rem; letter-spacing: 1px; }
+  .ending-seal { right: 7px; bottom: 4px; width: 38px; height: 38px; opacity: 0.42; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -7,6 +7,7 @@ import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
 import { relationshipsOf } from '../data/characters'
 import { characterPortrait } from '../data/characterPortraits'
+import endingSeal from '../assets/ending-seal.webp'
 import { downloadShareCard } from '../utils/shareCard'
 import { careerGoalStatus } from '../data/careerGoals'
 import {
@@ -371,6 +372,8 @@ export default function GameOverScreen({
             <span>{restartLocked ? '重走人生 · 已锁' : '重走人生'}</span>
           </button>
         </footer>
+
+        <img className="ending-seal" src={endingSeal} alt="" aria-hidden="true" />
       </div>
     </div>
   )
