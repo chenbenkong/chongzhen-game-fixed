@@ -812,6 +812,12 @@
   letter-spacing: 1px;
 }
 
+/* 有「勉力一试」时，右侧按钮会压住锁字，露出的半个字反而像渲染残留；
+   这种卡由按钮本身表达“还能投骰”，不再叠印章。 */
+.choice-card-wrapper--dice .choice-card.locked::before {
+  display: none;
+}
+
 .choice-card.locked:hover {
   transform: none;
   border-color: #2a1510;

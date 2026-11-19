@@ -830,7 +830,7 @@ function EventDisplay({
           ].filter(Boolean).join(' ') || undefined
 
           return (
-            <div key={`${choice.id}-${idx}`} className="choice-card-wrapper">
+            <div key={`${choice.id}-${idx}`} className={`choice-card-wrapper${canAttemptDice ? ' choice-card-wrapper--dice' : ''}`}>
               <button
                 className={`choice-card ${!check.available ? 'locked' : ''}`}
                 onClick={() => handleSelectChoice(choice)}
