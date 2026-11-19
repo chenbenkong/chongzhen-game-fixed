@@ -2,8 +2,9 @@ import { chromium } from 'playwright'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const BASE = 'http://localhost:4181/'
+const BASE = process.env.BASE_URL || 'http://localhost:4181/'
 const OUT = fileURLToPath(new URL('../tmp/p2.5-events/', import.meta.url))
+const PREFIX = process.env.SHOT_PREFIX || ''
 const save = readFileSync(new URL('../tmp/p2.5-ending-save.json', import.meta.url), 'utf8')
 
 async function run(browser, viewport, suffix) {
@@ -78,7 +79,7 @@ async function run(browser, viewport, suffix) {
       scroll: { body: document.body.scrollHeight, viewport: innerHeight }
     }
   })
-  await page.screenshot({ path: `${OUT}${suffix}-结局-${viewport.width}x${viewport.height}.png` })
+  await page.screenshot({ path: `${OUT}${PREFIX}${suffix}-结局-${viewport.width}x${viewport.height}.png` })
   console.log(`${viewport.name}: ${JSON.stringify(metrics)} errors=${errors.length}`)
   await context.close()
 }
