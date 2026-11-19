@@ -8,6 +8,7 @@ import { checkChoiceRequirement, type ChoiceCheckResult } from '../utils/choiceR
 import { findRouteClosures } from '../utils/routeTrail'
 import { motionDelay } from '../utils/motion'
 import { getStoryline } from '../data/storylines'
+import { figureEventPortrait } from '../data/characterPortraits'
 import { useModal } from '../hooks/useModal'
 import DiceAnimation from './DiceAnimation'
 import Icon from './Icon'
@@ -868,6 +869,8 @@ function EventDisplay({
     </div>
   )
 
+  const eventFigure = figureEventPortrait(event.id)
+
   return (
     <div className={`event-display ${showResult ? 'show-result' : ''}`}>
       {/* 标题区：随事件切换原地更新的标题，需要 live region 才会被读屏播报 */}
@@ -882,6 +885,20 @@ function EventDisplay({
 
       {/* 叙事区 */}
       <div className="narrative-section">
+        {eventFigure && (
+          <div className="event-figure-strip" aria-label={`本事件人物：${eventFigure.character.name}`}>
+            <div
+              className="event-figure-portrait"
+              style={{ backgroundImage: `url(${eventFigure.portrait})` }}
+              data-character-id={eventFigure.character.id}
+              aria-hidden="true"
+            />
+            <div className="event-figure-meta">
+              <span className="event-figure-name">{eventFigure.character.name}</span>
+              <span className="event-figure-title">{eventFigure.character.title}</span>
+            </div>
+          </div>
+        )}
         {/* 人物信息和引语合并 */}
         {(narrative?.speaker || narrative?.quote) && (
           <div className="speaker-quote-row">

@@ -5,7 +5,8 @@ import { getUnlockedAchievements, Achievement } from '../types/achievement'
 import { extractCounterfactuals, getArchetype, toChineseNum, toMingEraYear } from '../utils/endingSystem'
 import { deathCauseOf } from '../utils/deathCause'
 import { resolveEndingTileId } from '../data/endingRegistry'
-import { relationshipEpilogue, relationshipsOf } from '../data/characters'
+import { relationshipsOf } from '../data/characters'
+import { characterPortrait } from '../data/characterPortraits'
 import { downloadShareCard } from '../utils/shareCard'
 import { careerGoalStatus } from '../data/careerGoals'
 import {
@@ -96,15 +97,15 @@ export default function GameOverScreen({
     () => deathCauseOf(endingEvent ? resolveEndingTileId(endingEvent.id) : null),
     [endingEvent]
   )
-  const relationships = useMemo(
-    () => relationshipEpilogue(character.flags),
+  const topRelationships = useMemo(
+    () => relationshipsOf(character.flags).slice(0, 3),
     [character.flags]
   )
   const sharePeople = useMemo(
-    () => relationshipsOf(character.flags)
-      .slice(0, 3)
-      .map(({ character: person }) => `${person.name}　${person.title}`),
-    [character.flags]
+    () => topRelationships.map(
+      (entry) => `${entry.character.name}　${entry.character.title}`
+    ),
+    [topRelationships]
   )
   const handleSaveShareCard = () => {
     downloadShareCard({
@@ -190,10 +191,31 @@ export default function GameOverScreen({
           <p className="ending-summary">{endingSummary}</p>
         )}
 
-        {relationships && (
+        {topRelationships.length > 0 && (
           <div className="ending-relationships" aria-label="这一生绕不开的人">
             <span className="ending-relationships-label">故 人</span>
-            <p className="ending-relationships-text">{relationships}</p>
+            <div className="ending-relationship-grid">
+              {topRelationships.map(({ character: person }) => {
+                const portrait = characterPortrait(person.id)
+                return (
+                  <article className="ending-relationship-card" key={person.id}>
+                    {portrait && (
+                      <div
+                        className="ending-relationship-portrait"
+                        style={{ backgroundImage: `url(${portrait})` }}
+                        data-character-id={person.id}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <div className="ending-relationship-copy">
+                      <h3 className="ending-relationship-name">{person.name}</h3>
+                      <span className="ending-relationship-title">{person.title}</span>
+                      <p className="ending-relationship-line">{person.endingLine}</p>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
           </div>
         )}
 
