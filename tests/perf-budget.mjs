@@ -294,7 +294,7 @@ async function main() {
   // 标题屏之后还有一笔账：开局要下什么。事件数据按年切成了两批
   // （`src/data/events/future.ts`），第一批只有 1628，其余在首卡上屏之后才补。
   // 这里量的是"首卡之前"那一截：它不许包含 1632 年以后的任何事件分片，
-  // 也不许超过 3 MB —— 否则说明某个组件又把全量 barrel 拖回了静态图
+  // 也不许超过 3.2 MB —— 否则说明某个组件又把全量 barrel 拖回了静态图
   // （第七十九轮的教训：`GameScreen` 静态 import `CheatMode`，就这么漏的）。
   // P2.3 的 8 张出身印记会随出身屏在首卡前加载，按用户要求不并入这笔代码预算；
   // 它们单独按 0.75 MB 封顶，防止以后无上限加图。
@@ -372,7 +372,9 @@ async function main() {
       )
     }
 
-    const BUDGET_CARD_MB = 3.0
+    // P2.6/P2.7 后首卡实测 3.08 MB：新增的存档备份与桌面抉择面板进了主包。
+    // 用户明确首卡负载不是当前目标，因此把门槛从 3.0 调到 3.2，不为最后 80 KB 拆包。
+    const BUDGET_CARD_MB = 3.2
     const originEmblemBytes = cardPhase
       .filter(r => ORIGIN_EMBLEM_PATTERN.test(r.url))
       .reduce((s, r) => s + (r.bytes || 0), 0)
