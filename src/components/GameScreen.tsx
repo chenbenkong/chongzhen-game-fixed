@@ -208,6 +208,8 @@ function GameScreen(props: GameScreenProps) {
 
   /** 投骰弹窗（勉力一试）开合。它长在 EventDisplay 内部，不上报就看不见。 */
   const [diceModalOpen, setDiceModalOpen] = useState(false)
+  /** 桌面「本月抉择」目录开合；同样长在 EventDisplay 内部。 */
+  const [choicePanelOpen, setChoicePanelOpen] = useState(false)
 
   // 无需在此额外复位：EventDisplay 的 onResolvedChange 依赖 event?.id，
   // 事件一变（包括读档、重开）就会自动上报 false。
@@ -233,8 +235,8 @@ function GameScreen(props: GameScreenProps) {
     return '请先在事件面板中做出选择'
   }, [canAdvance])
 
-  /** 是否有弹窗 / 面板处于打开状态。打开时不该响应游戏快捷键 */
-  const modalOpen =
+  /** 除「本月抉择」目录以外的弹窗 / 面板开合 */
+  const baseModalOpen =
     isCheatModeOpen ||
     diceModalOpen ||
     isSaveSlotsOpen ||
@@ -249,6 +251,9 @@ function GameScreen(props: GameScreenProps) {
     deathEndingState.show ||
     // 结局屏已经接管画面，此时任何游戏快捷键都不该再生效
     isGameOver
+
+  /** 是否有弹窗 / 面板处于打开状态。打开时不该响应游戏快捷键 */
+  const modalOpen = baseModalOpen || choicePanelOpen
 
   // Space / Enter 推进，S 存档，A 成就，H 帮助。
   // 数字键在 EventDisplay 内部处理（它才知道哪个选项可选）。
@@ -422,7 +427,8 @@ function GameScreen(props: GameScreenProps) {
               onContinue={handleContinue}
               onResolvedChange={setEventResolved}
               onDiceModalOpenChange={setDiceModalOpen}
-              shortcutsEnabled={!modalOpen}
+              onChoicePanelOpenChange={setChoicePanelOpen}
+              shortcutsEnabled={!baseModalOpen}
               onUndo={handleUndo}
               onGameOver={handleGameOver}
               onDeathEnding={handleDeathEnding}

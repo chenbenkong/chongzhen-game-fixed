@@ -84,6 +84,12 @@ async function choicePanel(browser, viewport, suffix) {
   await page.waitForTimeout(250)
   await page.screenshot({ path: `${OUT}${suffix}-本月抉择-${viewport.width}x${viewport.height}.png` })
 
+  // 目录也是模态层：S / A 不能穿透到下面，再叠存档或成就面板。
+  await page.keyboard.press('s')
+  await page.waitForTimeout(200)
+  await page.keyboard.press('a')
+  await page.waitForTimeout(200)
+
   const metrics = await page.evaluate(() => {
     const panel = document.querySelector('.desktop-choices-panel')
     const body = document.querySelector('.desktop-choices-body')
@@ -94,6 +100,8 @@ async function choicePanel(browser, viewport, suffix) {
       cards: cards.length,
       available: cards.filter((c) => !c.classList.contains('locked')).length,
       bodyScroll: body.scrollHeight > body.clientHeight + 1,
+      leakedSave: !!document.querySelector('.save-slots-modal'),
+      leakedAchievement: !!document.querySelector('.achievement-panel'),
       overflowX: document.body.scrollWidth > innerWidth + 1
     }
   })

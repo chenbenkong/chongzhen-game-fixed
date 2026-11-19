@@ -45,6 +45,12 @@ interface EventDisplayProps {
    * 实测弹窗开着时按 S / A 会在其上层叠开存档面板与成就面板。
    */
   onDiceModalOpenChange?: (open: boolean) => void
+  /**
+   * 桌面「本月抉择」面板开合状态上报。
+   * 它同样开在 EventDisplay 内部；不上报时，面板开着按 S / A / H
+   * 会在目录上再叠存档、成就或帮助面板。
+   */
+  onChoicePanelOpenChange?: (open: boolean) => void
   /** 是否启用 1-9 数字键选选项（弹窗打开时应关掉） */
   shortcutsEnabled?: boolean
   isGhostMode?: boolean
@@ -266,6 +272,7 @@ function EventDisplay({
   onBackToChoices,
   onDeathEnding,
   onDiceModalOpenChange,
+  onChoicePanelOpenChange,
   choicesPresentation = 'inline'
 }: EventDisplayProps) {
   // 无事件时自动触发继续（进入下月），避免显示空界面
@@ -740,6 +747,11 @@ function EventDisplay({
   useEffect(() => {
     setIsChoicePanelOpen(false)
   }, [event?.id])
+
+  // 面板也是模态层：上报给 GameScreen，避免 S / A / H 在目录上再叠面板。
+  useEffect(() => {
+    onChoicePanelOpenChange?.(isChoicePanelOpen)
+  }, [isChoicePanelOpen, onChoicePanelOpenChange])
 
   // 锁定原因 aria-describedby 的 id 前缀（useId 保证实例唯一）
   const choiceIdPrefix = useId()

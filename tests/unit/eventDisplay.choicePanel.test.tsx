@@ -55,6 +55,26 @@ describe('桌面端「本月抉择」面板', () => {
     expect(within(dialog).getByRole('button', { name: /上疏新政/ })).toBeTruthy()
   })
 
+  it('面板开合上报给外层，避免 S / A / H 在目录上再叠面板', async () => {
+    const onChoicePanelOpenChange = vi.fn()
+    const { container } = render(
+      <EventDisplay
+        {...baseProps(makeEvent(choice))}
+        choicesPresentation="panel"
+        onChoicePanelOpenChange={onChoicePanelOpenChange}
+      />
+    )
+
+    await waitFor(() => expect(onChoicePanelOpenChange).toHaveBeenLastCalledWith(false))
+
+    fireEvent.click(container.querySelector('.desktop-choices-fab') as HTMLButtonElement)
+    await screen.findByRole('dialog')
+    await waitFor(() => expect(onChoicePanelOpenChange).toHaveBeenLastCalledWith(true))
+
+    fireEvent.click(screen.getByRole('button', { name: '收起选项目录' }))
+    await waitFor(() => expect(onChoicePanelOpenChange).toHaveBeenLastCalledWith(false))
+  })
+
   it('面板未打开时数字键不会选中不可见的选项，打开后才生效', async () => {
     const onChoice = vi.fn(() => ({ attributes: {}, gameState: {}, hidden: {} }))
     const { container } = render(
