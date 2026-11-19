@@ -44,7 +44,7 @@ async function noSaveTitle(browser, viewport, suffix, mobile) {
       bodyScroll: document.body.scrollHeight > innerHeight + 1
     }
   })
-  console.log(`${suffix}: loadVisible=${loadVisible} ${JSON.stringify(metrics)} errors=${errors.length}`)
+  console.log(`${suffix}: loadVisible=${loadVisible} ${JSON.stringify(metrics)} errors=${errors.length}${errors.length ? ' :: ' + errors.join(' | ') : ''}`)
 
   if (!mobile) {
     await page.locator('.save-backup-file').setInputFiles(BACKUP)
