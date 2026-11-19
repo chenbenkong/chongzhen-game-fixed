@@ -5,7 +5,7 @@
  * 布局是手机原生竖排按钮组，不复用桌面三栏视觉。成就 / 图鉴 / 帮助入口暂留待后续补充。
  */
 import { useMemo } from 'react'
-import { getAllSaveSlots, getAutosavePreview } from '../types/save'
+import { getAutosavePreview } from '../types/save'
 import { DIFFICULTY_CONFIGS, type DifficultyLevel } from '../types/difficulty'
 import { APP_VERSION_LABEL } from '../utils/version'
 import { BGMInlineButton } from '../components/BGM'
@@ -28,7 +28,6 @@ export default function MobileTitle({
   difficulty,
   onDifficultyChange
 }: MobileTitleProps) {
-  const hasAnySave = useMemo(() => getAllSaveSlots().some(s => s.preview), [])
   const autosavePreview = useMemo(() => getAutosavePreview(), [])
   const currentDifficulty = DIFFICULTY_CONFIGS[difficulty]
 
@@ -68,11 +67,9 @@ export default function MobileTitle({
             继 续 上 次
           </button>
         )}
-        {hasAnySave && (
-          <button type="button" className="mobile-btn" onClick={onOpenLoad}>
-            读 取 存 档
-          </button>
-        )}
+        <button type="button" className="mobile-btn" onClick={onOpenLoad}>
+          读 取 存 档
+        </button>
         <BGMInlineButton />
       </div>
     </div>

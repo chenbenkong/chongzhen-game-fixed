@@ -1,6 +1,6 @@
 import { memo, useMemo, type KeyboardEvent } from 'react'
 import { BGMFixedButton } from './BGM'
-import { SaveData, getAllSaveSlots, getAutosavePreview } from '../types/save'
+import { SaveData, getAutosavePreview } from '../types/save'
 import {
   DIFFICULTY_CONFIGS,
   DifficultyLevel,
@@ -34,8 +34,7 @@ function TitleScreenImpl({
   difficulty,
   onDifficultyChange
 }: TitleScreenProps) {
-  // 两个读取都会解析 localStorage；只在挂载时算一次，避免每次父组件重渲染都解析存档
-  const hasAnySave = useMemo(() => getAllSaveSlots().some(s => s.preview), [])
+  // 自动存档预览只在挂载时算一次，避免每次父组件重渲染都解析存档。
   const autosavePreview = useMemo(() => getAutosavePreview(), [])
 
   const currentDifficulty: DifficultyConfig = DIFFICULTY_CONFIGS[difficulty]
@@ -133,11 +132,9 @@ function TitleScreenImpl({
             开 始 仕 途
           </button>
 
-          {hasAnySave && (
-            <button type="button" className="title-btn" onClick={onOpenLoad}>
-              读 取 存 档
-            </button>
-          )}
+          <button type="button" className="title-btn" onClick={onOpenLoad}>
+            读 取 存 档
+          </button>
 
           {autosavePreview && (
             <button

@@ -193,6 +193,10 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
     return `${minutes}分钟`
   }
 
+  // 读档模式且本机一份存档都没有时，唯一能做的事就是导入备份；
+  // 标题屏现在常驻「读取存档」，新机器点进来必须先看到这句，而不是四个空槽。
+  const hasAnyLocalSave = autosavePresent || slots.some(s => !!s.preview)
+
   // 自动存档槽位 UI（独立于手动 1/2/3 槽，单独排在最上方）
   const renderAutosaveSlot = () => (
     <div className={`save-slot autosave-slot ${autosavePresent ? 'has-data' : 'empty'}`}>
@@ -285,7 +289,12 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
           </div>
         )}
 
-        <div className="save-slots-list">
+        <div className={`save-slots-list${mode === 'load' && !hasAnyLocalSave ? ' save-slots-list--empty' : ''}`}>
+          {mode === 'load' && !hasAnyLocalSave && (
+            <div className="save-empty-hint">
+              本机没有本地存档。换过浏览器或机器的话，可在下方「导入备份」恢复。
+            </div>
+          )}
           {renderAutosaveSlot()}
           {[1, 2, 3].map(slotId => {
             const slot = slots.find(s => s.id === slotId)

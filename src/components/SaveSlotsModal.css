@@ -100,6 +100,27 @@
   flex: 1;
 }
 
+/* 读档模式且本机无存档：先把“可以导入备份”说清楚，别让玩家盯着四个空槽。 */
+.save-empty-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px dashed #4a3a22;
+  background: rgba(197, 165, 90, 0.06);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #a89b7b;
+}
+
+/* 没有可读存档时，空槽位没有信息量，直接让位给导入提示；
+   导入成功后 hasAnyLocalSave 变真，槽位会自动出现。 */
+.save-slots-list--empty {
+  flex: 0 0 auto;
+}
+
+.save-slots-list--empty .save-slot {
+  display: none;
+}
+
 /* 存档备份：不占槽位列表，固定在弹窗底部；导入只在“读取存档”模式出现。 */
 .save-backup-bar {
   display: flex;
