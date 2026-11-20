@@ -329,6 +329,73 @@
   border-color: rgba(212, 175, 111, 0.5);
 }
 
+/* ============ 人物卷（故人谱） ============ */
+.codex-character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.codex-character-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(180, 140, 80, 0.35);
+  border-radius: 3px;
+  background: rgba(30, 20, 12, 0.4);
+}
+.codex-character-card.met { box-shadow: 0 2px 8px rgba(212, 175, 111, 0.15); }
+.codex-character-card.locked {
+  background: rgba(20, 14, 8, 0.5);
+  opacity: 0.6;
+  filter: grayscale(0.6);
+}
+.codex-character-portrait {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(212, 175, 111, 0.55);
+  background-size: cover;
+  background-position: center;
+}
+.codex-character-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.codex-character-name {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: #d4af6f;
+  letter-spacing: 2px;
+}
+.codex-character-title {
+  font-size: 0.75rem;
+  color: rgba(212, 175, 111, 0.65);
+  letter-spacing: 0.5px;
+}
+.codex-character-seal {
+  align-self: flex-start;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+  letter-spacing: 2px;
+  border: 1px solid rgba(180, 140, 80, 0.4);
+  border-radius: 2px;
+  color: rgba(212, 175, 111, 0.6);
+}
+.codex-character-seal.met {
+  color: #d4af6f;
+  border-color: rgba(212, 175, 111, 0.6);
+}
+.codex-character-line {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgba(212, 175, 111, 0.75);
+}
+
 @media (max-width: 700px) {
   .ending-codex-modal { max-height: 95vh; }
   .codex-topbar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
@@ -338,6 +405,7 @@
   .codex-tab-icon { display: none; }
   .codex-content { padding: 16px; }
   .codex-card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .codex-character-grid { grid-template-columns: 1fr; }
 }
 
 /* ============ 详情弹窗 ============ */

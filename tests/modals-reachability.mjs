@@ -337,6 +337,10 @@ for (const [w, h] of VPS) {
     await page.locator('.action-btn:has-text("局鉴")').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(900)
     await sweep(page, '局鉴弹窗', '.ending-codex-overlay')
+    // 人物卷（8.23）：tab 在最右靠横向滚动仪器；卷内卡片是静态 article，量的是 tab/关闭/底栏与滚动容器
+    await page.locator('.codex-tab--characters').first().click({ force: true }).catch(() => {})
+    await page.waitForTimeout(600)
+    await sweep(page, '局鉴人物卷', '.ending-codex-overlay')
     await page.locator('.codex-close-btn').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(500)
 

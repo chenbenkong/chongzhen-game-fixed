@@ -8,6 +8,9 @@ import { allEndingEvents } from '../data/events/ending'
 import { ENDING_TILE_IDS, resolveEndingTileId } from '../data/endingRegistry'
 import { getReachedEndings, getUnlockedAchievements } from '../types/achievement'
 import { ENDING_ARCHETYPES, EndingArchetype } from '../utils/endingSystem'
+import { characterCodexEntries, RECURRING_CHARACTER_COUNT, type CharacterCodexEntry } from '../data/characters'
+import { characterPortrait } from '../data/characterPortraits'
+import { loadAutosave } from '../types/save'
 import { useModal } from '../hooks/useModal'
 import Icon from './Icon'
 import './EndingCodex.css'
@@ -18,6 +21,7 @@ interface EndingCodexProps {
 }
 
 type CategoryKey = keyof typeof ENDING_ARCHETYPES
+type CodexTab = CategoryKey | 'characters'
 
 // 8 个 tier → 颜色基调
 const TIER_TONE: Record<string, string> = {
@@ -79,9 +83,10 @@ export function buildUnlockedTileIndex(
 
 export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
   const [endings] = useState<GameEvent[]>(allEndingEvents)
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>('personal_fate')
+  const [activeCategory, setActiveCategory] = useState<CodexTab>('personal_fate')
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set())
   const [unlockTimes, setUnlockTimes] = useState<Record<string, string>>({})
+  const [charEntries, setCharEntries] = useState<CharacterCodexEntry[]>([])
   const [detail, setDetail] = useState<GameEvent | null>(null)
 
   // 详情弹窗的初始焦点（关闭按钮）
@@ -112,6 +117,8 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
     const { tileIds, times } = buildUnlockedTileIndex(getUnlockedAchievements(), getReachedEndings())
     setUnlockedIds(tileIds)
     setUnlockTimes(times)
+    // 人物卷与结局卷同口径读存储：自动存档随每次状态变化落盘，三个宿主（桌面标题/桌面牌桌/手机）零 prop 接通。
+    setCharEntries(characterCodexEntries(loadAutosave()?.character?.flags))
   }, [isOpen])
 
   if (!isOpen) return null
@@ -124,8 +131,8 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
     return acc
   }, {} as Record<CategoryKey, GameEvent[]>)
 
-  // 当前类别下按 tier 分组
-  const currentList = byCategory[activeCategory] || []
+  // 当前类别下按 tier 分组（人物卷不走结局分组）
+  const currentList = activeCategory === 'characters' ? [] : (byCategory[activeCategory] || [])
   const byTier = currentList.reduce((acc, e) => {
     const tier = e.endingConfig?.tier || 'mysterious'
     if (!acc[tier]) acc[tier] = []
@@ -133,10 +140,16 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
     return acc
   }, {} as Record<string, GameEvent[]>)
 
-  // 统计
+  // 统计：人物卷与结局卷各自计数，顶栏进度随当前卷切换
+  const isCharacters = activeCategory === 'characters'
   const totalCount = endings.length
   const unlockedCount = endings.filter(e => unlockedIds.has(e.id)).length
-  const progressPercent = Math.round((unlockedCount / totalCount) * 100)
+  const charTotal = charEntries.length || RECURRING_CHARACTER_COUNT
+  const metCount = charEntries.filter(e => e.met).length
+  const displayCur = isCharacters ? metCount : unlockedCount
+  const displayTotal = isCharacters ? charTotal : totalCount
+  const progressPercent = Math.round((displayCur / displayTotal) * 100)
+  const codexName = isCharacters ? '人物图鉴' : '结局图鉴'
 
   const formatTime = (iso?: string) => {
     if (!iso) return ''
@@ -218,21 +231,21 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
         {/* 顶栏 */}
         <div className="codex-topbar">
           <div className="codex-title-area">
-            <h2 className="codex-title" id={codexTitleId}>结 局 图 鉴</h2>
-            <div className="codex-subtitle">史 馆 藏 本</div>
+            <h2 className="codex-title" id={codexTitleId}>{isCharacters ? '人 物 图 鉴' : '结 局 图 鉴'}</h2>
+            <div className="codex-subtitle">{isCharacters ? '故 人 谱' : '史 馆 藏 本'}</div>
           </div>
           <div className="codex-progress">
             <div className="codex-progress-numbers">
-              <span className="codex-progress-cur">{unlockedCount}</span>
+              <span className="codex-progress-cur">{displayCur}</span>
               <span className="codex-progress-sep">/</span>
-              <span className="codex-progress-total">{totalCount}</span>
+              <span className="codex-progress-total">{displayTotal}</span>
             </div>
             <div className="codex-progress-bar">
               <div className="codex-progress-fill" style={{ width: `${progressPercent}%` }} />
             </div>
-            <div className="codex-progress-label">已达成 {progressPercent}%</div>
+            <div className="codex-progress-label">{isCharacters ? `已遇 ${progressPercent}%` : `已达成 ${progressPercent}%`}</div>
           </div>
-          <button className="codex-close-btn" onClick={onClose} aria-label="关闭结局图鉴">关</button>
+          <button className="codex-close-btn" onClick={onClose} aria-label={`关闭${codexName}`}>关</button>
         </div>
 
         {/* 卷首 tab（8 大卷） */}
@@ -253,71 +266,125 @@ export default function EndingCodex({ isOpen, onClose }: EndingCodexProps) {
               </button>
             )
           })}
+          <button
+            className={`codex-tab codex-tab--characters tone-bittersweet ${isCharacters ? 'active' : ''}`}
+            onClick={() => setActiveCategory('characters')}
+            title="十二常驻人物：本局遇过谁、交集几票"
+          >
+            <span className="codex-tab-icon"><Icon name="handshake" size={16} /></span>
+            <span className="codex-tab-label">人物</span>
+            <span className="codex-tab-count">{metCount}/{charTotal}</span>
+          </button>
         </div>
 
         {/* 当前卷内容 */}
         <div className="codex-content">
-          <div className={`codex-cat-header tone-${ENDING_ARCHETYPES[activeCategory].tone}`}>
-            <span className="codex-cat-icon">
-              <Icon name={ENDING_ARCHETYPES[activeCategory].iconName} size={22} />
-            </span>
-            <span className="codex-cat-label">{ENDING_ARCHETYPES[activeCategory].name}</span>
-            <span className="codex-cat-sub">· {ENDING_ARCHETYPES[activeCategory].intro}</span>
-          </div>
-
-          {Object.entries(byTier).map(([tier, list]) => (
-            <div key={tier} className="codex-tier-block">
-              <div className="codex-tier-header">
-                <span className={`codex-tier-tag ${TIER_TONE[tier]}`}>{TIER_LABEL[tier] || tier}</span>
-                <span className="codex-tier-count">
-                  {list.filter(e => unlockedIds.has(e.id)).length} / {list.length}
+          {isCharacters ? (
+            <>
+              <div className="codex-cat-header tone-bittersweet">
+                <span className="codex-cat-icon">
+                  <Icon name="handshake" size={22} />
                 </span>
+                <span className="codex-cat-label">人物图鉴</span>
+                <span className="codex-cat-sub">· 这一生绕不开的人 · 交集按本局自动存档记票</span>
               </div>
-              <div className="codex-card-grid">
-                {list.map(e => {
-                  const unlocked = unlockedIds.has(e.id)
-                  // 解锁后只显示标题；未解锁时也展示标题但附加一行小字提示
-                  const displayName = e.title
-                  const displaySub = unlocked
-                    ? (e.narrative?.situation || e.description || '')
-                    : (e.description || e.narrative?.situation || '未达成 · 条件未知')
-                  return (
-                    <button
-                      key={e.id}
-                      type="button"
-                      data-tile-id={e.id}
-                      className={`codex-card ${unlocked ? 'unlocked' : 'locked'} ${TIER_TONE[tier]}`}
-                      title={unlocked ? `${e.title} · 单击查看详情` : `${e.title}（未达成）· 单击查看详情`}
-                      onClick={() => setDetail(e)}
-                    >
-                      <div className="codex-card-name">
-                        {displayName}
-                      </div>
-                      {displaySub && (
-                        <div className="codex-card-sub">{displaySub}</div>
+              <div className="codex-character-grid">
+                {charEntries.map(({ character, met, matchedFlags }) => (
+                  <article
+                    key={character.id}
+                    data-character-id={character.id}
+                    className={`codex-character-card ${met ? 'met' : 'locked'}`}
+                  >
+                    <div
+                      className="codex-character-portrait"
+                      style={{ backgroundImage: `url(${characterPortrait(character.id)})` }}
+                      aria-hidden="true"
+                    />
+                    <div className="codex-character-copy">
+                      <h3 className="codex-character-name">{character.name}</h3>
+                      <span className="codex-character-title">{character.title}</span>
+                      {met ? (
+                        <>
+                          <span className="codex-character-seal met">交集 {matchedFlags.length} 票</span>
+                          <p className="codex-character-line">{character.endingLine}</p>
+                        </>
+                      ) : (
+                        <span className="codex-character-seal">未 遇</span>
                       )}
-                      {unlocked && unlockTimes[e.id] && (
-                        <div className="codex-card-time">{formatTime(unlockTimes[e.id])}</div>
-                      )}
-                      {!unlocked && (
-                        <div className="codex-card-seal">未 解 锁</div>
-                      )}
-                    </button>
-                  )
-                })}
+                    </div>
+                  </article>
+                ))}
               </div>
-            </div>
-          ))}
+            </>
+          ) : (
+            <>
+              <div className={`codex-cat-header tone-${ENDING_ARCHETYPES[activeCategory].tone}`}>
+                <span className="codex-cat-icon">
+                  <Icon name={ENDING_ARCHETYPES[activeCategory].iconName} size={22} />
+                </span>
+                <span className="codex-cat-label">{ENDING_ARCHETYPES[activeCategory].name}</span>
+                <span className="codex-cat-sub">· {ENDING_ARCHETYPES[activeCategory].intro}</span>
+              </div>
 
-          {currentList.length === 0 && (
-            <div className="codex-empty">此类别暂无结局</div>
+              {Object.entries(byTier).map(([tier, list]) => (
+                <div key={tier} className="codex-tier-block">
+                  <div className="codex-tier-header">
+                    <span className={`codex-tier-tag ${TIER_TONE[tier]}`}>{TIER_LABEL[tier] || tier}</span>
+                    <span className="codex-tier-count">
+                      {list.filter(e => unlockedIds.has(e.id)).length} / {list.length}
+                    </span>
+                  </div>
+                  <div className="codex-card-grid">
+                    {list.map(e => {
+                      const unlocked = unlockedIds.has(e.id)
+                      // 解锁后只显示标题；未解锁时也展示标题但附加一行小字提示
+                      const displayName = e.title
+                      const displaySub = unlocked
+                        ? (e.narrative?.situation || e.description || '')
+                        : (e.description || e.narrative?.situation || '未达成 · 条件未知')
+                      return (
+                        <button
+                          key={e.id}
+                          type="button"
+                          data-tile-id={e.id}
+                          className={`codex-card ${unlocked ? 'unlocked' : 'locked'} ${TIER_TONE[tier]}`}
+                          title={unlocked ? `${e.title} · 单击查看详情` : `${e.title}（未达成）· 单击查看详情`}
+                          onClick={() => setDetail(e)}
+                        >
+                          <div className="codex-card-name">
+                            {displayName}
+                          </div>
+                          {displaySub && (
+                            <div className="codex-card-sub">{displaySub}</div>
+                          )}
+                          {unlocked && unlockTimes[e.id] && (
+                            <div className="codex-card-time">{formatTime(unlockTimes[e.id])}</div>
+                          )}
+                          {!unlocked && (
+                            <div className="codex-card-seal">未 解 锁</div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {currentList.length === 0 && (
+                <div className="codex-empty">此类别暂无结局</div>
+              )}
+            </>
           )}
         </div>
 
         {/* 底栏 */}
         <div className="codex-footer">
-          <div className="codex-footer-hint">已达成高亮显示 · 灰色卡片代表尚未达成 · 单击卡片查看详情</div>
-          <button className="codex-footer-close" onClick={onClose} aria-label="关闭结局图鉴">关 闭</button>
+          <div className="codex-footer-hint">
+            {isCharacters
+              ? '已遇高亮 · 未遇灰显 · 交集票按本局自动存档记票'
+              : '已达成高亮显示 · 灰色卡片代表尚未达成 · 单击卡片查看详情'}
+          </div>
+          <button className="codex-footer-close" onClick={onClose} aria-label={`关闭${codexName}`}>关 闭</button>
         </div>
       </div>
 

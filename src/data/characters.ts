@@ -145,3 +145,23 @@ export function relationshipEpilogue(flags: readonly string[] | undefined): stri
   const lines = relationships.map(({ character }) => `${character.name}：${character.endingLine}`)
   return `这一生绕不开的人——\n${lines.join('\n')}`
 }
+
+export interface CharacterCodexEntry {
+  character: RecurringCharacter
+  met: boolean
+  matchedFlags: string[]
+}
+
+/**
+ * 图鉴人物卷：已遇的按交集票数排在前面，未遇的按注册表序补齐。
+ * 与 relationshipsOf 不同，这里返回全部 12 人——未遇的人在图鉴里灰显而不是隐藏，
+ * 玩家才看得到「这一生还有谁没遇上」。
+ */
+export function characterCodexEntries(flags: readonly string[] | undefined): CharacterCodexEntry[] {
+  const met = relationshipsOf(flags).map(({ character, matchedFlags }) => ({ character, met: true, matchedFlags }))
+  const metIds = new Set(met.map((entry) => entry.character.id))
+  const unmet = RECURRING_CHARACTERS
+    .filter((character) => !metIds.has(character.id))
+    .map((character) => ({ character, met: false, matchedFlags: [] as string[] }))
+  return [...met, ...unmet]
+}
