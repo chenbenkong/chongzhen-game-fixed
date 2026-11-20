@@ -121,6 +121,10 @@ export default function MobileApp() {
 
   const handleOpenLoad = useCallback(() => setIsSaveSlotsOpen(true), [])
 
+  const handleOpenAchievements = useCallback(() => setIsAchievementPanelOpen(true), [])
+  const handleOpenCodex = useCallback(() => setIsCodexOpen(true), [])
+  const handleOpenTutorial = useCallback(() => setShowTutorial(true), [])
+
   const handleLoadAutosave = useCallback(() => {
     const saveData = loadAutosave()
     if (!saveData) return
@@ -147,9 +151,9 @@ export default function MobileApp() {
           onStart={handleStart}
           onContinueAutosave={handleLoadAutosave}
           onOpenLoad={handleOpenLoad}
-          onOpenAchievements={() => setIsAchievementPanelOpen(true)}
-          onOpenCodex={() => setIsCodexOpen(true)}
-          onOpenTutorial={() => setShowTutorial(true)}
+          onOpenAchievements={handleOpenAchievements}
+          onOpenCodex={handleOpenCodex}
+          onOpenTutorial={handleOpenTutorial}
           difficulty={difficulty}
           onDifficultyChange={handleDifficultyChange}
         />
@@ -185,6 +189,10 @@ export default function MobileApp() {
           legacyPerkId={selectedLegacyPerk}
           careerGoalId={selectedCareerGoal}
           onReturnToMenu={handleReturnToMenu}
+          onOpenAchievements={handleOpenAchievements}
+          onOpenCodex={handleOpenCodex}
+          onOpenTutorial={handleOpenTutorial}
+          overlayOpen={isAchievementPanelOpen || isCodexOpen || showTutorial}
         />
       )}
 

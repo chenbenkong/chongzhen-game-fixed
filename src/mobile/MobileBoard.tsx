@@ -39,6 +39,12 @@ export interface MobileBoardProps {
   legacyPerkId?: LegacyPerkId | null
   careerGoalId?: CareerGoalId | null
   onReturnToMenu?: () => void
+  /** 牌桌内常驻档案入口：复用 MobileApp 既有的成就 / 局鉴 / 帮助弹窗状态。 */
+  onOpenAchievements?: () => void
+  onOpenCodex?: () => void
+  onOpenTutorial?: () => void
+  /** 上述任一弹窗开着时为 true，并入 modalOpen，避免快捷键 / 选项 FAB 穿透到下层牌桌。 */
+  overlayOpen?: boolean
 }
 
 /** 六项朝堂状态，与 gameState 的键一一对应。 */
@@ -133,7 +139,8 @@ export default function MobileBoard(props: MobileBoardProps) {
     isLifeReviewOpen ||
     resignConfirmModal.isOpen ||
     deathEndingState.show ||
-    isGameOver
+    isGameOver ||
+    !!props.overlayOpen
 
   const showChoicesFab = !!currentEvent && !eventResolved && !modalOpen &&
     !isPanelOpen && !isActionbarOpen && !isChoicesOpen
@@ -333,6 +340,45 @@ export default function MobileBoard(props: MobileBoardProps) {
           >
             存档
           </button>
+          {props.onOpenAchievements && (
+            <button
+              type="button"
+              className="mobile-bar-btn"
+              onClick={() => {
+                setIsActionbarOpen(false)
+                props.onOpenAchievements?.()
+              }}
+              aria-label="成就"
+            >
+              成就
+            </button>
+          )}
+          {props.onOpenCodex && (
+            <button
+              type="button"
+              className="mobile-bar-btn"
+              onClick={() => {
+                setIsActionbarOpen(false)
+                props.onOpenCodex?.()
+              }}
+              aria-label="局鉴"
+            >
+              局鉴
+            </button>
+          )}
+          {props.onOpenTutorial && (
+            <button
+              type="button"
+              className="mobile-bar-btn"
+              onClick={() => {
+                setIsActionbarOpen(false)
+                props.onOpenTutorial?.()
+              }}
+              aria-label="帮助"
+            >
+              帮助
+            </button>
+          )}
           <button
             type="button"
             className="mobile-bar-btn mobile-bar-btn--primary"

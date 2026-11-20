@@ -217,6 +217,35 @@ async function main() {
     check('展开后按钮触控目标 ≥44px', targets.length >= 5 && targets.every(v => v >= 44),
       `count=${targets.length} min=${targets.length ? Math.min(...targets).toFixed(1) : 'n/a'}`)
 
+    // —— 牌桌内常驻档案入口：成就 / 局鉴 / 帮助 ——
+    // 手机横屏没有桌面那套 A/H/S 快捷键，这三个入口此前只在标题屏，进牌桌就得回首页。
+    // 这里钉住：操作栏里点一下各自弹窗真的打开、操作栏随之收起、弹窗可关闭回到牌桌。
+    const archiveEntries = [
+      { btn: '成就', overlay: '.achievement-panel-overlay', close: '.achievement-panel .close-button', shot: 'archive-achievements' },
+      { btn: '局鉴', overlay: '.ending-codex-overlay', close: '.codex-close-btn', shot: 'archive-codex' },
+      { btn: '帮助', overlay: '.tutorial-overlay', close: '.tutorial-close', shot: 'archive-tutorial' }
+    ]
+    for (const entry of archiveEntries) {
+      // 点档案按钮会收起操作栏，下一轮要先重新展开
+      if ((await page.locator('.mobile-actionbar').count()) === 0) {
+        await page.locator('.mobile-hud__action').click()
+        await page.waitForTimeout(200)
+      }
+      const archiveBtn = page.locator('.mobile-actionbar .mobile-bar-btn', { hasText: entry.btn })
+      check(`操作栏有「${entry.btn}」入口`, (await archiveBtn.count()) === 1)
+      await archiveBtn.click()
+      await page.waitForTimeout(350)
+      check(`「${entry.btn}」弹窗打开`, (await page.locator(entry.overlay).count()) === 1)
+      check(`「${entry.btn}」打开后操作栏收起`, (await page.locator('.mobile-actionbar').count()) === 0)
+      await page.screenshot({ path: `${SHOT_DIR}/${entry.shot}-844x390.png`, fullPage: false })
+      await page.locator(entry.close).first().click()
+      await page.waitForTimeout(250)
+      check(`「${entry.btn}」弹窗可关闭`, (await page.locator(entry.overlay).count()) === 0)
+    }
+    // 恢复操作栏展开态，接回原有「收起」断言
+    await page.locator('.mobile-hud__action').click()
+    await page.waitForTimeout(200)
+
     await page.locator('.mobile-actionbar__close').click()
     await page.waitForTimeout(150)
     check('收起后操作条不再常驻', (await page.locator('.mobile-actionbar').count()) === 0)

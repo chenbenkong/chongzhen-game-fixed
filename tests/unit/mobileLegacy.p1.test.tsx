@@ -97,4 +97,16 @@ describe('P1 手机横屏版：家训与志业入口', () => {
     expect(boardProps[boardProps.length - 1]?.legacyPerkId).toBe('mentor')
     expect(boardProps[boardProps.length - 1]?.careerGoalId).toBe('promotion')
   })
+
+  it('牌桌拿到成就 / 局鉴 / 帮助三个回调与 overlayOpen 门控', async () => {
+    reachLegacy()
+    fireEvent.click(screen.getByText('跳过家训'))
+    fireEvent.click(screen.getByText('跳过志业'))
+    await waitFor(() => expect(screen.getByTestId('mock-board')).toBeTruthy())
+    const props = boardProps[boardProps.length - 1]
+    expect(typeof props?.onOpenAchievements).toBe('function')
+    expect(typeof props?.onOpenCodex).toBe('function')
+    expect(typeof props?.onOpenTutorial).toBe('function')
+    expect(props?.overlayOpen).toBe(false)
+  })
 })
