@@ -24,8 +24,11 @@ import MobileOriginSetup from './MobileOriginSetup'
 import MobileBoard from './MobileBoard'
 import './mobile.css'
 
-// 存档槽位弹窗懒加载：标题屏不预取这一块（与桌面同一口径）。
+// 存档槽位、成就、结局图鉴、玩法说明都只在打开时加载；标题屏不为它们付首卡。
 const SaveSlotsModal = lazy(() => import('../components/SaveSlotsModal'))
+const AchievementPanel = lazy(() => import('../components/AchievementPanel'))
+const EndingCodex = lazy(() => import('../components/EndingCodex'))
+const TutorialModal = lazy(() => import('../components/TutorialModal'))
 
 type MobilePhase = 'title' | 'name' | 'origin' | 'legacy' | 'career' | 'board'
 
@@ -45,6 +48,9 @@ export default function MobileApp() {
   const [loadSaveData, setLoadSaveData] = useState<SaveData | null>(null)
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(() => loadDifficulty())
   const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false)
+  const [isAchievementPanelOpen, setIsAchievementPanelOpen] = useState(false)
+  const [isCodexOpen, setIsCodexOpen] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
 
   // 通知 index.html 移除启动占位层（与桌面 App 同一信号）。
   useEffect(() => {
@@ -141,6 +147,9 @@ export default function MobileApp() {
           onStart={handleStart}
           onContinueAutosave={handleLoadAutosave}
           onOpenLoad={handleOpenLoad}
+          onOpenAchievements={() => setIsAchievementPanelOpen(true)}
+          onOpenCodex={() => setIsCodexOpen(true)}
+          onOpenTutorial={() => setShowTutorial(true)}
           difficulty={difficulty}
           onDifficultyChange={handleDifficultyChange}
         />
@@ -187,6 +196,38 @@ export default function MobileApp() {
             onSelect={handleSelectSaveSlot}
             onLoadAutosave={handleLoadAutosave}
             onClose={() => setIsSaveSlotsOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {isAchievementPanelOpen && (
+        <Suspense fallback={null}>
+          <AchievementPanel
+            isOpen={isAchievementPanelOpen}
+            onClose={() => setIsAchievementPanelOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {isCodexOpen && (
+        <Suspense fallback={null}>
+          <EndingCodex isOpen={isCodexOpen} onClose={() => setIsCodexOpen(false)} />
+        </Suspense>
+      )}
+
+      {showTutorial && (
+        <Suspense fallback={null}>
+          <TutorialModal
+            isOpen={showTutorial}
+            onClose={() => setShowTutorial(false)}
+            onComplete={() => {
+              try {
+                localStorage.setItem('chongzhen_tutorial_seen', 'true')
+              } catch {
+                // 隐私模式下写入失败，不影响继续游戏
+              }
+              setShowTutorial(false)
+            }}
           />
         </Suspense>
       )}

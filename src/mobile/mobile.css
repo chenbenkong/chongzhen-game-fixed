@@ -187,6 +187,32 @@ body.mobile-applied textarea {
   flex: 0 1 200px;
   min-height: 44px;
 }
+/* 档案与帮助：不抢主按钮，单独一行小入口；触控高度仍守 44px。 */
+.mobile-shell .mobile-title__extras {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(680px, 92vw);
+}
+.mobile-shell .mobile-title__extra {
+  flex: 0 1 120px;
+  min-height: 44px;
+  padding: 4px 12px;
+  border: 1px solid rgba(197, 165, 90, 0.28);
+  border-radius: 3px;
+  background: rgba(10, 8, 7, 0.55);
+  color: var(--color-text-dim, rgba(245, 230, 200, 0.72));
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.mobile-shell .mobile-title__extra:hover,
+.mobile-shell .mobile-title__extra:focus-visible {
+  border-color: rgba(197, 165, 90, 0.6);
+  color: var(--color-text, #f5e6c8);
+}
 
 /* —— 起名屏：紧凑横排，一屏填完 —— */
 .mobile-shell .mobile-name {

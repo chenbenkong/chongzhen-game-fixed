@@ -9,6 +9,8 @@
  *   所以整屏没有任何"玩家滚得动"的东西：教程既关不掉也跳不过。
  *   修好之后同一处：面板 rect 20..580（视口 600）、clientH=556、scrollH=700~911、
  *   overflowY:auto —— 内容还是那么长，但归属变成"面板内部可滚"。
+ *   P2.8 起改为面板封顶 + `.tutorial-body` 单独滚，底部「下一步 / 跳过」固定留在面板内；
+ *   判据从 `strict` 换成 `inner-scroll`，几何仍由真浏览器钉子验证。
  *
  * 同一族成因在仓库里另有 12 个遮罩：面板封顶（vh）+ 面板自己滚或内部滚动区，
  * 三者至少要有一个，否则就是同一个 bug 的另一种写法。这里按文件把每个遮罩**分类登记**，
@@ -52,7 +54,8 @@ interface Row {
 const ROWS: Row[] = [
   {
     file: 'TutorialModal.css', overlay: '.tutorial-overlay', panel: '.tutorial-modal',
-    pattern: 'strict', note: '第三十轮修的缺陷：706px 的教程面板顶穿 600px 视口'
+    innerScroll: '.tutorial-body',
+    pattern: 'inner-scroll', note: '第三十轮修的缺陷；P2.8 正文单独滚，底部按钮固定'
   },
   {
     file: 'ConfirmDialog.css', overlay: '.cd-overlay', panel: '.cd-panel', innerScroll: '.cd-body',

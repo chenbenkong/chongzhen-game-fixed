@@ -107,17 +107,19 @@ function TutorialModalBody({ isOpen, onClose, onComplete }: TutorialModalProps) 
       <div className="tutorial-modal" ref={dialogRef} {...getModalProps()}>
         <button className="tutorial-close" onClick={onClose} aria-label="关闭">×</button>
         
-        <div className="tutorial-content">
-          <div className={`tutorial-icon ${currentStepData.icon}`} aria-hidden="true"></div>
-          <h2 className="tutorial-title" id={titleId}>{currentStepData.title}</h2>
-          <p className="tutorial-text">
-            {currentStepData.content.split('\n').map((line, i) => (
-              <span key={i}>
-                {line}
-                {i < currentStepData.content.split('\n').length - 1 && <br />}
-              </span>
-            ))}
-          </p>
+        <div className="tutorial-body">
+          <div className="tutorial-content">
+            <div className={`tutorial-icon ${currentStepData.icon}`} aria-hidden="true"></div>
+            <h2 className="tutorial-title" id={titleId}>{currentStepData.title}</h2>
+            <p className="tutorial-text">
+              {currentStepData.content.split('\n').map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i < currentStepData.content.split('\n').length - 1 && <br />}
+                </span>
+              ))}
+            </p>
+          </div>
         </div>
 
         <div className="tutorial-progress">

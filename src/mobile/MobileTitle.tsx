@@ -2,7 +2,8 @@
  * 手机版标题屏（最小骨架）—— 横屏入口。
  *
  * 存档 / 难度口径与桌面 TitleScreen 一致（读既有存储与难度配置），
- * 布局是手机原生竖排按钮组，不复用桌面三栏视觉。成就 / 图鉴 / 帮助入口暂留待后续补充。
+ * 布局是手机原生竖排按钮组，不复用桌面三栏视觉。成就 / 结局图鉴 / 帮助
+ * 收在按钮组下方的一行小入口，保证 924×426 仍一屏装下。
  */
 import { useMemo } from 'react'
 import { getAutosavePreview } from '../types/save'
@@ -17,6 +18,9 @@ export interface MobileTitleProps {
   onStart: () => void
   onContinueAutosave: () => void
   onOpenLoad: () => void
+  onOpenAchievements: () => void
+  onOpenCodex: () => void
+  onOpenTutorial: () => void
   difficulty: DifficultyLevel
   onDifficultyChange: (difficulty: DifficultyLevel) => void
 }
@@ -25,6 +29,9 @@ export default function MobileTitle({
   onStart,
   onContinueAutosave,
   onOpenLoad,
+  onOpenAchievements,
+  onOpenCodex,
+  onOpenTutorial,
   difficulty,
   onDifficultyChange
 }: MobileTitleProps) {
@@ -72,6 +79,18 @@ export default function MobileTitle({
         </button>
         <BGMInlineButton />
       </div>
+
+      <nav className="mobile-title__extras" aria-label="档案与帮助">
+        <button type="button" className="mobile-title__extra" onClick={onOpenAchievements} aria-haspopup="dialog">
+          成 就
+        </button>
+        <button type="button" className="mobile-title__extra" onClick={onOpenCodex} aria-haspopup="dialog">
+          局 鉴
+        </button>
+        <button type="button" className="mobile-title__extra" onClick={onOpenTutorial} aria-haspopup="dialog">
+          帮 助
+        </button>
+      </nav>
     </div>
   )
 }

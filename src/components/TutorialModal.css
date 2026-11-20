@@ -32,8 +32,18 @@
   max-height: calc(100vh - 40px);
   max-height: calc(100dvh - 40px);
   min-height: 0;
-  /* 长内容（第 5 步「仕途」实测最长）由面板自己滚，不再顶穿遮罩 */
+  /* 正文单独滚，底部「下一步 / 跳过」始终留在面板内。
+     此前整个面板一起滚，短横屏第一步的「下一步」就落到折叠线以下。 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tutorial-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  padding-right: 2px;
 }
 
 .tutorial-close {
@@ -98,6 +108,7 @@
   justify-content: center;
   gap: 10px;
   margin-bottom: 32px;
+  flex-shrink: 0;
 }
 
 .progress-dot {
@@ -118,6 +129,7 @@
   justify-content: center;
   gap: 16px;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tutorial-btn {
@@ -154,6 +166,7 @@
 
 .tutorial-skip {
   text-align: center;
+  flex-shrink: 0;
 }
 
 .tutorial-skip button {
@@ -190,5 +203,70 @@
   
   .tutorial-icon {
     font-size: 48px;
+  }
+}
+
+/* 短横屏（如 924×426）：把教程压成可操作的一屏，
+   正文仍可滚，但「下一步 / 跳过」不能被折叠线吞掉。 */
+@media (max-height: 540px) {
+  .tutorial-modal {
+    padding: 18px 22px 10px;
+    border-radius: 8px;
+  }
+
+  .tutorial-close {
+    top: 4px;
+    right: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+
+  .tutorial-icon {
+    font-size: 36px;
+    margin-bottom: 4px;
+  }
+
+  .tutorial-title {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    letter-spacing: 3px;
+  }
+
+  .tutorial-text {
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+
+  .tutorial-content {
+    margin-bottom: 8px;
+  }
+
+  .tutorial-progress {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .progress-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .tutorial-actions {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .tutorial-btn {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    min-height: 40px;
+  }
+
+  .tutorial-skip button {
+    padding: 6px 12px;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
   }
 }
