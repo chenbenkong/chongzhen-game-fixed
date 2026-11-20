@@ -36,7 +36,8 @@ describe('ActionBar · 徽标与标签拼出来的字', () => {
       { canProceed: true },
       { canProceed: true, pendingCount: 2 },
       { canProceed: false },
-      { canProceed: true, onOpenAIAdvisor: vi.fn(), onOpenImageGenerator: vi.fn() }
+      { canProceed: true, onOpenAIAdvisor: vi.fn(), onOpenImageGenerator: vi.fn() },
+      { canProceed: true, onOpenCodex: vi.fn() }
     ]) {
       for (const btn of renderBar(state)) {
         expect(btn.text.startsWith(btn.badge.repeat(2)), `${btn.text}（徽标「${btn.badge}」重复）`).toBe(false)
@@ -61,6 +62,16 @@ describe('ActionBar · 徽标与标签拼出来的字', () => {
     expect(image, '底栏没有丹青按钮').toBeGreaterThanOrEqual(0)
     expect(Math.abs(image - advisor), '丹青必须与谋士相邻').toBe(1)
     expect(btns[image].text).toBe('绘丹青')
+  })
+
+  it('局鉴按钮紧挨「成就」，读作「览局鉴」；不传回调则不渲染', () => {
+    const btns = renderBar({ onOpenAchievements: vi.fn(), onOpenCodex: vi.fn() })
+    const codex = btns.findIndex(b => b.cls.includes('codex-btn'))
+    const achieve = btns.findIndex(b => b.text === '功成就')
+    expect(codex, '底栏没有局鉴按钮').toBeGreaterThanOrEqual(0)
+    expect(Math.abs(codex - achieve), '局鉴必须与成就相邻').toBe(1)
+    expect(btns[codex].text).toBe('览局鉴')
+    expect(renderBar().some(b => b.cls.includes('codex-btn'))).toBe(false)
   })
 
   it('底栏不再渲染「帮助」按钮（帮助仍走 H 快捷键）', () => {

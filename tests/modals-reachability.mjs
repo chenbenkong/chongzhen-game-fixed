@@ -47,6 +47,8 @@ const SEL = 'button, [role="button"], a[href], input:not([type="hidden"]), selec
 const CHECK = async ({ sel, expectSel }) => {  const isRoot = el => el === document.documentElement || el === document.body
   const oy = el => getComputedStyle(el).overflowY
   const canScroll = el => oy(el) === 'auto' || oy(el) === 'scroll'
+  const ox = el => getComputedStyle(el).overflowX
+  const canScrollX = el => ox(el) === 'auto' || ox(el) === 'scroll'
   const clientTop = el => el.getBoundingClientRect().top + parseFloat(getComputedStyle(el).borderTopWidth || '0')
   const cls = el => (el.className || el.tagName).toString().trim().split(/\s+/)[0]
   const label = el => {
@@ -70,6 +72,16 @@ const CHECK = async ({ sel, expectSel }) => {  const isRoot = el => el === docum
       for (const p of [...chain].reverse()) {
         const r = el.getBoundingClientRect()
         p.scrollTo({ top: p.scrollTop + r.top + r.height / 2 - (clientTop(p) + p.clientHeight / 2), behavior: 'instant' })
+      }
+      // 横向滚动器（如局鉴 .codex-tabs overflow-x:auto）：最右的 tab 中心点会落在视口右外，
+      // elementFromPoint 返回 null 被误判"被 nothing 盖住"。玩家真能横滚，仪器也得横滚到位。
+      for (let p = el.parentElement; p; p = p.parentElement) {
+        if (isRoot(p)) continue
+        if (canScrollX(p) && p.scrollWidth > p.clientWidth + 1) {
+          const r = el.getBoundingClientRect()
+          const pr = p.getBoundingClientRect()
+          p.scrollTo({ left: p.scrollLeft + r.left + r.width / 2 - (pr.left + p.clientWidth / 2), behavior: 'instant' })
+        }
       }
       if (doc.scrollHeight > doc.clientHeight + 1) {
         const r = el.getBoundingClientRect()
@@ -246,6 +258,17 @@ for (const [w, h] of VPS) {
     if (await gentry.count()) await gentry.click().catch(() => {})
     else await page.locator('.origin-card button, .origin-card').first().click().catch(() => {})
     await page.waitForTimeout(1700)
+    // 出身之后还有一屏「身后余荫·家训」（LegacySelect）；不传家训直接开局，
+    // 否则停在 legacy-screen，.game-screen 永远不挂载，主界面读数会整屏无效。
+    if (await page.locator('.legacy-screen').count()) {
+      await page.locator('.legacy-btn.primary').first().click().catch(() => {})
+      await page.waitForTimeout(1200)
+    }
+    // 家训之后还有「志业」（CareerSelect）；primary 在未选时禁用，走「不立志业」ghost 跳过。
+    if (await page.locator('.career-select-kicker').count()) {
+      await page.locator('.career-btn.ghost', { hasText: '不立志业' }).first().click().catch(() => {})
+      await page.waitForTimeout(1200)
+    }
     await sweep(page, '主界面', '.game-screen')
 
     // 「勉力一试」只在**条件不足的锁定卡**上出现，而开局首屏播哪个事件是随机的
@@ -259,6 +282,12 @@ for (const [w, h] of VPS) {
     }
     let diceFound = false
     for (let step = 0; step < 8 && !diceFound; step++) {
+      // 桌面选项收在「本月抉择」面板里（panel 模式收起时根本不渲染卡），先打开才看得到
+      // 「勉力一试」与可选卡；面板已开（有 .desktop-choices-title）就不重复点。
+      if (!(await page.locator('.desktop-choices-title').count()) && await page.locator('.desktop-choices-fab').count()) {
+        await page.locator('.desktop-choices-fab').first().click().catch(() => {})
+        await page.waitForTimeout(500)
+      }
       const attempt = page.locator('.dice-attempt-btn').first()
       if (await attempt.count()) {
         await attempt.click({ force: true }).catch(() => {})
@@ -302,6 +331,13 @@ for (const [w, h] of VPS) {
     await page.waitForTimeout(900)
     await sweep(page, '成就弹窗', '.achievement-panel-overlay')
     await page.locator('.close-button').first().click({ force: true }).catch(() => {})
+    await page.waitForTimeout(500)
+
+    // 局鉴（桌面牌桌内常驻入口，第三十四轮补；弹窗 portal 到 body、内部自滚）
+    await page.locator('.action-btn:has-text("局鉴")').first().click({ force: true }).catch(() => {})
+    await page.waitForTimeout(900)
+    await sweep(page, '局鉴弹窗', '.ending-codex-overlay')
+    await page.locator('.codex-close-btn').first().click({ force: true }).catch(() => {})
     await page.waitForTimeout(500)
 
     // 帮助：按钮已在第三十一轮补丁从底栏隐藏，改按 H 打开；九步逐条量

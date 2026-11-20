@@ -38,6 +38,7 @@ const ImageGenerator = lazy(() => import('./ImageGenerator'))
  * 账一直在，只是换了个付款人。
  */
 const CheatMode = lazy(() => import('./CheatMode'))
+const EndingCodex = lazy(() => import('./EndingCodex'))
 /**
  * inert 属性在 React 18 的 JSX 类型里还没有声明，这里用条件展开绕过类型限制
  * （返回的是收窄的联合类型，可安全展开到 JSX 上），运行时就是原生属性。
@@ -210,6 +211,8 @@ function GameScreen(props: GameScreenProps) {
   const [diceModalOpen, setDiceModalOpen] = useState(false)
   /** 桌面「本月抉择」目录开合；同样长在 EventDisplay 内部。 */
   const [choicePanelOpen, setChoicePanelOpen] = useState(false)
+  /** 局鉴（结局图鉴）开合。桌面牌桌内常驻入口，弹窗 portal 到 body。 */
+  const [isCodexOpen, setIsCodexOpen] = useState(false)
 
   // 无需在此额外复位：EventDisplay 的 onResolvedChange 依赖 event?.id，
   // 事件一变（包括读档、重开）就会自动上报 false。
@@ -246,6 +249,7 @@ function GameScreen(props: GameScreenProps) {
     showImageGenerator ||
     isLifeReviewOpen ||
     isAchievementPanelOpen ||
+    isCodexOpen ||
     resignConfirmModal.isOpen ||
     // 死亡结局覆盖层同样接管画面：它开着时 Space / S / 数字键不能穿透到下面的牌桌
     deathEndingState.show ||
@@ -465,6 +469,7 @@ function GameScreen(props: GameScreenProps) {
           onNextMonth={handleAdvance}
           onSave={handleSave}
           onOpenAchievements={openAchievementPanel}
+          onOpenCodex={() => setIsCodexOpen(true)}
           onOpenAIAdvisor={openAIAdvisor}
           onOpenImageGenerator={openImageGenerator}
           onReturnToMenu={handleReturnToMenu}
@@ -555,6 +560,10 @@ function GameScreen(props: GameScreenProps) {
           onClose={closeImageGenerator}
           context={imageGeneratorContext}
         />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <EndingCodex isOpen={isCodexOpen} onClose={() => setIsCodexOpen(false)} />
       </Suspense>
     </div>
   )

@@ -6,6 +6,7 @@ interface ActionBarProps {
   onNextMonth: () => void
   onSave: () => void
   onOpenAchievements?: () => void
+  onOpenCodex?: () => void
   onOpenAIAdvisor?: () => void
   onOpenImageGenerator?: () => void
   onReturnToMenu?: () => void
@@ -27,6 +28,7 @@ const ActionBarImpl = function ActionBar({
   onNextMonth,
   onSave,
   onOpenAchievements,
+  onOpenCodex,
   onOpenAIAdvisor,
   onOpenImageGenerator,
   onReturnToMenu,
@@ -91,6 +93,17 @@ const ActionBarImpl = function ActionBar({
           <span className="btn-icon">功</span>
           <span>成就</span>
         </button>
+        {onOpenCodex && (
+          <button
+            className="action-btn secondary codex-btn"
+            onClick={onOpenCodex}
+            title="结局图鉴（已解锁与未解锁的结局）"
+            aria-label="局鉴"
+          >
+            <span className="btn-icon">览</span>
+            <span>局鉴</span>
+          </button>
+        )}
         {onOpenImageGenerator && (
           <button
             className="action-btn secondary image-generator-btn"
