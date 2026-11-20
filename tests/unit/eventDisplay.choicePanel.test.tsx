@@ -37,7 +37,7 @@ const choice: EventChoice = {
 }
 
 describe('桌面端「本月抉择」面板', () => {
-  it('不把选项铺在正文底部，点击入口后才打开目录面板', async () => {
+  it('不把选项铺在正文底部，只留右上角入口，点击后才打开目录面板', async () => {
     const { container } = render(
       <EventDisplay {...baseProps(makeEvent(choice))} choicesPresentation="panel" />
     )
@@ -45,7 +45,7 @@ describe('桌面端「本月抉择」面板', () => {
     expect(container.querySelector('.choices-section')).toBeNull()
     const fab = container.querySelector('.desktop-choices-fab') as HTMLButtonElement
     expect(fab).toBeTruthy()
-    expect(container.querySelector('.desktop-choices-prompt')).toBeTruthy()
+    expect(container.querySelector('.desktop-choices-prompt')).toBeNull()
 
     fireEvent.click(fab)
     const dialog = await screen.findByRole('dialog')

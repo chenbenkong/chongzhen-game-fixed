@@ -565,52 +565,6 @@
   font-weight: 700;
 }
 
-/* 正文收束后的「本月抉择」入口：桌面事件卡常见大片留白，
-   不能只让玩家自己去右上角找一个小按钮。 */
-.desktop-choices-prompt {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: min(420px, 100%);
-  margin: auto auto 0;
-  padding: 10px 16px;
-  background: linear-gradient(180deg, #1a1510 0%, #12100c 100%);
-  border: 1px dashed rgba(197, 165, 90, 0.28);
-  border-radius: 3px;
-  color: rgba(197, 165, 90, 0.72);
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-}
-
-.desktop-choices-prompt:hover {
-  color: #e8dcc8;
-  border-color: rgba(197, 165, 90, 0.62);
-  background: #1a1510;
-}
-
-.desktop-choices-prompt:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 2px;
-}
-
-.desktop-choices-prompt__label {
-  font-family: var(--font-heading);
-  font-size: 0.86rem;
-  letter-spacing: 2px;
-}
-
-.desktop-choices-prompt__count {
-  color: rgba(245, 230, 200, 0.5);
-  font-size: 0.74rem;
-}
-
-.desktop-choices-prompt__arrow {
-  margin-left: auto;
-  font-size: 0.74rem;
-  letter-spacing: 2px;
-}
-
 /* 桌面端「本月抉择」：遮罩 + 居中目录；选项卡沿用事件面板里的同一套样式 */
 .desktop-choices-overlay {
   position: fixed;

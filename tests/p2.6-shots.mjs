@@ -100,6 +100,7 @@ async function choicePanel(browser, viewport, suffix) {
       cards: cards.length,
       available: cards.filter((c) => !c.classList.contains('locked')).length,
       bodyScroll: body.scrollHeight > body.clientHeight + 1,
+      promptCount: document.querySelectorAll('.desktop-choices-prompt').length,
       leakedSave: !!document.querySelector('.save-slots-modal'),
       leakedAchievement: !!document.querySelector('.achievement-panel'),
       overflowX: document.body.scrollWidth > innerWidth + 1

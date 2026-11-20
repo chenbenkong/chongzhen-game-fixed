@@ -1156,19 +1156,6 @@ function EventDisplay({
         </div>
       </div>
 
-      {choicesPresentation === 'panel' && !showResult && (
-        <button
-          type="button"
-          className="desktop-choices-prompt"
-          onClick={() => setIsChoicePanelOpen(true)}
-          aria-label={`打开本月抉择，共 ${event.choices.length} 项`}
-        >
-          <span className="desktop-choices-prompt__label">本月抉择</span>
-          <span className="desktop-choices-prompt__count">{event.choices.length} 项</span>
-          <span className="desktop-choices-prompt__arrow" aria-hidden="true">展 开 →</span>
-        </button>
-      )}
-
       {!showResult ? (
         choicesPresentation === 'panel' ? null : (
           <div className="choices-section">{choiceListContent}</div>
