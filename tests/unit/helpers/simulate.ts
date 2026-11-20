@@ -32,7 +32,7 @@ import type { DerivedState } from '../../../scripts/audit-ending-reachability'
 export type SimPolicy =
   | 'random' | 'first' | 'ambitious' | 'steady' | 'warden' | 'sealer' | 'hermit' | 'monk' | 'stream'
   | 'bandit' | 'vanish' | 'fugitive' | 'ordinary' | 'usurper' | 'debauched' | 'burnout' | 'heir'
-  | 'corrupt' | 'eunuch' | 'eunuchBacklash' | 'eunuchExit' | 'healer'
+  | 'corrupt' | 'eunuch' | 'eunuchBacklash' | 'eunuchExit' | 'healer' | 'nanming'
 
 export interface SimOutcome {
   seed: number
@@ -1043,6 +1043,37 @@ function pickChoice(
       return !!add?.some(f => ['习医', '行医', '开馆行医', '赈灾行医', '仁心仁术'].includes(f))
     })
     if (medical) return medical
+    if (refusal && pool.includes(refusal)) return refusal
+    return pickSafest(pool, character, gameState)
+  }
+  if (policy === 'nanming') {
+    // 想走《南渡续祚》的那副画像（§8.28）。
+    //
+    // 为什么需要它：甲申四立场里，南明这一支在自由模拟里长期 0 触达 —— 不是格子坏了，
+    // 是量具里没人朝它走（与第廿四轮 bandit、第四十九轮 burnout、§8.27 同一条教训）。
+    // 《城破前夜》四条答案里，只有 c3【南逃】写的 `南渡长江` 不在《天崩地坼》的 notHas 里
+    // （c1殉国/c2投降/c4出家 各写一张挡票），而 c3 自带 体质−10 —— warden 的 pickSafest
+    // 永远躲开它，于是 aftermath 十一个月开不了口，衣冠南渡/南渡续祚 自由触达恒 0。
+    // §8.27 已把 1643 两处主南迁的伏笔落票（176.c4/184.c2 写 `主张南迁`），aftermath.c4
+    // 「衣冠南渡」认这张票；这一副画像就是把这条链在自由模拟里真演一遍的人。
+    //
+    // 口径：保命活到甲申（其余卡一律 pickSafest，同 warden），只在四张 nationfall 卡上
+    // 按"想南渡的人"会做的选择覆盖；见到《南渡续祚》请笔就收笔（它是 declinable，
+    // 不收笔会被拒掉漂去别的结局）。c3南逃 要 体质≥20、southern_ming 请笔要 体质≥20，
+    // pickSafest 把体质当八条死线之一守着，够得着；aftermath 优先 c4（持 主张南迁、无体质门），
+    // 退而 c2（体质≥15）。176.c4 有出身门，锁住时落回 pickSafest，184.c2 无门必拿票。
+    const seal = (event.choices || []).find(c => c.effects?.special?.type === 'ending')
+    if (event.declinable && endingTileOf(event.id) === 'ending_southern_ming' && seal && pool.includes(seal)) {
+      return seal
+    }
+    const id = event.id
+    if (id === 'transition_176') { const c = pool.find(x => x.id === 'c4'); if (c) return c }
+    if (id === 'transition_184') { const c = pool.find(x => x.id === 'c2'); if (c) return c }
+    if (id === 'transition_1644_night_before') { const c = pool.find(x => x.id === 'c3'); if (c) return c }
+    if (id === 'transition_1644_aftermath') {
+      const c4 = pool.find(x => x.id === 'c4'); if (c4) return c4
+      const c2 = pool.find(x => x.id === 'c2'); if (c2) return c2
+    }
     if (refusal && pool.includes(refusal)) return refusal
     return pickSafest(pool, character, gameState)
   }
