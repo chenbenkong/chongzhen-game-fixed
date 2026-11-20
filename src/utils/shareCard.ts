@@ -199,7 +199,7 @@ export async function drawShareCard(input: ShareCardInput): Promise<HTMLCanvasEl
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = muted
   ctx.font = '24px "STKaiti", "KaiTi", "SimKai", serif'
-  ctx.fillText('崇 祯 直 聘　·　明 末 人 生', canvas.width / 2, 138)
+  ctx.fillText('崇 祯 · 宦 海 浮 沉', canvas.width / 2, 138)
 
   ctx.fillStyle = ink
   ctx.font = '700 72px "STKaiti", "KaiTi", "SimKai", serif'
@@ -323,7 +323,7 @@ export async function downloadShareCard(input: ShareCardInput): Promise<boolean>
   const canvas = await drawShareCard(input)
   if (!canvas || typeof document === 'undefined') return false
   const link = document.createElement('a')
-  link.download = `崇祯直聘-青史-${input.name || '无名'}.png`
+  link.download = `崇祯宦海浮沉-青史-${input.name || '无名'}.png`
   link.href = canvas.toDataURL('image/png')
   link.click()
   return true

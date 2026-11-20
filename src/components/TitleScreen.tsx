@@ -81,7 +81,7 @@ function TitleScreenImpl({
         <div className="title-seal" aria-hidden="true">
           敕
         </div>
-        <h1 className="title-main">崇祯直聘</h1>
+        <h1 className="title-main">崇祯·宦海浮沉</h1>
         <p className="title-sub">明末官场沉浮模拟器</p>
         <p className="title-tagline">
           天启七年，天启帝驾崩，信王朱由检即位，改元崇祯。

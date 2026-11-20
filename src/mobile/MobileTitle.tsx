@@ -41,7 +41,7 @@ export default function MobileTitle({
   return (
     <div className="mobile-title">
       <p className="mobile-title__version">{APP_VERSION_LABEL}</p>
-      <h1 className="mobile-title__main">崇祯直聘</h1>
+      <h1 className="mobile-title__main">崇祯·宦海浮沉</h1>
       <p className="mobile-title__sub">明末官场沉浮模拟器 · 横屏版</p>
 
       <div className="mobile-title__difficulty" role="radiogroup" aria-label="难度选择">

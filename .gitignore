@@ -42,6 +42,8 @@ screenshots/
 
 # --- Dev scratch / temp directories ---
 /tmp/
+# 门禁脚本从 tests/ cwd 写截图与日志到这里
+/tests/tmp/
 
 # --- Public dev-only pages (the Vite plugin serving these was removed) ---
 public/token-*.json

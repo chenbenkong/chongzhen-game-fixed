@@ -43,13 +43,13 @@ const result = await page.evaluate(async family => {
     checkLatin: check('A'),
     checkChong: check('崇'),
     checkZhen: check('祯'),
-    checkTitle: check('崇祯直聘'),
+    checkTitle: check('崇祯·宦海浮沉'),
     titleFont: computed('.title-main'),
     // 实际渲染宽度对比：如果字体真生效，同一段文字在「马善政」下的宽度会与 serif 不同
     widthWithWebfont: (() => {
       const s = document.createElement('span')
       s.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font-size:48px;font-family:"${family}"`
-      s.textContent = '崇祯直聘'
+      s.textContent = '崇祯·宦海浮沉'
       document.body.appendChild(s)
       const w = s.getBoundingClientRect().width
       s.remove()
@@ -59,7 +59,7 @@ const result = await page.evaluate(async family => {
       const s = document.createElement('span')
       s.style.cssText =
         'position:absolute;visibility:hidden;white-space:nowrap;font-size:48px;font-family:serif'
-      s.textContent = '崇祯直聘'
+      s.textContent = '崇祯·宦海浮沉'
       document.body.appendChild(s)
       const w = s.getBoundingClientRect().width
       s.remove()
@@ -78,11 +78,11 @@ console.log(`check('')        = ${result.checkEmpty}   <- 默认探测文本，�
 console.log(`check('A')       = ${result.checkLatin}`)
 console.log(`check('崇')       = ${result.checkChong}`)
 console.log(`check('祯')       = ${result.checkZhen}`)
-console.log(`check('崇祯直聘')   = ${result.checkTitle}   <- 真正有意义的判据`)
+console.log(`check('崇祯·宦海浮沉')   = ${result.checkTitle}   <- 真正有意义的判据`)
 console.log('')
 console.log('=== 实际渲染 ===')
 console.log(`.title-main 计算字体 = ${result.titleFont}`)
-console.log(`「崇祯直聘」宽度：马善政 ${result.widthWithWebfont}px / serif ${result.widthWithSerif}px`)
+console.log(`「崇祯·宦海浮沉」宽度：马善政 ${result.widthWithWebfont}px / serif ${result.widthWithSerif}px`)
 console.log('')
 console.log(`=== 实际请求的字体分片（${requested.length} 个）===`)
 requested.forEach(r => console.log(`  HTTP ${r.status}  ${r.url}`))

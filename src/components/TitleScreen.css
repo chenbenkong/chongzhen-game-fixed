@@ -3,6 +3,13 @@
    主菜单完全照搬参考站 https://wtd85afh.mule.page/ 风格
    ============================================================ */
 
+/* 品牌七字单行宽度上限：画框内容宽 ≈ vw 减去屏/框留白，除以 7 字 × 1.25em。
+   高度档只能在此基础上再缩，不能反超宽度预算（否则窄屏折行出孤字）。 */
+:root { --title-cap: calc(11vw - 26px); }
+@media (max-width: 720px) { :root { --title-cap: calc(11vw - 17px); } }
+@media (max-width: 480px) { :root { --title-cap: calc(11vw - 14px); } }
+@media (max-width: 320px) { :root { --title-cap: calc(11vw - 6px); } }
+
 .title-screen {
   position: relative;
   display: flex;
@@ -82,13 +89,13 @@
 /* 主标题 - 金色发光大字 */
 .title-main {
   font-family: var(--font-heading);
-  font-size: 4.8rem;
+  font-size: min(3.8rem, var(--title-cap));
   color: var(--gold);
   text-shadow:
     0 0 80px rgba(197,165,90,0.2),
     0 0 40px rgba(197,165,90,0.1),
     0 2px 6px rgba(0,0,0,0.7);
-  letter-spacing: 0.45em;
+  letter-spacing: 0.25em;
   line-height: 1.2;
   margin-bottom: 12px;
   position: relative;
@@ -334,7 +341,7 @@
     min-width: 0;
     width: 100%;
   }
-  .title-main { font-size: 3rem; letter-spacing: 0.3em; }
+  .title-main { font-size: min(3rem, var(--title-cap)); letter-spacing: 0.25em; }
   .title-sub  { font-size: 0.78rem; letter-spacing: 0.4em; }
   .title-tagline { font-size: 0.8rem; }
   .title-btn { padding: 12px 30px; min-width: 180px; font-size: 0.9rem; letter-spacing: 0.3em; }
@@ -351,7 +358,7 @@
 @media (max-height: 950px) {
   .title-screen { padding: 28px 32px; }
   .title-frame { padding: 24px 48px; }
-  .title-main { font-size: 3.6rem; margin-bottom: 8px; }
+  .title-main { font-size: min(3.6rem, var(--title-cap)); margin-bottom: 8px; }
   .title-main::after { margin-top: 12px; }
   .title-sub { margin-bottom: 20px; }
   .title-tagline { margin-bottom: 12px; line-height: 1.75; }
@@ -369,7 +376,7 @@
 @media (max-height: 780px) {
   .title-screen { padding: 14px 24px; }
   .title-frame { padding: 16px 32px; }
-  .title-main { font-size: 2.9rem; line-height: 1.15; }
+  .title-main { font-size: min(2.9rem, var(--title-cap)); line-height: 1.15; }
   .title-main::after { margin-top: 9px; }
   .title-seal { display: none; }
   .title-quote { display: none; }
@@ -429,7 +436,7 @@
     max-width: 100%;
   }
   .title-main {
-    font-size: 2.2rem;
+    font-size: min(2.2rem, var(--title-cap));
     letter-spacing: 0.18em;
   }
   .title-main::after { width: 64px; }
