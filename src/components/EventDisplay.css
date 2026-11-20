@@ -1052,15 +1052,15 @@
 }
 
 .echo-label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #6b5a3a;
   margin-bottom: 3px;
   letter-spacing: 0.5px;
 }
 
 .echo-text {
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.5;
   color: #9a8870;
   margin: 0;
   text-align: justify;
