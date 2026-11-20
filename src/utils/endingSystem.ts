@@ -105,13 +105,13 @@ export function classifyEnding(event: GameEvent): 'legendary' | 'good' | 'bad' |
   if (id.includes('martyr') || id.includes('city_fall') || id.includes('died_battlefield') || id.includes('southern_ming') || id.includes('jiashen')) {
     return 'tragic'
   }
-  if (id.includes('debauch') || id.includes('pimp') || id.includes('bandit') || id.includes('traitor') || id.includes('clan_exterminate') || id.includes('zhaoyu') || id.includes('usurper')) {
+  if (id.includes('debauch') || id.includes('pimp') || id.includes('bandit') || id.includes('traitor') || id.includes('clan_exterminate') || id.includes('zhaoyu') || id.includes('usurper') || id.includes('shun_collaborator')) {
     return 'bad'
   }
   if (id.includes('zhongxing') || id.includes('famous_minister') || id.includes('border_general') || id.includes('pure_stream') || id.includes('duty_death')) {
     return 'legendary'
   }
-  if (id.includes('honorable_retirement') || id.includes('family_man') || id.includes('medical_saint') || id.includes('recluse_scholar') || id.includes('hermit')) {
+  if (id.includes('honorable_retirement') || id.includes('family_man') || id.includes('medical_saint') || id.includes('recluse_scholar') || id.includes('hermit') || id.includes('ming_loyalist')) {
     return 'good'
   }
   return 'normal'

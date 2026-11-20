@@ -53,6 +53,10 @@ export interface RouteFamilySpec {
  * 十三个命途。门票全部抄自对应结局的 conditions.flags，
  * 年窗抄自 conditions.year（叙事结局另有 1635 年 / 36 月的编译兜底），
  * 优先级抄自注册表。三份都有测试对账，不靠肉眼维持同步。
+ *
+ * 甲申终局分支在 jiashen 之前插了《遗民守节》《降顺仕贼》两格，注册表按下标发优先级，
+ * 其后所有格子 +2（清流殉道 126→128、边关大将 120→122 等）；jiashen 之前的五格
+ * （殉国死节 101、诏狱冤死 102、战死沙场 103、篡位自立 104、南渡续祚 105）原地不动。
  */
 export const ROUTE_FAMILIES: RouteFamilySpec[] = [
   {
@@ -72,7 +76,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_border_general',
         title: '边关大将',
         mode: 'any',
-        priority: 120,
+        priority: 122,
         tickets: [
           '边关任职', '关外督师', '随军出征', '追击清军', '平定兵变', '替代孙传庭', '支援孙传庭',
           '死守开封', '固守潼关', '死守宁远', '增援松锦', '收编天雄军', '培养将领', '镇压流寇', '追击流寇'
@@ -90,7 +94,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_pure_stream',
         title: '清流骨鲠',
         mode: 'any',
-        priority: 121,
+        priority: 123,
         tickets: ['弹劾温体仁', '弹劾杨嗣昌', '弹劾陈新甲', '弹劾袁崇焕', '言官', '东林党人', '东林党核心', '反阉先锋', '廷杖受刑'],
         window: { min: 1640, max: 1660 }
       },
@@ -98,7 +102,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_scholar_martyr',
         title: '清流殉道',
         mode: 'any',
-        priority: 126,
+        priority: 128,
         tickets: ['言官', '弹劾温体仁', '弹劾杨嗣昌', '弹劾陈新甲', '弹劾袁崇焕', '东林党核心', '复社成员', '东林党人', '反阉先锋', '廷杖受刑'],
         window: { min: 1635, max: 1644 }
       }
@@ -113,7 +117,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_hermit_taoist',
         title: '归隐田园',
         mode: 'any',
-        priority: 109,
+        priority: 111,
         tickets: ['归隐', '归隐山林', '辞官', '告病归田', '急流勇退', '主动致仕', '辞让入阁'],
         window: { min: 1635, max: 1660 }
       },
@@ -121,7 +125,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_recluse_scholar',
         title: '大儒传世',
         mode: 'any',
-        priority: 111,
+        priority: 113,
         tickets: ['归隐', '归隐山林', '辞官', '讲学', '开馆行医'],
         window: { min: 1635, max: 1660 }
       },
@@ -129,7 +133,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_monk_nirvana',
         title: '遁入空门',
         mode: 'any',
-        priority: 114,
+        priority: 116,
         tickets: ['出家', '和尚', '看破红尘'],
         window: { min: 1635, max: 1660 }
       },
@@ -137,7 +141,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_honorable_retirement',
         title: '致仕善终',
         mode: 'any',
-        priority: 118,
+        priority: 120,
         // 第七十二轮接进 清白辞官/乞骸骨：退休事件（gray_late_retire）的【上书乞骸骨】
         // 一直写的就是这一格，只是那两张票此前没人读。
         tickets: ['急流勇退', '主动致仕', '告病归田', '清白辞官', '乞骸骨'],
@@ -154,7 +158,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_family_man',
         title: '天伦之乐',
         mode: 'any',
-        priority: 115,
+        priority: 117,
         tickets: [
           '皮岛人脉',
           '士绅联盟',
@@ -172,7 +176,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_ordinary_life',
         title: '平凡终老',
         mode: 'any',
-        priority: 124,
+        priority: 126,
         tickets: ['与世无争', '不争不抢'],
         window: { min: 1635, max: 1643 }
       }
@@ -187,7 +191,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_unknown_fate',
         title: '不知所踪',
         mode: 'all',
-        priority: 117,
+        priority: 119,
         tickets: ['下落不明', '隐姓埋名'],
         window: { min: 1637, max: 1660 }
       },
@@ -195,7 +199,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_bandit_king',
         title: '落草为寇',
         mode: 'any',
-        priority: 125,
+        priority: 127,
         tickets: ['落草为寇', '啸聚山林'],
         window: { min: 1635, max: 1644 }
       },
@@ -203,7 +207,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_fugitive',
         title: '亡命江湖',
         mode: 'any',
-        priority: 127,
+        priority: 129,
         tickets: ['隐姓埋名', '下落不明', '潜逃'],
         window: { min: 1635, max: 1650 }
       }
@@ -218,7 +222,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_pirate_king',
         title: '海盗之王',
         mode: 'any',
-        priority: 110,
+        priority: 112,
         // 第七十二轮接进 打造舰队/盐引生意：写手同时写 皮岛敛财（本格旧票），
         // 所以这一格的可达面一张没变，只是把同一件事的另外两个名字摆上桌。
         tickets: ['皮岛敛财', '出海', '通倭', '海贸', '打造舰队', '盐引生意'],
@@ -228,7 +232,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_exile_overseas',
         title: '流亡海外',
         mode: 'all',
-        priority: 113,
+        priority: 115,
         tickets: ['转移资产'],
         window: { min: 1635, max: 1660 }
       }
@@ -243,7 +247,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_qing_tributary',
         title: '称臣纳贡',
         mode: 'all',
-        priority: 108,
+        priority: 110,
         tickets: ['贰臣'],
         window: { min: 1644, max: 1660 }
       },
@@ -251,8 +255,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_traitor',
         title: '卖国求荣',
         mode: 'all',
-        // 134：第六十七轮在内廷三格插在 debauchery 之前，注册表按下标发优先级，向后挪了 3
-        priority: 134,
+        // 136：第六十七轮内廷三格插在 debauchery 之前挪了 3，甲申终局分支再挪 2
+        priority: 136,
         tickets: ['贰臣'],
         window: { min: NARRATIVE_MIN_YEAR }
       }
@@ -307,7 +311,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_duty_death',
         title: '殉职任上',
         mode: 'any',
-        priority: 119,
+        priority: 121,
         // 第七十二轮接进 最后拼搏：写手 route_ordinary_life/c2 的回音自己就说
         // "最后几年做点成绩"，与"死在任上"是同一件事。
         tickets: ['鞠躬尽瘁', '积劳成疾', '最后拼搏'],
@@ -324,7 +328,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_medical_saint',
         title: '悬壶济世',
         mode: 'any',
-        priority: 116,
+        priority: 118,
         tickets: ['习医', '行医', '开馆行医', '赈灾行医', '仁心仁术'],
         window: { min: 1640, max: 1660 }
       }
@@ -351,14 +355,14 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
     name: '秦淮风月',
     motto: '温柔乡里，白骨森森。',
     // 前两行读同一批票不是重复：《精尽人亡》要 体质≤10，《纵欲而亡》要 体质≤30，
-    // 优先级 131 在 132 之前 —— 同一个人先掉进更狠的那一格，这是"掏空"程度的两道台阶。
+    // 优先级 133 在 134 之前 —— 同一个人先掉进更狠的那一格，这是"掏空"程度的两道台阶。
     destinations: [
       {
         endingId: 'ending_debauchery_001',
         title: '精尽人亡',
         mode: 'any',
-        // 131：同上，第六十七轮内廷三格插队，注册表按下标发优先级，向后挪了 3
-        priority: 131,
+        // 133：第六十七轮内廷三格插队挪了 3，甲申终局分支再挪 2
+        priority: 133,
         tickets: ['纵欲成疾', '纳妓为妾'],
         window: { min: 1635, max: 1644 }
       },
@@ -366,8 +370,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_debauch_fall',
         title: '纵欲而亡',
         mode: 'any',
-        // 132：同上一条，内廷三格插队向后挪了 3
-        priority: 132,
+        // 134：同上一条，内廷三格插队挪 3 + 甲申终局分支挪 2
+        priority: 134,
         tickets: ['纵欲成疾', '纳妓为妾'],
         window: { min: 1635 }
       },
@@ -375,8 +379,8 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_pimp_lord',
         title: '烟花之主',
         mode: 'any',
-        // 133：同上
-        priority: 133,
+        // 135：同上
+        priority: 135,
         tickets: ['青楼暗股', '青楼靠山'],
         window: { min: 1635 }
       }
@@ -394,7 +398,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_inner_court_chancellor',
         title: '内廷外相',
         mode: 'all',
-        priority: 128,
+        priority: 130,
         tickets: ['内廷外相'],
         window: { min: 1640, max: 1644 }
       },
@@ -402,7 +406,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_inner_court_backlash',
         title: '内廷反噬',
         mode: 'any',
-        priority: 129,
+        priority: 131,
         tickets: ['厂卫外援', '反戈内廷'],
         window: { min: 1640, max: 1644 }
       },
@@ -410,7 +414,7 @@ export const ROUTE_FAMILIES: RouteFamilySpec[] = [
         endingId: 'ending_inner_court_escape',
         title: '抽身而去',
         mode: 'all',
-        priority: 130,
+        priority: 132,
         tickets: ['洗手不干'],
         window: { min: 1640, max: 1644 }
       }

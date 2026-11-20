@@ -113,6 +113,10 @@ describe('结局格子的门票必须有写手', () => {
     // （做不做内廷的外相），《抽身而去》读的是"洗手不干"——后者已经有两条写手
     // （第四拍 c3、第五拍 c1），但同一次动作只该叫一个名字。它们与上面五格同理：
     // 再拆票等于把"这一步答不答应"稀释成两个近似选项。
+    // 甲申终局分支补进《遗民守节》《降顺仕贼》：前者读 038c2【守节不仕】写下的 遗民，
+    // 后者读 017c3【开城投降】写下的 投降大顺 —— 都是"甲申那一步表不表态"的单一动作，
+    // 与殉国死节=殉国报君、称臣纳贡=贰臣 同形。而且这两格主要由选项的 special.endingId
+    // **当场收笔**（不等边界判定），那张票就是这一步的记录，再拆第二张只会稀释抉择的分量。
     const oneAction = new Set([
       'ending_martyr_nation',
       'ending_qing_tributary',
@@ -120,7 +124,9 @@ describe('结局格子的门票必须有写手', () => {
       'ending_exile_overseas',
       'ending_clan_exterminate',
       'ending_inner_court_chancellor',
-      'ending_inner_court_escape'
+      'ending_inner_court_escape',
+      'ending_ming_loyalist',
+      'ending_shun_collaborator'
     ])
     const thin: string[] = []
     for (const t of tiles) {

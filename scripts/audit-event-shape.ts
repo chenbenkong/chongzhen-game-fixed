@@ -38,6 +38,11 @@
  * 一条 `grep '^// @ts-nocheck'` 假阴性，让我以为盲区已经清零）。
  */
 import { allEvents, labelOfPool } from './event-pools'
+// special.endingId 的合法落点＝引擎当场收笔时搜的那张表（useGameEngine 从 endings_all
+// 取 allEndingEvents.find）。指向表外的 id 会静默回落成"用当前卡收笔"，所以这里逐条对账。
+import { allEndingEvents as settleableEndings } from '../src/data/events/ending/endings_all'
+
+const SETTLEABLE_ENDING_IDS = new Set(settleableEndings.map(e => e.id))
 
 const ATTR_KEYS = ['财帛', '文韬', '理政', '武略', '体质']
 const ATTR_ALIASES = ['文辩', '朝政', '权势', '机敏', '道德']
@@ -260,14 +265,19 @@ export function scanEventShape(
       for (const key of Object.keys(eff.gameState || {})) {
         if (!STATE_KEYS.includes(key) && !STATE_ALIASES.includes(key)) add('DROP', cw, `effects.gameState.${key} 不在 STATE_MAP 里`)
       }
-      // special 是"剧情级动作"键，但引擎只实现了 ending 一种（useGameEngine 两处
+      // special 是"剧情级动作"键，引擎只实现了 ending 一种（useGameEngine 两处
       // `special?.type === 'ending'`）。写 death / promotion / imprisonment 不会杀人也不会升官，
       // 只会安静地什么都不做 —— 这类"看起来像副作用的注释"最容易被后来人当成真接口。
-      for (const k of extraKeys(eff.special || {}, ['type'])) {
-        add('DROP', cw, `effects.special.${k} 引擎不读（这个对象只认 type，且只有 'ending' 有实现）`)
+      // endingId 是甲申终局分支加的第二个合法键：写了它，这一票当场收进指定的那一格结局
+      // （引擎 allEndingEvents.find），不等月份推进的边界判定；缺省则按老规矩用当前卡收笔。
+      for (const k of extraKeys(eff.special || {}, ['type', 'endingId'])) {
+        add('DROP', cw, `effects.special.${k} 引擎不读（这个对象只认 type 与 endingId，且只有 type='ending' 有实现）`)
       }
       if (eff.special && eff.special.type !== 'ending') {
         add('DEAD', cw, `effects.special.type='${eff.special.type}' 没有任何分支处理 —— 死亡/贬谪走引擎自己的升贬判定，不经过这里`)
+      }
+      if (eff.special?.endingId && !SETTLEABLE_ENDING_IDS.has(eff.special.endingId)) {
+        add('DROP', cw, `effects.special.endingId='${eff.special.endingId}' 不在引擎能收笔的结局表里 —— 会静默回落成用当前卡收笔，玩家这一票定不了论`)
       }
       if (ch.result && typeof ch.result === 'object') {
         for (const k of extraKeys(ch.result, RESULT_KEYS)) add('结构', cw, `result 上有未知键 ${k}`)

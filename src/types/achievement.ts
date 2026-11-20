@@ -595,6 +595,24 @@ export const ALL_ACHIEVEMENTS: Achievement[] = [
     unlocked: false
   },
   {
+    id: 'ending_ming_loyalist_done',
+    name: '遗民守节',
+    description: '达成"遗民守节"结局',
+    icon: '遗',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_ming_loyalist'),
+    unlocked: false
+  },
+  {
+    id: 'ending_shun_collaborator_done',
+    name: '降顺仕贼',
+    description: '达成"降顺仕贼"结局',
+    icon: '顺',
+    category: 'endgame',
+    checkUnlock: (ctx) => ctx.eventHistory.includes('ending_shun_collaborator'),
+    unlocked: false
+  },
+  {
     id: 'ending_border_general_done',
     name: '威震塞外',
     description: '达成"边关大将"结局',

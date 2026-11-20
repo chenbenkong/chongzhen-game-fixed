@@ -251,7 +251,10 @@ export const events1644: GameEvent[] = [
           hidden: {野心值: 15,
               道德值: -10
         },
-          flags: { add: ['诈降反戈'] }
+          // 诈降是手段，反戈失败后"投奔南明"才是归宿（见 echo）。补写 南渡长江+效忠南明
+          // 两张票，并当场收进《南渡续祚》——否则这一票会被《城破前夜》的 殉国报君 抢先收走。
+          flags: { add: ['诈降反戈', '南渡长江', '效忠南明'] },
+          special: { type: 'ending', endingId: 'ending_southern_ming' }
         },
         resultDescription: '',
         result: {
@@ -482,7 +485,10 @@ export const events1644: GameEvent[] = [
           hidden: {野心值: 10,
               道德值: -20
         },
-          flags: { add: ['开城投降'] }
+          // 开城降李自成＝仕大顺。补写 投降大顺 票并当场收进《降顺仕贼》，
+          // 让"降顺"这一段失节有自己的一格，而不是落到《甲申国变》当旁观者。
+          flags: { add: ['开城投降', '投降大顺'] },
+          special: { type: 'ending', endingId: 'ending_shun_collaborator' }
         },
         resultDescription: '',
         result: {
@@ -1168,7 +1174,10 @@ export const events1644: GameEvent[] = [
           hidden: {野心值: -10,
               道德值: 25
         },
-          flags: { add: ['守城殉国', '闯军所杀'] }
+          flags: { add: ['守城殉国', '闯军所杀'] },
+          // echo 已写明"从城楼上跃下，坠地身亡"——这一票就是殉城，当场收进《城破殉城》，
+          // 不再等五月边界判定（那时 殉国报君 早已把人收进《殉国死节》）。
+          special: { type: 'ending', endingId: 'ending_city_fall' }
         },
         resultDescription: '',
         result: {
@@ -1378,7 +1387,10 @@ export const events1644: GameEvent[] = [
           hidden: {
               道德值: 20
         },
-          flags: { add: ['遗民', '崇祯所念'] }
+          flags: { add: ['遗民', '崇祯所念'] },
+          // 焚书归乡、誓不仕新朝＝遗民。当场收进《遗民守节》，
+          // 让"守节"这条比殉国更难的路有自己的一格，而不是被前奏的 殉国报君 盖掉。
+          special: { type: 'ending', endingId: 'ending_ming_loyalist' }
         },
         resultDescription: '',
         result: {

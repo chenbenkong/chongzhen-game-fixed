@@ -18,6 +18,10 @@ import {
   isCorruptExposed
 } from '../data/demotionWarningEvents'
 import { buildDemotionEndingEvent } from '../data/events/ending/endingsDemotion'
+// 甲申终局分支：历史抉择用 special.endingId 当场指定收进哪一格结局。
+// 直接取 endings_all（boundaryEvents 已把它带进引擎包，零新增体积），不走 events/ending/index
+// ——那个索引是图鉴/作弊面板的展示合并表，会把 debauchery 等无关格子也拖进来。
+import { allEndingEvents } from '../data/events/ending/endings_all'
 import { triggerEndingAchievements, generateBiography, pickKeyLifeRecords } from '../utils/endingSystem'
 import { ATTR_MAP, STATE_MAP, ATTR_BOUNDS } from '../utils/constants'
 import { checkEventConditions, lastChanceThisMonth, pickEvent } from '../utils/eventConditions'
@@ -1841,6 +1845,22 @@ export function useGameEngine(props: UseGameEngineProps) {
     })
 
     if (choice.effects.special?.type === 'ending') {
+      // 指定了 endingId：这一票当场定论，收进**那一格**结局，而不是用当前卡收笔。
+      // 1644 的历史抉择（死守九门 / 守节不仕 / 开城投降 / 诈降反戈）排在《城破前夜》之后，
+      // 前奏已写下 殉国报君，若只落 flag 等月份推进的边界判定，会被《殉国死节》抢先收走。
+      // 这里与下方降临型结局对齐：清掉本月待处理队列（否则「继续」会拿普通卡盖掉结局屏），
+      // 再把 currentEvent 换成目标格 —— GameOverScreen 读的就是 currentEvent。
+      const targetId = choice.effects.special.endingId
+      if (targetId) {
+        const target = allEndingEvents.find(e => e.id === targetId)
+        if (target) {
+          pendingEventsRef.current = []
+          setPendingEvents([])
+          setCurrentEvent(target)
+          handleGameOver(target)
+          return appliedEffects
+        }
+      }
       // 辞官类结局已在函数开头完成确认（未确认时根本走不到这里），
       // 其余结局直接结算。
       handleGameOver(currentEvent ?? undefined)
