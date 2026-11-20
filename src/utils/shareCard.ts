@@ -4,9 +4,10 @@
  * 设计约束：
  *  - 不引入第三方截图库，不依赖 DOM 截图；直接画 Canvas，避免把整页 UI 的
  *    CSS/字体/响应式布局一起塞进图片。
- *  - 图上只放玩家自己这一局的事实：姓名、出身、官至、结局、评语、故人。
+ *  - 图上只放玩家自己这一局的事实：姓名、出身、官至、结局、评语、故人（带立绘）。
  *  - 不带二维码、不带外部链接；保存下来就能直接发。
  *  - 成人内容不进入分享卡：调用方只传已经展示在结局页的文本，不碰 gray 事件。
+ *  - 立绘加载失败不毁卡：预加载超时/出错回退占位圆，文字照常画。
  */
 
 export interface ShareCardInput {
@@ -21,6 +22,8 @@ export interface ShareCardInput {
   date: string
   /** 结局页“故人”段里已经算好的名字 + 身份，最多三个。 */
   people?: string[]
+  /** 与 people 同序的立绘 URL（结局页同一份 characterPortrait 映射），最多三个。 */
+  peoplePortraits?: (string | undefined)[]
   /** P0.2 志业评价，例如“志业　升迁 · 近志（2/3）”；不立志业时留空。 */
   careerGoal?: string
 }
@@ -33,6 +36,7 @@ export interface ShareCardModel {
   goalLine: string
   evaluation: string
   people: string[]
+  peoplePortraits: (string | undefined)[]
   footer: string
 }
 
@@ -40,6 +44,11 @@ export function buildShareCardModel(input: ShareCardInput): ShareCardModel {
   const courtesy = input.courtesyName?.trim()
   const nameLine = courtesy && courtesy !== input.name ? `${input.name}　字${courtesy}` : input.name
   const metaLine = [input.origin, input.finalRank].filter(Boolean).join('　·　')
+  // 名字与立绘按同一序配对后再过滤/截断，避免空名字把立绘错位到别人脸上。
+  const pairs = (input.people ?? [])
+    .map((line, i) => ({ line, portrait: input.peoplePortraits?.[i] }))
+    .filter((p) => p.line)
+    .slice(0, 3)
   return {
     nameLine,
     metaLine,
@@ -47,7 +56,8 @@ export function buildShareCardModel(input: ShareCardInput): ShareCardModel {
     scoreLine: `功过 ${Math.round(input.score)} / 100　·　宦海 ${input.years}`,
     goalLine: input.careerGoal?.trim() ?? '',
     evaluation: input.evaluation.trim(),
-    people: (input.people ?? []).filter(Boolean).slice(0, 3),
+    people: pairs.map((p) => p.line),
+    peoplePortraits: pairs.map((p) => p.portrait),
     footer: `${input.date}　·　青史`
   }
 }
@@ -80,7 +90,68 @@ export function wrapCanvasText(
   return lines
 }
 
-export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
+export interface ShareCardLayout {
+  bodyStartY: number
+  bodyLineHeight: number
+  /** 评语最多画几行：给故人块让位，保证不压页脚/印章。 */
+  evalLineLimit: number
+  peopleGap: number
+  peopleHeaderHeight: number
+  /** 每个故人一行的高度；带立绘时更高。 */
+  rowHeight: number
+  /** 立绘直径；0 表示纯文本行。 */
+  portraitSize: number
+  /** 故人块底边不得超过此 y（印章顶 1272 / 页脚 1328 之上留余量）。 */
+  peopleBottomLimit: number
+}
+
+/**
+ * 纯排版规划：不碰 Canvas，便于单测钉住“故人块不压页脚/印章”。
+ * 带立绘时行高 84（圆像 72），纯文本行高 40；评语行数按剩余空间动态收紧。
+ */
+export function planShareCardLayout(opts: {
+  hasGoal: boolean
+  peopleCount: number
+  hasPortraits: boolean
+}): ShareCardLayout {
+  const bodyStartY = opts.hasGoal ? 574 : 556
+  const bodyLineHeight = 46
+  const peopleGap = opts.hasGoal ? 36 : 18
+  const peopleHeaderHeight = 46
+  const peopleBottomLimit = 1240
+  const baseLimit = opts.hasGoal ? 10 : 12
+  const rowHeight = opts.peopleCount === 0 ? 0 : opts.hasPortraits ? 84 : 40
+  const portraitSize = opts.peopleCount > 0 && opts.hasPortraits ? 72 : 0
+  let evalLineLimit = baseLimit
+  if (opts.peopleCount > 0) {
+    const available =
+      peopleBottomLimit - peopleHeaderHeight - opts.peopleCount * rowHeight - peopleGap - bodyStartY
+    evalLineLimit = Math.max(1, Math.min(baseLimit, Math.floor(available / bodyLineHeight)))
+  }
+  return {
+    bodyStartY,
+    bodyLineHeight,
+    evalLineLimit,
+    peopleGap,
+    peopleHeaderHeight,
+    rowHeight,
+    portraitSize,
+    peopleBottomLimit
+  }
+}
+
+/** 预加载立绘；超时/出错回退 null，绝不 reject（毁卡不如少一张像）。 */
+function loadPortrait(url: string): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const timer = setTimeout(() => resolve(null), 4000)
+    img.onload = () => { clearTimeout(timer); resolve(img) }
+    img.onerror = () => { clearTimeout(timer); resolve(null) }
+    img.src = url
+  })
+}
+
+export async function drawShareCard(input: ShareCardInput): Promise<HTMLCanvasElement | null> {
   if (typeof document === 'undefined') return null
   const canvas = document.createElement('canvas')
   canvas.width = 1080
@@ -89,6 +160,14 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
   if (!ctx) return null
 
   const model = buildShareCardModel(input)
+  const layout = planShareCardLayout({
+    hasGoal: !!model.goalLine,
+    peopleCount: model.people.length,
+    hasPortraits: model.peoplePortraits.some((p) => !!p)
+  })
+  const portraits = await Promise.all(
+    model.peoplePortraits.map((url) => (url ? loadPortrait(url) : Promise.resolve(null)))
+  )
   const margin = 92
   const innerWidth = canvas.width - margin * 2
   const paper = '#e9dfc8'
@@ -151,35 +230,67 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
     ctx.fillText(model.goalLine, canvas.width / 2, 522)
   }
 
-  // 评语；有志业行时压到 10 行，避免顶到故人段；超出的部分用省略号收尾。
+  // 评语；行数由 layout 收紧，给故人块让位；超出的部分用省略号收尾。
   ctx.textAlign = 'left'
   ctx.fillStyle = ink
   ctx.font = '28px "STKaiti", "KaiTi", "SimKai", serif'
   const allBodyLines = wrapCanvasText(model.evaluation, innerWidth, (value) => ctx.measureText(value).width)
-  const bodyLineLimit = model.goalLine ? 10 : 12
-  const bodyLines = allBodyLines.slice(0, bodyLineLimit)
-  if (allBodyLines.length > bodyLineLimit && bodyLines.length > 0) {
+  const bodyLines = allBodyLines.slice(0, layout.evalLineLimit)
+  if (allBodyLines.length > layout.evalLineLimit && bodyLines.length > 0) {
     bodyLines[bodyLines.length - 1] += '…'
   }
-  let y = model.goalLine ? 574 : 556
+  let y = layout.bodyStartY
   for (const line of bodyLines) {
     ctx.fillText(line, margin, y)
-    y += 46
+    y += layout.bodyLineHeight
   }
 
-  // 故人
+  // 故人：带立绘时圆像 + 右侧名字身份；立绘缺失画占位圆，文字照常。
   if (model.people.length > 0) {
-    y += model.goalLine ? 36 : 18
+    y += layout.peopleGap
     ctx.fillStyle = gold
     ctx.font = '700 26px "STKaiti", "KaiTi", "SimKai", serif'
     ctx.fillText('故　人', margin, y)
-    y += 46
-    ctx.fillStyle = ink
+    y += layout.peopleHeaderHeight
     ctx.font = '26px "STKaiti", "KaiTi", "SimKai", serif'
-    for (const person of model.people) {
-      const line = wrapCanvasText(person, innerWidth, (value) => ctx.measureText(value).width)[0] ?? ''
-      ctx.fillText(line, margin, y)
-      y += 40
+    for (let i = 0; i < model.people.length; i++) {
+      const person = model.people[i]
+      if (layout.portraitSize > 0) {
+        const size = layout.portraitSize
+        const cx = margin + size / 2
+        const cy = y + size / 2
+        const r = size / 2
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.closePath()
+        ctx.clip()
+        const img = portraits[i]
+        if (img && img.width > 0 && img.height > 0) {
+          const scale = Math.max(size / img.width, size / img.height)
+          const dw = img.width * scale
+          const dh = img.height * scale
+          ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh)
+        } else {
+          ctx.fillStyle = 'rgba(44, 36, 27, 0.15)'
+          ctx.fillRect(cx - r, cy - r, size, size)
+        }
+        ctx.restore()
+        ctx.strokeStyle = 'rgba(154, 116, 40, 0.6)'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = ink
+        const textX = margin + size + 20
+        const line = wrapCanvasText(person, innerWidth - size - 20, (v) => ctx.measureText(v).width)[0] ?? ''
+        ctx.fillText(line, textX, y + size / 2 + 9)
+      } else {
+        ctx.fillStyle = ink
+        const line = wrapCanvasText(person, innerWidth, (v) => ctx.measureText(v).width)[0] ?? ''
+        ctx.fillText(line, margin, y + 30)
+      }
+      y += layout.rowHeight
     }
   }
 
@@ -208,8 +319,8 @@ export function drawShareCard(input: ShareCardInput): HTMLCanvasElement | null {
   return canvas
 }
 
-export function downloadShareCard(input: ShareCardInput): boolean {
-  const canvas = drawShareCard(input)
+export async function downloadShareCard(input: ShareCardInput): Promise<boolean> {
+  const canvas = await drawShareCard(input)
   if (!canvas || typeof document === 'undefined') return false
   const link = document.createElement('a')
   link.download = `崇祯直聘-青史-${input.name || '无名'}.png`

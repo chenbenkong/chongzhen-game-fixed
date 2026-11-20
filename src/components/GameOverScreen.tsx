@@ -109,7 +109,7 @@ export default function GameOverScreen({
     [topRelationships]
   )
   const handleSaveShareCard = () => {
-    downloadShareCard({
+    void downloadShareCard({
       name: character.name,
       courtesyName: character.courtesyName,
       origin: character.origin,
@@ -120,6 +120,7 @@ export default function GameOverScreen({
       score,
       date: endingDate,
       people: sharePeople,
+      peoplePortraits: topRelationships.map((entry) => characterPortrait(entry.character.id)),
       careerGoal: careerGoal?.shareLine
     })
   }
