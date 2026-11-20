@@ -17,22 +17,30 @@ async function run(blockPortraits, outName) {
   const page = await ctx.newPage()
   const errs = []
   page.on('pageerror', e => errs.push(String(e).slice(0, 160)))
+  page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 160)) })
   if (blockPortraits) await page.route('**/portrait-*.webp', r => r.abort())
   await page.addInitScript(([data]) => {
     localStorage.setItem('chongzhen_autosave', JSON.stringify(data))
     localStorage.setItem('chongzhen_autosave_seq', '1')
   }, [save])
   await page.goto(BASE, { waitUntil: 'load', timeout: 60000 })
-  await page.waitForTimeout(2000)
+  await page.waitForSelector('.title-btn--autosave', { timeout: 30000 })
   await page.locator('.title-btn--autosave').first().click()
-  await page.waitForTimeout(1500)
-  // 桌面选项收在面板里，先打开再选
-  if (await page.locator('.desktop-choices-fab').count()) {
-    await page.locator('.desktop-choices-fab').first().click().catch(() => {})
-    await page.waitForTimeout(500)
+  // 桌面选项收在面板里：等面板开关出现，没开就开，再等可选项（线上冷 CDN 比本地慢，不用固定 sleep）
+  await page.waitForSelector('.desktop-choices-fab, button:has-text("保存青史卡")', { timeout: 30000 })
+  if (!(await page.locator('.desktop-choices-title').count()) && await page.locator('.desktop-choices-fab').count()) {
+    await page.locator('.desktop-choices-fab').first().click()
   }
-  await page.locator('.choices-list .choice-card[aria-disabled="false"]').first().click({ force: true }).catch(() => {})
-  await page.waitForSelector('button:has-text("保存青史卡")', { timeout: 20000 })
+  await page.waitForSelector('.choices-list .choice-card[aria-disabled="false"]', { timeout: 30000 })
+  await page.locator('.choices-list .choice-card[aria-disabled="false"]').first().click()
+  try {
+    await page.waitForSelector('button:has-text("保存青史卡")', { timeout: 30000 })
+  } catch (e) {
+    await page.screenshot({ path: `tmp/${outName}.debug.png` }).catch(() => {})
+    console.log(`[${outName}] DEBUG url=${page.url()} errs=${JSON.stringify(errs.slice(0, 6))}`)
+    console.log(`[${outName}] DEBUG choices=${await page.locator('.choices-list').count()} panel=${await page.locator('.desktop-choices-title').count()} rel=${await page.locator('.ending-relationship-card').count()}`)
+    throw e
+  }
   const people = await page.locator('.ending-relationship-card').count()
   const dl = page.waitForEvent('download', { timeout: 20000 })
   await page.locator('button:has-text("保存青史卡")').first().click()
