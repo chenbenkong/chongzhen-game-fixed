@@ -231,7 +231,11 @@ export const events1643: GameEvent[] = [
   // 原先靠隐藏的野心值开门，玩家在界面上看不到自己为什么撞上这条线。
   {
     id: 'transition_1643_ambition',
-    storyline: 'mystery',
+    // §8.26：权谋主线的第一拍归位。原先 tag mystery（异闻怪谭），可这张卡讲的是
+    // 幕僚劝进、扩私兵、问鼎——是权谋，不是谶纬狐仙（c2 回音甚至明说"看不到任何天命"）。
+    // 诸将劝进 / 权欲之巅 / 篡位自立三格早已是 power，只有起点落在辅线，主线认领不到自己的链。
+    // 选项随卡归 power：c1 续链（ordinary 继承事件线），c2/c3 是忠臣退出，不再漂去 mystery。
+    storyline: 'power',
     title: '天命所归',
     description: '乱世之中，你看到了机会。',
     type: 'transition',
@@ -304,7 +308,7 @@ export const events1643: GameEvent[] = [
       },
       {
         id: 'c2',
-        storyline: 'mystery',
+        storyline: 'ordinary',
         text: '【压下野心】不，我还是大明的臣子',
         effects: {
           hidden: {野心值: -10,
@@ -337,7 +341,7 @@ export const events1643: GameEvent[] = [
       },
       {
         id: 'c3',
-        storyline: 'mystery',
+        storyline: 'ordinary',
         text: '【密奏朝廷】"将麾下兵马之实情密奏朝廷，请增兵增饷"',
         description: '不谋反也不压制，而是坦诚向朝廷报告实力',
         effects: {

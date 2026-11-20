@@ -145,4 +145,36 @@ describe('P1 剧情线分层', () => {
       expect.arrayContaining(['harmonious_family', 'has_children', 'wife_respected', 'legitimate_heir'])
     )
   })
+
+  it('权谋三拍：天命所归 → 诸将劝进 → 权欲之巅 → 篡位自立，四格皆归 power', () => {
+    // §8.26：篡位链的起点《天命所归》长期 tag mystery（异闻怪谭），而第二拍《诸将劝进》、
+    // 前奏《权欲之巅》、结局《篡位自立》都是 power —— 主线认领不到自己的第一拍。
+    // 这张卡讲的是幕僚劝进、扩私兵、问鼎（c2 回音明说"看不到任何天命"），是权谋不是谶纬。
+    // 这里把四格的归属一次性钉死：再有人把起点改回 mystery，或把链上任何一格挪去别的线，都会红。
+    const ambition = initialEvents.find((e) => e.id === 'transition_1643_ambition')
+    const crown = initialEvents.find((e) => e.id === 'transition_1643_crown_offer')
+    const prelude = initialEvents.find((e) => e.id === 'prelude_usurper_1643_12')
+    const usurper = allEndingEvents.find((e) => e.id === 'ending_usurper_throne')
+
+    expect(ambition?.storyline, '《天命所归》是权谋第一拍，不能再落在异闻怪谭').toBe('power')
+    expect(crown?.storyline).toBe('power')
+    expect(prelude?.storyline).toBe('power')
+    expect(usurper?.storyline).toBe('power')
+
+    // 票的接力：每一拍写下一拍要读的票，结局收齐四张（与 simulation.routeBeats 同口径）。
+    const add = (ev: typeof ambition, cid: string) =>
+      ev?.choices?.find((c) => c.id === cid)?.effects?.flags?.add ?? []
+    expect(add(ambition, 'c1')).toEqual(expect.arrayContaining(['掌军权', '拥兵自重']))
+    expect(add(crown, 'c1')).toContain('问鼎之约')
+    expect(add(prelude, 'c1')).toContain('黄袍加身')
+    expect(usurper?.conditions?.flags?.has ?? []).toEqual(
+      expect.arrayContaining(['掌军权', '拥兵自重', '问鼎之约', '黄袍加身'])
+    )
+
+    // 起点归位不能把 mystery 辅线抽干：它仍有自己的事件与专属结局《下落不明》。
+    const mysteryEvents = initialEvents.filter((e) => e.storyline === 'mystery')
+    expect(mysteryEvents.length, 'mystery 辅线被篡位链归位抽干了').toBeGreaterThanOrEqual(1)
+    const unknown = allEndingEvents.find((e) => e.id === 'ending_unknown_fate')
+    expect(unknown?.storyline, 'mystery 仍要认领自己的结局').toBe('mystery')
+  })
 })
