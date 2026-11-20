@@ -61,7 +61,7 @@ describe('P1 剧情线分层', () => {
       eastern_forest: ['route_impeach_ministers', 'route_loyal_minister'],
       border_war: ['route_military', 'route_border_volunteer', 'route_songjin_decision'],
       power: ['transition_1643_ambition', 'transition_1643_crown_offer'],
-      nationfall: ['transition_1644_night_before', 'transition_1644_aftermath'],
+      nationfall: ['transition_176', 'transition_184', 'transition_1644_night_before', 'transition_1644_aftermath'],
       female: ['emotion_core_003', 'emotion_core_004'],
       eunuch: ['inner_court_001', 'inner_court_002', 'inner_court_003'],
       hermit: ['route_hermit', 'route_grand_scholar'],
@@ -176,5 +176,40 @@ describe('P1 剧情线分层', () => {
     expect(mysteryEvents.length, 'mystery 辅线被篡位链归位抽干了').toBeGreaterThanOrEqual(1)
     const unknown = allEndingEvents.find((e) => e.id === 'ending_unknown_fate')
     expect(unknown?.storyline, 'mystery 仍要认领自己的结局').toBe('mystery')
+  })
+
+  it('天崩地坼三拍：南迁伏笔 → 城破前夜 → 衣冠南渡，票一路接到《南渡续祚》', () => {
+    // §8.27：pre-1644 buildup 的两处主南迁（transition_176.c4 上书迁都 / transition_184.c2 主张迁都）
+    // 回音早就许下"为日后南迁埋伏笔"，却长期不落票 —— 《天崩地坼》c4「衣冠南渡」读的是
+    // `主张南迁`，于是 1643 年主南迁的人到了甲申兑现不到自己城破前的准备。这里把整条接力钉死：
+    // 伏笔写票 → 衣冠南渡读票并写下立场 → 《南渡续祚》收齐两张立场票。再有人把任何一环改断都会红。
+    const buildup176 = initialEvents.find((e) => e.id === 'transition_176')
+    const buildup184 = initialEvents.find((e) => e.id === 'transition_184')
+    const night = initialEvents.find((e) => e.id === 'transition_1644_night_before')
+    const aftermath = initialEvents.find((e) => e.id === 'transition_1644_aftermath')
+
+    expect(buildup176?.storyline, '《李自成南下》是国难第一拍').toBe('nationfall')
+    expect(buildup184?.storyline, '《李自成进兵》是国难第一拍').toBe('nationfall')
+    expect(night?.storyline).toBe('nationfall')
+    expect(aftermath?.storyline).toBe('nationfall')
+
+    const add = (ev: typeof buildup184, cid: string) =>
+      ev?.choices?.find((c) => c.id === cid)?.effects?.flags?.add ?? []
+    expect(add(buildup176, 'c4'), '上书迁都要写下南迁伏笔').toContain('主张南迁')
+    expect(add(buildup184, 'c2'), '主张迁都要写下南迁伏笔').toContain('主张南迁')
+
+    // 衣冠南渡读得到这张伏笔票，并写下"渡江＋效忠"两张立场票。
+    const yiguan = aftermath?.choices?.find((c) => c.id === 'c4')
+    expect(yiguan?.showConditions?.flags?.any ?? [], '衣冠南渡的门要读主张南迁').toContain('主张南迁')
+    expect(yiguan?.effects?.flags?.add ?? []).toEqual(
+      expect.arrayContaining(['南渡长江', '效忠南明'])
+    )
+
+    // 《南渡续祚》收齐渡江＋效忠两张票（与 ending_southern_ming 的 has 同口径）。
+    const southern = allEndingEvents.find((e) => e.id === 'ending_southern_ming')
+    expect(southern?.storyline).toBe('nationfall')
+    expect(southern?.conditions?.flags?.has ?? []).toEqual(
+      expect.arrayContaining(['南渡长江', '效忠南明'])
+    )
   })
 })
