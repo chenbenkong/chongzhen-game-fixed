@@ -760,15 +760,18 @@ export function collectDangers(character: Character, gameState: GameStateValues)
 export const REVERSIBLE_ROUTE_BLOCKERS = new Set(['赈灾敛财', '军需牟利', '皮岛敛财'])
 
 /**
- * 玩家主动交出去的命途门票（第四十七轮）。
+ * 玩家主动交出去的命途门票（第四十七轮），以及链上自己拆掉的临时坝（§8.25）。
  *
- * 目前只有《诸将劝进》c2「交出兵权」一处：它摘掉「掌军权」「拥兵自重」两张票，
- * 让问鼎之路当场关掉。这不是退赃那种"以后还能补回来"的闸门，而是这一拍的**代价本身**，
- * 所以不进 `REVERSIBLE_ROUTE_BLOCKERS`（那个集合只用于"选项新增 blocker 时是否提醒"）。
+ * 《诸将劝进》c2「交出兵权」摘掉「掌军权」「拥兵自重」两张票，让问鼎之路当场关掉 ——
+ * 这是这一拍的**代价本身**，不是退赃那种"以后还能补回来"的闸门。
+ * 《松锦决》三个选项摘掉「松锦未决」则是反过来：那是边关链第二拍写下、用来按住
+ * 《边关大将》1638 年窗结算的临时坝，第三拍落地即拆。拆坝是**放行**不是关门
+ * （findRouteClosures 只把"新增 blocker"算关门，remove blocker 不报警）。
+ * 两者都不进 `REVERSIBLE_ROUTE_BLOCKERS`（那个集合只用于"选项新增 blocker 时是否提醒"）。
  * 测试拿它和全库 remove 数据对账：凡是摘掉 route 落点 blocker 的 remove，
  * 必须在这两份名单里出现过，不允许悄悄摘票。
  */
-export const REVIEWED_ROUTE_TICKET_REMOVALS = new Set(['掌军权', '拥兵自重'])
+export const REVIEWED_ROUTE_TICKET_REMOVALS = new Set(['掌军权', '拥兵自重', '松锦未决'])
 
 function endingRegistry() {
   return new Map(

@@ -59,7 +59,7 @@ describe('P1 剧情线分层', () => {
   it('8 条主线各有至少两个内容拍，加上结局构成三拍', () => {
     const beats: Record<string, string[]> = {
       eastern_forest: ['route_impeach_ministers', 'route_loyal_minister'],
-      border_war: ['route_military', 'route_border_volunteer'],
+      border_war: ['route_military', 'route_border_volunteer', 'route_songjin_decision'],
       power: ['transition_1643_ambition', 'transition_1643_crown_offer'],
       nationfall: ['transition_1644_night_before', 'transition_1644_aftermath'],
       female: ['emotion_core_003', 'emotion_core_004'],
@@ -89,6 +89,53 @@ describe('P1 剧情线分层', () => {
     expect(pure?.conditions?.flags?.any ?? []).toEqual(
       expect.arrayContaining(['弹劾温体仁', '弹劾杨嗣昌', '弹劾陈新甲'])
     )
+  })
+
+  it('边关三拍：投笔从戎 → 请缨边关 → 松锦决，第三拍的门读第二拍的票', () => {
+    const second = initialEvents.find((e) => e.id === 'route_border_volunteer')
+    const third = initialEvents.find((e) => e.id === 'route_songjin_decision')
+    expect(third, '《松锦决》必须存在').toBeTruthy()
+    expect(third?.storyline).toBe('border_war')
+    expect(third?.conditions?.flags?.has ?? [], '第三拍必须以第二拍的边关任职为前置').toContain('边关任职')
+    expect(third?.conditions?.flags?.any ?? []).toEqual(
+      expect.arrayContaining(['随军出征', '死守宁远', '增援松锦'])
+    )
+
+    // 第三拍是结局前奏：引擎按 isPreEnding 强制同月先发，否则链上玩家被《边关大将》
+    // 1638 年窗截胡、或发牌竞争饿死，reach 恒为 0（§8.25 探针实测）。
+    expect(third?.isPreEnding, '松锦决必须是前奏才保证发牌').toBe(true)
+    expect(third?.linksToEndingId).toBe('ending_border_general')
+    expect(third?.conditions?.month?.min, '前奏钉在八月催战').toBe(8)
+    expect(third?.conditions?.year?.min, '下沿 1639 是探针证明的空档，1640 正月有医圣/名臣坝墙').toBe(1639)
+    expect(third?.conditions?.flags?.has ?? [], '门要读第二拍写下的临时坝').toContain('松锦未决')
+
+    // 临时坝接力：第二拍 c1/c2 写「松锦未决」按住大将结算，第三拍三个选项都拆坝。
+    const s1 = second?.choices?.find((c) => c.id === 'c1')
+    const s2 = second?.choices?.find((c) => c.id === 'c2')
+    expect(s1?.effects?.flags?.add ?? [], '请缨要写下松锦未决').toContain('松锦未决')
+    expect(s2?.effects?.flags?.add ?? [], '请守锦州要写下松锦未决').toContain('松锦未决')
+
+    const c1 = third?.choices?.find((c) => c.id === 'c1')
+    expect(c1?.effects?.flags?.add ?? [], '援松锦要写结局读得到的票').toContain('增援松锦')
+    expect(c1?.effects?.flags?.remove ?? [], '援松锦落地即拆坝').toContain('松锦未决')
+    const c2 = third?.choices?.find((c) => c.id === 'c2')
+    expect(c2?.effects?.special?.endingId, '死守松山当场收笔战死沙场').toBe('ending_died_battlefield')
+    expect(c2?.effects?.flags?.remove ?? [], '死守也要拆坝（虽然当场收笔）').toContain('松锦未决')
+    const c3 = third?.choices?.find((c) => c.id === 'c3')
+    expect(c3?.effects?.flags?.add ?? [], '撤守是退出链的选项，不写票').toEqual([])
+    expect(c3?.effects?.flags?.remove ?? [], '撤守拆坝并交还边关任职').toEqual(
+      expect.arrayContaining(['松锦未决', '边关任职'])
+    )
+
+    const general = allEndingEvents.find((e) => e.id === 'ending_border_general')
+    expect(general?.conditions?.flags?.any ?? []).toEqual(
+      expect.arrayContaining(['边关任职', '随军出征', '增援松锦'])
+    )
+    expect(general?.conditions?.flags?.notHas ?? [], '大将结算要按住松锦未决').toContain('松锦未决')
+    expect(general?.endingConfig?.preludeEventId, '大将要回指松锦决前奏').toBe('route_songjin_decision')
+    const died = allEndingEvents.find((e) => e.id === 'ending_died_battlefield')
+    expect(died?.storyline).toBe('border_war')
+    expect(died?.conditions?.flags?.any ?? []).toContain('随军出征')
   })
 
   it('红颜结局要读情感线写得出的票，不只是族谱/义田', () => {

@@ -38,15 +38,15 @@ describe('真实数据的值域体检', () => {
     expect(render(kind), `发现 ${kind} 问题：\n${render(kind)}`).toBe('')
   })
 
-  it('5 对 prelude↔ending 是双向配齐的，且每对都带 isPreEnding', () => {
+  it('6 对 prelude↔ending 是双向配齐的，且每对都带 isPreEnding', () => {
     // 引擎强制优先播放读的是 isPreEnding；两个 id 字段本身运行时没人读，
     // 所以"配对完整"这件事只有在这里查才有人管。
     const withLink = [...valueDomains.vocab.eventsById.values()].filter(e => e.linksToEndingId)
-    expect(withLink).toHaveLength(5)
+    expect(withLink).toHaveLength(6)
     for (const e of withLink) expect(e.isPreEnding, `${e.id} 缺 isPreEnding`).toBe(true)
 
     const withPrelude = [...valueDomains.vocab.endingsById.values()].filter(e => e.endingConfig?.preludeEventId)
-    expect(withPrelude).toHaveLength(5)
+    expect(withPrelude).toHaveLength(6)
     for (const ending of withPrelude) {
       const prelude = valueDomains.vocab.eventsById.get(ending.endingConfig.preludeEventId)
       expect(prelude, `${ending.id} 的前奏查不到`).toBeTruthy()
