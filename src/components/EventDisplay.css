@@ -926,6 +926,13 @@
        （.selected-choice 84 + .settlement-area 377 + .result-actions 53）
      → 「继 续」按钮 top=1068，中心点被 .narrative-section 盖住，读不到也点不到
    所以这里不再自己滚，把高度让给外层面板：flex 0 0 auto、不设 max-height。 */
+/* 结算态与手机同一口径：不再重播事件标题和整篇正文，
+   只留插图、刚选的选项与回音。 */
+.event-display.show-result .event-header,
+.event-display.show-result .narrative-section {
+  display: none;
+}
+
 .result-section {
   flex: 0 0 auto;
   display: flex;

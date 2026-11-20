@@ -110,8 +110,28 @@ async function choicePanel(browser, viewport, suffix) {
   await page.locator('.desktop-choices-panel .choice-card:not(.locked)').first().click()
   await page.waitForSelector('.result-section', { timeout: 15000 })
   await page.waitForTimeout(300)
+  const resultMetrics = await page.evaluate(() => {
+    const display = document.querySelector('.event-display')
+    const header = document.querySelector('.event-header')
+    const narrative = document.querySelector('.narrative-section')
+    const illustration = document.querySelector('.event-illustration')
+    const selected = document.querySelector('.selected-choice')
+    const settlement = document.querySelector('.settlement-area')
+    const result = document.querySelector('.result-section')
+    return {
+      showResult: display.classList.contains('show-result'),
+      headerDisplay: getComputedStyle(header).display,
+      narrativeDisplay: getComputedStyle(narrative).display,
+      illustrationVisible: !!illustration && illustration.getBoundingClientRect().height > 0,
+      selectedVisible: !!selected && selected.getBoundingClientRect().height > 0,
+      settlementVisible: !!settlement && settlement.getBoundingClientRect().height > 0,
+      resultHeight: Math.round(result.getBoundingClientRect().height),
+      overflowX: document.body.scrollWidth > innerWidth + 1
+    }
+  })
   await page.screenshot({ path: `${OUT}${suffix}-选项结算-${viewport.width}x${viewport.height}.png` })
   console.log(`choice ${suffix}: ${JSON.stringify(metrics)} errors=${errors.length}`)
+  console.log(`result ${suffix}: ${JSON.stringify(resultMetrics)}`)
   await context.close()
 }
 
