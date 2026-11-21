@@ -1,0 +1,480 @@
+/* 年度史载卡 —— 跨年时的一页朝局与自述，不参与数值结算 */
+.annual-chronicle-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(197, 165, 90, 0.08), transparent 55%),
+    rgba(6, 4, 2, 0.78);
+  animation: annual-chronicle-fade-in 0.22s ease both;
+}
+
+.annual-chronicle {
+  position: relative;
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 26px 32px 22px;
+  color: var(--parchment, #f5e6c8);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(197, 165, 90, 0.11), transparent 38%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, rgba(39, 31, 20, 0.985), rgba(18, 13, 8, 0.985));
+  border: 1px solid rgba(197, 165, 90, 0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(197, 165, 90, 0.08),
+    inset 0 0 42px rgba(0, 0, 0, 0.5),
+    0 26px 80px rgba(0, 0, 0, 0.72);
+  animation: annual-chronicle-rise 0.26s ease both;
+}
+
+.annual-chronicle::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(197, 165, 90, 0.16);
+  pointer-events: none;
+}
+
+.annual-chronicle__topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(245, 230, 200, 0.6);
+}
+
+.annual-chronicle__seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  background: #7c2117;
+  border: 1px solid rgba(245, 230, 200, 0.34);
+  color: #f5e6c8;
+  font-family: var(--font-heading, 'Ma Shan Zheng', serif);
+  font-size: 17px;
+  line-height: 1;
+  box-shadow: 0 0 0 2px rgba(124, 33, 23, 0.18);
+}
+
+.annual-chronicle__era {
+  color: var(--gold, #c5a55a);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+}
+
+.annual-chronicle__serial {
+  margin-left: auto;
+  color: rgba(245, 230, 200, 0.34);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.annual-chronicle__headline {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 8px;
+  padding-left: 14px;
+  border-left: 3px solid var(--gold, #c5a55a);
+  font-family: var(--font-heading, 'Ma Shan Zheng', serif);
+  font-size: 30px;
+  line-height: 1.28;
+  letter-spacing: 0.06em;
+  color: var(--gold, #c5a55a);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.annual-chronicle__detail {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 18px;
+  padding-left: 17px;
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(245, 230, 200, 0.68);
+}
+
+.annual-chronicle__stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.18fr 0.82fr 0.95fr 1.16fr 1.05fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.annual-chronicle__stat {
+  min-width: 0;
+  padding: 8px 10px 9px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(197, 165, 90, 0.16);
+}
+
+.annual-chronicle__stat-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(245, 230, 200, 0.42);
+}
+
+.annual-chronicle__stat-value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(245, 230, 200, 0.92);
+}
+
+/* 官位拆成「品级 + 职名」：品级小一号，避免「正三品·大理寺卿」这类长职名被省略号吃掉 */
+.annual-chronicle__rank-grade {
+  margin-right: 2px;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: rgba(245, 230, 200, 0.5);
+}
+
+.annual-chronicle__stat-value--none {
+  font-weight: 400;
+  color: rgba(245, 230, 200, 0.38);
+}
+
+.annual-chronicle__stat--career {
+  border-color: rgba(197, 165, 90, 0.28);
+  background: rgba(197, 165, 90, 0.055);
+}
+
+.annual-chronicle__career {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.annual-chronicle__career .annual-chronicle__stat-value {
+  color: var(--gold, #c5a55a);
+}
+
+.annual-chronicle__pips {
+  display: inline-flex;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.annual-chronicle__pip {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border: 1px solid rgba(197, 165, 90, 0.45);
+  border-radius: 50%;
+}
+
+.annual-chronicle__pip.is-done {
+  background: #d4a520;
+  border-color: #d4a520;
+  box-shadow: 0 0 4px rgba(212, 165, 32, 0.45);
+}
+
+.annual-chronicle__records {
+  position: relative;
+  z-index: 1;
+  padding-top: 14px;
+  border-top: 1px solid rgba(197, 165, 90, 0.16);
+}
+
+.annual-chronicle__records-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--gold, #c5a55a);
+}
+
+.annual-chronicle__records-head em {
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(245, 230, 200, 0.34);
+}
+
+.annual-chronicle__record-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.annual-chronicle__record {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(197, 165, 90, 0.12);
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.annual-chronicle__record-month {
+  flex: 0 0 auto;
+  width: 30px;
+  color: rgba(245, 230, 200, 0.38);
+  font-size: 11px;
+}
+
+.annual-chronicle__record-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(245, 230, 200, 0.86);
+}
+
+.annual-chronicle__record-empty {
+  margin: 0;
+  padding: 6px 0;
+  font-size: 13px;
+  color: rgba(245, 230, 200, 0.42);
+}
+
+.annual-chronicle__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.annual-chronicle__next {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(245, 230, 200, 0.42);
+}
+
+.annual-chronicle__continue {
+  flex: 0 0 auto;
+  min-width: 148px;
+  padding: 10px 18px;
+  border: 1px solid rgba(197, 165, 90, 0.5);
+  background: linear-gradient(180deg, rgba(197, 165, 90, 0.16), rgba(197, 165, 90, 0.07));
+  color: var(--parchment, #f5e6c8);
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.annual-chronicle__continue:hover,
+.annual-chronicle__continue:focus-visible {
+  border-color: var(--gold, #c5a55a);
+  background: rgba(197, 165, 90, 0.2);
+  outline: none;
+}
+
+@keyframes annual-chronicle-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes annual-chronicle-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 700px) {
+  .annual-chronicle-overlay {
+    padding: 12px;
+  }
+
+  .annual-chronicle {
+    width: min(680px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 18px 20px 16px;
+  }
+
+  .annual-chronicle__headline {
+    font-size: 24px;
+  }
+
+  .annual-chronicle__detail {
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .annual-chronicle__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .annual-chronicle__stat--career {
+    grid-column: span 2;
+  }
+
+  .annual-chronicle__record-list {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .annual-chronicle__footer {
+    margin-top: 12px;
+  }
+
+  .annual-chronicle__continue {
+    min-width: 124px;
+    padding: 9px 14px;
+  }
+}
+
+@media (max-height: 470px) {
+  .annual-chronicle {
+    padding: 18px 22px 14px;
+  }
+
+  .annual-chronicle__topline {
+    margin-bottom: 10px;
+  }
+
+  .annual-chronicle__headline {
+    margin-bottom: 6px;
+    font-size: 26px;
+  }
+
+  .annual-chronicle__detail {
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .annual-chronicle__stats {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .annual-chronicle__stat {
+    padding: 6px 8px 7px;
+  }
+
+  .annual-chronicle__records {
+    padding-top: 9px;
+  }
+
+  .annual-chronicle__records-head {
+    margin-bottom: 6px;
+  }
+
+  .annual-chronicle__footer {
+    margin-top: 10px;
+  }
+}
+
+@media (max-height: 400px) {
+  .annual-chronicle {
+    padding: 13px 18px 12px;
+  }
+
+  .annual-chronicle__topline {
+    margin-bottom: 9px;
+  }
+
+  .annual-chronicle__headline {
+    margin-bottom: 6px;
+    font-size: 21px;
+    line-height: 1.2;
+  }
+
+  .annual-chronicle__detail {
+    display: none;
+  }
+
+  .annual-chronicle__stats {
+    grid-template-columns: 1.28fr 0.9fr 1.02fr 1.05fr;
+    gap: 5px;
+    margin-bottom: 9px;
+  }
+
+  .annual-chronicle__stat {
+    padding: 5px 7px 6px;
+  }
+
+  .annual-chronicle__stat--career {
+    grid-column: auto;
+  }
+
+  /* 极窄横屏：先让官位 / 政绩 / 志业 / 史线留在第一眼，履历计数让位给下面的两笔记录 */
+  .annual-chronicle__stats .annual-chronicle__stat:nth-child(3) {
+    display: none;
+  }
+
+  /* 同一行里已有「2/3」数字，三枚点在本档优先让位，避免「清名 …」被省略 */
+  .annual-chronicle__pips {
+    display: none;
+  }
+
+  .annual-chronicle__career .annual-chronicle__stat-value {
+    font-size: 14px;
+  }
+
+  .annual-chronicle__records {
+    padding-top: 8px;
+  }
+
+  .annual-chronicle__records-head {
+    margin-bottom: 4px;
+  }
+
+  .annual-chronicle__records-head em {
+    display: none;
+  }
+
+  .annual-chronicle__record-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .annual-chronicle__record:nth-child(n + 3) {
+    display: none;
+  }
+
+  .annual-chronicle__record {
+    padding: 3px 0;
+  }
+
+  .annual-chronicle__footer {
+    margin-top: 8px;
+  }
+
+  .annual-chronicle__continue {
+    padding: 7px 12px;
+    min-width: 112px;
+    font-size: 13px;
+  }
+}

@@ -20,10 +20,12 @@ import SaveSlotsModal from './SaveSlotsModal'
 import AchievementPanel from './AchievementPanel'
 import TutorialModal from './TutorialModal'
 import StorylineBar from './StorylineBar'
+import AnnualChronicle from './AnnualChronicle'
 import ResignConfirmDialog from './ResignConfirmDialog'
 import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 import { careerGoalStatus } from '../data/careerGoals'
+import { useAnnualChronicle } from '../hooks/useAnnualChronicle'
 
 import './GameScreen.css'
 
@@ -142,6 +144,15 @@ function GameScreen(props: GameScreenProps) {
     gameState
   )
 
+  const { chronicle, dismiss: dismissChronicle } = useAnnualChronicle({
+    gameState,
+    character,
+    lifeRecords,
+    career: careerStatus,
+    meritScore,
+    currentStorylineKey
+  })
+
   const saveSlotsCurrentData = useMemo(() => ({
     name: character.name || '无名氏',
     year: gameState.currentYear,
@@ -257,6 +268,7 @@ function GameScreen(props: GameScreenProps) {
     isLifeReviewOpen ||
     isAchievementPanelOpen ||
     isCodexOpen ||
+    chronicle !== null ||
     resignConfirmModal.isOpen ||
     // 死亡结局覆盖层同样接管画面：它开着时 Space / S / 数字键不能穿透到下面的牌桌
     deathEndingState.show ||
@@ -543,6 +555,12 @@ function GameScreen(props: GameScreenProps) {
       </div>
 
       {/* 以下组件的弹窗都 portal 到 body，必须放在 inert 容器之外才能保持可交互 */}
+      <AnnualChronicle
+        snapshot={chronicle}
+        nextYear={gameState.currentYear}
+        onClose={dismissChronicle}
+      />
+
       <LifeReview
         isOpen={isLifeReviewOpen}
         lifeRecords={lifeRecords}

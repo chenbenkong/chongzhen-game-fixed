@@ -11,6 +11,7 @@ import type { OriginType, DegreeType, Attributes, GameStateValues, CareerGoalId 
 import type { SaveData } from '../types/save'
 import type { DifficultyLevel } from '../types/difficulty'
 import { useGameEngine } from '../hooks/useGameEngine'
+import { useAnnualChronicle } from '../hooks/useAnnualChronicle'
 import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
 import { careerGoalStatus } from '../data/careerGoals'
@@ -26,6 +27,7 @@ import DeathEnding from '../components/DeathEnding'
 import SaveNotification from '../components/SaveNotification'
 import SaveSlotsModal from '../components/SaveSlotsModal'
 import ResignConfirmDialog from '../components/ResignConfirmDialog'
+import AnnualChronicle from '../components/AnnualChronicle'
 import { BGMInlineButton } from '../components/BGM'
 
 export interface MobileBoardProps {
@@ -70,6 +72,7 @@ export default function MobileBoard(props: MobileBoardProps) {
     getCurrentStoryline,
     undoHistory,
     promotionMessage,
+    meritScore,
     identityType,
     isGameOver,
     canRetryEnding,
@@ -133,6 +136,15 @@ export default function MobileBoard(props: MobileBoardProps) {
     gameState
   )
 
+  const { chronicle, dismiss: dismissChronicle } = useAnnualChronicle({
+    gameState,
+    character,
+    lifeRecords,
+    career: careerStatus,
+    meritScore,
+    currentStorylineKey
+  })
+
   /** 统一推进：有事件续事件，无事件进下月（与桌面 canAdvance 语义一致）。 */
   const canAdvance = !currentEvent || eventResolved
   const advanceHint = canAdvance ? null : '请先在事件卡中做出选择'
@@ -154,6 +166,7 @@ export default function MobileBoard(props: MobileBoardProps) {
     diceModalOpen ||
     isSaveSlotsOpen ||
     isLifeReviewOpen ||
+    chronicle !== null ||
     resignConfirmModal.isOpen ||
     deathEndingState.show ||
     isGameOver ||
@@ -576,6 +589,12 @@ export default function MobileBoard(props: MobileBoardProps) {
         choice={resignConfirmModal.choice}
         onConfirm={confirmResign}
         onCancel={cancelResign}
+      />
+
+      <AnnualChronicle
+        snapshot={chronicle}
+        nextYear={gameState.currentYear}
+        onClose={dismissChronicle}
       />
     </div>
   )
