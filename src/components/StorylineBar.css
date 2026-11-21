@@ -19,6 +19,57 @@
   contain: layout style;
 }
 
+.storyline-bar__career {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-right: 12px;
+  border-right: 1px solid rgba(197, 165, 90, 0.12);
+  font-family: var(--font-heading);
+  white-space: nowrap;
+}
+
+.storyline-bar__career-caption {
+  font-size: 0.76rem;
+  color: rgba(197, 165, 90, 0.55);
+  letter-spacing: 2px;
+}
+
+.storyline-bar__career-name {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #d4a520;
+  letter-spacing: 1px;
+}
+
+.storyline-bar__career-count {
+  font-size: 0.76rem;
+  color: rgba(212, 165, 32, 0.78);
+  font-variant-numeric: tabular-nums;
+}
+
+.storyline-bar__career-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.storyline-bar__career-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(197, 165, 90, 0.35);
+  background: transparent;
+}
+
+.storyline-bar__career-pip.is-done {
+  border-color: #d4a520;
+  background: #d4a520;
+  box-shadow: 0 0 6px rgba(212, 165, 32, 0.35);
+}
+
 .storyline-bar__lead {
   display: flex;
   align-items: center;

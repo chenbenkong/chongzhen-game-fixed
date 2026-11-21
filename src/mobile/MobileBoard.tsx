@@ -13,6 +13,8 @@ import type { DifficultyLevel } from '../types/difficulty'
 import { useGameEngine } from '../hooks/useGameEngine'
 import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
+import { careerGoalStatus } from '../data/careerGoals'
+import { getStoryline } from '../data/storylines'
 
 import EventDisplay from '../components/EventDisplay'
 import RiskHud from '../components/RiskHud'
@@ -63,6 +65,9 @@ export default function MobileBoard(props: MobileBoardProps) {
     gameState,
     currentEvent,
     pendingEvents,
+    eventHistory,
+    currentStoryline,
+    getCurrentStoryline,
     undoHistory,
     promotionMessage,
     identityType,
@@ -115,6 +120,18 @@ export default function MobileBoard(props: MobileBoardProps) {
   const [isChoicesOpen, setIsChoicesOpen] = useState(false)
 
   const lifeSummary = useMemo(() => generateLifeSummary(), [generateLifeSummary])
+
+  // 与桌面 StorylineBar 同一份口径：本局志业 + 当前史线。
+  const currentStorylineKey = useMemo(
+    () => currentStoryline ?? getCurrentStoryline(),
+    [currentStoryline, eventHistory, getCurrentStoryline]
+  )
+  const storyline = getStoryline(currentStorylineKey)
+  const careerStatus = careerGoalStatus(
+    character.careerGoal ?? props.careerGoalId ?? null,
+    character,
+    gameState
+  )
 
   /** 统一推进：有事件续事件，无事件进下月（与桌面 canAdvance 语义一致）。 */
   const canAdvance = !currentEvent || eventResolved
@@ -185,6 +202,33 @@ export default function MobileBoard(props: MobileBoardProps) {
           </span>
           <span className="mobile-hud__meta">
             {Math.floor(character.age)}岁 · {character.rank || identityType} · {character.origin}
+          </span>
+          <span
+            className="mobile-hud__route"
+            aria-label={`本局志业与史线：${careerStatus ? `${careerStatus.goal.name}，已完成 ${careerStatus.completed} 项` : '未立志业'}；${storyline ? storyline.name : '未启程'}`}
+          >
+            {careerStatus ? (
+              <>
+                <span className="mobile-hud__career">
+                  志业 · {careerStatus.goal.name} <strong>{careerStatus.completed}/3</strong>
+                </span>
+                <span className="mobile-hud__career-pips" aria-hidden="true">
+                  {careerStatus.milestones.map((milestone) => (
+                    <span
+                      key={milestone.label}
+                      className={`mobile-hud__career-pip ${milestone.done ? 'is-done' : ''}`}
+                      title={`${milestone.label} · ${milestone.hint}`}
+                    />
+                  ))}
+                </span>
+              </>
+            ) : (
+              <span className="mobile-hud__career mobile-hud__career--none">志业 · 未立</span>
+            )}
+            <span className="mobile-hud__route-sep" aria-hidden="true">·</span>
+            <span className="mobile-hud__storyline">
+              史线 · {storyline ? storyline.name : '未启程'}
+            </span>
           </span>
         </div>
 

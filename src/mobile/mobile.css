@@ -529,6 +529,53 @@ body.mobile-applied textarea {
   font-size: 12px;
   color: var(--color-text-secondary, #9a8870);
 }
+.mobile-shell .mobile-hud__route {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 5px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--color-text-dim, rgba(245, 230, 200, 0.55));
+  font-family: var(--font-heading, inherit);
+  white-space: nowrap;
+}
+.mobile-shell .mobile-hud__career {
+  color: #d4a520;
+  letter-spacing: 0.5px;
+}
+.mobile-shell .mobile-hud__career strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mobile-shell .mobile-hud__career--none {
+  color: rgba(197, 165, 90, 0.5);
+}
+.mobile-shell .mobile-hud__career-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.mobile-shell .mobile-hud__career-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(197, 165, 90, 0.35);
+  background: transparent;
+}
+.mobile-shell .mobile-hud__career-pip.is-done {
+  border-color: #d4a520;
+  background: #d4a520;
+}
+.mobile-shell .mobile-hud__route-sep {
+  color: rgba(197, 165, 90, 0.3);
+}
+.mobile-shell .mobile-hud__storyline {
+  color: rgba(245, 230, 200, 0.64);
+  letter-spacing: 0.5px;
+}
 .mobile-shell .mobile-hud__meters {
   display: flex;
   flex-direction: column;

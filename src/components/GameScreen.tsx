@@ -23,6 +23,7 @@ import StorylineBar from './StorylineBar'
 import ResignConfirmDialog from './ResignConfirmDialog'
 import { getSeason, toMingEraYear } from '../utils/endingSystem'
 import { LEGACY_PERKS, type LegacyPerkId } from '../data/legacy'
+import { careerGoalStatus } from '../data/careerGoals'
 
 import './GameScreen.css'
 
@@ -133,6 +134,12 @@ function GameScreen(props: GameScreenProps) {
   const currentStorylineKey = useMemo(
     () => currentStoryline ?? getCurrentStoryline(),
     [currentStoryline, eventHistory, getCurrentStoryline]
+  )
+
+  const careerStatus = careerGoalStatus(
+    character.careerGoal ?? props.careerGoalId ?? null,
+    character,
+    gameState
   )
 
   const saveSlotsCurrentData = useMemo(() => ({
@@ -384,6 +391,7 @@ function GameScreen(props: GameScreenProps) {
         <StorylineBar
           currentStorylineKey={currentStorylineKey}
           eventCount={eventHistory.length}
+          career={careerStatus}
         />
 
         {isCheatModeOpen && (

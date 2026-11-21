@@ -27,7 +27,8 @@ vi.mock('../../src/hooks/useGameEngine', () => {
     name: '测试者', courtesyName: '子明', age: 30, rank: '正七品·知县', origin: '寒门',
     attributes: { 财帛: 50, 文韬: 50, 理政: 50, 武略: 50, 体质: 50 },
     hidden: { 道德值: 50, 欲望值: 50, 野心值: 50, 机敏值: 50, 忠诚值: 50 },
-    flags: []
+    flags: [],
+    careerGoal: 'reputation'
   }
   const gameState = {
     currentYear: 1628, currentMonth: 1, turn: 0,
@@ -39,6 +40,9 @@ vi.mock('../../src/hooks/useGameEngine', () => {
       gameState,
       currentEvent: hoisted.currentEvent,
       pendingEvents: [],
+      eventHistory: [],
+      currentStoryline: 'power',
+      getCurrentStoryline: () => 'power',
       undoHistory: [],
       promotionMessage: null,
       identityType: 'official',
@@ -119,6 +123,17 @@ beforeEach(() => {
 })
 
 describe('手机牌桌操作栏 · 成就 / 局鉴 / 帮助入口', () => {
+  it('抬头一行显示本局志业进度与当前史线', () => {
+    const { container } = render(<MobileBoard {...baseProps} />)
+    const route = container.querySelector('.mobile-hud__route')
+    expect(route?.textContent?.replace(/\s+/g, ' ').trim()).toContain('志业 · 清名 1/3')
+    expect(route?.textContent).toContain('史线 · 权谋之术')
+    const pips = container.querySelectorAll('.mobile-hud__career-pip')
+    expect(pips.length).toBe(3)
+    expect(pips[0].classList.contains('is-done')).toBe(true)
+    expect(pips[1].classList.contains('is-done')).toBe(false)
+  })
+
   it('三个按钮都在，点击各触发对应回调一次并收起操作栏', () => {
     const onOpenAchievements = vi.fn()
     const onOpenCodex = vi.fn()
