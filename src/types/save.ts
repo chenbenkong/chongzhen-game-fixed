@@ -544,11 +544,16 @@ export function getSavePreview(slotId: number): SavePreview | null {
 export const MANUAL_SAVE_SLOT_IDS = [1, 2, 3] as const
 
 export function getAllSaveSlots(): SaveSlot[] {
-  return MANUAL_SAVE_SLOT_IDS.map(id => ({
-    id,
-    data: loadSaveSlot(id),
-    preview: getSavePreview(id)
-  }))
+  return MANUAL_SAVE_SLOT_IDS.map(id => {
+    // 每槽只解析一次存档；存档本体与预览共用同一份 SaveData。
+    // 读档弹窗还要展示志业 / 史线 / 履历摘要，同样从这份 data 计算。
+    const data = loadSaveSlot(id)
+    return {
+      id,
+      data,
+      preview: buildSavePreview(data)
+    }
+  })
 }
 
 // ============================================================

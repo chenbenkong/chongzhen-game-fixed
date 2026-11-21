@@ -3,6 +3,7 @@ import { getStoryline } from './storylines'
 import {
   buildSavePreview,
   loadAutosave,
+  type SaveData,
   type SavePreview
 } from '../types/save'
 
@@ -24,10 +25,7 @@ export interface TitleArchiveSnapshot {
   lifeRecordCount: number
 }
 
-export function getAutosaveArchive(): TitleArchiveSnapshot | null {
-  const save = loadAutosave()
-  if (!save) return null
-
+export function buildArchiveFromSave(save: SaveData): TitleArchiveSnapshot | null {
   const preview = buildSavePreview(save)
   if (!preview) return null
 
@@ -45,4 +43,10 @@ export function getAutosaveArchive(): TitleArchiveSnapshot | null {
     storylineName: getStoryline(save.currentStoryline)?.name ?? '未启程',
     lifeRecordCount: save.lifeRecords?.length ?? 0
   }
+}
+
+export function getAutosaveArchive(): TitleArchiveSnapshot | null {
+  const save = loadAutosave()
+  if (!save) return null
+  return buildArchiveFromSave(save)
 }

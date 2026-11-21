@@ -4,8 +4,6 @@ import {
   SaveSlot,
   getAllSaveSlots,
   deleteSaveSlot,
-  hasAutosave,
-  getAutosavePreview,
   deleteAutosave,
   buildSaveBundle,
   serializeSaveBundle,
@@ -13,9 +11,30 @@ import {
   applySaveBundle,
   type SaveBundleSummary
 } from '../types/save'
+import {
+  buildArchiveFromSave,
+  getAutosaveArchive,
+  type TitleArchiveSnapshot
+} from '../data/titleArchive'
 import { useConfirm } from '../hooks/useConfirm'
 import { useModal } from '../hooks/useModal'
 import './SaveSlotsModal.css'
+
+type SaveSlotView = SaveSlot & { archive: TitleArchiveSnapshot | null }
+
+function toSlotView(slot: SaveSlot): SaveSlotView {
+  return {
+    ...slot,
+    archive: slot.data ? buildArchiveFromSave(slot.data) : null
+  }
+}
+
+function formatArchiveSummary(archive: TitleArchiveSnapshot): string {
+  const career = archive.careerName === '未立志业'
+    ? '未立志业'
+    : `${archive.careerName} ${archive.careerCompleted}/3`
+  return `${career} · ${archive.storylineName} · 履历 ${archive.lifeRecordCount}`
+}
 
 interface SaveSlotsModalProps {
   isOpen: boolean
@@ -34,17 +53,15 @@ interface SaveSlotsModalProps {
 }
 
 export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, onLoadAutosave, onClose }: SaveSlotsModalProps) {
-  const [slots, setSlots] = useState<SaveSlot[]>([])
-  const [autosavePresent, setAutosavePresent] = useState(false)
-  const [autosavePreview, setAutosavePreviewState] = useState<ReturnType<typeof getAutosavePreview>>(null)
+  const [slots, setSlots] = useState<SaveSlotView[]>([])
+  const [autosaveArchive, setAutosaveArchive] = useState<TitleArchiveSnapshot | null>(null)
   const [backupNotice, setBackupNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { confirm, dialog: confirmDialog } = useConfirm()
 
   const refreshSaves = useCallback(() => {
-    setSlots(getAllSaveSlots())
-    setAutosavePresent(hasAutosave())
-    setAutosavePreviewState(getAutosavePreview())
+    setSlots(getAllSaveSlots().map(toSlotView))
+    setAutosaveArchive(getAutosaveArchive())
   }, [])
 
   useEffect(() => {
@@ -151,8 +168,8 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
     })
     if (!ok) return
     deleteSaveSlot(slotId)
-    setSlots(getAllSaveSlots())
-  }, [slots, confirm])
+    refreshSaves()
+  }, [slots, confirm, refreshSaves])
 
   const handleDeleteAutosave = useCallback(async () => {
     const ok = await confirm({
@@ -165,8 +182,7 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
     })
     if (!ok) return
     deleteAutosave()
-    setAutosavePresent(false)
-    setAutosavePreviewState(null)
+    setAutosaveArchive(null)
   }, [confirm])
 
   // 对话框无障碍语义 + ESC / Tab 焦点陷阱 / 焦点还原 / 滚动锁
@@ -192,6 +208,9 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
     }
     return `${minutes}分钟`
   }
+
+  const autosavePresent = autosaveArchive !== null
+  const autosavePreview = autosaveArchive?.preview ?? null
 
   // 读档模式且本机一份存档都没有时，唯一能做的事就是导入备份；
   // 标题屏现在常驻「读取存档」，新机器点进来必须先看到这句，而不是四个空槽。
@@ -219,11 +238,14 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
             type="button"
             className="slot-content"
             onClick={() => onLoadAutosave?.()}
-            aria-label={`读取自动存档：${autosavePreview.playerName} · ${autosavePreview.year}年${autosavePreview.month}月 · ${autosavePreview.rank}`}
+            aria-label={`读取自动存档：${autosavePreview.playerName} · ${autosavePreview.year}年${autosavePreview.month}月 · ${autosavePreview.rank}${autosaveArchive ? ` · ${formatArchiveSummary(autosaveArchive)}` : ''}`}
           >
             <div className="slot-preview">
-              <div className="preview-name">{autosavePreview.playerName}</div>
-              <div className="preview-title">{autosavePreview.title}</div>
+              <div className="save-slot-name">{autosavePreview.playerName}</div>
+              {autosaveArchive && (
+                <div className="slot-archive-line">{formatArchiveSummary(autosaveArchive)}</div>
+              )}
+              <div className="save-slot-title">{autosavePreview.title}</div>
               <div className="autosave-tag">自动</div>
             </div>
             <div className="slot-info">
@@ -235,12 +257,12 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
                 <span className="label">官职：</span>
                 <span className="value">{autosavePreview.rank}</span>
               </div>
-              {autosavePreview.playTime && (
+              {autosavePreview.playTime ? (
                 <div className="info-row">
                   <span className="label">游玩：</span>
                   <span className="value">{formatPlayTime(autosavePreview.playTime)}</span>
                 </div>
-              )}
+              ) : null}
               <div className="info-row">
                 <span className="label">存档：</span>
                 <span className="value">{formatDate(autosavePreview.savedAt)}</span>
@@ -320,11 +342,14 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
                     type="button"
                     className="slot-content"
                     onClick={() => onSelect(slotId)}
-                    aria-label={`${mode === 'save' ? '覆盖' : '读取'}槽位 ${slotId}：${slot?.preview?.playerName} · ${slot?.preview?.year}年${slot?.preview?.month}月 · ${slot?.preview?.rank}`}
+                    aria-label={`${mode === 'save' ? '覆盖' : '读取'}槽位 ${slotId}：${slot?.preview?.playerName} · ${slot?.preview?.year}年${slot?.preview?.month}月 · ${slot?.preview?.rank}${slot?.archive ? ` · ${formatArchiveSummary(slot.archive)}` : ''}`}
                   >
                     <div className="slot-preview">
-                      <div className="preview-name">{slot?.preview?.playerName}</div>
-                      <div className="preview-title">{slot?.preview?.title}</div>
+                      <div className="save-slot-name">{slot?.preview?.playerName}</div>
+                      {slot?.archive && (
+                        <div className="slot-archive-line">{formatArchiveSummary(slot.archive)}</div>
+                      )}
+                      <div className="save-slot-title">{slot?.preview?.title}</div>
                     </div>
                     <div className="slot-info">
                       <div className="info-row">
@@ -335,12 +360,12 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
                         <span className="label">官职：</span>
                         <span className="value">{slot?.preview?.rank}</span>
                       </div>
-                      {slot?.preview?.playTime && (
+                      {slot?.preview?.playTime ? (
                         <div className="info-row">
                           <span className="label">游玩：</span>
                           <span className="value">{formatPlayTime(slot.preview.playTime)}</span>
                         </div>
-                      )}
+                      ) : null}
                       <div className="info-row">
                         <span className="label">存档：</span>
                         <span className="value">{formatDate(slot?.preview?.savedAt || '')}</span>

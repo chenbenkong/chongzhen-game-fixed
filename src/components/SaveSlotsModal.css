@@ -326,16 +326,25 @@
   margin-bottom: 12px;
 }
 
-.preview-name {
+.save-slot-name {
   font-size: 1.05rem;
   font-weight: 600;
   color: #e8dcc8;
   margin-bottom: 4px;
 }
 
-.preview-title {
+.save-slot-title {
   font-size: 0.8rem;
   color: #c9a227;
+}
+
+/* 选档时一眼看出上一局走到哪：志业进度 / 史线 / 履历数 */
+.slot-archive-line {
+  margin: 2px 0 4px;
+  color: #c9a227;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
 }
 
 .slot-info {
