@@ -63,6 +63,10 @@ describe('P4.1 存档槽位生涯摘要', () => {
     const content = document.querySelector('.save-slot.has-data .slot-content')
     expect(content?.querySelector('.save-slot-name')?.textContent).toBe('顾承畴')
     expect(content?.querySelector('.preview-name')).toBeNull()
+    const meta = content?.querySelector('.slot-meta-line')?.textContent?.replace(/\s+/g, ' ')
+    expect(meta).toContain('1629年4月')
+    expect(meta).toContain('户部主事')
+    expect(content?.querySelector('.slot-info')).toBeNull()
     expect(screen.queryByText('0')).toBeNull()
   })
 
