@@ -240,8 +240,6 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
           <span>{preview.year}年{preview.month}月</span>
           <span className="slot-meta-sep" aria-hidden="true">·</span>
           <span>{preview.rank}</span>
-          <span className="slot-meta-sep" aria-hidden="true">·</span>
-          <span className="slot-meta-stamp">存档 {formatSaveStamp(preview.savedAt)}</span>
           {preview.playTime ? (
             <>
               <span className="slot-meta-sep" aria-hidden="true">·</span>
@@ -270,13 +268,18 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
       <div className="slot-header">
         <span className="slot-number autosave-label">自动存档</span>
         {autosavePresent && (
-          <button
-            className="delete-btn"
-            aria-label="删除自动存档"
-            onClick={(e) => { e.stopPropagation(); handleDeleteAutosave() }}
-          >
-            删
-          </button>
+          <div className="slot-header-actions">
+            {autosavePreview && (
+              <span className="slot-header-stamp">存档 {formatSaveStamp(autosavePreview.savedAt)}</span>
+            )}
+            <button
+              className="delete-btn"
+              aria-label="删除自动存档"
+              onClick={(e) => { e.stopPropagation(); handleDeleteAutosave() }}
+            >
+              删
+            </button>
+          </div>
         )}
       </div>
 
@@ -343,13 +346,18 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
                 <div className="slot-header">
                   <span className="slot-number">槽位 {slotId}</span>
                   {hasData && (
-                    <button
-                      className="delete-btn"
-                      aria-label={`删除槽位 ${slotId}`}
-                      onClick={(e) => { e.stopPropagation(); handleDelete(slotId) }}
-                    >
-                      删
-                    </button>
+                    <div className="slot-header-actions">
+                      {slot?.preview && (
+                        <span className="slot-header-stamp">存档 {formatSaveStamp(slot.preview.savedAt)}</span>
+                      )}
+                      <button
+                        className="delete-btn"
+                        aria-label={`删除槽位 ${slotId}`}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(slotId) }}
+                      >
+                        删
+                      </button>
+                    </div>
                   )}
                 </div>
 

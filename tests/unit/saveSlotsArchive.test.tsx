@@ -61,11 +61,14 @@ describe('P4.1 存档槽位生涯摘要', () => {
     // 存档条自己的 class 不能再用 preview-name：它会撞上取名屏 NameInput 的
     // .preview-name（display:flex、大字），把槽位撑成 400px 高。
     const content = document.querySelector('.save-slot.has-data .slot-content')
+    const slot = document.querySelector('.save-slot.has-data')
     expect(content?.querySelector('.save-slot-name')?.textContent).toBe('顾承畴')
     expect(content?.querySelector('.preview-name')).toBeNull()
     const meta = content?.querySelector('.slot-meta-line')?.textContent?.replace(/\s+/g, ' ')
     expect(meta).toContain('1629年4月')
     expect(meta).toContain('户部主事')
+    expect(meta).not.toContain('存档')
+    expect(slot?.querySelector('.slot-header-stamp')?.textContent).toContain('存档')
     expect(content?.querySelector('.slot-info')).toBeNull()
     expect(screen.queryByText('0')).toBeNull()
   })
