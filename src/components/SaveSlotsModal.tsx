@@ -242,7 +242,7 @@ export default function SaveSlotsModal({ isOpen, mode, currentData, onSelect, on
           <span>{preview.rank}</span>
           {preview.playTime ? (
             <>
-              <span className="slot-meta-sep" aria-hidden="true">·</span>
+              <span className="slot-meta-sep slot-meta-playtime-sep" aria-hidden="true">·</span>
               <span className="slot-meta-playtime">游玩 {formatPlayTime(preview.playTime)}</span>
             </>
           ) : null}
