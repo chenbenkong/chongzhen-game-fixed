@@ -1,0 +1,132 @@
+/* 标题屏「最近一局」生涯档案条 */
+.career-archive-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3px 5px;
+  width: min(720px, 100%);
+  margin: 0 auto 22px;
+  padding: 7px 14px;
+  border-top: 1px solid rgba(197, 165, 90, 0.24);
+  border-bottom: 1px solid rgba(197, 165, 90, 0.24);
+  background:
+    linear-gradient(90deg, transparent, rgba(197, 165, 90, 0.065) 18%, rgba(197, 165, 90, 0.07) 82%, transparent);
+  font-family: var(--font-body, 'Songti SC', serif);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(245, 230, 200, 0.6);
+  text-align: center;
+  animation: fadeInUp 0.5s ease 0.55s both;
+}
+
+.career-archive-strip__label {
+  flex: 0 0 auto;
+  margin-right: 3px;
+  padding: 1px 5px;
+  border: 1px solid rgba(197, 165, 90, 0.3);
+  color: rgba(197, 165, 90, 0.72);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.career-archive-strip__name {
+  color: rgba(245, 230, 200, 0.88);
+  font-weight: 600;
+}
+
+.career-archive-strip__time,
+.career-archive-strip__rank {
+  color: rgba(245, 230, 200, 0.62);
+}
+
+.career-archive-strip__rank {
+  color: rgba(197, 165, 90, 0.74);
+}
+
+.career-archive-strip__sep {
+  color: rgba(245, 230, 200, 0.22);
+}
+
+.career-archive-strip__rule {
+  width: 1px;
+  height: 10px;
+  margin: 0 4px;
+  background: rgba(197, 165, 90, 0.22);
+}
+
+.career-archive-strip__career {
+  color: rgba(212, 165, 32, 0.86);
+}
+
+.career-archive-strip__storyline,
+.career-archive-strip__records {
+  color: rgba(245, 230, 200, 0.44);
+}
+
+/* 手机横屏：同一条档案条压进标题屏，不另起一块面板 */
+.mobile-shell .career-archive-strip {
+  width: min(680px, 92vw);
+  margin: 0 auto 1px;
+  padding: 4px 10px;
+  font-size: 12px;
+  gap: 2px 4px;
+}
+
+/* 多出来的这一条由标题屏原有的 8px 间距吸收，避免把「成就/局鉴/帮助」顶出 426/320 高横屏 */
+.mobile-shell .mobile-title.has-archive {
+  gap: 3px;
+}
+
+.mobile-shell .career-archive-strip__label {
+  font-size: 9px;
+  padding: 0 4px;
+}
+
+@media (max-width: 520px) {
+  .mobile-shell .career-archive-strip {
+    width: 100%;
+    padding: 3px 8px;
+    font-size: 10px;
+    gap: 1px 3px;
+  }
+
+  .mobile-shell .career-archive-strip__label {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .mobile-shell .career-archive-strip__rule,
+  .mobile-shell .career-archive-strip__detail,
+  .mobile-shell .career-archive-strip__sep--detail {
+    display: none;
+  }
+}
+
+@media (max-height: 360px) {
+  /* 480×320 是项目保留的极窄横屏档：档案条 + 版本号同时在场时，末尾入口会被顶出 13px */
+  .mobile-shell .mobile-title.has-archive .mobile-title__version {
+    display: none;
+  }
+
+  .mobile-shell .mobile-title.has-archive {
+    /* 320 高时不做 1px 容差：收紧到 1px，保证末尾入口完整落在视口内 */
+    gap: 1px;
+  }
+}
+
+/* 桌面矮屏：不给标题屏再添一段大的留白 */
+@media (max-height: 950px) {
+  .career-archive-strip {
+    margin-bottom: 12px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+@media (max-height: 780px) {
+  .career-archive-strip {
+    margin-bottom: 10px;
+  }
+}

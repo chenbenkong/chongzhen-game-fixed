@@ -1,6 +1,8 @@
 import { memo, useMemo, type KeyboardEvent } from 'react'
 import { BGMFixedButton } from './BGM'
-import { SaveData, getAutosavePreview } from '../types/save'
+import CareerArchiveStrip from './CareerArchiveStrip'
+import { SaveData } from '../types/save'
+import { getAutosaveArchive } from '../data/titleArchive'
 import {
   DIFFICULTY_CONFIGS,
   DifficultyLevel,
@@ -34,8 +36,9 @@ function TitleScreenImpl({
   difficulty,
   onDifficultyChange
 }: TitleScreenProps) {
-  // 自动存档预览只在挂载时算一次，避免每次父组件重渲染都解析存档。
-  const autosavePreview = useMemo(() => getAutosavePreview(), [])
+  // 自动存档摘要只解析一次；继续按钮与「生涯档案」条共用同一份。
+  const autosaveArchive = useMemo(() => getAutosaveArchive(), [])
+  const autosavePreview = autosaveArchive?.preview ?? null
 
   const currentDifficulty: DifficultyConfig = DIFFICULTY_CONFIGS[difficulty]
 
@@ -95,6 +98,8 @@ function TitleScreenImpl({
           <br />
           你是在一艘正在漏水的船上，努力决定自己要不要继续往上爬。&rdquo;
         </p>
+
+        <CareerArchiveStrip archive={autosaveArchive} />
 
         {/* 难度选择（写入存档，读档时恢复） */}
         <div className="title-difficulty">

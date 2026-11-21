@@ -523,7 +523,7 @@ export function deleteSaveSlot(slotId: number): void {
 // 预览
 // ============================================================
 
-function buildPreview(data: SaveData | null): SavePreview | null {
+export function buildSavePreview(data: SaveData | null): SavePreview | null {
   if (!data) return null
   return {
     playerName: data.playerName || data.character?.name || '无名氏',
@@ -538,7 +538,7 @@ function buildPreview(data: SaveData | null): SavePreview | null {
 }
 
 export function getSavePreview(slotId: number): SavePreview | null {
-  return buildPreview(loadSaveSlot(slotId))
+  return buildSavePreview(loadSaveSlot(slotId))
 }
 
 export const MANUAL_SAVE_SLOT_IDS = [1, 2, 3] as const
@@ -652,7 +652,7 @@ export function hasAutosave(): boolean {
 
 /** 获取自动存档的预览（用于 title 界面按钮显示） */
 export function getAutosavePreview(): SavePreview | null {
-  return buildPreview(loadAutosave())
+  return buildSavePreview(loadAutosave())
 }
 
 /** 删除自动存档（新游戏 / 重开时调用，避免和上一局数据混淆） */
@@ -747,10 +747,10 @@ export function serializeSaveBundle(bundle: SaveBundle): string {
 
 function buildBundleSummary(bundle: SaveBundle): SaveBundleSummary {
   return {
-    autosave: buildPreview(bundle.autosave),
+    autosave: buildSavePreview(bundle.autosave),
     slots: bundle.slots
       .map(({ slotId, data }) => {
-        const preview = buildPreview(data)
+        const preview = buildSavePreview(data)
         return preview ? { slotId, preview } : null
       })
       .filter((entry): entry is { slotId: number; preview: SavePreview } => entry !== null),
