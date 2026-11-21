@@ -1367,3 +1367,60 @@ body.mobile-applied .dice-confirm-btn {
   font-size: 12px;
   letter-spacing: 4px;
 }
+
+/* ============================================================
+   极短屏牌桌 HUD（480×320 一类）：原 flex 换行把身份、11 个数值、
+   三个按钮排成 222px，事件区只剩 90px。这里把按钮收进身份右侧、
+   六方局势压成一行，个人能力从 HUD 撤下（面板「能力」页仍完整保留），
+   让正文重新拿回约 90px。
+   ============================================================ */
+@media (min-width: 440px) and (max-height: 380px) {
+  .mobile-shell .mobile-hud {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    align-items: start;
+    gap: 4px 6px;
+    padding: 4px 8px 6px;
+  }
+
+  .mobile-shell .mobile-hud__identity {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .mobile-shell .mobile-hud__meters {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: 0;
+  }
+
+  .mobile-shell .mobile-hud__personal {
+    display: none;
+  }
+
+  .mobile-shell .mobile-hud .bgm-toggle--inline {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .mobile-shell .mobile-hud__panel {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .mobile-shell .mobile-hud__action {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .mobile-shell .mobile-hud__states {
+    gap: 4px;
+  }
+
+  .mobile-shell .mobile-state-capsule {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+}
