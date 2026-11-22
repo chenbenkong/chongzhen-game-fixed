@@ -1481,3 +1481,45 @@ body.mobile-applied .dice-confirm-btn {
     letter-spacing: 1px;
   }
 }
+
+/* ============================================================
+   480×320 / 568×320 本月抉择：「听天由命」原本排在四个选项之后，
+   被第三个选项的「勉力一试」按钮顶到 y=327–371，首屏完全看不到。
+   短屏把它提到顶栏，作为关闭键左侧的独立 44px 动作：
+   四个正式选项与「勉力一试」保持原位，不再为随机按钮挤压正文；
+   同时收掉底部 10px 内边距，关闭初始内部滚动。
+   ============================================================ */
+@media (max-width: 600px) and (max-height: 340px) {
+  .mobile-shell .mobile-board.is-choices-open .choices-section {
+    padding-bottom: 0;
+  }
+
+  /* 抉择面板自身是 z-index:60 的固定层，标题栏是 61。
+     随机键要画在标题栏右段，必须让标题栏透出背后的面板背景，
+     并把标题栏空白区的点击穿透给随机键；关闭键仍单独可点。 */
+  .mobile-shell .mobile-board.is-choices-open .mobile-choices-head {
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .mobile-shell .mobile-board.is-choices-open .mobile-choices-head__close {
+    pointer-events: auto;
+  }
+
+  .mobile-shell .mobile-board.is-choices-open .random-choice-btn {
+    position: fixed;
+    top: 3px;
+    right: 60px;
+    z-index: 62;
+    width: auto;
+    height: 44px;
+    margin: 0;
+    padding: 0 12px;
+    background: #12100c;
+    border-color: rgba(197, 165, 90, 0.4);
+    color: rgba(197, 165, 90, 0.72);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-indent: 2px;
+  }
+}
