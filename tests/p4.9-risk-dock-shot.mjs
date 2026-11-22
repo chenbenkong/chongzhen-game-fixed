@@ -1,7 +1,7 @@
 /**
- * P4.9 危局条贴合顶部状态卡组：
- * - HUD 与危局条之间不再留 flex gap，红条成为 HUD 的底部告警行；
- * - 整个状态卡组与事件区之间仍保留 8px 标准间距；
+ * P4.9 危局条上下贴齐：
+ * - HUD 与危局条之间零间距，红条成为 HUD 的底部告警行；
+ * - 红条与事件区之间也零间距，三者拼成一张连续卡组；
  * - 无危局时 HUD 恢复四角 3px 圆角，事件区与 HUD 仍相隔 8px。
  */
 import { chromium } from 'playwright'
@@ -113,12 +113,14 @@ async function run(browser, viewport, withRisk) {
     check(`${viewport.width} 危局条存在`, !!metrics.risk)
     check(`${viewport.width} 危局条顶接 HUD 底`, near(metrics.risk.y, metrics.hud.bottom), `${metrics.risk.y} vs ${metrics.hud.bottom}`)
     check(`${viewport.width} 危局条压在卡组底`, near(metrics.risk.bottom, metrics.stack.bottom), `${metrics.risk.bottom} vs ${metrics.stack.bottom}`)
-    check(`${viewport.width} 事件区与危局条相隔 8px`, near(metrics.main.y - metrics.risk.bottom, 8), `${(metrics.main.y - metrics.risk.bottom).toFixed(2)}`)
+    check(`${viewport.width} 事件区与危局条零间距`, near(metrics.main.y - metrics.risk.bottom, 0), `${(metrics.main.y - metrics.risk.bottom).toFixed(2)}`)
     check(`${viewport.width} 事件标题不压危局条`, metrics.title.y >= metrics.risk.bottom + 4, `${metrics.title.y} >= ${metrics.risk.bottom}+4`)
     check(`${viewport.width} HUD 上圆角下直角`, metrics.hud.radius[0] === '3px' && metrics.hud.radius[1] === '3px' && metrics.hud.radius[2] === '0px' && metrics.hud.radius[3] === '0px', metrics.hud.radius.join('/'))
-    check(`${viewport.width} 危局条上直下圆`, metrics.risk.radius[0] === '0px' && metrics.risk.radius[1] === '0px' && metrics.risk.radius[2] === '3px' && metrics.risk.radius[3] === '3px', metrics.risk.radius.join('/'))
+    check(`${viewport.width} 危局条四角贴齐`, metrics.risk.radius.every((r) => r === '0px'), metrics.risk.radius.join('/'))
+    check(`${viewport.width} 事件卡顶角贴齐`, metrics.host.radius[0] === '0px' && metrics.host.radius[1] === '0px', metrics.host.radius.join('/'))
     check(`${viewport.width} HUD 底边不再画线`, metrics.hud.borderBottomWidth === '0px', metrics.hud.borderBottomWidth)
     check(`${viewport.width} 危局条顶边不再画线`, metrics.risk.borderTopWidth === '0px', metrics.risk.borderTopWidth)
+    check(`${viewport.width} 事件卡顶边不再画线`, metrics.host.borderTopWidth === '0px', metrics.host.borderTopWidth)
   } else {
     check(`${viewport.width} 无危局时不渲染红条`, !metrics.risk)
     check(`${viewport.width} 无危局时 HUD 与事件区间隔 8px`, near(metrics.main.y - metrics.hud.bottom, 8), `${(metrics.main.y - metrics.hud.bottom).toFixed(2)}`)
