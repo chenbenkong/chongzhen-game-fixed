@@ -84,7 +84,7 @@ try {
     const label = `${viewport.width}×${viewport.height}`
     const short = viewport.width <= 600 && viewport.height <= 340
     check(`${label} 随机键存在`, !!m.random, JSON.stringify(m.random))
-    check(`${label} 四个正式选项全在首屏`, m.cards.length === 4 && m.cards.every(c => c.y >= 56 && c.bottom <= viewport.height - 4), JSON.stringify(m.cards))
+    check(`${label} 四个正式选项全在首屏`, m.cards.length === 4 && m.cards.every(c => c.y >= m.head.bottom && c.bottom <= viewport.height - 4), JSON.stringify(m.cards))
     check(`${label} 整页与抉择面板无横向溢出`, m.panel.scrollW <= m.panel.clientW + 1, JSON.stringify(m.panel))
     check(`${label} 随机键触控高 ≥44`, m.random && m.random.h >= 44, JSON.stringify(m.random))
     check(`${label} 随机键点击命中自身`, !!m.topAtRandom && /random-choice-btn/.test(m.topAtRandom.cls || ''), JSON.stringify(m.topAtRandom))
