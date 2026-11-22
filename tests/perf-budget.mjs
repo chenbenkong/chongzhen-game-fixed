@@ -14,10 +14,12 @@
  *         （量**线上**站点：跳过本地静态服务，改用 Resource Timing 的 encodedBodySize，
  *           也就是含 gzip 的"真实过线字节"，和本地未压缩口径不是一回事，两边别混着比）
  *
- * 三个断言（任一不过即退出码 1）：
+ * 关键断言（任一不过即退出码 1）：
  *   1. 标题屏不得请求任何 events-*.js      —— 事件数据必须等到真正开局
  *   2. 标题屏 JS 字节数 ≤ BUDGET_JS         —— 防止首屏再次膨胀
- *   3. 音乐默认关时不得请求 bgm.mp3          —— 5.7 MB 音频不能白下
+ *   3. 标题屏 CSS ≤ BUDGET_TITLE_CSS        —— 游戏界面样式不得回流标题屏
+ *   4. 标题屏字体 ≤ BUDGET_TITLE_FONT       —— 只许下标题八字子集
+ *   5. 音乐默认关时不得请求 bgm.mp3          —— 5.7 MB 音频不能白下
  */
 import { chromium } from 'playwright'
 import { createServer } from 'node:http'
@@ -36,11 +38,19 @@ const REMOTE_BASE = baseArg ? baseArg.slice('--base='.length) : process.env.BASE
 
 /** 首屏 JS 预算（KB，未压缩字节数）。当前实测见文件末尾的基线记录。 */
 const BUDGET_JS_KB = 700
+/** 首屏 CSS 预算（KB，未压缩）：CSS 跟随异步分包后，标题只下 index + App。 */
+const BUDGET_TITLE_CSS_KB = 200
+/** 首屏字体预算（KB，未压缩）：标题屏只许下 5 KB 的八字子集，不许拉全量分片。 */
+const BUDGET_TITLE_FONT_KB = 120
 /** 首屏请求数上限 */
 const BUDGET_REQUESTS = 45
-/** P2.3 出身印记：首卡前会随出身屏加载，单独封顶，不混进 3 MB 代码/事件预算 */
+/** P2.3 出身印记：首卡前会随出身屏加载，单独封顶，不混进代码/事件预算 */
 const BUDGET_ORIGIN_EMBLEMS_MB = 0.75
 const ORIGIN_EMBLEM_PATTERN = /\/assets\/images\/origin-[^/]*\.webp$/
+/** 游戏内标题字体：首卡前从标题屏延迟过来，单独封顶，不混进代码/事件预算 */
+const BUDGET_GAME_FONTS_MB = 1.6
+/** 首卡总字节上限（含字体与出身印记）：防止两项单列后总量失控 */
+const BUDGET_CARD_TOTAL_MB = 4.2
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -273,6 +283,20 @@ async function main() {
     fail(`标题屏请求 ${titlePhase.length} 个超预算 ${BUDGET_REQUESTS}`)
   }
 
+  const titleCssBytes = byKind.css?.bytes || 0
+  if (titleCssBytes / 1024 <= BUDGET_TITLE_CSS_KB) {
+    pass(`标题屏 CSS ${fmtKB(titleCssBytes)} ≤ 预算 ${BUDGET_TITLE_CSS_KB} KB`)
+  } else {
+    fail(`标题屏 CSS ${fmtKB(titleCssBytes)} 超预算 ${BUDGET_TITLE_CSS_KB} KB`)
+  }
+
+  const titleFontBytes = byKind.font?.bytes || 0
+  if (titleFontBytes / 1024 <= BUDGET_TITLE_FONT_KB) {
+    pass(`标题屏字体 ${fmtKB(titleFontBytes)} ≤ 预算 ${BUDGET_TITLE_FONT_KB} KB`)
+  } else {
+    fail(`标题屏字体 ${fmtKB(titleFontBytes)} 超预算 ${BUDGET_TITLE_FONT_KB} KB`)
+  }
+
   if (audioReqs.length === 0) {
     pass('音乐默认关：没有下载 bgm.mp3')
   } else {
@@ -372,23 +396,42 @@ async function main() {
       )
     }
 
-    // P2.6/P2.7 后首卡实测 3.08 MB：新增的存档备份与桌面抉择面板进了主包。
-    // 用户明确首卡负载不是当前目标，因此把门槛从 3.0 调到 3.2，不为最后 80 KB 拆包。
+    // 标题屏的约 500 KB 全量字体被有意延迟到开局：首卡总字节升到约 4.03 MB，
+    // 但字体不阻塞首卡（实测首卡 3.05 s 与延迟前持平），代码/事件本体只有 2.15 MB。
+    // 因此字体、出身印记各自单列预算，另加一条首卡总字节上限 4.2 MB，防止总量失控。
     const BUDGET_CARD_MB = 3.2
     const originEmblemBytes = cardPhase
       .filter(r => ORIGIN_EMBLEM_PATTERN.test(r.url))
       .reduce((s, r) => s + (r.bytes || 0), 0)
-    const codeAndEventBytes = cardBytes - originEmblemBytes
+    const cardFontBytes = cardPhase
+      .filter(r => kindOf(r) === 'font')
+      .reduce((s, r) => s + (r.bytes || 0), 0)
+    const codeAndEventBytes = cardBytes - originEmblemBytes - cardFontBytes
     console.log(`  其中出身印记：${fmtMB(originEmblemBytes)}（单独预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB）`)
+    console.log(`  其中游戏字体：${fmtMB(cardFontBytes)}（单独预算 ${BUDGET_GAME_FONTS_MB} MB）`)
     if (originEmblemBytes / 1024 / 1024 <= BUDGET_ORIGIN_EMBLEMS_MB) {
       pass(`出身印记 ${fmtMB(originEmblemBytes)} ≤ 预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB`)
     } else {
       fail(`出身印记 ${fmtMB(originEmblemBytes)} 超预算 ${BUDGET_ORIGIN_EMBLEMS_MB} MB`)
     }
-    if (reachedCard && codeAndEventBytes / 1024 / 1024 <= BUDGET_CARD_MB) {
-      pass(`首卡之前（不含出身印记）${fmtMB(codeAndEventBytes)} ≤ 预算 ${BUDGET_CARD_MB} MB`)
+    if (cardFontBytes / 1024 / 1024 <= BUDGET_GAME_FONTS_MB) {
+      pass(`游戏字体 ${fmtMB(cardFontBytes)} ≤ 预算 ${BUDGET_GAME_FONTS_MB} MB`)
+    } else {
+      fail(`游戏字体 ${fmtMB(cardFontBytes)} 超预算 ${BUDGET_GAME_FONTS_MB} MB`)
+    }
+    if (reachedCard && cardBytes / 1024 / 1024 <= BUDGET_CARD_TOTAL_MB) {
+      pass(`首卡总字节 ${fmtMB(cardBytes)} ≤ 预算 ${BUDGET_CARD_TOTAL_MB} MB`)
     } else if (reachedCard) {
-      fail(`首卡之前（不含出身印记）${fmtMB(codeAndEventBytes)} 超预算 ${BUDGET_CARD_MB} MB`)
+      fail(`首卡总字节 ${fmtMB(cardBytes)} 超预算 ${BUDGET_CARD_TOTAL_MB} MB`)
+    }
+    if (reachedCard && codeAndEventBytes / 1024 / 1024 <= BUDGET_CARD_MB) {
+      pass(
+        `首卡之前（不含出身印记/游戏字体）${fmtMB(codeAndEventBytes)} ≤ 预算 ${BUDGET_CARD_MB} MB`
+      )
+    } else if (reachedCard) {
+      fail(
+        `首卡之前（不含出身印记/游戏字体）${fmtMB(codeAndEventBytes)} 超预算 ${BUDGET_CARD_MB} MB`
+      )
     }
 
     if (consoleErrors.length === 0) {
@@ -456,6 +499,14 @@ main().catch(e => {
  *                开局首卡前 31 请求 / 2.54 MB（JS 1508 KB），首卡前不再有 1632+ 分片
  *                第二批（future + 9 个分片）在首卡后 +36 ms 才发起
  *
+ *   CSS + 标题字体后：标题屏 11 请求 / 0.75 MB
+ *                CSS 370 → 169 KB，字体 525 → 5 KB（八字+乐静子集）
+ *                首卡前 56 请求 / 4.03 MB（全量字体 1.42 MB 延迟到此，但不阻塞首卡）
+ *                代码与事件本体 2.15 MB，首卡仍为 3.05 s
+ *
  * 预算留了余量，不是把实测值当阈值：
- *   BUDGET_JS_KB 700（实测 213）、BUDGET_REQUESTS 45（实测 15）、首卡 3.0 MB（实测 2.54）
+ *   BUDGET_JS_KB 700（实测 233）、BUDGET_REQUESTS 45（实测 11）
+ *   BUDGET_TITLE_CSS_KB 200（实测 169）、BUDGET_TITLE_FONT_KB 120（实测 5）
+ *   首卡代码/事件 3.2 MB（实测 2.15）；游戏字体 1.6 MB（实测 1.42）
+ *   首卡总字节 4.2 MB（实测 4.03）；出身印记 0.75 MB（实测 0.45）
  */

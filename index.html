@@ -97,7 +97,10 @@
         pointer-events: none;
       }
       .boot-splash__title {
-        font-family: var(--font-heading);
+        /* 启动占位只存在几百毫秒；这里若用 Ma Shan Zheng，会在主 CSS 到达前
+           先把 85 KB 的「崇」字全量分片拉下来，抵消标题屏的八字子集优化。
+           占位期用系统楷体，进入标题屏后再换回自托管标题字。 */
+        font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'STSong', 'SimSun', serif;
         font-size: 2rem;
         letter-spacing: 1rem;
         text-indent: 1rem;

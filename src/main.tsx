@@ -8,6 +8,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { setupLongTaskObserver } from './utils/performance'
 import './index.css'
 import './theme.css'
+// 标题屏字体子集（独立族名，不覆盖 @fontsource 的同名全量分片）
+import './fonts/title-heading.css'
 
 // 启动性能监控（仅开发环境采样）
 //

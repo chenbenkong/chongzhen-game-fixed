@@ -75,8 +75,11 @@ export default defineConfig(({ mode }) => ({
         comments: false
       }
     },
-    // 禁用 CSS 代码分割：全部 CSS 合成单文件，避免打开懒加载弹窗时出现样式闪烁
-    cssCodeSplit: false,
+    // CSS 跟随异步分包：标题屏只下标题/起名/出身这几屏的样式，
+    // 游戏界面、手机版、幽灵面板的样式等对应分片真正加载时再由 Vite 的
+    // preload 辅助函数一并取回。Vite 会在执行模块前等 CSS link 的 load 事件，
+    // 因此不会出现"先渲染无样式 DOM、再补样式"的闪烁。
+    cssCodeSplit: true,
     cssMinify: 'lightningcss',
     sourcemap: false,
     chunkSizeWarningLimit: 800,

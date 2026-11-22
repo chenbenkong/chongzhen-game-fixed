@@ -1,0 +1,24 @@
+/**
+ * 首屏标题字体子集。
+ *
+ * 标题屏真正用 Ma Shan Zheng 的只有标题/印章 8 个字，外加音乐开关的「乐 / 静」：
+ * 「敕崇祯·宦海浮沉乐静」。但 @fontsource 的全量 CSS 按 unicode-range 切了 92 片，
+ * 这几个字恰好命中多片、合计 500 KB 以上 —— 为 5 KB 字形付整包字体。
+ *
+ * 这里不覆盖同名族（同族多个 unicode-range 重叠时，浏览器仍可能把全量分片拉下来），
+ * 而是单独声明一个只有这些字形的族，并只在标题屏两个根节点上换掉 --font-heading。
+ * 全量字体原样保留：起名、出身、游戏内标题和面板仍走 @fontsource 的 92 片。
+ */
+@font-face {
+  font-family: 'Ma Shan Zheng Title';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/title-heading.woff2') format('woff2');
+  unicode-range: U+4E50, U+5BA6, U+5D07, U+6555, U+6C89, U+6D6E, U+6D77, U+796F, U+9756;
+}
+
+:where(.title-screen, .mobile-title) {
+  --font-heading: 'Ma Shan Zheng Title', 'STKaiti', 'KaiTi', 'Songti SC', 'STSong',
+    'SimSun', '宋体', serif;
+}
