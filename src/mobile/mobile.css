@@ -1460,3 +1460,24 @@ body.mobile-applied .dice-confirm-btn {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ============================================================
+   极短屏标题屏（480×320 / 568×320）：三个主按钮各 200px + 44px
+   音乐键在 480 宽放不下一行，BGM 被折到第二行，底部「成就 / 局鉴 /
+   帮助」一行被挤出 9–11px。短屏把所有主按钮改为等分压缩，
+   四个按钮（含 BGM）固定一行，底部入口回收进 320。
+   ============================================================ */
+@media (max-width: 640px) and (max-height: 380px) {
+  .mobile-shell .mobile-title__actions {
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  .mobile-shell .mobile-title__actions .mobile-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    letter-spacing: 1px;
+  }
+}
