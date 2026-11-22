@@ -205,8 +205,11 @@ export default function MobileBoard(props: MobileBoardProps) {
         </div>
       )}
 
-      {/* 顶部 HUD */}
-      <header className="mobile-hud">
+      {/* 顶部状态区：HUD 与危局条同属常驻读数，合为一张卡组。
+          危局条不再单独夹在 HUD / 事件卡之间，避免上下各露一条背景缝。 */}
+      <div className="mobile-board__status-stack">
+        {/* 顶部 HUD */}
+        <header className="mobile-hud">
         <div className="mobile-hud__identity">
           <span className="mobile-hud__era">{toMingEraYear(gameState.currentYear)} · {gameState.currentMonth}月</span>
           <span className="mobile-hud__name">
@@ -301,7 +304,8 @@ export default function MobileBoard(props: MobileBoardProps) {
         </button>
       </header>
 
-      <RiskHud character={character} gameState={gameState} compact />
+        <RiskHud character={character} gameState={gameState} compact />
+      </div>
 
       {/* 主区：中央事件卡 */}
       <main className="mobile-board__main">

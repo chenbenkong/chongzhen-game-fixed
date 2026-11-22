@@ -1528,3 +1528,28 @@ body.mobile-applied .dice-confirm-btn {
     text-indent: 2px;
   }
 }
+
+/* ============================================================
+   P4.9 危局条并入顶部状态卡组（2026-11-22）
+   原布局：mobile-board 的 8px flex gap + risk 自身 2px margin，
+   把红条夹在 HUD 与事件卡之间，上下各露一条背景缝。
+   现在：HUD 与危局条同属一个 status-stack，红条成为 HUD 的
+   底部告警行；事件区仍与整个状态卡组保持 8px 标准间距。
+   ============================================================ */
+.mobile-shell .mobile-board__status-stack {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mobile-shell .mobile-board__status-stack > .risk-hud {
+  flex: 0 0 auto;
+  margin: 0;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+}
+.mobile-shell .mobile-board__status-stack:has(> .risk-hud) .mobile-hud {
+  border-bottom-width: 0;
+  border-bottom-color: transparent;
+  border-radius: 3px 3px 0 0;
+}
