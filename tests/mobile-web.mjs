@@ -73,6 +73,10 @@ async function main() {
   console.log('\n[844×390 横屏 · ?mobile=1]')
   {
     const { ctx, page } = await openPage(browser, { width: 844, height: 390 }, BASE_URL + '?mobile=1')
+    let bgmResponses = 0
+    page.on('response', res => {
+      if (res.url().includes('bgm.mp3')) bgmResponses += 1
+    })
     await page.waitForSelector('.mobile-shell', { timeout: 15000 })
     check('进入手机版外壳', (await page.locator('.mobile-shell').count()) === 1)
     const manifest = await page.evaluate(async () => {
@@ -81,6 +85,13 @@ async function main() {
     })
     check('PWA manifest 声明横屏', manifest.orientation === 'landscape', `orientation=${manifest.orientation}`)
 
+    // 手机版默认开音乐，但 5.7 MB 音频不能在第一个手势前就下载。
+    await page.waitForTimeout(600)
+    const bgmBeforeGesture = await page.evaluate(() =>
+      performance.getEntriesByType('resource').filter(e => e.name.includes('bgm.mp3')).length
+    )
+    check('手机首屏未在交互前下载 BGM', bgmBeforeGesture === 0, `requests=${bgmBeforeGesture}`)
+
     // 手机版过去只有 BGMProvider、没有开关；这里把「有没有入口 / 默认是否开 / 资源能不能拿到」钉住。
     const titleBgm = page.locator('.mobile-title__actions .bgm-toggle--inline')
     check('标题屏有音乐开关', (await titleBgm.count()) === 1)
@@ -88,11 +99,14 @@ async function main() {
     check('标题屏音乐开关 ≥44px', !!titleBgmBox && Math.min(titleBgmBox.width, titleBgmBox.height) >= 44, titleBgmBox ? `${titleBgmBox.width}×${titleBgmBox.height}` : 'missing')
     check('手机版默认开音乐', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '1'))
     await titleBgm.click()
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(150)
     check('音乐开关可关闭', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '0'))
+    check('先静音不会白下 BGM', bgmResponses === 0, `responses=${bgmResponses}`)
     await titleBgm.click()
     await page.waitForTimeout(100)
     check('音乐开关可重新开启', await page.evaluate(() => localStorage.getItem('chongzhen_bgm_on') === '1'))
+    await page.waitForTimeout(350)
+    check('重新开启后才开始加载 BGM', bgmResponses > 0, `responses=${bgmResponses}`)
     const bgmHead = await page.request.head(BASE_URL.replace(/[?&]mobile=1$/, '') + 'bgm.mp3')
     check('BGM 资源可达', bgmHead.ok(), `status=${bgmHead.status()}`)
 

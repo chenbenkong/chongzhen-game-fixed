@@ -26,6 +26,9 @@ function bgmSrc() {
 
 export function BGMProvider({ children, defaultOn = false }: { children: ReactNode; defaultOn?: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  // 手机版默认开音乐，但浏览器在首个手势前本来就不许播；先不建 Audio，
+  // 把这 5.7 MB 押到玩家第一次点击之后，别让它和标题屏/首卡抢带宽。
+  const gestureStartedRef = useRef(false)
 
   // 默认关，避免浏览器 autoplay 策略导致用户迷惑（以为点不动）。
   // 手机版传 defaultOn：首次进入就尝试起播，首次用户手势后重试；
@@ -105,6 +108,14 @@ export function BGMProvider({ children, defaultOn = false }: { children: ReactNo
       return
     }
 
+    // 默认开的手机版：先不下载；等第一次点击/按键时由下面的 kick 直接起播。
+    // 玩家显式开过的（defaultOn=false 的桌面，或已点过开关）照旧立即加载。
+    if (defaultOn && !gestureStartedRef.current) {
+      setStatus('idle')
+      setErrorMessage('')
+      return
+    }
+
     const a = ensureAudio()
     const tryPlay = () => {
       a.play().catch(err => {
@@ -121,32 +132,34 @@ export function BGMProvider({ children, defaultOn = false }: { children: ReactNo
     else a.addEventListener('canplay', tryPlay, { once: true })
   }, [on, ensureAudio])
 
-  // 一次性：捕获用户首次交互（点击/按键）后，如果 on=true 但音频 paused，重试 play
+  // 手机版默认开：首个点击/按键时才真正创建 audio 并起播。
+  // 首次点的是音乐开关时不抢跑，交给 toggle 自己处理（否则刚点开就下载、刚 mute 也下载）。
   useEffect(() => {
-    if (!on) return
-    const a = audioRef.current
-    if (!a) return
-    const handler = () => {
-      // 触发后，如果还是 paused 状态，尝试再 play
-      if (a.paused) {
-        a.play()
-          .then(() => setErrorMessage(''))
-          .catch(err => {
-            // eslint-disable-next-line no-console
-            console.warn('[BGM] retry after interaction failed:', err)
-          })
-      }
+    if (!on || !defaultOn || gestureStartedRef.current) return
+    const kick = (e: Event) => {
+      const target = e.target as Element | null
+      if (target?.closest?.('.bgm-toggle')) return
+      gestureStartedRef.current = true
+      const a = ensureAudio()
+      a.play().catch(err => {
+        const reason =
+          err?.name === 'NotAllowedError' ? '请先点击页面任意位置' : err?.message || '未知原因'
+        setErrorMessage(`播放未启动：${reason}`)
+        // eslint-disable-next-line no-console
+        console.warn('[BGM] deferred play rejected:', err)
+      })
     }
-    // 只监听一次（首次交互）
-    document.addEventListener('click', handler, { once: true, capture: true })
-    document.addEventListener('keydown', handler, { once: true, capture: true })
+    document.addEventListener('click', kick, { once: true })
+    document.addEventListener('keydown', kick, { once: true })
     return () => {
-      document.removeEventListener('click', handler, { capture: true })
-      document.removeEventListener('keydown', handler, { capture: true })
+      document.removeEventListener('click', kick)
+      document.removeEventListener('keydown', kick)
     }
-  }, [on])
+  }, [on, defaultOn, ensureAudio])
 
   const toggle = () => {
+    // 任何一次显式点按都算用户手势；这样从「默认开但未加载」切到开时能立刻起播。
+    gestureStartedRef.current = true
     // 如果是错误状态，再次 toggle 触发重试：重新设置 src 强制重新加载
     if (status === 'error' && audioRef.current) {
       const a = audioRef.current
